@@ -3,10 +3,12 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
-DEPENDPATH += .
+TARGET = ClassCluster
 INCLUDEPATH += .
-CONFIG += qt debug
+QT += gui
+QT += widgets
+CONFIG += QT
+CONFIG += debug
 
 # Input
 HEADERS += window.h
