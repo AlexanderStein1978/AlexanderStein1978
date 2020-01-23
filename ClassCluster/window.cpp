@@ -322,7 +322,12 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
 				p = int((r - Rm) * PS);
 				if (p < 0 || p >= NPot) continue;
 				//printf("p=%d\n", p);
-				if (r <= MAR[i1][3] && r <= MAR[i2][3])
+                if (r <= MAR[i1][1] && r <= MAR[i2][1])
+                {
+                    a = 10.0 * dPdR[p] / r;
+                    U += 10.0 * Pot[p];
+                }
+                else if (r <= MAR[i1][3] && r <= MAR[i2][3])
 				{
 					a = dPdR[p] / r;
 					U += Pot[p];
@@ -360,7 +365,12 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
 				p = int((r - Rm) * PS);
 				if (p < 0 || p >= NPot) continue;
 				//printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-				if (r <= MAR[i1][3] && r <= MAR[i2][3])
+                if (r <= MAR[i1][1] && r <= MAR[i2][1])
+                {
+                    a = 10.0 * dPdR[p] / r;
+                    U += 10.0 * Pot[p];
+                }
+                else if (r <= MAR[i1][3] && r <= MAR[i2][3])
 				{
 					a = dPdR[p] / r;
 					U += Pot[p];
