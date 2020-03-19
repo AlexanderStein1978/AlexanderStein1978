@@ -395,6 +395,157 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
 	//printf("End geta\n");
 }
 
+void Calculation::correctLocalE()
+{
+    int mx, my, mz, lx, ly, lz, i1, i2, p, n;
+    double r, dx, dy, dz, *corEX = new double[N], *corEY = new double[N], *corEZ = new double[N];
+    for (n=0; n<N; ++n) corEX[n] = corEY[n] = corEZ[n] = 0.0;
+    Particle *PP1, *PP2;
+    for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
+    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+    {
+        if (G[mx][my][mz] != 0)
+        {
+            //printf("l0\n");
+            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
+            {
+                i1 = PP1 - P;
+                i2 = PP2 - P;
+                dx = PP2->X - PP1->X;
+                dy = PP2->Y - PP1->Y;
+                dz = PP2->Z - PP1->Z;
+                r = sqrt(dx * dx + dy * dy + dz * dz);
+                for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
+                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n<4) MAR[i1][n] = r;
+                for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
+                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n<4) MAR[i2][n] = r;
+            }
+            //printf("l1\n");
+            for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
+                for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
+                        ly < YS && ly <= my + GridSizeDiv; ly++)
+                    for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
+                            lx < XS && lx <= mx + GridSizeDiv; lx++)
+                        for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
+            {
+                i1 = PP1 - P;
+                i2 = PP2 - P;
+                //printf("i1=%d, i2=%d\n", i1, i2);
+                dx = PP2->X - PP1->X;
+                dy = PP2->Y - PP1->Y;
+                dz = PP2->Z - PP1->Z;
+                //printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n",
+                    //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
+                r = sqrt(dx * dx + dy * dy + dz * dz);
+                for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
+                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n<4) MAR[i1][n] = r;
+                for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
+                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n<4) MAR[i2][n] = r;
+            }
+        }
+    }
+    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+    {
+        if (G[mx][my][mz] != 0)
+        {
+            //printf("l0\n");
+            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
+            {
+                const double Tc = 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ);
+                const double Tl = 0.5 * (PP1->lvX * PP1->lvX + PP1->lvY * PP1->lvY + PP1->lvZ * PP1->lvZ);
+                const double Uo = getE(PP1, PP1->lX, PP1->lY, PP1->lZ, mx, my, mz, true);
+                const double Uop = getE(PP1, PP1->lX, PP1->lY, PP1->lZ, mx, my, mz, false);
+                const double Un = getE(PP1, PP1->X, PP1->Y, PP1->Z, mx, my, mz, false);
+                const double Umo = (Uo > Uop ? Uo : Uop);
+                const double Emo = Umo + Tl;
+                const double En = Un + Tc;
+                n = PP1 - P;
+                if (En > Emo) walkDownhil(Umo, PP1, corEX[n], corEY[n], corEZ[n], mx, my, mz);
+            }
+        }
+    }
+    for (n=0; n<N; ++n) if (corEX[n] != 0.0 || corEY[n] != 0.0 || corEZ[n] != 0.0)
+    {
+        P[n].X = corEX[n];
+        P[n].Y = corEY[n];
+        P[n].Z = corEZ[n];
+    }
+}
+
+double Calculation::getE(const Particle * const cP, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool lastPos) const
+{
+    const Particle* P2;
+    int lx, ly, lz, p, i1, i2;
+    double r, E = 0.0, dx, dy, dz;
+    for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
+        for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
+                ly < YS && ly <= my + GridSizeDiv; ly++)
+            for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
+                    lx < XS && lx <= mx + GridSizeDiv; lx++)
+                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP)
+    {
+        i1 = cP - P;
+        i2 = P2 - P;
+        if (lastPos)
+        {
+            dx = P2->lX - X;
+            dy = P2->lY - Y;
+            dz = P2->lZ - Z;
+        }
+        else
+        {
+            dx = P2->X - X;
+            dy = P2->Y - Y;
+            dz = P2->Z - Z;
+        }
+        r = sqrt(dx * dx + dy * dy + dz * dz);
+        p = int((r - Rm) * PS);
+        if (p < 0 || p >= NPot) continue;
+        if (r <= MAR[i1][1] && r <= MAR[i2][1]) E += 10.0 * Pot[p];
+        else if (r <= MAR[i1][3] && r <= MAR[i2][3]) E += Pot[p];
+        else E += RepP[p];
+    }
+    return E;
+}
+
+void Calculation::checkE(const Particle * const P, const double tx, const double ty, const double tz, double &bx, double &by, double &bz, double &curMinU,
+                         const int mx, const int my, const int mz) const
+{
+    const double curU(getE(P, tx, ty, tz, mx, my, mz, false));
+    if (curU < curMinU)
+    {
+        curMinU = curU;
+        bx = tx;
+        by = ty;
+        bz = tz;
+    }
+}
+
+void Calculation::walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz, const int mx, const int my, const int mz) const
+{
+    const double step(1.0 / PS);
+    double bx(currentParticle->X), by(currentParticle->Y), bz(currentParticle->Z), curMinU = getE(currentParticle, bx, by, bz, mx, my, mz, false);
+    rx = ry = rz = -1.0;
+    while (curMinU > targetU && (bx != rx || by != ry || bz != rz))
+    {
+        rx = bx;
+        ry = by;
+        rz = bz;
+        checkE(currentParticle, rx - step, ry, rz, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx + step, ry, rz, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx, ry - step, rz, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx, ry + step, rz, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx, ry, rz - step, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx, ry, rz + step, bx, by, bz, curMinU, mx, my, mz);
+    }
+}
+
 double Calculation::getEnergy()
 {
 	int mx, my, mz, lx, ly, lz, i1, i2, p, n;
@@ -591,15 +742,15 @@ void Calculation::move()
 void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
-	int n, i, x, y, z, m;
+    int n, i, x, y, z; // m;
 	double hh = 0.5 * h, h6 = h / 6.0, *ax = new double[N], *ay = new double[N];
 	double *az = new double[N], *dxm = new double[N], *dym = new double[N], *dzm = new double[N];
 	double *dvxm = new double[N], *dvym = new double[N], *dvzm = new double[N];
 	double *dxt = new double[N], *dyt = new double[N], *dzt = new double[N];
 	double *dvxt = new double[N], *dvyt = new double[N], *dvzt = new double[N];
-	double *xt = new double[N], *yt = new double[N], *zt = new double[N], vF, R, lR, dX, dZ;
-	double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ, MA, ZMid = 0.5 * MaxZ, Pi2 = 2.0 * M_PI;
-	double XMMiB = Re, XMMaB = MaxX - Re, ZMMiB = Re, ZMMaB = MaxZ - Re, *Angle = new double[N], XMid = 0.5 * MaxX, CA;
+    double *xt = new double[N], *yt = new double[N], *zt = new double[N], /*vF,*/ R, /*lR,*/ dX, dZ;
+    double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ, /*MA,*/ ZMid = 0.5 * MaxZ; //Pi2 = 2.0 * M_PI;
+    double /*XMMiB = Re, XMMaB = MaxX - Re, ZMMiB = Re, ZMMaB = MaxZ - Re,*/ *Angle = new double[N], XMid = 0.5 * MaxX; //CA;
 	Particle *PB;
 	for (n=0; n<N; n++) if (Fixed[n]) Angle[n] = tan((XMid - P[n].X) / (ZMid - P[n].Z));
 	for (i=0, Run = true; Run; i++)
@@ -724,6 +875,9 @@ void Calculation::run()
 		geta(xt, yt, zt, dvxt, dvyt, dvzt);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
+            P[n].aaX = dvxt[n];
+            P[n].aaY = dvyt[n];
+            P[n].aaZ = dvzt[n];
 			xt[n] = P[n].X + hh * dxt[n];
 			yt[n] = P[n].Y + hh * dyt[n];
 			zt[n] = P[n].Z + hh * dzt[n];
@@ -736,6 +890,9 @@ void Calculation::run()
 		geta(xt, yt, zt, dvxm, dvym, dvzm);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
+            P[n].aaX += 2.0 * dvxm[n];
+            P[n].aaY += 2.0 * dvym[n];
+            P[n].aaZ += 2.0 * dvzm[n];
 			xt[n] = P[n].X + h * dxm[n];
 			yt[n] = P[n].Y + h * dym[n];
 			zt[n] = P[n].Z + h * dzm[n];
@@ -754,6 +911,15 @@ void Calculation::run()
 		geta(xt, yt, zt, dvxt, dvyt, dvzt);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
+            P[n].lX = P[n].X;
+            P[n].lY = P[n].Y;
+            P[n].lZ = P[n].Z;
+            P[n].lvX = P[n].vX;
+            P[n].lvY = P[n].vY;
+            P[n].lvZ = P[n].vZ;
+            P[n].aaX += dvxt[n];
+            P[n].aaY += dvyt[n];
+            P[n].aaZ += dvzt[n];
 			P[n].X += h6 * (P[n].vX + dxt[n] + 2.0 * dxm[n]);
 			P[n].Y += h6 * (P[n].vY + dyt[n] + 2.0 * dym[n]);
 			P[n].Z += h6 * (P[n].vZ + dzt[n] + 2.0 * dzm[n]);
@@ -769,6 +935,7 @@ void Calculation::run()
 				Run = false;
 			}*/
 		}
+        correctLocalE();
 		for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->Z < D[n-1]->Z)
 		{
 			PB = D[n];

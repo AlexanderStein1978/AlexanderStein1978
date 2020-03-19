@@ -12,7 +12,7 @@ struct Particle
 {
 	Particle *next, *prev;
 	int xp, yp, zp;
-	double X, Y, Z, vX, vY, vZ;
+    double X, Y, Z, vX, vY, vZ, lX, lY, lZ, lvX, lvY, lvZ, aaX, aaY, aaZ, lU;
 };
 
 class Picture : public QWidget
@@ -64,7 +64,12 @@ class Calculation : public QThread
 		
 	private:
 		void geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az);
-		
+        double getE(const Particle* const P, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool lastPos) const;
+        void checkE(const Particle* const P, const double tx, const double ty, const double tz, double& bx, double& by, double& bz, double& curMinU,
+                      const int mx, const int my, const int mz) const;
+        void walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz, const int mx, const int my, const int mz) const;
+        void correctLocalE();
+
 		double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, PS, U, T, E, h, Re;
 		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;
 		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
