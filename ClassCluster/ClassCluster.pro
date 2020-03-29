@@ -13,6 +13,8 @@ CONFIG += debug
 # Input
 HEADERS += Calculation.h \
     particle.h \
-    picture.h
+    picture.h \
+    window.h
 SOURCES += main.cpp Calculation.cpp \
-    picture.cpp
+    picture.cpp \
+    window.cpp

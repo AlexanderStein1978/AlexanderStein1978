@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef CALCULATION_H
+#define CALCULATION_H
 
 #include <QWidget>
 #include <QLineEdit>
@@ -8,26 +8,8 @@
 #include <QThread>
 #include <QMutex>
 
-struct Particle
-{
-	Particle *next, *prev;
-	int xp, yp, zp;
-    double X, Y, Z, vX, vY, vZ, lX, lY, lZ, lvX, lvY, lvZ, aaX, aaY, aaZ, lU;
-};
+class Particle;
 
-class Picture : public QWidget
-{
-	public:
-		Picture(QWidget *parent = 0);
-		~Picture();
-		QPixmap *getPixmap();
-		
-	protected:
-		void paintEvent(QPaintEvent *event);
-		
-	private:
-		QPixmap *Map;
-};
 
 class Calculation : public QThread
 {
@@ -77,29 +59,4 @@ class Calculation : public QThread
 		bool Run, rotated, *Fixed, Move;
 };
 
-class Window : public QWidget
-{
-	Q_OBJECT
-	
-	public:
-		Window();
-		~Window();
-		
-	public slots:
-		void run();
-		void restart();
-		void move();
-		void speedChanged();
-		void draw(double *XP, double *YP, double *ZP, int N);
-		
-	protected:
-		void closeEvent(QCloseEvent *event);
-		
-	private:
-		QLineEdit *StepE, *EnE, *Speed;
-		QPushButton *Start, *Restart, *End, *Rotate, *Move;
-		Picture *Pict;
-		Calculation Calc;
-};
-
-#endif // WINDOW_H
+#endif // CALCULATION_H
