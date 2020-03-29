@@ -11,5 +11,8 @@ CONFIG += QT
 CONFIG += debug
 
 # Input
-HEADERS += window.h
-SOURCES += main.cpp window.cpp
+HEADERS += Calculation.h \
+    particle.h \
+    picture.h
+SOURCES += main.cpp Calculation.cpp \
+    picture.cpp

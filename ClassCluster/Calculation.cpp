@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
 
-#include "window.h"
+#include "Calculation.h"
 
 #include <QGridLayout>
 #include <QFile>
