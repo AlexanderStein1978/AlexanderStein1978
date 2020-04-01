@@ -45,6 +45,10 @@ class Calculation : public QThread
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);
 		
 	private:
+        enum Positions{temporaryPos, lastPos, currentPos};
+
+        void getU(const Particle* const P1, const Particle* const P2, double &U, const double* const tx, const double* const ty,
+                  const double* const tz, Positions pos, double* ax = NULL, double* ay = NULL, double* az = NULL) const;
 		void geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az);
         double getE(const Particle* const P, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool lastPos) const;
         void checkE(const Particle* const P, const double tx, const double ty, const double tz, double& bx, double& by, double& bz, double& curMinU,

@@ -34,7 +34,7 @@ Calculation::Calculation(QObject* parent): QThread(parent)
 	Energy = 0.0; //Default energy per particle
 	XS = YS = ZS = 20;
 	ScF = 10.0; //Scaling factor
-	QString PotFile = "Potential.dat";
+    //QString PotFile = "Potential.dat";
 	GridSizeDiv = 5;
 	rotated = false;
 	Move = false;
@@ -138,12 +138,11 @@ Calculation::~Calculation()
 	delete[] Fixed;
 }
 
-void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *ay, 
-					   double *az)
+void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az)
 {
 	//printf("geta\n");
 	int mx, my, mz, lx, ly, lz, i1, i2, p, n;
-	double r, b, dx, dy, dz, a;
+    double r, dx, dy, dz;
 	Particle *PP1, *PP2;
 	for (mx = 0; mx < N; mx++) ax[mx] = ay[mx] = az[mx] = 0.0;
 	for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
@@ -201,39 +200,7 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
 		{
 			//printf("l0\n");
 			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-				for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				dx = tx[i2] - tx[i1];
-				dy = ty[i2] - ty[i1];
-				dz = tz[i2] - tz[i1];
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				p = int((r - Rm) * PS);
-				if (p < 0 || p >= NPot) continue;
-				//printf("p=%d\n", p);
-                if (r <= MAR[i1][1] && r <= MAR[i2][1])
-                {
-                    a = 10.0 * dPdR[p] / r;
-                    U += 10.0 * Pot[p];
-                }
-                else if (r <= MAR[i1][3] && r <= MAR[i2][3])
-				{
-					a = dPdR[p] / r;
-					U += Pot[p];
-				}
-				else
-				{
-					a = RepF[p] / r;
-					U += RepP[p];
-				}
-				ax[i1] += (b = a * dx);
-				ax[i2] -= b;
-				ay[i1] += (b = a * dy);
-				ay[i2] -= b;
-				az[i1] += (b = a * dz);
-				az[i2] -= b;
-			}
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 			//printf("l1\n");
 			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
 				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
@@ -241,48 +208,70 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
 					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
 							lx < XS && lx <= mx + GridSizeDiv; lx++)
 						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-							for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				//printf("i1=%d, i2=%d\n", i1, i2);
-				dx = tx[i2] - tx[i1];
-				dy = ty[i2] - ty[i1];
-				dz = tz[i2] - tz[i1];
-				//printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n", 
-					//   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				p = int((r - Rm) * PS);
-				if (p < 0 || p >= NPot) continue;
-				//printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-                if (r <= MAR[i1][1] && r <= MAR[i2][1])
-                {
-                    a = 10.0 * dPdR[p] / r;
-                    U += 10.0 * Pot[p];
-                }
-                else if (r <= MAR[i1][3] && r <= MAR[i2][3])
-				{
-					a = dPdR[p] / r;
-					U += Pot[p];
-				}
-				else
-				{
-					a = RepF[p] / r;
-					U += RepP[p];
-				}
-				ax[i1] += (b = a * dx);
-				ax[i2] -= b;
-				ay[i1] += (b = a * dy);
-				ay[i2] -= b;
-				az[i1] += (b = a * dz);
-				az[i2] -= b;
-			}
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 		}
 	}
 	printf("U=%f\n", U);
 	T *= 0.5;
 	printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
 	//printf("End geta\n");
+}
+
+void Calculation::getU(const Particle * const P1, const Particle * const P2, double &U, const double* tx, const double * const ty,
+                       const double* const tz, Positions pos, double* ax, double* ay, double* az) const
+{
+    double dx, dy, dz, r, a, b;
+    bool calcA = (NULL != ax && NULL != ay && NULL != az);
+    int i1 = P1 - P, i2 = P2 - P, p;
+    //printf("i1=%d, i2=%d\n", i1, i2);
+    switch (pos)
+    {
+    case temporaryPos:
+        dx = tx[i2] - tx[i1];
+        dy = ty[i2] - ty[i1];
+        dz = tz[i2] - tz[i1];
+        break;
+    case lastPos:
+        dx = P2->lX - *tx;
+        dy = P2->lY - *ty;
+        dz = P2->lZ - *tz;
+        break;
+    case currentPos:
+        dx = P2->X - *tx;
+        dy = P2->Y - *ty;
+        dz = P2->Z - *tz;
+        break;
+    }
+    //printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n",
+        //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
+    r = sqrt(dx * dx + dy * dy + dz * dz);
+    p = int((r - Rm) * PS);
+    if (p < 0 || p >= NPot) return;
+    //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
+    if (r <= MAR[i1][1] && r <= MAR[i2][1])
+    {
+        if (calcA) a = 10.0 * dPdR[p] / r;
+        U += 10.0 * Pot[p];
+    }
+    else if (r <= MAR[i1][3] && r <= MAR[i2][3])
+    {
+        if (calcA) a = dPdR[p] / r;
+        U += Pot[p];
+    }
+    else
+    {
+        if (calcA) a = RepF[p] / r;
+        U += RepP[p];
+    }
+    if (calcA)
+    {
+        ax[i1] += (b = a * dx);
+        ax[i2] -= b;
+        ay[i1] += (b = a * dy);
+        ay[i2] -= b;
+        az[i1] += (b = a * dz);
+        az[i2] -= b;
+    }
 }
 
 void Calculation::correctLocalE()
@@ -368,39 +357,17 @@ void Calculation::correctLocalE()
     }
 }
 
-double Calculation::getE(const Particle * const cP, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool lastPos) const
+double Calculation::getE(const Particle * const cP, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool useLastPos) const
 {
     const Particle* P2;
-    int lx, ly, lz, p, i1, i2;
-    double r, E = 0.0, dx, dy, dz;
+    int lx, ly, lz;
+    double E = 0.0;
     for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
         for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
                 ly < YS && ly <= my + GridSizeDiv; ly++)
             for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
                     lx < XS && lx <= mx + GridSizeDiv; lx++)
-                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP)
-    {
-        i1 = cP - P;
-        i2 = P2 - P;
-        if (lastPos)
-        {
-            dx = P2->lX - X;
-            dy = P2->lY - Y;
-            dz = P2->lZ - Z;
-        }
-        else
-        {
-            dx = P2->X - X;
-            dy = P2->Y - Y;
-            dz = P2->Z - Z;
-        }
-        r = sqrt(dx * dx + dy * dy + dz * dz);
-        p = int((r - Rm) * PS);
-        if (p < 0 || p >= NPot) continue;
-        if (r <= MAR[i1][1] && r <= MAR[i2][1]) E += 10.0 * Pot[p];
-        else if (r <= MAR[i1][3] && r <= MAR[i2][3]) E += Pot[p];
-        else E += RepP[p];
-    }
+                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) getU(cP, P2, E, &X, &Y, &Z, (useLastPos ? lastPos : currentPos));
     return E;
 }
 
