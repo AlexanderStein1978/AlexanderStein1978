@@ -40,9 +40,11 @@ class Calculation : public QThread
 	public slots:
 		void stop();
 		void rotate();
+        void triggerSnapShot();
 		
 	signals:
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);
+        void WriteSnapShot(Particle* P, int N);
 		
 	private:
 		void geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az);
@@ -56,7 +58,7 @@ class Calculation : public QThread
 		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;
 		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
 		Particle *P, ****G, **D;
-		bool Run, rotated, *Fixed, Move;
+        bool Run, rotated, *Fixed, Move, writeSnapShot;
 };
 
 #endif // CALCULATION_H

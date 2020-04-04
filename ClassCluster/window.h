@@ -5,6 +5,7 @@
 #include <QWidget>
 
 class Picture;
+class Particle;
 class Calculation;
 
 class QLineEdit;
@@ -20,12 +21,13 @@ class Window : public QWidget
         Window();
         ~Window();
 
-    public slots:
+    private slots:
         void run();
         void restart();
         void move();
         void speedChanged();
         void draw(double *XP, double *YP, double *ZP, int N);
+        void writeSnapShot(Particle* P, int N);
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -34,7 +36,7 @@ class Window : public QWidget
         void stopCalc();
 
         QLineEdit *StepE, *EnE, *Speed;
-        QPushButton *Start, *Restart, *End, *Rotate, *Move;
+        QPushButton *Start, *Restart, *SnapShot, *Rotate, *Move;
         Picture *Pict;
         Calculation *Calc;
 };

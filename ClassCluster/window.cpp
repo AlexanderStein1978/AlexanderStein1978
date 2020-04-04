@@ -1,6 +1,7 @@
 #include "window.h"
 #include "Calculation.h"
 #include "picture.h"
+#include "particle.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -9,6 +10,8 @@
 #include <QCloseEvent>
 #include <QPainter>
 #include <QRect>
+#include <QFileDialog>
+#include <QTextStream>
 
 
 Window::Window()
@@ -25,7 +28,7 @@ Window::Window()
     L->addWidget(StepE = new QLineEdit(QString::number(Calc->getStepSize(), 'f', 3), this), 0, 7);
     L->addWidget(new QLabel("Energy:", this), 0, 8);
     L->addWidget(EnE = new QLineEdit(QString::number(Calc->getEnergy(), 'f', 3), this), 0, 9);
-    L->addWidget(End = new QPushButton("Quit", this), 0, 10);
+    L->addWidget(SnapShot = new QPushButton("SnapShot", this), 0, 10);
     L->addWidget(Pict = new Picture(this), 1, 0, 1, 11);
     L->setRowStretch(1, 1);
     int XSize, YSize;
@@ -37,7 +40,8 @@ Window::Window()
     connect(Rotate, SIGNAL(clicked()), Calc, SLOT(rotate()));
     connect(Move, SIGNAL(clicked()), this, SLOT(move()));
     connect(Speed, SIGNAL(editingFinished()), this, SLOT(speedChanged()));
-    connect(End, SIGNAL(clicked()), this, SLOT(close()));
+    connect(SnapShot, SIGNAL(clicked()), Calc, SLOT(triggerSnapShot()));
+    connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
     connect(Calc, SIGNAL(PictureChanged(double*, double*, double*, int)),
             this, SLOT(draw(double*, double*, double*, int)));
 }
@@ -123,4 +127,19 @@ void Window::move()
 void Window::speedChanged()
 {
     Calc->setSpeed(Speed->text().toDouble());
+}
+
+void Window::writeSnapShot(Particle *P, int N)
+{
+    QString FN = QFileDialog::getSaveFileName(this, "Select filename and path for snapshot");
+    QFile file(FN);
+    file.open(QIODevice::WriteOnly);
+    QTextStream S(&file);
+    S << " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t aaX \t aaY \t aaZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ \n";
+    for (int n=0; n<N; ++n)
+        S << P[n].xp << "\t" << P[n].yp << "\t" << P[n].zp << "\t" << QString::number(P[n].X, 'f', 12) << "\t" << QString::number(P[n].Y, 'f', 12) << "\t" << QString::number(P[n].Z, 'f', 12)
+          << "\t" << QString::number(P[n].vX, 'f', 12) << "\t" << QString::number(P[n].vY, 'f', 12) << "\t" << QString::number(P[n].vZ, 'f', 12)
+          << "\t" << QString::number(P[n].aaX, 'f', 12) << "\t" << QString::number(P[n].aaY, 'f', 12) << "\t" << QString::number(P[n].aaZ, 'f', 12)
+          << "\t" << QString::number(P[n].lX, 'f', 12) << "\t" << QString::number(P[n].lY, 'f', 12) << "\t" << QString::number(P[n].lZ, 'f', 12)
+          << "\t" << QString::number(P[n].lvX, 'f', 12) << "\t" << QString::number(P[n].lvY, 'f', 12) << "\t" << QString::number(P[n].lvZ, 'f', 12) << "\n";
 }

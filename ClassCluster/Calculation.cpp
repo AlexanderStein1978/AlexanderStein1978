@@ -14,7 +14,7 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(QObject* parent): QThread(parent)
+Calculation::Calculation(QObject* parent): QThread(parent), writeSnapShot(false)
 {
 	printf("Calculation::Calculation\n");
 	nx = ny = nz = 10;
@@ -34,7 +34,7 @@ Calculation::Calculation(QObject* parent): QThread(parent)
 	Energy = 0.0; //Default energy per particle
 	XS = YS = ZS = 20;
 	ScF = 10.0; //Scaling factor
-	QString PotFile = "Potential.dat";
+    //QString PotFile = "Potential.dat";
 	GridSizeDiv = 5;
 	rotated = false;
 	Move = false;
@@ -825,6 +825,13 @@ void Calculation::run()
 				Run = false;
 			}*/
 		}
+        if (writeSnapShot)
+        {
+            Particle* PC = new Particle[N];
+            memcpy(PC, P, sizeof(Particle) * N);
+            emit WriteSnapShot(PC, N);
+            writeSnapShot = false;
+        }
         correctLocalE();
 		for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->Z < D[n-1]->Z)
 		{
@@ -974,4 +981,9 @@ void Calculation::setStepSize(double nh)
 void Calculation::stop()
 {
 	Run = false;
+}
+
+void Calculation::triggerSnapShot()
+{
+    writeSnapShot = true;
 }
