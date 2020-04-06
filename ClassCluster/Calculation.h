@@ -53,6 +53,8 @@ class Calculation : public QThread
                       const int mx, const int my, const int mz) const;
         void walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz, const int mx, const int my, const int mz) const;
         void correctLocalE();
+        void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
+                                const double XF, const double YF, const double ZF) const;
 
 		double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, PS, U, T, E, h, Re;
 		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;

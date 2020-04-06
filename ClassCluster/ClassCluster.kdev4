@@ -1,3 +1,4 @@
 [Project]
-Manager=KDevCustomMakeManager
+CreatedFrom=ClassCluster.pro
+Manager=KDevQMakeManager
 Name=ClassCluster
