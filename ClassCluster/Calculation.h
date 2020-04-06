@@ -40,9 +40,11 @@ class Calculation : public QThread
 	public slots:
 		void stop();
 		void rotate();
+        void triggerSnapShot();
 		
 	signals:
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);
+        void WriteSnapShot(Particle* P, int N);
 		
 	private:
         enum Positions{temporaryPos, lastPos, currentPos};
@@ -55,12 +57,14 @@ class Calculation : public QThread
                       const int mx, const int my, const int mz) const;
         void walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz, const int mx, const int my, const int mz) const;
         void correctLocalE();
+        void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
+                                const double XF, const double YF, const double ZF) const;
 
 		double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, PS, U, T, E, h, Re;
 		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;
 		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
 		Particle *P, ****G, **D;
-		bool Run, rotated, *Fixed, Move;
+        bool Run, rotated, *Fixed, Move, writeSnapShot;
 };
 
 #endif // CALCULATION_H

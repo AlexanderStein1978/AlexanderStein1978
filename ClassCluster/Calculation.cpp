@@ -14,9 +14,9 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(QObject* parent): QThread(parent)
+Calculation::Calculation(QObject* parent): QThread(parent), writeSnapShot(false)
 {
-	printf("Calculation::Calculation\n");
+	//printf("Calculation::Calculation\n");
 	nx = ny = nz = 10;
 	double IntDist = 20.0, R, F, P0, st, F0, F1;
 	st = 1e-3;
@@ -211,9 +211,9 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 		}
 	}
-	printf("U=%f\n", U);
+	//printf("U=%f\n", U);
 	T *= 0.5;
-	printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
+	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
 	//printf("End geta\n");
 }
 
@@ -532,62 +532,49 @@ double Calculation::getStepSize()
 
 void Calculation::initialize()
 {
-	printf("Calculation::initialize\n");
-	int n, x, y, z, b;
+	//printf("Calculation::initialize\n");
+	int n, x, y, z;
 	double rx, rz, rys = sqrt(0.5) * MaxY / double(PYS), rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
-	double y1 = 0.5 * MaxY - rys, R, dX, dZ, XMid = 0.5 * MaxX, ZMid = 0.5 * MaxZ;
+	double y1 = 0.5 * MaxY - rys;
 	double y2 = 0.5 * MaxY + rys;
 	double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ;
 	for (x=0; x < XS; x++) for (y=0; y < YS; y++) for (z=0; z < ZS; z++) G[x][y][z] = 0;
 	for (n=z=0, rz = 0.5 * rzs; z < PZS; z++, rz += rzs) 
 	{
-		for (x=0, rx = 0.5 * rxs; x < PXS; x++, n++, rx += rxs)
+		for (x=0, rx = 0.5 * rxs; x < PXS; x++, rx += rxs)
 		{
-			P[n].vX = P[n].vY = P[n].vZ = 0.0;
-			P[n].X = rx;
-			P[n].Y = y1;
-			P[n].Z = rz;
-			P[n].xp = ((b = int(XF * rx)) >= 0 ? (b < XS ? b : XS - 1) : 0);
-			P[n].yp = ((b = int(YF * y1)) >= 0 ? (b < YS ? b : YS - 1) : 0);
-			P[n].zp = ((b = int(ZF * rz)) >= 0 ? (b < ZS ? b : ZS - 1) : 0);
-			P[n].prev = 0;
-			P[n].next = G[P[n].xp][P[n].yp][P[n].zp];
-			G[P[n].xp][P[n].yp][P[n].zp] = D[n] = P + n;
-			if (P[n].next != 0) P[n].next->prev = D[n];
-			if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
-			{
-				Fixed[n] = true;
-				dX = P[x].X - XMid;
-				dZ = P[x].Z - ZMid;
-				R = 1.0 / sqrt(dX * dX + dZ * dZ);
-				P[x].vX = dX * R;
-				P[x].vZ = dZ * R;
-			}
-			else Fixed[n] = false;
-			n++;
-			P[n].vX = P[n].vY = P[n].vZ = 0.0;
-			P[n].X = rx;
-			P[n].Y = y2;
-			P[n].Z = rz;
-			P[n].xp = ((b = int(XF * rx)) >= 0 ? (b < XS ? b : XS - 1) : 0);
-			P[n].yp = ((b = int(YF * y2)) >= 0 ? (b < YS ? b : YS - 1) : 0);
-			P[n].zp = ((b = int(ZF * rz)) >= 0 ? (b < ZS ? b : ZS - 1) : 0);
-			P[n].prev = 0;
-			P[n].next = G[P[n].xp][P[n].yp][P[n].zp];
-			G[P[n].xp][P[n].yp][P[n].zp] = D[n] = P + n;
-			if (P[n].next != 0) P[n].next->prev = D[n];
-			if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
-			{
-				Fixed[n] = true;
-				dX = P[x].X - XMid;
-				dZ = P[x].Z - ZMid;
-				R = 1.0 / sqrt(dX * dX + dZ * dZ);
-				P[x].vX = dX * R;
-				P[x].vZ = dZ * R;
-			}
-			else Fixed[n] = false;
+            initializeParticle(P[n++], x, z, rx, y1, rz, XF, YF, ZF);
+            initializeParticle(P[n++], x, z, rx, y2, rz, XF, YF, ZF);
 		}
 	}
+}
+
+void Calculation::initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
+    const double XF, const double YF, const double ZF) const
+{
+    int n = &cP - P, b;
+    double dX, dZ, R;
+    cP.lvX = cP.lvY = cP.lvZ = cP.vX = cP.vY = cP.vZ = 0.0;
+	cP.lX = cP.X = X;
+	cP.lY = cP.Y = Y;
+	cP.lZ = cP.Z = Z;
+	cP.xp = ((b = int(XF * X)) >= 0 ? (b < XS ? b : XS - 1) : 0);
+	cP.yp = ((b = int(YF * Y)) >= 0 ? (b < YS ? b : YS - 1) : 0);
+	cP.zp = ((b = int(ZF * Z)) >= 0 ? (b < ZS ? b : ZS - 1) : 0);
+	cP.prev = 0;
+	cP.next = G[cP.xp][cP.yp][cP.zp];
+	G[cP.xp][cP.yp][cP.zp] = D[n] = &cP;
+	if (cP.next != 0) cP.next->prev = D[n];
+	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
+	{
+		Fixed[n] = true;
+		dX = P[x].X - 0.5 * MaxX;
+		dZ = P[x].Z - 0.5 * MaxZ;
+		R = 1.0 / sqrt(dX * dX + dZ * dZ);
+		P[x].vX = dX * R;
+		P[x].vZ = dZ * R;
+	}
+	else Fixed[n] = false;
 }
 
 void Calculation::move()
@@ -600,6 +587,7 @@ void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
     int n, i, x, y, z; // m;
+    bool isNotFirstIt(false);
 	double hh = 0.5 * h, h6 = h / 6.0, *ax = new double[N], *ay = new double[N];
 	double *az = new double[N], *dxm = new double[N], *dym = new double[N], *dzm = new double[N];
 	double *dvxm = new double[N], *dvym = new double[N], *dvzm = new double[N];
@@ -792,7 +780,15 @@ void Calculation::run()
 				Run = false;
 			}*/
 		}
-        correctLocalE();
+        if (writeSnapShot)
+        {
+            Particle* PC = new Particle[N];
+            memcpy(PC, P, sizeof(Particle) * N);
+            emit WriteSnapShot(PC, N);
+            writeSnapShot = false;
+        }
+        if (isNotFirstIt) correctLocalE();
+        else isNotFirstIt = true;
 		for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->Z < D[n-1]->Z)
 		{
 			PB = D[n];
@@ -941,4 +937,9 @@ void Calculation::setStepSize(double nh)
 void Calculation::stop()
 {
 	Run = false;
+}
+
+void Calculation::triggerSnapShot()
+{
+    writeSnapShot = true;
 }
