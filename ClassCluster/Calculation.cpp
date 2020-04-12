@@ -211,6 +211,10 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 		}
 	}
+	for (n=0; n<N; ++n) if (abs(ax[n]) > 1e6 || abs(ay[n]) > 1e6 || abs(az[n]) > 1e6)
+    {
+		printf("n=%d: ax=%f, ay=%f, az=%f\n", n, ax[n], ay[n], az[n]);
+	}
 	//printf("U=%f\n", U);
 	T *= 0.5;
 	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
@@ -262,6 +266,10 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     {
         if (calcA) a = RepF[p] / r;
         U += RepP[p];
+    }
+    if (abs(a) > 1e6)
+    {
+        printf("i1=%d, i2=%d, a=%f\n", i1, i2, a);
     }
     if (calcA)
     {
@@ -774,11 +782,10 @@ void Calculation::run()
 			if ((P[n].X < 0.0 && P[n].vX < 0.0) || (P[n].X > MaxX && P[n].vX > 0.0)) P[n].vX *= -1.0;
 			if ((P[n].Y < 0.0 && P[n].vY < 0.0) || (P[n].Y > MaxY && P[n].vY > 0.0)) P[n].vY *= -1.0;
 			if ((P[n].Z < 0.0 && P[n].vZ < 0.0) || (P[n].Z > MaxZ && P[n].vZ > 0.0)) P[n].vZ *= -1.0;
-			/*if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
+			if (abs(P[n].vX) > 1e6 || abs(P[n].vY) > 1e6 || abs(P[n].vZ) > 1e6)
 			{
-				printf("Particel %d is nan!\n", n);
-				Run = false;
-			}*/
+				printf("P[%d]: vX=%f, vY=%f, vZ=%f\n", n, P[n].vX, P[n].vY, P[n].vZ);
+			}
 		}
         if (writeSnapShot)
         {
