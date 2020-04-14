@@ -29,6 +29,9 @@ class Calculation : public QThread
 		void move();
 		void setSpeed(double S);
 		double getSpeed();
+        void stop();
+        void rotate();
+        void triggerSnapShot();
 		
 		inline bool getMove()
 		{
@@ -36,11 +39,6 @@ class Calculation : public QThread
 		}
 		
 		QMutex mutex;
-		
-	public slots:
-		void stop();
-		void rotate();
-        void triggerSnapShot();
 		
 	signals:
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);

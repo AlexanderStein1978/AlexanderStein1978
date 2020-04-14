@@ -8,10 +8,6 @@ class Picture;
 class Particle;
 class Calculation;
 
-class QLineEdit;
-class QCloseEvent;
-class QPushButton;
-
 
 class Window : public QWidget
 {
@@ -20,12 +16,22 @@ class Window : public QWidget
     public:
         Window();
         ~Window();
+        void start();
+        void stop();
+        void reset();
+        void move();
+        void rotate();
+        void triggerSnapShot();
+        void restoreSnapShot();
+        double getEnergy() const;
+        double setEnergy(const double E);
+        void setSpeed(const double newSpeed);
+        void setStepSize(const double size);
+        void stopCalc();
+        bool isRunning() const;
+        bool isMoving() const;
 
     private slots:
-        void run();
-        void restart();
-        void move();
-        void speedChanged();
         void draw(double *XP, double *YP, double *ZP, int N);
         void writeSnapShot(Particle* P, int N);
 
@@ -33,10 +39,7 @@ class Window : public QWidget
         void closeEvent(QCloseEvent *event);
 
     private:
-        void stopCalc();
 
-        QLineEdit *StepE, *EnE, *Speed;
-        QPushButton *Start, *Restart, *SnapShot, *Rotate, *Move;
         Picture *Pict;
         Calculation *Calc;
 };

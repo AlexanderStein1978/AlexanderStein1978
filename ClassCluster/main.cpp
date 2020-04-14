@@ -1,11 +1,11 @@
 #include <QApplication>
 
-#include "window.h"
+#include "controlwindow.h"
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    Window w;
+    ControlWindow w;
     w.show();
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
     return app.exec();

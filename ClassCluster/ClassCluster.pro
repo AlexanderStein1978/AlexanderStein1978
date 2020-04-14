@@ -14,7 +14,9 @@ CONFIG += debug
 HEADERS += Calculation.h \
     particle.h \
     picture.h \
-    window.h
+    window.h \
+    controlwindow.h
 SOURCES += main.cpp Calculation.cpp \
     picture.cpp \
-    window.cpp
+    window.cpp \
+    controlwindow.cpp
