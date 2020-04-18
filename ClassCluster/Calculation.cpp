@@ -608,7 +608,10 @@ void Calculation::run()
 	for (n=0; n<N; n++) if (Fixed[n]) Angle[n] = tan((XMid - P[n].X) / (ZMid - P[n].Z));
 	for (i=0, Run = true; Run; i++)
 	{
-		//printf("i=%d, ", i);
+		if (i==303)
+        {
+            printf("Break!");
+        }
 		for (n=0; n<N; n++)
 		{
 			x = ((x = int(XF * P[n].X)) >= 0 ? (x < XS ? x : XS - 1) : 0);
@@ -789,10 +792,12 @@ void Calculation::run()
 		}
         if (writeSnapShot)
         {
-            Particle* PC = new Particle[N];
-            memcpy(PC, P, sizeof(Particle) * N);
-            emit WriteSnapShot(PC, N);
+            WriteSnapshot();
             writeSnapShot = false;
+        }
+        if (i==147)
+        {
+            printf("Break!");
         }
         if (isNotFirstIt) correctLocalE();
         else isNotFirstIt = true;
@@ -850,6 +855,13 @@ void Calculation::run()
 	delete[] yt;
 	delete[] zt;
 	delete[] Angle;
+}
+
+void Calculation::WriteSnapshot()
+{
+    Particle* PC = new Particle[N];
+    memcpy(PC, P, sizeof(Particle) * N);
+    emit WriteSnapShot(PC, N);
 }
 
 void Calculation::rotate()
@@ -948,7 +960,8 @@ void Calculation::stop()
 
 void Calculation::triggerSnapShot()
 {
-    writeSnapShot = true;
+    if (isRunning()) writeSnapShot = true;
+    else WriteSnapshot();
 }
 
 Particle* Calculation::getParticles(int &num)

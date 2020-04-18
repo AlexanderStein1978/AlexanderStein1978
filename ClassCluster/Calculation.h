@@ -58,6 +58,7 @@ class Calculation : public QThread
         void correctLocalE();
         void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
                                 const double XF, const double YF, const double ZF) const;
+        void WriteSnapshot();
 
 		double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, PS, U, T, E, h, Re;
 		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;

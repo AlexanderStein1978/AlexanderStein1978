@@ -180,9 +180,6 @@ void Window::restoreSnapShot(bool &isMoving)
         L = S.readLine().split('\t');
         if (L.size() == 18)
         {
-            part[n].xp = L[0].toInt();
-            part[n].yp = L[1].toInt();
-            part[n].zp = L[2].toInt();
             part[n].X = L[3].toDouble();
             part[n].Y = L[4].toDouble();
             part[n].Z = L[5].toDouble();
