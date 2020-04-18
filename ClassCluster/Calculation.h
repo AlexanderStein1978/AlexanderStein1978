@@ -32,6 +32,7 @@ class Calculation : public QThread
         void stop();
         void rotate();
         void triggerSnapShot();
+        Particle* getParticles(int &N);
 		
 		inline bool getMove()
 		{

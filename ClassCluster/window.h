@@ -22,7 +22,7 @@ class Window : public QWidget
         void move();
         void rotate();
         void triggerSnapShot();
-        void restoreSnapShot();
+        void restoreSnapShot(bool &isMoving);
         double getEnergy() const;
         double setEnergy(const double E);
         void setSpeed(const double newSpeed);

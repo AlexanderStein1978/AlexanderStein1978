@@ -950,3 +950,9 @@ void Calculation::triggerSnapShot()
 {
     writeSnapShot = true;
 }
+
+Particle* Calculation::getParticles(int &num)
+{
+    num = N;
+    return P;
+}

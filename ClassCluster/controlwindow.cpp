@@ -95,5 +95,15 @@ void ControlWindow::writeSnapShot()
 
 void ControlWindow::restoreSnapShot()
 {
-
+    bool isMoving;
+    if (NULL != window)
+    {
+        if (window->isRunning()) window->stopCalc();
+    }
+    else window = new Window;
+    if (!window->isVisible()) window->show();
+    window->restoreSnapShot(isMoving);
+    Start->setText("Stop");
+    if (isMoving) Move->setText("Hold");
+    else Move->setText("Move");
 }
