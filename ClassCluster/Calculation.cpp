@@ -1,7 +1,8 @@
 #define _USE_MATH_DEFINES
 
 #include "Calculation.h"
-#include "particle.h"
+#include "heapsort.h"
+#include "deltaesortfunctor.h"
 
 #include <QGridLayout>
 #include <QFile>
@@ -245,6 +246,11 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         dy = P2->Y - *ty;
         dz = P2->Z - *tz;
         break;
+    case particles:
+        dx = P2->X - P1->X;
+        dy = P2->Y - P1->Y;
+        dz = P2->Z - P1->Z;
+        break;
     }
     //printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n",
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
@@ -285,8 +291,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
 void Calculation::correctLocalE()
 {
     int mx, my, mz, lx, ly, lz, i1, i2, p, n;
-    double r, dx, dy, dz, *corEX = new double[N], *corEY = new double[N], *corEZ = new double[N];
-    for (n=0; n<N; ++n) corEX[n] = corEY[n] = corEZ[n] = 0.0;
+    double r, dx, dy, dz;
     Particle *PP1, *PP2;
     for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
     for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
@@ -337,6 +342,7 @@ void Calculation::correctLocalE()
             }
         }
     }
+    double currSumE = 0.0;
     for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
     {
         if (G[mx][my][mz] != 0)
@@ -344,45 +350,69 @@ void Calculation::correctLocalE()
             //printf("l0\n");
             for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
             {
-                const double Tc = 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ);
-                const double Tl = 0.5 * (PP1->lvX * PP1->lvX + PP1->lvY * PP1->lvY + PP1->lvZ * PP1->lvZ);
-                const double Uo = getE(PP1, PP1->lX, PP1->lY, PP1->lZ, mx, my, mz, true);
-                const double Uop = getE(PP1, PP1->lX, PP1->lY, PP1->lZ, mx, my, mz, false);
-                const double Un = getE(PP1, PP1->X, PP1->Y, PP1->Z, mx, my, mz, false);
-                const double Umo = (Uo > Uop ? Uo : Uop);
-                const double Emo = Umo + Tl;
-                const double En = Un + Tc;
-                n = PP1 - P;
-                if (En > Emo) walkDownhil(Umo, PP1, corEX[n], corEY[n], corEZ[n], mx, my, mz);
+                updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ));
+                updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
+                updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
+                currSumE += PP1->E;
             }
         }
     }
-    for (n=0; n<N; ++n) if (corEX[n] != 0.0 || corEY[n] != 0.0 || corEZ[n] != 0.0)
+    if (currSumE > Energy)
     {
-        P[n].X = corEX[n];
-        P[n].Y = corEY[n];
-        P[n].Z = corEZ[n];
+        int *EOrder = utils::heapSort(DeltaESortFunctor(P), N);
+        for (n=0; n<N; ++n) P[n].corrX = P[n].corrY = P[n].corrZ = 0.0;
+        for (n=0; n<N && currSumE > Energy; ++n)
+        {
+            Particle* curPar = P + EOrder[n];
+            const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
+            double TDelta = 0.0, UDelta = 0.0;
+            if (curPar->deltaT >= curPar->deltaU && EDelta <= curPar->T) TDelta = EDelta;
+            else if (curPar->deltaT < curPar->deltaU && EDelta <= curPar->U) UDelta = EDelta;
+            else
+            {
+                TDelta = EDelta * curPar->T / curPar->E;
+                UDelta = EDelta - TDelta;
+            }
+            if (TDelta > 0.0)
+            {
+                const double vF = sqrt((curPar->T - TDelta) / curPar->T);
+                curPar->vX *= vF;
+                curPar->vY *= vF;
+                curPar->vZ *= vF;
+            }
+            if (UDelta > 0.0) walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
+        }
+        for (n=0; n<N; ++n) if (P[n].corrX != 0.0 || P[n].corrY != 0.0 || P[n].corrZ != 0.0)
+        {
+            P[n].X = P[n].corrX;
+            P[n].Y = P[n].corrY;
+            P[n].Z = P[n].corrZ;
+        }
+        delete[] EOrder;
     }
 }
 
-double Calculation::getE(const Particle * const cP, const double X, const double Y, const double Z, const int mx, const int my, const int mz, const bool useLastPos) const
+void Calculation::updateDelta(double &toUpdate, double &delta, const double newValue)
+{
+    delta = newValue - toUpdate;
+    toUpdate = newValue;
+}
+
+double Calculation::getE(const Particle * const cP, const double X, const double Y, const double Z, const bool useLastPos) const
 {
     const Particle* P2;
     int lx, ly, lz;
     double E = 0.0;
-    for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
-        for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
-                ly < YS && ly <= my + GridSizeDiv; ly++)
-            for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
-                    lx < XS && lx <= mx + GridSizeDiv; lx++)
+    for (lz = ((lz = cP->zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= cP->zp + GridSizeDiv; lz++)
+        for (ly = ((ly = cP->yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= cP->yp + GridSizeDiv; ly++)
+            for (lx = ((lx = cP->xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= cP->xp + GridSizeDiv; lx++)
                 for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) getU(cP, P2, E, &X, &Y, &Z, (useLastPos ? lastPos : currentPos));
-    return E;
+    return 0.5 * E;
 }
 
-void Calculation::checkE(const Particle * const P, const double tx, const double ty, const double tz, double &bx, double &by, double &bz, double &curMinU,
-                         const int mx, const int my, const int mz) const
+void Calculation::checkE(const Particle * const P, const double tx, const double ty, const double tz, double &bx, double &by, double &bz, double &curMinU) const
 {
-    const double curU(getE(P, tx, ty, tz, mx, my, mz, false));
+    const double curU(getE(P, tx, ty, tz, false));
     if (curU < curMinU)
     {
         curMinU = curU;
@@ -392,22 +422,22 @@ void Calculation::checkE(const Particle * const P, const double tx, const double
     }
 }
 
-void Calculation::walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz, const int mx, const int my, const int mz) const
+void Calculation::walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz) const
 {
     const double step(1.0 / PS);
-    double bx(currentParticle->X), by(currentParticle->Y), bz(currentParticle->Z), curMinU = getE(currentParticle, bx, by, bz, mx, my, mz, false);
+    double bx(currentParticle->X), by(currentParticle->Y), bz(currentParticle->Z), curMinU = getE(currentParticle, bx, by, bz, false);
     rx = ry = rz = -1.0;
     while (curMinU > targetU && (bx != rx || by != ry || bz != rz))
     {
         rx = bx;
         ry = by;
         rz = bz;
-        checkE(currentParticle, rx - step, ry, rz, bx, by, bz, curMinU, mx, my, mz);
-        checkE(currentParticle, rx + step, ry, rz, bx, by, bz, curMinU, mx, my, mz);
-        checkE(currentParticle, rx, ry - step, rz, bx, by, bz, curMinU, mx, my, mz);
-        checkE(currentParticle, rx, ry + step, rz, bx, by, bz, curMinU, mx, my, mz);
-        checkE(currentParticle, rx, ry, rz - step, bx, by, bz, curMinU, mx, my, mz);
-        checkE(currentParticle, rx, ry, rz + step, bx, by, bz, curMinU, mx, my, mz);
+        checkE(currentParticle, rx - step, ry, rz, bx, by, bz, curMinU);
+        checkE(currentParticle, rx + step, ry, rz, bx, by, bz, curMinU);
+        checkE(currentParticle, rx, ry - step, rz, bx, by, bz, curMinU);
+        checkE(currentParticle, rx, ry + step, rz, bx, by, bz, curMinU);
+        checkE(currentParticle, rx, ry, rz - step, bx, by, bz, curMinU);
+        checkE(currentParticle, rx, ry, rz + step, bx, by, bz, curMinU);
     }
 }
 
@@ -473,20 +503,7 @@ double Calculation::getEnergy()
 		{
 			//printf("l0\n");
 			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-				for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				dx = PP2->X - PP1->X;
-				dy = PP2->Y - PP1->Y;
-				dz = PP2->Z - PP1->Z;
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				p = int((r - Rm) * PS);
-				if (p < 0 || p >= NPot) continue;
-				//printf("p=%d\n", p);
-				if (r <= MAR[i1][3] && r <= MAR[i2][3]) U += Pot[p];
-				else U += RepP[p];
-			}
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) getU(PP1, PP2, U, NULL, NULL, NULL, particles);
 			//printf("l1\n");
 			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
 				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
@@ -494,23 +511,7 @@ double Calculation::getEnergy()
 					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
 							lx < XS && lx <= mx + GridSizeDiv; lx++)
 						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-							for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				//printf("i1=%d, i2=%d\n", i1, i2);
-				dx = PP2->X - PP1->X;
-				dy = PP2->Y - PP1->Y;
-				dz = PP2->Z - PP1->Z;
-				//printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n", 
-					//   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				p = int((r - Rm) * PS);
-				if (p < 0 || p >= NPot) continue;
-				//printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-				if (r <= MAR[i1][3] && r <= MAR[i2][3]) U += Pot[p];
-				else U += RepP[p];
-			}
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, NULL, NULL, NULL, particles);
 		}
 	}
 	return Energy = T+U;

@@ -15,7 +15,9 @@ HEADERS += Calculation.h \
     particle.h \
     picture.h \
     window.h \
-    controlwindow.h
+    controlwindow.h \
+	heapsort.h \
+    deltaesortfunctor.h
 SOURCES += main.cpp Calculation.cpp \
     picture.cpp \
     window.cpp \
