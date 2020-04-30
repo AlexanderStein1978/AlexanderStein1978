@@ -57,6 +57,7 @@ class Calculation : public QThread
         void correctLocalE();
         void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
                                 const double XF, const double YF, const double ZF) const;
+        void WriteSnapshot();
 
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
 
