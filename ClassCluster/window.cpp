@@ -116,6 +116,11 @@ void Window::setSpeed(const double newSpeed)
     Calc->setSpeed(newSpeed);
 }
 
+double Window::getEnergy() const
+{
+    return Calc->getEnergy();
+}
+
 double Window::setEnergy(const double E)
 {
     return Calc->setEnergy(E);
