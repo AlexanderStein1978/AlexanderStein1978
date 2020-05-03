@@ -343,20 +343,17 @@ void Calculation::correctLocalE()
         }
     }
     double currSumE = 0.0;
-    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+    for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
     {
-        if (G[mx][my][mz] != 0)
+        for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
         {
-            //printf("l0\n");
-            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-            {
-                updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ));
-                updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
-                updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
-                currSumE += PP1->E;
-            }
+            updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ));
+            updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
+            updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
+            currSumE += PP1->E;
         }
     }
+    printf("current temporary energy = %g\n", currSumE);
     if (currSumE > Energy)
     {
         int *EOrder = utils::heapSort(DeltaESortFunctor(P), N);
@@ -800,6 +797,7 @@ void Calculation::run()
         {
             printf("Break!");
         }
+        printf("iteration=%d, ", i);
         if (isNotFirstIt) correctLocalE();
         else isNotFirstIt = true;
 		for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->Z < D[n-1]->Z)

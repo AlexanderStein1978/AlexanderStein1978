@@ -22,7 +22,7 @@ static const uint qt_meta_data_Window[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -30,21 +30,15 @@ static const uint qt_meta_data_Window[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-       8,    7,    7,    7, 0x08,
-      14,    7,    7,    7, 0x08,
-      24,    7,    7,    7, 0x08,
-      31,    7,    7,    7, 0x08,
-      57,   46,    7,    7, 0x08,
-      95,   91,    7,    7, 0x08,
+      19,    8,    7,    7, 0x08,
+      57,   53,    7,    7, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_Window[] = {
-    "Window\0\0run()\0restart()\0move()\0"
-    "speedChanged()\0XP,YP,ZP,N\0"
-    "draw(double*,double*,double*,int)\0P,N\0"
-    "writeSnapShot(Particle*,int)\0"
+    "Window\0\0XP,YP,ZP,N\0draw(double*,double*,double*,int)\0"
+    "P,N\0writeSnapShot(Particle*,int)\0"
 };
 
 void Window::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -53,12 +47,8 @@ void Window::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         Q_ASSERT(staticMetaObject.cast(_o));
         Window *_t = static_cast<Window *>(_o);
         switch (_id) {
-        case 0: _t->run(); break;
-        case 1: _t->restart(); break;
-        case 2: _t->move(); break;
-        case 3: _t->speedChanged(); break;
-        case 4: _t->draw((*reinterpret_cast< double*(*)>(_a[1])),(*reinterpret_cast< double*(*)>(_a[2])),(*reinterpret_cast< double*(*)>(_a[3])),(*reinterpret_cast< int(*)>(_a[4]))); break;
-        case 5: _t->writeSnapShot((*reinterpret_cast< Particle*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 0: _t->draw((*reinterpret_cast< double*(*)>(_a[1])),(*reinterpret_cast< double*(*)>(_a[2])),(*reinterpret_cast< double*(*)>(_a[3])),(*reinterpret_cast< int(*)>(_a[4]))); break;
+        case 1: _t->writeSnapShot((*reinterpret_cast< Particle*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
         default: ;
         }
     }
@@ -96,9 +86,9 @@ int Window::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 2)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 2;
     }
     return _id;
 }
