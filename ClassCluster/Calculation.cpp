@@ -212,10 +212,11 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 		}
 	}
-	for (n=0; n<N; ++n) if (abs(ax[n]) > 1e6 || abs(ay[n]) > 1e6 || abs(az[n]) > 1e6)
+	for (n=0; n<N; ++n) if (isnan(ax[n]) || isnan(ay[n]) || isnan(az[n]))
     {
-		printf("n=%d: ax=%f, ay=%f, az=%f\n", n, ax[n], ay[n], az[n]);
-	}
+		printf("After calc a: Particel %d is nan!\n", n);
+		Run = false;
+    }
 	//printf("U=%f\n", U);
 	T *= 0.5;
 	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
@@ -351,6 +352,11 @@ void Calculation::correctLocalE()
             updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
             updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
             currSumE += PP1->E;
+            if (isnan(currSumE))
+			{
+				printf("After calc delta and sum energies: Particle %ld is nan!\n", PP1 - P);
+				Run = false;
+			}
         }
     }
     printf("current temporary energy = %g\n", currSumE);
@@ -364,10 +370,15 @@ void Calculation::correctLocalE()
             const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
             double TDelta = 0.0, UDelta = 0.0;
             if (curPar->deltaT >= curPar->deltaU && EDelta <= curPar->T) TDelta = EDelta;
-            else if (curPar->deltaT < curPar->deltaU && EDelta <= curPar->U) UDelta = EDelta;
+            else if (curPar->deltaT < curPar->deltaU && (EDelta <= curPar->U || EDelta <= curPar->deltaU)) UDelta = EDelta;
+            else if (EDelta == curPar->deltaE)
+            {
+                TDelta = curPar->deltaT;
+                UDelta = curPar->deltaU;
+            }
             else
             {
-                TDelta = EDelta * curPar->T / curPar->E;
+                TDelta = EDelta * curPar->deltaT / curPar->deltaE;
                 UDelta = EDelta - TDelta;
             }
             if (TDelta > 0.0)
@@ -376,11 +387,21 @@ void Calculation::correctLocalE()
                 curPar->vX *= vF;
                 curPar->vY *= vF;
                 curPar->vZ *= vF;
+                if (isnan(vF))
+                {
+                    printf("After T reduction: Particle %d is nan!\n", n);
+                    Run = false;
+                }
             }
             if (UDelta > 0.0) walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
         }
         for (n=0; n<N; ++n) if (P[n].corrX != 0.0 || P[n].corrY != 0.0 || P[n].corrZ != 0.0)
         {
+            if (isnan(P[n].corrX) || isnan(P[n].corrY) || isnan(P[n].corrZ))
+			{
+				printf("After walkDownhil: Particle %d is nan!\n", n);
+				Run = false;
+			}
             P[n].X = P[n].corrX;
             P[n].Y = P[n].corrY;
             P[n].Z = P[n].corrZ;
@@ -511,7 +532,7 @@ double Calculation::getEnergy()
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, NULL, NULL, NULL, particles);
 		}
 	}
-	return Energy = T+U;
+	return Energy = 0.5*T+U;
 }
 
 void Calculation::getScales(double& rScF, int& rMaxZ)
@@ -606,7 +627,7 @@ void Calculation::run()
 	for (n=0; n<N; n++) if (Fixed[n]) Angle[n] = tan((XMid - P[n].X) / (ZMid - P[n].Z));
 	for (i=0, Run = true; Run; i++)
 	{
-		if (i==303)
+		if (i==30178)
         {
             printf("Break!");
         }
@@ -783,9 +804,10 @@ void Calculation::run()
 			if ((P[n].X < 0.0 && P[n].vX < 0.0) || (P[n].X > MaxX && P[n].vX > 0.0)) P[n].vX *= -1.0;
 			if ((P[n].Y < 0.0 && P[n].vY < 0.0) || (P[n].Y > MaxY && P[n].vY > 0.0)) P[n].vY *= -1.0;
 			if ((P[n].Z < 0.0 && P[n].vZ < 0.0) || (P[n].Z > MaxZ && P[n].vZ > 0.0)) P[n].vZ *= -1.0;
-			if (abs(P[n].vX) > 1e6 || abs(P[n].vY) > 1e6 || abs(P[n].vZ) > 1e6)
+			if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
 			{
-				printf("P[%d]: vX=%f, vY=%f, vZ=%f\n", n, P[n].vX, P[n].vY, P[n].vZ);
+				printf("After calculation of new position and v: Particel %d is nan!\n", n);
+				Run = false;
 			}
 		}
         if (writeSnapShot)
