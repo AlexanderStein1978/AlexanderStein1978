@@ -25,6 +25,7 @@ class Window : public QWidget
         void restoreSnapShot(bool &isMoving);
         double getEnergy() const;
         double setEnergy(const double E);
+        void setPotentialRangeScale(const double newScale);
         void setSpeed(const double newSpeed);
         void setStepSize(const double size);
         void stopCalc();

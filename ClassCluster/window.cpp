@@ -126,6 +126,11 @@ double Window::setEnergy(const double E)
     return Calc->setEnergy(E);
 }
 
+void Window::setPotentialRangeScale(const double newScale)
+{
+    Calc->setPotRangeScale(newScale);
+}
+
 void Window::setStepSize(const double size)
 {
     Calc->setStepSize(size);

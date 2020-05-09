@@ -23,7 +23,9 @@ ControlWindow::ControlWindow() : window(new Window)
     L->addWidget(new QLabel("Step size:", this), 2, 2);
     L->addWidget(StepE = new QLineEdit(QString::number(0.001, 'f', 3), this), 2, 3);
     L->addWidget(new QLabel("Energy:", this), 3, 0);
-    L->addWidget(EnE = new QLineEdit(QString::number(window->getEnergy(), 'g', 3), this), 3, 1, 1, 3);
+    L->addWidget(EnE = new QLineEdit(QString::number(window->getEnergy(), 'g', 3), this), 3, 1);
+    L->addWidget(new QLabel("Potential range:"), 3, 2);
+    L->addWidget(PotRangeScaleEdit = new QLineEdit(QString::number(1.0, 'f', 3), this), 3, 3);
     connect(Start, SIGNAL(clicked()), this, SLOT(run()));
     connect(Restart, SIGNAL(clicked()), this, SLOT(restart()));
     connect(Rotate, SIGNAL(clicked()), this, SLOT(rotate()));
@@ -56,6 +58,7 @@ void ControlWindow::run()
         if (!window->isVisible()) window->show();
         EnE->setText(QString::number(window->setEnergy(EnE->text().toDouble()), 'g', 3));
         window->setStepSize(StepE->text().toDouble());
+        window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
         window->start();
         Start->setText("Stop");
     }

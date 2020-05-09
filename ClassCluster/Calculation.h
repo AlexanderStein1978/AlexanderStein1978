@@ -38,6 +38,11 @@ class Calculation : public QThread
 		{
 			return Move;
 		}
+
+        inline void setPotRangeScale(const double newScale)
+        {
+            potRangeScale = PS * newScale;
+        }
 		
 		QMutex mutex;
 		
@@ -61,8 +66,9 @@ class Calculation : public QThread
 
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
 
-		double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, PS, U, T, E, h, Re;
-		double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid;
+        const double PS;
+        double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
+        double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid, potRangeScale;
 		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
 		Particle *P, ****G, **D;
         bool Run, rotated, *Fixed, Move, writeSnapShot;

@@ -35,7 +35,7 @@ protected:
 private:
     Window* window;
 
-    QLineEdit *StepE, *EnE, *Speed;
+    QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
 
 };

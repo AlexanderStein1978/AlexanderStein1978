@@ -15,13 +15,12 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(QObject* parent): QThread(parent), writeSnapShot(false)
+Calculation::Calculation(QObject* parent): QThread(parent), writeSnapShot(false), PS(1e3), potRangeScale(PS)
 {
 	//printf("Calculation::Calculation\n");
 	nx = ny = nz = 10;
 	double IntDist = 20.0, R, F, P0, st, F0, F1;
-	st = 1e-3;
-	PS = 1e3; // 1/st
+    st = 1/PS;
 	NPot = 30000;
 	Re = 4.0;
 	R = pow(Re, 6);
@@ -212,11 +211,11 @@ void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *a
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, tx, ty, tz, temporaryPos, ax, ay, az);
 		}
 	}
-	for (n=0; n<N; ++n) if (isnan(ax[n]) || isnan(ay[n]) || isnan(az[n]))
+    /*for (n=0; n<N; ++n) if (isnan(ax[n]) || isnan(ay[n]) || isnan(az[n]))
     {
 		printf("After calc a: Particel %d is nan!\n", n);
 		Run = false;
-    }
+    }*/
 	//printf("U=%f\n", U);
 	T *= 0.5;
 	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
@@ -256,7 +255,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     //printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n",
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
     r = sqrt(dx * dx + dy * dy + dz * dz);
-    p = int((r - Rm) * PS);
+    p = int((r - Rm) * potRangeScale);
     if (p < 0 || p >= NPot) return;
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (r <= MAR[i1][1] && r <= MAR[i2][1])
@@ -352,11 +351,11 @@ void Calculation::correctLocalE()
             updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
             updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
             currSumE += PP1->E;
-            if (isnan(currSumE))
+            /*if (isnan(currSumE))
 			{
 				printf("After calc delta and sum energies: Particle %ld is nan!\n", PP1 - P);
 				Run = false;
-			}
+            }*/
         }
     }
     printf("current temporary energy = %g\n", currSumE);
@@ -387,21 +386,21 @@ void Calculation::correctLocalE()
                 curPar->vX *= vF;
                 curPar->vY *= vF;
                 curPar->vZ *= vF;
-                if (isnan(vF))
+                /*if (isnan(vF))
                 {
                     printf("After T reduction: Particle %d is nan!\n", n);
                     Run = false;
-                }
+                }*/
             }
             if (UDelta > 0.0) walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
         }
         for (n=0; n<N; ++n) if (P[n].corrX != 0.0 || P[n].corrY != 0.0 || P[n].corrZ != 0.0)
         {
-            if (isnan(P[n].corrX) || isnan(P[n].corrY) || isnan(P[n].corrZ))
+            /*if (isnan(P[n].corrX) || isnan(P[n].corrY) || isnan(P[n].corrZ))
 			{
 				printf("After walkDownhil: Particle %d is nan!\n", n);
 				Run = false;
-			}
+            }*/
             P[n].X = P[n].corrX;
             P[n].Y = P[n].corrY;
             P[n].Z = P[n].corrZ;
@@ -804,11 +803,11 @@ void Calculation::run()
 			if ((P[n].X < 0.0 && P[n].vX < 0.0) || (P[n].X > MaxX && P[n].vX > 0.0)) P[n].vX *= -1.0;
 			if ((P[n].Y < 0.0 && P[n].vY < 0.0) || (P[n].Y > MaxY && P[n].vY > 0.0)) P[n].vY *= -1.0;
 			if ((P[n].Z < 0.0 && P[n].vZ < 0.0) || (P[n].Z > MaxZ && P[n].vZ > 0.0)) P[n].vZ *= -1.0;
-			if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
+            /*if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
 			{
 				printf("After calculation of new position and v: Particel %d is nan!\n", n);
 				Run = false;
-			}
+            }*/
 		}
         if (writeSnapShot)
         {
