@@ -386,13 +386,19 @@ void Calculation::correctLocalE()
                 curPar->vX *= vF;
                 curPar->vY *= vF;
                 curPar->vZ *= vF;
+                curPar->T -= TDelta;
                 /*if (isnan(vF))
                 {
                     printf("After T reduction: Particle %d is nan!\n", n);
                     Run = false;
                 }*/
             }
-            if (UDelta > 0.0) walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
+            if (UDelta > 0.0)
+            {
+                walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
+                curPar->U -= UDelta;
+            }
+            curPar->E -= EDelta;
         }
         for (n=0; n<N; ++n) if (P[n].corrX != 0.0 || P[n].corrY != 0.0 || P[n].corrZ != 0.0)
         {

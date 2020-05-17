@@ -56,9 +56,9 @@ void ControlWindow::run()
     else
     {
         if (!window->isVisible()) window->show();
+        window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
         EnE->setText(QString::number(window->setEnergy(EnE->text().toDouble()), 'g', 3));
         window->setStepSize(StepE->text().toDouble());
-        window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
         window->start();
         Start->setText("Stop");
     }

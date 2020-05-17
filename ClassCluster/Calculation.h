@@ -41,7 +41,7 @@ class Calculation : public QThread
 
         inline void setPotRangeScale(const double newScale)
         {
-            potRangeScale = PS * newScale;
+            potRangeScale = PS / newScale;
         }
 		
 		QMutex mutex;
