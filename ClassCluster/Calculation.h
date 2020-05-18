@@ -57,8 +57,6 @@ class Calculation : public QThread
                   const double* const tz, Positions pos, double* ax = NULL, double* ay = NULL, double* az = NULL) const;
 		void geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az);
         double getE(const Particle* const P, const double X, const double Y, const double Z, const bool lastPos) const;
-        void checkE(const Particle* const P, const double tx, const double ty, const double tz, double& bx, double& by, double& bz, double& curMinU) const;
-        void walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz) const;
         void correctLocalE();
         void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
                                 const double XF, const double YF, const double ZF) const;

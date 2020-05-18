@@ -15,7 +15,7 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(QObject* parent): QThread(parent), writeSnapShot(false), PS(1e3), potRangeScale(PS)
+Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeScale(PS), writeSnapShot(false)
 {
 	//printf("Calculation::Calculation\n");
 	nx = ny = nz = 10;
@@ -362,54 +362,39 @@ void Calculation::correctLocalE()
     if (currSumE > Energy)
     {
         int *EOrder = utils::heapSort(DeltaESortFunctor(P), N);
-        for (n=0; n<N; ++n) P[n].corrX = P[n].corrY = P[n].corrZ = 0.0;
         for (n=0; n<N && currSumE > Energy; ++n)
         {
             Particle* curPar = P + EOrder[n];
+            if (curPar->deltaE <= 0.0) break;
             const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
-            double TDelta = 0.0, UDelta = 0.0;
-            if (curPar->deltaT >= curPar->deltaU && EDelta <= curPar->T) TDelta = EDelta;
-            else if (curPar->deltaT < curPar->deltaU && (EDelta <= curPar->U || EDelta <= curPar->deltaU)) UDelta = EDelta;
-            else if (EDelta == curPar->deltaE)
+            if (EDelta >= curPar->T)
             {
-                TDelta = curPar->deltaT;
-                UDelta = curPar->deltaU;
+                curPar->vX = curPar->vY = curPar->vZ = 0.0;
+                if (EDelta > curPar->T)
+                {
+                    curPar->E -= curPar->deltaE + curPar->T;
+                    curPar->U -= curPar->deltaU;
+                }
+                else
+                {
+                    curPar->E -= curPar->T;
+                }
+                curPar->T = 0.0;
             }
             else
             {
-                TDelta = EDelta * curPar->deltaT / curPar->deltaE;
-                UDelta = EDelta - TDelta;
-            }
-            if (TDelta > 0.0)
-            {
-                const double vF = sqrt((curPar->T - TDelta) / curPar->T);
+                const double vF = sqrt((curPar->T - EDelta) / curPar->T);
                 curPar->vX *= vF;
                 curPar->vY *= vF;
                 curPar->vZ *= vF;
-                curPar->T -= TDelta;
+                curPar->T -= EDelta;
+                curPar->E -= EDelta;
                 /*if (isnan(vF))
                 {
                     printf("After T reduction: Particle %d is nan!\n", n);
                     Run = false;
                 }*/
             }
-            if (UDelta > 0.0)
-            {
-                walkDownhil(curPar->U - UDelta, curPar, curPar->corrX, curPar->corrY, curPar->corrZ);
-                curPar->U -= UDelta;
-            }
-            curPar->E -= EDelta;
-        }
-        for (n=0; n<N; ++n) if (P[n].corrX != 0.0 || P[n].corrY != 0.0 || P[n].corrZ != 0.0)
-        {
-            /*if (isnan(P[n].corrX) || isnan(P[n].corrY) || isnan(P[n].corrZ))
-			{
-				printf("After walkDownhil: Particle %d is nan!\n", n);
-				Run = false;
-            }*/
-            P[n].X = P[n].corrX;
-            P[n].Y = P[n].corrY;
-            P[n].Z = P[n].corrZ;
         }
         delete[] EOrder;
     }
@@ -431,37 +416,6 @@ double Calculation::getE(const Particle * const cP, const double X, const double
             for (lx = ((lx = cP->xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= cP->xp + GridSizeDiv; lx++)
                 for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) getU(cP, P2, E, &X, &Y, &Z, (useLastPos ? lastPos : currentPos));
     return 0.5 * E;
-}
-
-void Calculation::checkE(const Particle * const P, const double tx, const double ty, const double tz, double &bx, double &by, double &bz, double &curMinU) const
-{
-    const double curU(getE(P, tx, ty, tz, false));
-    if (curU < curMinU)
-    {
-        curMinU = curU;
-        bx = tx;
-        by = ty;
-        bz = tz;
-    }
-}
-
-void Calculation::walkDownhil(const double targetU, const Particle* const currentParticle, double& rx, double &ry, double& rz) const
-{
-    const double step(1.0 / PS);
-    double bx(currentParticle->X), by(currentParticle->Y), bz(currentParticle->Z), curMinU = getE(currentParticle, bx, by, bz, false);
-    rx = ry = rz = -1.0;
-    while (curMinU > targetU && (bx != rx || by != ry || bz != rz))
-    {
-        rx = bx;
-        ry = by;
-        rz = bz;
-        checkE(currentParticle, rx - step, ry, rz, bx, by, bz, curMinU);
-        checkE(currentParticle, rx + step, ry, rz, bx, by, bz, curMinU);
-        checkE(currentParticle, rx, ry - step, rz, bx, by, bz, curMinU);
-        checkE(currentParticle, rx, ry + step, rz, bx, by, bz, curMinU);
-        checkE(currentParticle, rx, ry, rz - step, bx, by, bz, curMinU);
-        checkE(currentParticle, rx, ry, rz + step, bx, by, bz, curMinU);
-    }
 }
 
 double Calculation::getEnergy()
