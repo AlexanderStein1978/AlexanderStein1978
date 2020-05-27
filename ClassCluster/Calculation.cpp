@@ -354,7 +354,7 @@ void Calculation::correctLocalE()
             }
         }
     }
-    double currSumE = 0.0, EStart[N], TStart[n];
+    double currSumE = 0.0, EStart[N], TStart[N];
     int M[N];
     for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
     {
@@ -412,7 +412,7 @@ void Calculation::correctLocalE()
                 curPar->T -= EDelta;
                 curPar->E -= EDelta;
                 currSumE -= EDelta;
-                M[EOrder[n]] = 2;
+                M[EOrder[n]] = 3;
                 /*if (isnan(vF))
                 {
                     printf("After T reduction: Particle %d is nan!\n", n);
