@@ -19,15 +19,19 @@ Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeSca
 {
 	//printf("Calculation::Calculation\n");
 	nx = ny = nz = 10;
-	double IntDist = 20.0, R, F, P0, st, F0, F1;
+    double IntDist = 20.0, R, F, F3, P0, st, F0, F1;
     st = 1/PS;
 	NPot = 30000;
 	Re = 4.0;
 	R = pow(Re, 6);
-	double De = 1000.0;
-	double a = 2.0 * De * R;
-	double b = De * R * R;
-	double bRep = 8.0 * b;
+    const double De = 1000.0;
+    const double a = 2.0 * De * R;
+    const double b = De * R * R;
+    const double ratioDeRep = 0.1;
+    const double ratioReRep = 2.0;
+    const double AdBRep = 0.5 * Re * Re * Re * ratioReRep * ratioReRep * ratioReRep;
+    const double BRep = -4.0 * ratioDeRep * De * AdBRep;
+    const double ARep = AdBRep * BRep;
 	Rm = st;
 	RM = st * double(NPot);
 	h = 0.001; //DefaultStepSize 
@@ -81,16 +85,17 @@ Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeSca
 	RepP = new double[NPot];
 	for (n=0, R = Rm; n < NPot; n++, R += st)
 	{
-		F = pow(R, -6.0);
-		F0 = 1.0 / R;
+        F0 = 1.0 / R;
+        F3 = F0 * F0 * F0;
+        F = F3 * F3;
 		F1 = -a * F;
 		P0 = F * F;
 		Pot[n] = F1 + b * P0;
-		RepP[n] = F1 + bRep * P0;
+        RepP[n] = ARep * F - BRep * F3;
 		F1 *= -6 * F0;
 		P0 *= -12 * F0;
 		dPdR[n] = F1 + b * P0;
-		RepF[n] = F1 + bRep * P0;
+        RepF[n] = F0 * (3.0 * BRep * F3 - 6.0 * ARep * F);
 	}
 	
 	PZS = int(round(MaxZ / Re));
@@ -113,6 +118,13 @@ Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeSca
 	Fixed = new bool[N];
 	
 	initialize();
+
+    DebugLogFile = new QFile("DebugLog.txt");
+    DebugLogFile->open(QIODevice::WriteOnly);
+    DebugLog = new QTextStream(DebugLogFile);
+    *DebugLog << "It\t";
+    for (n=0; n<N; ++n) *DebugLog << "E[" << n << "]    \tT    \tdeletaE\tnew E  \tM\t";
+    *DebugLog << "\n";
 }
 
 Calculation::~Calculation()
@@ -342,7 +354,8 @@ void Calculation::correctLocalE()
             }
         }
     }
-    double currSumE = 0.0;
+    double currSumE = 0.0, EStart[N], TStart[n];
+    int M[N];
     for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
     {
         for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
@@ -358,6 +371,12 @@ void Calculation::correctLocalE()
             }*/
         }
     }
+    for (n=0; n<N; ++n)
+    {
+        EStart[n] = P[n].E;
+        TStart[n] = P[n].T;
+        M[n] = 0;
+    }
     printf("current temporary energy = %g\n", currSumE);
     if (currSumE > Energy)
     {
@@ -372,13 +391,16 @@ void Calculation::correctLocalE()
                 curPar->vX = curPar->vY = curPar->vZ = 0.0;
                 if (EDelta > curPar->T)
                 {
-                    curPar->E -= curPar->deltaE + curPar->T;
+                    curPar->E -= curPar->deltaE - curPar->T;
                     curPar->U -= curPar->deltaU;
+                    M[EOrder[n]] = 1;
                 }
                 else
                 {
                     curPar->E -= curPar->T;
+                    M[EOrder[n]] = 2;
                 }
+                currSumE -= curPar->T;
                 curPar->T = 0.0;
             }
             else
@@ -389,6 +411,8 @@ void Calculation::correctLocalE()
                 curPar->vZ *= vF;
                 curPar->T -= EDelta;
                 curPar->E -= EDelta;
+                currSumE -= EDelta;
+                M[EOrder[n]] = 2;
                 /*if (isnan(vF))
                 {
                     printf("After T reduction: Particle %d is nan!\n", n);
@@ -398,6 +422,10 @@ void Calculation::correctLocalE()
         }
         delete[] EOrder;
     }
+    for (n=0; n<N; ++n)
+        *DebugLog << "\t" << QString::number(EStart[n], 'g') << '\t' << QString::number(TStart[n], 'g')
+                  << '\t' << QString::number(P[n].deltaE, 'g') << '\t' << QString::number(P[n].E, 'g') << '\t' << M[n];
+    *DebugLog << '\n';
 }
 
 void Calculation::updateDelta(double &toUpdate, double &delta, const double newValue)
@@ -779,6 +807,7 @@ void Calculation::run()
             printf("Break!");
         }
         printf("iteration=%d, ", i);
+        *DebugLog << i;
         if (isNotFirstIt) correctLocalE();
         else isNotFirstIt = true;
 		for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->Z < D[n-1]->Z)

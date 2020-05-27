@@ -9,6 +9,8 @@
 #include <QMutex>
 
 class Particle;
+class QFile;
+class QTextStream;
 
 
 class Calculation : public QThread
@@ -70,6 +72,8 @@ class Calculation : public QThread
 		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
 		Particle *P, ****G, **D;
         bool Run, rotated, *Fixed, Move, writeSnapShot;
+        QFile* DebugLogFile;
+        QTextStream* DebugLog;
 };
 
 #endif // CALCULATION_H
