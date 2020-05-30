@@ -16,7 +16,7 @@ public:
     {
         if (n1 == -1) return false;
         if (n2 == -1) return true;
-        return mParticles[n1].deltaE < mParticles[n2].deltaE;
+        return mParticles[n1].deltaE > mParticles[n2].deltaE;
     }
 
 private:

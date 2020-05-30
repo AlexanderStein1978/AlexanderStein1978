@@ -380,7 +380,9 @@ void Calculation::correctLocalE()
     printf("current temporary energy = %g\n", currSumE);
     if (currSumE > Energy)
     {
-        int *EOrder = utils::heapSort(DeltaESortFunctor(P), N);
+        int *Sort = utils::heapSort(DeltaESortFunctor(P), N), EOrder[N];
+        for (n=0; n<N; ++n) EOrder[Sort[n]] = n;
+        delete[] Sort;
         for (n=0; n<N && currSumE > Energy; ++n)
         {
             Particle* curPar = P + EOrder[n];
@@ -420,7 +422,6 @@ void Calculation::correctLocalE()
                 }*/
             }
         }
-        delete[] EOrder;
     }
     for (n=0; n<N; ++n)
         *DebugLog << "\t" << QString::number(EStart[n], 'g') << '\t' << QString::number(TStart[n], 'g')
