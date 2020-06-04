@@ -1,0 +1,48 @@
+Atom 1: Lithium.atom
+Atom 2: Rubidium.atom
+Reference isotopologue: 7Li85Rb
+name of molecule: LiRb
+
+List of term energy tables:
+State: | name: | file name: | source:
+
+List of Dunham coefficient sets:
+State: | name: | file name: | source:
+X^1\Sigma^+ | DunhamCoefficients_LiRb_XSiSigma_CalcLevels | ../../Analysis/LiRb/DunhamCoefficients_LiRb_XSiSigma.dun | 
+B^1\Pi | DunhamCoefficients_LiRb_BSiPi_f | ../../Analysis/LiRb/DunhamCoefficients_LiRb_BSiPi_f.dun | 
+D^1\Pi | DunhamCoefficients_LiRb_DSiPi | ../../Analysis/LiRb/DunhamCoefficients_LiRb_DSiPi.dun | 
+
+List of potentials:
+State: | name: | file name: | source:
+X^1\Sigma^+ | IPA_SplinePotential_LiRb_XSiSigma | ../../Analysis/LiRb/IPA_SplinePotential_LiRb_XSiSigma.pot | J. Chem. Phys. 134, 024321 (2011)
+X^1\Sigma^+ | AnalyticalPotential_LiRb_XSiSigma | ../../Analysis/LiRb/AnalyticalPotential_LiRb_XSiSigma.pot | J. Chem. Phys. 134, 024321 (2011)
+B^1\Pi | AnalyticalPotential_LiRb_BSiPi | ../../Analysis/LiRb/AnalyticalPotential_LiRb_BSiPi.pot | J. Chem. Phys. 138, 094315 (2013)
+D^1\Pi | IPA_SplinePotential_LiRb_DSiPi | ../../Analysis/LiRb/IPA_SplinePotential_LiRb_DSiPi.pot | Alexander Stein (Phd thesis)
+a^3\Sigma^+ | AnalyticalPotential_LiRb_aTriSigma | ../../Analysis/LiRb/AnalyticalPotential_LiRb_aTriSigma.pot | J. Chem. Phys. 134, 024321 (2011)
+C^1\Sigma^+ | AnalyticalPotential_LiRb_CSiSigma | ../../Analysis/LiRb/AnalyticalPotential_LiRb_CSiSigma.pot | J. Chem. Phys. 138, 094315 (2013)
+
+List of fit datasets:
+State: | name: | file name: | source:
+D^1\Pi | FitData_IPA_SplinePotential_LiRb_DSiPi | ../../Analysis/LiRb/IPA_SplinePotential_LiRb_DSiPi.fdat | 
+D^1\Pi | FitData_DunhamCoefficients_LiRb_DSiPi | ../../Analysis/LiRb/DunhamCoefficients_LiRb_DSiPi.fdat | 
+
+List of line tables:
+Upper state: | lower state: | name: | file name: | source:
+B^1\Pi | X^1\Sigma^+ | Lines_LiRb_BSiPi_XSiSigma | ../../Analysis/LiRb/Lines_LiRb_BSiPi_XSiSigma.lines | Assigned by Milena Ivanova, Alexander Stein and Asen Pashov
+D^1\Pi | X^1\Sigma^+ | Lines_LiRb_DSiPi_XSiSigma | ../../Analysis/LiRb/Lines_LiRb_DSiPi_XSiSigma.lines | Alexander Stein (Phd thesis)
+
+List of FCF tables:
+Upper state: | lower state: | name: | file name: | source:
+
+Table of states:
+Name: | lambda: | S: | +/- - symmetry: | g/u - symmetry: | Omega: | term energies: | dunham coeff.: | potential: | fit data:
+X^1\Sigma^+ | 0 | 0.0 |   | + | 0 |   | ../../Analysis/LiRb/DunhamCoefficients_LiRb_XSiSigma.dun | ../../Analysis/LiRb/AnalyticalPotential_LiRb_XSiSigma.pot |  
+B^1\Pi | 1 | 0.0 |   |   | 1 |   | ../../Analysis/LiRb/DunhamCoefficients_LiRb_BSiPi_f.dun | ../../Analysis/LiRb/AnalyticalPotential_LiRb_BSiPi.pot |  
+D^1\Pi | 1 | 0.0 |   |   | 1 |   | ../../Analysis/LiRb/DunhamCoefficients_LiRb_DSiPi.dun | ../../Analysis/LiRb/IPA_SplinePotential_LiRb_DSiPi.pot | ../../Analysis/LiRb/IPA_SplinePotential_LiRb_DSiPi.fdat
+a^3\Sigma^+ | 0 | 1.0 |   | + | 1 |   |   | ../../Analysis/LiRb/AnalyticalPotential_LiRb_aTriSigma.pot |  
+C^1\Sigma^+ | 0 | 0.0 |   | + | 0 |   |   | ../../Analysis/LiRb/AnalyticalPotential_LiRb_CSiSigma.pot |  
+
+Table of transitions:
+State 1: | State 2: | table of lines: | FCF: | Strength:
+X^1\Sigma^+ | B^1\Pi | ../../Analysis/LiRb/Lines_LiRb_BSiPi_XSiSigma.lines |  | 0 
+X^1\Sigma^+ | D^1\Pi | ../../Analysis/LiRb/Lines_LiRb_DSiPi_XSiSigma.lines |  | 0 
