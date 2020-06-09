@@ -1,0 +1,5 @@
+add_subdirectory(fcf)
+add_subdirectory(fitdata)
+add_subdirectory(linetable)
+add_subdirectory(spectrum)
+add_subdirectory(termtable)

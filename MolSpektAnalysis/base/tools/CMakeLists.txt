@@ -1,0 +1,5 @@
+add_subdirectory(datensatz)
+add_subdirectory(progressions)
+add_subdirectory(structs)
+add_subdirectory(templates)
+add_subdirectory(tools)

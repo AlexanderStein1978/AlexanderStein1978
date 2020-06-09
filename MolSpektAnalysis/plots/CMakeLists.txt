@@ -1,0 +1,7 @@
+add_subdirectory(dataplot)
+add_subdirectory(intensityhistogram)
+add_subdirectory(potentialplot)
+add_subdirectory(residualplot)
+add_subdirectory(term_plot)
+add_subdirectory(termview)
+add_subdirectory(wavefuncplot)

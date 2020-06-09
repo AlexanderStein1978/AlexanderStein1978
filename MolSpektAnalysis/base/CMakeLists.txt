@@ -1,0 +1,8 @@
+add_subdirectory(about)
+add_subdirectory(diag_window)
+add_subdirectory(fitobject)
+add_subdirectory(main)
+add_subdirectory(mdichild)
+add_subdirectory(molecule)
+add_subdirectory(tablewindow)
+add_subdirectory(tools)

@@ -1,0 +1,3 @@
+add_subdirectory(dunham_coefficients)
+add_subdirectory(potential)
+add_subdirectory(residualfit)

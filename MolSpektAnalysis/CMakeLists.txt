@@ -1,0 +1,6 @@
+add_subdirectory(base)
+add_subdirectory(calc)
+add_subdirectory(datareduction)
+add_subdirectory(datasets)
+add_subdirectory(documents)
+add_subdirectory(plots)

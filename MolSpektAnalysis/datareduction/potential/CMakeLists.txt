@@ -1,0 +1,7 @@
+add_subdirectory(base)
+add_subdirectory(controls)
+add_subdirectory(dialogs)
+add_subdirectory(montecarlosim)
+add_subdirectory(potentialtypes)
+add_subdirectory(structs)
+add_subdirectory(wavefunc)

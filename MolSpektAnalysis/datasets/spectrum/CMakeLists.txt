@@ -1,0 +1,3 @@
+add_subdirectory(addspectrum)
+add_subdirectory(spectrum)
+add_subdirectory(spectsimulation)
