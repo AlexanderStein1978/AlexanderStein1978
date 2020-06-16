@@ -15,6 +15,8 @@
 #include "molecule.h"
 #include "utils.h"
 #include "constants.h"
+#include "perturbation.h"
+#include "isotab.h"
 
 #include <math.h>
 

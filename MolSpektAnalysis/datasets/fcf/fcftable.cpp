@@ -15,6 +15,7 @@
 #include "constants.h"
 #include "utils.h"
 #include "termtable.h"
+#include "isotab.h"
 
 #include <stdio.h>
 

@@ -11,6 +11,15 @@
 
 #include "fspdiag.h"
 
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+
+#include "progression.h"
+#include "MainWindow.h"
+#include "linetable.h"
+#include "line.h"
+
 
 FSPDiag::FSPDiag(MainWindow* mw, Progression Pr): QWidget(mw)
 {

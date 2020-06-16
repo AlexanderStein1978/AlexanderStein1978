@@ -7,12 +7,17 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(ResidualPlot STATIC
+	include/residualplot.h
 	PerturbationInfoTab.cpp
 	PerturbationInfoTab.h
 	PerturbationInfoTable.cpp
 	PerturbationInfoTable.h
     residualplot.cpp
-	residualplot.h
 )
 
-target_link_libraries(ResidualPlot Qt5::Widgets)
+target_include_directories(ResidualPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(ResidualPlot
+	DiagWindow
+	Qt5::Widgets
+)

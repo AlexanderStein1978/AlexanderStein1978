@@ -38,6 +38,15 @@
 #include "fit.h"
 #include "fcftab.h"
 #include "fitobject.h"
+#include "intprog.h"
+#include "gaussian.h"
+#include "datensatz.h"
+#include "isotab.h"
+#include "band.h"
+#include "testprog.h"
+#include "measuredtermenergies.h"
+#include "tableline.h"
+
 
 //_oD_Sr2"
 #define OnlyDoublet false

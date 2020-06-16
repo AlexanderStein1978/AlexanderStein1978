@@ -8,7 +8,11 @@
 //
 //
 
+
 #include "sortforextractneworchangedwithoutsourcefunctor.h"
+#include "fitdata.h"
+
+#include <QTableWidget>
 
 
 SortForExtractNewOrChangedWithoutSourceFunctor::SortForExtractNewOrChangedWithoutSourceFunctor(const QTableWidget * const i_Tab, const QString * const i_SourceOffsetNames,

@@ -2,7 +2,7 @@
 // C++ Implementation: ImprovePotSeriesControl
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,12 @@
 
 
 #include "ImprovePotSeriesControl.h"
+#include "constants.h"
+#include "potential.h"
+#include "utils.h"
+#include "elstate.h"
+
+#include <QDir>
 
 
 ImprovePotSeriesControl::ImprovePotSeriesControl(MainWindow* MW, ElState* St, Potential* OPot, FitData* FDat, QString potDir, 

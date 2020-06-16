@@ -18,6 +18,9 @@
 #include "utils.h"
 #include "tools.h"
 #include "fitdata.h"
+#include "isotab.h"
+#include "tpviewlist.h"
+#include "tableline.h"
 
 #include <qlabel.h>
 #include <qpushbutton.h>

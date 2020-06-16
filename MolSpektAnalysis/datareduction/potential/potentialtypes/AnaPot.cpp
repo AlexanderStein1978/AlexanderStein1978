@@ -10,6 +10,11 @@
 
 
 #include "AnaPot.h"
+#include "tools.h"
+#include "utils.h"
+#include "potentialdata.h"
+
+#include <QMutex>
 
 
 AnaPot::AnaPot(PotFit *Fit) : PotWorker(Fit, analyticalPotential)

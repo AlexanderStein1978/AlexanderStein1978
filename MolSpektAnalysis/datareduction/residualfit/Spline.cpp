@@ -10,6 +10,13 @@
 
 
 #include "Spline.h"
+#include "point.h"
+#include "utils.h"
+#include "LocalPerturbation.h"
+
+#include <QTextStream>
+
+#include "fit.h"
 
 
 Spline::Spline() : L(0), S(0), S0(0.0), SN(0.0), NDataPoints(0), NSplinePoints(0), m_error(SENoError), DataPoints(0), points(0), Natural(false)

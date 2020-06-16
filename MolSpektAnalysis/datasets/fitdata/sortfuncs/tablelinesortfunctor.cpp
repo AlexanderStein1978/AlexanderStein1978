@@ -10,6 +10,7 @@
 
 
 #include "tablelinesortfunctor.h"
+#include "tableline.h"
 
 
 bool TableLineSortFunctor::operator()(int n, int m)

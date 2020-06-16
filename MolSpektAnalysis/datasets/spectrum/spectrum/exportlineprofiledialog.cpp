@@ -10,6 +10,18 @@
 
 
 #include "exportlineprofiledialog.h"
+#include "MainWindow.h"
+#include "Spektrum.h"
+#include "gaussian.h"
+
+#include <QGridLayout>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QLabel>
+#include <QPushButton>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
 
 
 ExportLineProfileDialog::ExportLineProfileDialog(Spektrum * const i_spectrum, MainWindow* i_MW) : QWidget(i_MW) , m_spectrum(i_spectrum)

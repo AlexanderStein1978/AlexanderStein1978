@@ -19,6 +19,7 @@
 #include "elstate.h"
 #include "utils.h"
 #include "fit.h"
+#include "SplinePoint.h"
 
 
 typedef QList<SplinePoint*> SplinePointArrayList;

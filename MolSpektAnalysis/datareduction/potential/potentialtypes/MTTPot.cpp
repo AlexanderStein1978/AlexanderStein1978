@@ -2,7 +2,7 @@
 // C++ Implementation: MTTPot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,9 @@
 
 
 #include "MTTPot.h"
+#include "potentialdata.h"
+
+#include <QMutex>
 
 
 MTTPot::MTTPot(PotFit *Fit) : PotWorker(Fit, ModifiedTangToenniesPotential)

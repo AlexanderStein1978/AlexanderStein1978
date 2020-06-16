@@ -10,6 +10,10 @@
 
 
 #include "sortbyltabandprogfunctor.h"
+#include "MainWindow.h"
+#include "fitdata.h"
+
+#include <QTableWidget>
 
 
 bool SortByLTabAndProgFunctor::operator()(int n, int m)

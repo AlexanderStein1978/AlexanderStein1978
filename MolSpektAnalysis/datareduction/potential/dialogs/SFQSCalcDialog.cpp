@@ -10,6 +10,13 @@
 
 
 #include "SFQSCalcDialog.h"
+#include "MainWindow.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QFileDialog>
 
 
 SFQSCalcDialog::SFQSCalcDialog(MainWindow* mw, QString Dir) : QDialog(mw)

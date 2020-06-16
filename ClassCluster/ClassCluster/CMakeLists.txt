@@ -12,7 +12,6 @@ add_executable(ClassCluster
     controlwindow.cpp
 	controlwindow.h
 	deltaesortfunctor.h
-	heapsort.h
 	main.cpp
 	particle.h
 	picture.cpp
@@ -21,4 +20,7 @@ add_executable(ClassCluster
 	window.h
 )
 
-target_link_libraries(ClassCluster Qt5::Widgets)
+target_link_libraries(ClassCluster
+	Templates
+	Qt5::Widgets
+)

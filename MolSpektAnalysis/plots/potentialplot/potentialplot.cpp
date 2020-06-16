@@ -12,6 +12,7 @@
 #include "potential.h"
 #include "MainWindow.h"
 #include "naturalspline.h"
+#include "SplinePoint.h"
 
 #include <stdio.h>
 

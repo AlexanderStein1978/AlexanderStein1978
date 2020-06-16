@@ -17,6 +17,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QGridLayout>
 
 
 TSDialog::TSDialog(QWidget* parent, Molecule* M, ElState* S)

@@ -2,14 +2,27 @@
 // C++ Implementation: CSWFImportDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
 
-#incluide "CSWFImportDialog.h"
+#include "CSWFImportDialog.h"
+#include "MainWindow.h"
+#include "molecule.h"
+#include "isotab.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QListWidget>
+#include <QDir>
+#include <QMessageBox>
+#include <QFileDialog>
 
 
 CSWFImportDialog::CSWFImportDialog(MainWindow* MW, QString InitDir): QDialog(MW)

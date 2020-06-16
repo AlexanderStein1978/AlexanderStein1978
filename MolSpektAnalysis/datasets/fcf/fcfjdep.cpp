@@ -8,6 +8,7 @@
 //
 //
 
+
 #include "fcfjdep.h"
 #include "MainWindow.h"
 #include "potential.h"
@@ -15,6 +16,7 @@
 #include "molecule.h"
 #include "termtable.h"
 #include "utils.h"
+#include "isotab.h"
 
 #include <stdio.h>
 
@@ -22,6 +24,7 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QComboBox>
+
 
 FCFJDep::FCFJDep(MainWindow *MW)
 {

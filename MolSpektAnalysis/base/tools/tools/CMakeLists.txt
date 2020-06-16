@@ -7,11 +7,17 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Tools STATIC
-	constants.h
+	include/constants.h
+	include/tools.h
+	include/utils.h
     tools.cpp
-	tools.h
 	utils.cpp
-	utils.h
 )
 
-target_link_libraries(Tools Qt5::Widgets)
+target_include_directories(Tools PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(Tools
+	Datensatz
+	Progressions
+	Qt5::Widgets
+)

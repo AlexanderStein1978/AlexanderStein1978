@@ -10,6 +10,7 @@
 
 
 #include "potentialdata.h"
+#include "SplinePoint.h"
 
 
 PotentialData::PotentialData()

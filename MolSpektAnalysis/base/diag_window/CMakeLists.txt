@@ -7,10 +7,15 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(DiagWindow STATIC
+	include/DiagWindow.h
+	include/Picture.h
     DiagWindow.cpp
-	DiagWindow.h
 	Picture.cpp
-	Picture.h
 )
 
-target_link_libraries(DiagWindow Qt5::Widgets)
+target_include_directories(DiagWindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(DiagWindow
+	Tools
+	Qt5::Widgets
+)

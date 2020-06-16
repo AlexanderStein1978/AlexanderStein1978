@@ -10,6 +10,12 @@
 
 
 #include "spectlist.h"
+#include "intprog.h"
+#include "Spektrum.h"
+
+#include <QFile>
+#include <QFileDialog>
+#include <QTextStream>
 
 
 SpectList::SpectList(MainWindow *MW) : TableWindow(MDIChild::TextTable1, MW)

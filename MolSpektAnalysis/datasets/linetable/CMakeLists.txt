@@ -7,17 +7,26 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(LineTable STATIC
+	include/fspdiag.h
+	include/linetable.h
+	include/linetablesortfunctions.h
+	include/tableline.h
+	include/termenergy.h
     fspdiag.cpp
-	fspdiag.h
 	linetable.cpp
-	linetable.h
 	questionbox.cpp
 	questionbox.h
-	sortfunctions.cpp
-	sortfunctions.h
-	tableline.h
-	termenergy.h
+	linetablesortfunctions.cpp
 	vsolistelement.h
 )
 
-target_link_libraries(LineTable Qt5::Widgets)
+target_include_directories(LineTable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(LineTable
+	Molecule
+	MolSpektAnalysisMainWindow
+	PotentialPlot
+	Progressions
+	Spektrum
+	Qt5::Widgets
+)

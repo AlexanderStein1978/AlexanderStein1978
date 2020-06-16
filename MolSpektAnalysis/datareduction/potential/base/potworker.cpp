@@ -2,7 +2,7 @@
 // C++ Implementation: PotWorker
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,20 @@
 
 
 #include "PotWorker.h"
+#include "SplinePoint.h"
+#include "tableline.h"
+#include "utils.h"
+#include "isotab.h"
+#include "AnaPot.h"
+#include "splinepot.h"
+#include "TangToenniesPot.h"
+#include "MTTPot.h"
+#include "MLRPot.h"
+#include "PotFit.h"
+#include "tools.h"
+#include "potentialdata.h"
+
+#include <QMutex>
 
 
 PotWorker::PotWorker(PotFit *fit, PotentialType PotType)

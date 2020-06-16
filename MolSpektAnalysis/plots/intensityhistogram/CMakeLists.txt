@@ -7,8 +7,13 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(IntensityHistogram STATIC
+	include/intensityhistogram.h
     intensityhistogram.cpp
-	intensityhistogram.h
 )
 
-target_link_libraries(IntensityHistogram Qt5::Widgets)
+target_include_directories(IntensityHistogram PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(IntensityHistogram
+	DiagWindow
+	Qt5::Widgets
+)

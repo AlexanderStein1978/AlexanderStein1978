@@ -13,11 +13,21 @@
 
 #include "fitresult.h"
 
-
 FitResult::FitResult()
 {
 	initialize();
 }
+
+FitResult::FitResult(const FitResult& toCopy)
+ : NBad(toCopy.NBad), NBadPAL(toCopy.NBadPAL), Index(toCopy.Index), ProcessNum(toCopy.ProcessNum)
+ , Sigma(toCopy.Sigma), FQS_Bad(toCopy.FQS_Bad), ParValue(toCopy.ParValue), LRelParDev(toCopy.LRelParDev)
+ , isStartPot(toCopy.isStartPot)
+ {
+ }
+ 
+ FitResult::~FitResult()
+ {
+ }
 
 void FitResult::initialize()
 {

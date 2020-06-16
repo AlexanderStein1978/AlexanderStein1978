@@ -12,6 +12,9 @@
 
 
 #include "measuredtermenergies.h"
+#include "molecule.h"
+#include "utils.h"
+#include "isotab.h"
 
 
 MeasuredTermEnergies::MeasuredTermEnergies(MainWindow *MW) : TableWindow(MDIChild::LineTab, MW)

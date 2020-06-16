@@ -7,8 +7,13 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(TermView STATIC
+	include/termview.h
 	termview.cpp
-	termview.h
 )
 
-target_link_libraries(TermView Qt5::Widgets)
+target_include_directories(TermView PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(TermView
+	TableWindow
+	Qt5::Widgets
+)

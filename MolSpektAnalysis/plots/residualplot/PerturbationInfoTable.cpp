@@ -2,7 +2,7 @@
 // C++ Implementation: PerturbationInfoTable
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,17 @@
 
 
 #include "PerturbationInfoTable.h"
+#include "PerturbationInfoTab.h"
+#include "LocalPerturbation.h"
+#include "ResidualFit.h"
+
+#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QMouseEvent>
+#include <QMenu>
+#include <QDialog>
+#include <QPushButton>
 
 
 PerturbationInfoTable::PerturbationInfoTable(QWidget *i_parent) : QWidget(i_parent), m_Tab(new PerturbationInfoTab(this)),

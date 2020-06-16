@@ -7,11 +7,16 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialStructs STATIC
+	include/elevel.h
+	include/potentialdata.h
+	include/wantedcoeffvalue.h
     elevel.cpp
-	elevel.h
 	potentialdata.cpp
-	potentialdata.h
-	wantedcoeffvalue.cpp
 )
 
-target_link_libraries(PotentialStructs Qt5::Widgets)
+target_include_directories(PotentialStructs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(PotentialStructs
+	MonteCarloSim
+	Qt5::Widgets
+)

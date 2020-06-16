@@ -10,6 +10,7 @@
 
 
 #include "PotFit.h"
+#include "potworker.h"
 
 
 PotFit::PotFit()

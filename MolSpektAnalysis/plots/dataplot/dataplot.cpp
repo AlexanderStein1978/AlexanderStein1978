@@ -4,7 +4,7 @@
 // Description: 
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -18,6 +18,7 @@
 #include "termtable.h"
 #include "utils.h"
 #include "molecule.h"
+#include "sortfuncs.h"
 
 #include <stdio.h>
 

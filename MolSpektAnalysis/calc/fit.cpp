@@ -2,17 +2,12 @@
 // C++ Implementation: fit
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
-/*#include "elstate.h"
-#include "linetable.h"
-#include "termtable.h"
-#include "potential.h"
-#include "molecule.h"*/
 
 #define UseDebugLogStream
 
@@ -27,18 +22,22 @@ QTextStream* DebugStream;
 
 #include "fit.h"
 #include "utils.h"
-#include "naturalspline.h"
 #include "constants.h"
+#include "isotab.h"
+#include "SplinePoint.h"
+#include "Spline.h"
+#include "ResidualFit.h"
+#include "LocalPerturbation.h"
 
-#include "../NR_C301/code/gamma.h"
-#include "../NR_C301/code/incgammabeta.h"
-#include "../NR_C301/code/fitab.h"
-#include "../NR_C301/code/svd.h"
-#include "../NR_C301/code/fitsvd.h"
-#include "../NR_C301/code/ludcmp.h"
-#include "../NR_C301/code/gaussj.h"
-#include "../NR_C301/code/fitmrq.h"
-#include "../NR_C301/code/amoeba.h"
+#include "../../NR_C301/code/gamma.h"
+#include "../../NR_C301/code/incgammabeta.h"
+#include "../../NR_C301/code/fitab.h"
+#include "../../NR_C301/code/svd.h"
+#include "../../NR_C301/code/fitsvd.h"
+#include "../../NR_C301/code/ludcmp.h"
+#include "../../NR_C301/code/gaussj.h"
+#include "../../NR_C301/code/fitmrq.h"
+#include "../../NR_C301/code/amoeba.h"
 
 #include <limits>
 #include <cmath>

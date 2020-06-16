@@ -2,7 +2,7 @@
 // C++ Implementation: CreateAnaPotSeriesFromMCSSplinePotSeriesDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,15 @@
 
 
 #include "CreateAnaPotSeriesFromMCSSplinePotSeriesDialog.h"
+#include "elstate.h"
+#include "MainWindow.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QLabel>
+#include <QFileDialog>
 
 
 CreateAnaPotSeriesFromMCSSplinePotSeriesDialog::CreateAnaPotSeriesFromMCSSplinePotSeriesDialog(MainWindow* parent)

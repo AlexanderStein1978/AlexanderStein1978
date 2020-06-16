@@ -10,6 +10,12 @@
 
 
 #include "selectlinetabledialog.h"
+#include "MainWindow.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
 
 
 SelectLineTableDialog::SelectLineTableDialog(MainWindow* mw): QDialog(mw)

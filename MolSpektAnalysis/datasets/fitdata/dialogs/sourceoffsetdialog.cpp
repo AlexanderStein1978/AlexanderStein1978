@@ -10,6 +10,13 @@
 
 
 #include "sourceoffsetdialog.h"
+#include "MainWindow.h"
+
+#include <QGridLayout>
+#include <QComboBox>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
 
 
 SourceOffsetDialog::SourceOffsetDialog(QStringList& Names, double* Offsets, MainWindow* parent): QDialog(parent)

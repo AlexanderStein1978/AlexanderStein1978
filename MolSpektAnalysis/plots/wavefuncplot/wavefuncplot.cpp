@@ -2,7 +2,7 @@
 // C++ Implementation: wavefuncplot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -15,6 +15,9 @@
 #include "molecule.h"
 #include "utils.h"
 #include "elstate.h"
+#include "CoupledSineWaveFunc.h"
+#include "isotab.h"
+#include "datensatz.h"
 
 #include <stdio.h>
 #include <math.h>

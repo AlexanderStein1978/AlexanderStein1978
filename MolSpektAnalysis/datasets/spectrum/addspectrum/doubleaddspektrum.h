@@ -15,6 +15,10 @@
 
 #include "Spektrum.h"
 
+#include <QMenu>
+
+class AddSpectrum;
+
 
 class DoubleAddSpectrum : public Spektrum
 {

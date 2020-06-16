@@ -2,7 +2,7 @@
 // C++ Implementation: SFQSCalcControl
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,13 @@
 
 
 #include "SFQSCalcControl.h"
+#include "potential.h"
+#include "fitdata.h"
+#include "utils.h"
+#include "isotab.h"
+#include "elstate.h"
+
+#include <QDir>
 
 
 SFQSCalcControl::SFQSCalcControl(MainWindow* MW, ElState* St, Potential *Pot, QString PotDir, QString FDatDir, double SFQSRad, int NumParFits)

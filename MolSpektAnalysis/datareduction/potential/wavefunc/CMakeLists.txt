@@ -7,10 +7,15 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Wavefuncs STATIC
+	include/CoupledSineWaveFunc.h
+	include/CouplingFuncs.h
     CoupledSineWaveFunc.cpp
-	CoupledSineWaveFunc.h
 	CouplingFuncs.cpp
-	CouplingFuncs.h
 )
 
-target_link_libraries(Wavefuncs Qt5::Widgets)
+target_include_directories(Wavefuncs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(Wavefuncs
+	MdiChild
+	Qt5::Widgets
+)

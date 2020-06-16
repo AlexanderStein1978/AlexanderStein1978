@@ -2,7 +2,7 @@
 // C++ Implementation: adddialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -20,6 +20,9 @@
 #include "linetable.h"
 #include "potential.h"
 #include "naturalspline.h"
+#include "isotab.h"
+#include "CoupledSineWaveFunc.h"
+#include "addspektrum.h"
 
 #include <stdio.h>
 #include <math.h>

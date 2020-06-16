@@ -7,16 +7,21 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialTypes STATIC
+	include/AnaPot.h
+	include/MLRPot.h
+	include/MTTPot.h
+	include/splinepot.h
+	include/TangToenniesPot.h
     AnaPot.cpp
-	AnaPot.h
 	MLRPot.cpp
-	MLRPot.h
 	MTTPot.cpp
-	MTTPot.h
 	splinepot.cpp
-	splinepot.h
 	TangToenniesPot.cpp
-	TangToenniesPot.h
 )
 
-target_link_libraries(PotentialTypes Qt5::Widgets)
+target_include_directories(PotentialTypes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(PotentialTypes
+	Potential
+	Qt5::Widgets
+)

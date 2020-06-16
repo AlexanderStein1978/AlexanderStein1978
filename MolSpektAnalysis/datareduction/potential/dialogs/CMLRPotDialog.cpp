@@ -11,6 +11,13 @@
 
 #include "CMLRPotDialog.h"
 
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QComboBox>
+
 
 CMLRPotDialog::CMLRPotDialog(QStringList *nCVL, QWidget* parent): QDialog(parent)
 {
@@ -79,5 +86,3 @@ void CMLRPotDialog::setV()
     if (CValE->text().isEmpty()) T += " = " + CValE->text();
     LRC->currentItem()->setText(T);
 }
-
-#endif

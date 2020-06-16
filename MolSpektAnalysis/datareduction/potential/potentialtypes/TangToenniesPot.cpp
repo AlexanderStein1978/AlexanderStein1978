@@ -2,7 +2,7 @@
 // C++ Implementation: TangToenniesPot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,11 @@
 
 
 #include "TangToenniesPot.h"
+#include "utils.h"
+#include "tools.h"
+#include "potentialdata.h"
+
+#include <QMutex>
 
 
 TangToenniesPot::TangToenniesPot(PotFit *Fit) : PotWorker(Fit, TangToenniesPotential)

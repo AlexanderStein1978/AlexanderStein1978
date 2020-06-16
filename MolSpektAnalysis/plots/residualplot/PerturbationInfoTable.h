@@ -2,15 +2,22 @@
 // C++ Interface: PerturbationInfoTable
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
-
 #ifndef PERTURBATIONINFOTABLE_H
 #define PERTURBATIONINFOTABLE_H
+
+
+#include <QWidget>
+
+class ResidualFit;
+class PerturbationInfoTab;
+
+class QComboBox;
 
 
 class PerturbationInfoTable : public QWidget

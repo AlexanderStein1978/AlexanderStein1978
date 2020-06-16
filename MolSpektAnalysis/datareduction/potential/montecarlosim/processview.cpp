@@ -4,7 +4,7 @@
 // Description: 
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -12,6 +12,10 @@
 
 
 #include "processview.h"
+#include "potential.h"
+
+#include <QTimer>
+#include <QTextStream>
 
 
 ProcessView::ProcessView(QWidget* parent, QString Dir, int PN) : QPlainTextEdit(parent)

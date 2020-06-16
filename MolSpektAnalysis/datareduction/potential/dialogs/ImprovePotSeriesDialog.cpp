@@ -2,7 +2,7 @@
 // C++ Implementation: ImprovePotSeriesDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,16 @@
 
 
 #include "ImprovePotSeriesDialog.h"
+#include "MainWindow.h"
+#include "potential.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QPushButton>
+#include <QDoubleValidator>
+#include <QMessageBox>
+#include <QDir>
+#include <QFileDialog>
 
 
 ImprovePotSeriesDialog::ImprovePotSeriesDialog(MainWindow* MW, QString Dir, Potential* OPot): QDialog()

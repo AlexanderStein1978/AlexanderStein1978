@@ -7,16 +7,21 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitDataDialogs STATIC
+	include/coupledpotfitimportdialog.h
+	include/espotfitinputelstateassigndialog.h
+	include/sourceoffsetdialog.h
+	include/tsdialog.h
+	include/vassigndialog.h
     coupledpotfitimportdialog.cpp
-	coupledpotfitimportdialog.h
 	espotfitinputelstateassigndialog.cpp
-	espotfitinputelstateassigndialog.h
 	sourceoffsetdialog.cpp
-	sourceoffsetdialog.h
 	tsdialog.cpp
-	tsdialog.h
 	vassigndialog.cpp
-	vassigndialog.h
 )
 
-target_link_libraries(FitDataDialogs Qt5::Widgets)
+target_include_directories(FitDataDialogs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(FitDataDialogs
+	MolSpektAnalysisMainWindow
+	Qt5::Widgets
+)

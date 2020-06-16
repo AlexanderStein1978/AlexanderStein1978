@@ -2,23 +2,27 @@
 // C++ Implementation: FCFTab
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
 
 #include "fcftab.h"
 #include "MainWindow.h"
 #include "molecule.h"
 #include "potential.h"
 #include "utils.h"
+#include "isotab.h"
+#include "CoupledSineWaveFunc.h"
 
 #include <QComboBox>
 #include <QDateTime>
 #include <QFile>
 
 #include <math.h>
+
 
 FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWindow(FranckCondonTable, MW, M), m_NChannelsQ(0), m_NChannelsPR(0), m_ChannelFQ(NULL), m_ChannelFPR(NULL)
 {

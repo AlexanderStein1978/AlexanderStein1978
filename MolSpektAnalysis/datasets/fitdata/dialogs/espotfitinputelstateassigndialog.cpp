@@ -10,6 +10,12 @@
 
 
 #include "espotfitinputelstateassigndialog.h"
+#include "elstate.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QPushButton>
 
 
 EsPotFitInputElStateAssignDialog::EsPotFitInputElStateAssignDialog(QWidget* parent, ElState** i_states, int i_numStates)

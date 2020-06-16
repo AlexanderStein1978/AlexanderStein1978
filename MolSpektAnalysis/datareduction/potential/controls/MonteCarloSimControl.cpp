@@ -2,7 +2,7 @@
 // C++ Implementation: MonteCarloSimControl
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,10 @@
 
 
 #include "MonteCarloSimControl.h"
+#include "potential.h"
+#include "elstate.h"
+#include "fitdata.h"
+#include "utils.h"
 
 
 MonteCarloSimControl::MonteCarloSimControl(MainWindow* mw, Potential* Pot, QString PotDir, int NumIterations, int NumParFits, 

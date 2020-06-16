@@ -10,6 +10,14 @@
 
 
 #include "vassigndialog.h"
+#include "MainWindow.h"
+#include "elstate.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QPushButton>
 
 
 vAssignDialog::vAssignDialog(MainWindow* parent, ElState* S) : QDialog(parent)

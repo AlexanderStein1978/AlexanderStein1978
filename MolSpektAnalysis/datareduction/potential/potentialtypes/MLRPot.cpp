@@ -10,6 +10,11 @@
 
 
 #include "MLRPot.h"
+#include "potentialdata.h"
+
+#include <QMutex>
+#include <QFile>
+#include <QTextStream>
 
 
 MLRPot::MLRPot(PotFit *Fit) : PotWorker(Fit, MorseLongRangePotential)

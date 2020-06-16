@@ -7,20 +7,25 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Residualfit STATIC
-	BandConst.h
+	include/BandConst.h
+	include/Js.h
+	include/LocalPerturbation.h
+	include/naturalspline.h
+	include/point.h
+	include/ResidualFit.h
+	include/SplinePoint.h
+	include/Spline.h
     ConnectSpline.cpp
 	ConnectSpline.h
-	Js.h
 	LocalPerturbation.cpp
-	LocalPerturbation.h
 	naturalspline.cpp
-	naturalspline.h
-	point.h
 	ResidualFit.cpp
-	ResidualFit.h
 	Spline.cpp
-	Spline.h
-	SplinePoint.h
 )
 
-target_link_libraries(Residualfit Qt5::Widgets)
+target_include_directories(Residualfit PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(Residualfit
+	FitObject
+	Qt5::Widgets
+)

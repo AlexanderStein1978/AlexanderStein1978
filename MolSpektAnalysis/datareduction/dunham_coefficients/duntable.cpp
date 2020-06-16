@@ -2,7 +2,7 @@
 // C++ Implementation: duntable
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -16,6 +16,9 @@
 #include "linetable.h"
 #include "elstate.h"
 #include "fitdata.h"
+#include "isotab.h"
+#include "tableline.h"
+#include "termenergy.h"
 
 #include <math.h>
 #include <limits>

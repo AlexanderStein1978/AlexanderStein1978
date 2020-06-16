@@ -7,8 +7,14 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Calc STATIC
-    fit.cpp
-	fit.h
+    include/fit.h
+	fit.cpp
 )
 
-target_link_libraries(Calc Qt5::Widgets)
+target_include_directories(Calc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(
+	Calc
+	Tools
+	Qt5::Widgets
+)

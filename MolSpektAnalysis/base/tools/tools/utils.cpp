@@ -8,7 +8,10 @@
 //
 //
 
+
 #include "utils.h"
+
+#include <QString>
 
 
 QString **CreateQString(const int &I, const int &J)

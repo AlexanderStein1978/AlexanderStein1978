@@ -2,11 +2,12 @@
 // C++ Implementation: tablewindow
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2017
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
 
 #include <QResizeEvent>
 #include <QFile>
@@ -24,6 +25,8 @@
 #include "molecule.h"
 #include "utils.h"
 #include "Spektrum.h"
+#include "isotab.h"
+#include "heapsort.h"
 
 
 TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, mw)

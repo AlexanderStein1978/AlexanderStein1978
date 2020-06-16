@@ -4,17 +4,20 @@
 // Description: 
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See COPYING file that comes with this distribution
 //
 //
+
 
 #include "montecarlosim.h"
 #include "potential.h"
 #include "MainWindow.h"
 #include "utils.h"
 #include "elstate.h"
+#include "mcfsettingsdialog.h"
+#include "fieldwindow.h"
 
 #include <math.h>
 
@@ -31,8 +34,6 @@
 #include <QTimer>
 #include <QPainter>
 #include <QCheckBox>
-//#include <QTcpServer>
-//#include <QTcpSocket>
 #include <QButtonGroup>
 #include <QTimerEvent>
 

@@ -7,8 +7,15 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(DunhamCoefficients STATIC
+	include/duntable.h
     duntable.cpp
-	duntable.h
 )
 
-target_link_libraries(DunhamCoefficients Qt5::Widgets)
+target_include_directories(DunhamCoefficients PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(DunhamCoefficients
+	Calc
+	LineTable
+	Tools
+	Qt5::Widgets
+)

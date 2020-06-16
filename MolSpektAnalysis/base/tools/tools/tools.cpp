@@ -10,11 +10,14 @@
 
 #include "tools.h"
 #include "utils.h"
+#include "marker.h"
+#include "progressions.h"
 
 #include <math.h>
 #include <stdio.h>
 
 #include <qmessagebox.h>
+#include <QLineEdit>
 
 
 bool SolvLinEqS(double **G, int n)

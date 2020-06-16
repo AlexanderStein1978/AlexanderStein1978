@@ -10,6 +10,16 @@
 
 
 #include "feldialog.h"
+#include "MainWindow.h"
+#include "molecule.h"
+#include "termtable.h"
+#include "isotab.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QPushButton>
 
 
 FELDialog::FELDialog(MainWindow* mw, double initMinH): QDialog(mw)

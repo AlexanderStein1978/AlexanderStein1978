@@ -10,6 +10,16 @@
 
 
 #include "CreateAnaPotSeriesControl.h"
+#include "tablewindow.h"
+#include "elstate.h"
+#include "molecule.h"
+#include "fitdata.h"
+#include "potential.h"
+
+#include <QTextStream>
+#include <QFile>
+#include <QDir>
+
 
 
 CreateAnaPotSeriesControl::CreateAnaPotSeriesControl(MainWindow* MW, ElState* St, Potential* OPot, FitData* fDat, QString SPDir, QString FDDir, QString APDir, 
@@ -120,5 +130,3 @@ void CreateAnaPotSeriesControl::CalcFinished(int ThreadNum)
     *LogStream << "Run" << QString::number(n) << " with file \"" << SFile << "\" finished!\n";
     LogStream->flush();
 }
-
-#endif

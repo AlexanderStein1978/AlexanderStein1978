@@ -12,6 +12,9 @@
 
 
 #include "fieldwindow.h"
+#include "fitresult.h"
+
+#include <QPainter>
 
 
 FieldWindow::FieldWindow(int*** iField, int N1, int N2)

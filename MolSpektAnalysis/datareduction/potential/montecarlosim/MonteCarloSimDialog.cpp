@@ -2,7 +2,7 @@
 // C++ Implementation: MonteCarloSimDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,16 @@
 
 
 #include "MonteCarloSimDialog.h"
+#include "MainWindow.h"
+
+#include <QGridLayout>
+#include <QPushButton>
+#include <QDoubleValidator>
+#include <QLineEdit>
+#include <QLabel>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QMessageBox>
 
 
 MonteCarloSimDialog::MonteCarloSimDialog(MainWindow* MW) : QDialog(MW)

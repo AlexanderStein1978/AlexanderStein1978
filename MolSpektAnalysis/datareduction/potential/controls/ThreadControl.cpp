@@ -2,14 +2,25 @@
 // C++ Implementation: ThreadControl
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
-
 #include "ThreadControl.h"
+#include "MainWindow.h"
+#include "tablewindow.h"
+#include "elstate.h"
+#include "potential.h"
+
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QProgressBar>
+#include <QIntValidator>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 
 ThreadControl::ThreadControl(MainWindow* mw, ElState* nSt, int NumIterations, int NumParFits)

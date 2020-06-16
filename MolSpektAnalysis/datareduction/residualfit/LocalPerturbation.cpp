@@ -10,6 +10,9 @@
 
 
 #include "LocalPerturbation.h"
+#include "fit.h"
+
+#include <QTextStream>
 
 
 LocalPerturbation::LocalPerturbation()

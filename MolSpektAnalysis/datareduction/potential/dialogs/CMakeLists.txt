@@ -7,22 +7,27 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialDialogs STATIC
+	include/aipsidiag.h
+	include/CMLRPotDialog.h
+	include/CoefficientDialog.h
+	include/CreateAnaPotSeriesFromMCSSplinePotSeriesDialog.h
+	include/CSWFImportDialog.h
+	include/FitAnaPotDialog.h
+	include/ImprovePotSeriesDialog.h
+	include/SFQSCalcDialog.h
     aipsidiag.cpp
-	aipsidiag.h
 	CMLRPotDialog.cpp
-	CMLRPotDialog.h
 	CoefficientDialog.cpp
-	CoefficientDialog.h
 	CreateAnaPotSeriesFromMCSSplinePotSeriesDialog.cpp
-	CreateAnaPotSeriesFromMCSSplinePotSeriesDialog.h
 	CSWFImportDialog.cpp
-	CSWFImportDialog.h
 	FitAnaPotDialog.cpp
-	FitAnaPotDialog.h
 	ImprovePotSeriesDialog.cpp
-	ImprovePotSeriesDialog.h
 	SFQSCalcDialog.cpp
-	SFQSCalcDialog.h
 )
 
-target_link_libraries(PotentialDialogs Qt5::Widgets)
+target_include_directories(PotentialDialogs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(PotentialDialogs
+	Tools
+	Qt5::Widgets
+)

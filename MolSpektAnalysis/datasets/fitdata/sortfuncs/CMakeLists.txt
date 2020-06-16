@@ -7,14 +7,19 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitDataSortFuncs STATIC
+	include/sortbyltabandprogfunctor.h
+	include/sortforextractneworchangedwithoutsourcefunctor.h
+	include/fitdatasortfunctions.h
+	include/tablelinesortfunctor.h
     sortbyltabandprogfunctor.cpp
-	sortbyltabandprogfunctor.h
 	sortforextractneworchangedwithoutsourcefunctor.cpp
-	sortforextractneworchangedwithoutsourcefunctor.h
-	sortfunctions.cpp
-	sortfunctions.h
+	fitdatasortfunctions.cpp
 	tablelinesortfunctor.cpp
-	tablelinesortfunctor.h
 )
 
-target_link_libraries(FitDataSortFuncs Qt5::Widgets)
+target_include_directories(FitDataSortFuncs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(FitDataSortFuncs
+	MolSpektAnalysisMainWindow
+	Qt5::Widgets
+)

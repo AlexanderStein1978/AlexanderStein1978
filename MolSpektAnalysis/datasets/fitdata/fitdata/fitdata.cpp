@@ -9,7 +9,7 @@
 //
 
 #include "fitdata.h"
-#include "sortfunctions.h"
+#include "fitdatasortfunctions.h"
 #include "sortforextractneworchangedwithoutsourcefunctor.h"
 #include "sortbyltabandprogfunctor.h"
 #include "linetable.h"
@@ -21,6 +21,18 @@
 #include "duntable.h"
 #include "potential.h"
 #include "naturalspline.h"
+#include "tableline.h"
+#include "residualfit.h"
+#include "termenergy.h"
+#include "heapsort.h"
+#include "isotab.h"
+#include "assign_vs_comptrans.h"
+#include "progression.h"
+#include "line.h"
+#include "tlref.h"
+#include "tsdialog.h"
+#include "perturbation.h"
+#include "espotfitinputelstateassigndialog.h" 
 
 #include <QTableWidget>
 #include <QStringList>

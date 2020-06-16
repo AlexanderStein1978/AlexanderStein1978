@@ -2,7 +2,7 @@
 // C++ Implementation: Progressions
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,6 +13,9 @@
 #include "marker.h"
 #include "fli.h"
 #include "intprog.h"
+#include "isotab.h"
+#include "elstate.h"
+#include "molecule.h"
 
 
 Progressions::Progressions() 

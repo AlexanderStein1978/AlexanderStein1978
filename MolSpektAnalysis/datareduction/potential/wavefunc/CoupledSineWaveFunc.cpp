@@ -10,6 +10,20 @@
 
 
 #include "CoupledSineWaveFunc.h"
+#include "naturalspline.h"
+#include "utils.h"
+#include "MainWindow.h"
+#include "molecule.h"
+#include "SplinePoint.h"
+
+#include <cmath>
+
+#include <QDialog>
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QFile>
+#include <QTextStream>
 
 
 CoupledSineWaveFunc::CoupledSineWaveFunc(MainWindow *MW, Molecule *mol) 

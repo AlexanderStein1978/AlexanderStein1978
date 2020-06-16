@@ -2,7 +2,7 @@
 // C++ Implementation: molecule
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -16,6 +16,7 @@
 #include "utils.h"
 #include "fcftab.h"
 #include "fitdata.h"
+#include "isotab.h"
 
 #include <math.h>
 

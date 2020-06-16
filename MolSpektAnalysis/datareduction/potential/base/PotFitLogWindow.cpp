@@ -11,6 +11,11 @@
 
 #include "PotFitLogWindow.h"
 
+#include <QGridLayout>
+#include <QPushButton>
+#include <QPlainTextEdit>
+#include <QMessageBox>
+
 
 PotFitLogWindow::PotFitLogWindow(QWidget*) : MDIChild()
 {

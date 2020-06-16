@@ -10,6 +10,17 @@
 
 
 #include "coupledpotfitimportdialog.h"
+#include "MainWindow.h"
+#include "Molecule.h"
+
+#include <QPushButton>
+#include <QListWidget>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
 
 
 CoupledPotFitOutputImportDialog::CoupledPotFitOutputImportDialog(MainWindow *mw)

@@ -11,6 +11,9 @@
 
 #include "pointwiselineprofile.h"
 
+#include <QFile>
+#include <QTextStream>
+
 
 PointwiseLineProfile::PointwiseLineProfile()
     : m_points(NULL), m_NumPoints(0)

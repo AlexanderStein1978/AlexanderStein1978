@@ -1,21 +1,26 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-project(LineTable)
+project(AddSpektrum)
 
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_library(LineTable STATIC
+add_library(AddSpektrum STATIC
+	include/adddialog.h
+	include/cutdialog.h
     adddialog.cpp
-	adddialog.h
 	addspektrum.cpp
 	addspektrum.h
 	cutdialog.cpp
-	cutdialog.h
 	doubleaddspektrum.cpp
 	doubleaddspektrum.h
 	markedpeak.h
 )
 
-target_link_libraries(LineTable Qt5::Widgets)
+target_include_directories(AddSpektrum PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(AddSpektrum
+	DiagWindow
+	Qt5::Widgets
+)

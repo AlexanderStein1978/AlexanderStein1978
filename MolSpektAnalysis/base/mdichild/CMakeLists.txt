@@ -7,8 +7,13 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(MdiChild STATIC
+	include/mdichild.h
     mdichild.cpp
-	mdichild.h
 )
 
-target_link_libraries(MdiChild Qt5::Widgets)
+target_include_directories(MdiChild PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(MdiChild 
+	MolSpektAnalysisMainWindow
+	Qt5::Widgets
+)

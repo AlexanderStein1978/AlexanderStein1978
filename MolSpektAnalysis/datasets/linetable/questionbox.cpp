@@ -11,6 +11,8 @@
 
 #include "questionbox.h"
 
+#include <QPushButton>
+
 
 QuestionBox::QuestionBox(QString Caption, QString Question, QWidget* parent)
 			: QMessageBox(QMessageBox::Question, Caption, Question, 

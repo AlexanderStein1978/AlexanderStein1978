@@ -17,6 +17,10 @@
 #include "tools.h"
 #include "potential.h"
 #include "termtable.h"
+#include "simline.h"
+#include "isotab.h"
+#include "doublevector.h"
+#include "datensatz.h"
 
 #include <math.h>
 

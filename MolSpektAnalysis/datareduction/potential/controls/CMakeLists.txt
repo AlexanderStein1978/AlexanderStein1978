@@ -7,16 +7,21 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialControls STATIC
+	include/CreateAnaPotSeriesControl.h
+	include/ImprovePotSeriesControl.h
+	include/MonteCarloSimControl.h
+	include/SFQSCalcControl.h
+	include/ThreadControl.h
     CreateAnaPotSeriesControl.cpp
-	CreateAnaPotSeriesControl.h
 	ImprovePotSeriesControl.cpp
-	ImprovePotSeriesControl.h
 	MonteCarloSimControl.cpp
-	MonteCarloSimControl.h
 	SFQSCalcControl.cpp
-	SFQSCalcControl.h
 	ThreadControl.cpp
-	ThreadControl.h
 )
 
-target_link_libraries(PotentialControls Qt5::Widgets)
+target_include_directories(PotentialControls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(PotentialControls
+	TableWindow
+	Qt5::Widgets
+)

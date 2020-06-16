@@ -36,6 +36,14 @@
 #include "potentialplot.h"
 #include "potential.h"
 #include "atom.h"
+#include "tableline.h"
+#include "isotab.h"
+#include "termenergy.h"
+#include "progression.h"
+#include "line.h"
+#include "questionbox.h"
+#include "vsolistelement.h"
+#include "matrix.h"
 
 #include <math.h>
 

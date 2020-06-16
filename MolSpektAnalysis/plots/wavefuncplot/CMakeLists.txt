@@ -7,8 +7,13 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(WaveFuncPlot STATIC
+	include/wavefuncplot.h
 	wavefuncplot.cpp
-	wavefuncplot.h
 )
 
-target_link_libraries(WaveFuncPlot Qt5::Widgets)
+target_include_directories(WaveFuncPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(WaveFuncPlot
+	DiagWindow
+	Qt5::Widgets
+)

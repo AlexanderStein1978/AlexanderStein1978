@@ -2,7 +2,7 @@
 // C++ Implementation: AddSpectrum
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,25 @@
 
 
 #include "addspektrum.h"
+#include "markedpeak.h"
+#include "ResidualFit.h"
+#include "termenergy.h"
+#include "fitdata.h"
+#include "adddialog.h"
+#include "elstate.h"
+#include "utils.h"
+#include "termtable.h"
+#include "perturbation.h"
+#include "point.h"
+#include "tableline.h"
+#include "molecule.h"
+#include "isotab.h"
+#include "doubleaddspektrum.h"
+#include "fit.h"
+
+#include <cmath>
+
+#include <QMessageBox>
 
 
 AddSpectrum::AddSpectrum(MainWindow* MW, AddDialog *D) : DiagWindow(AddSpect, MW), m_contrast(0), Data(0), Ri(0.0), Ra(0.0), Res(0.0), PTData(0), OTData(0), UEn(0),

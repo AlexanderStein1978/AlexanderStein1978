@@ -12,6 +12,8 @@
 
 
 #include "termdata.h"
+#include "utils.h"
+#include "isotab.h"
 
 
 TermData::TermData(QObject *parent) : QAbstractTableModel(parent)

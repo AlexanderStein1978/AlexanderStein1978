@@ -10,6 +10,14 @@
 
 
 #include "ResidualFit.h"
+#include "point.h"
+#include "LocalPerturbation.h"
+#include "fit.h"
+#include "molecule.h"
+#include "ConnectSpline.h"
+
+#include <QTextStream>
+#include <QMessageBox>
 
 
 ResidualFit::ResidualFit(const ElState *i_state) : cycleDetected(false), NumSplines(0), cycleIndex(0), iso(-1), v(-1), comp(-1), splines(0),

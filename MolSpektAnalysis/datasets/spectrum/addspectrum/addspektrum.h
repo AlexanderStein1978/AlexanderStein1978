@@ -15,6 +15,20 @@
 
 #include "DiagWindow.h"
 
+#include <QToolButton>
+#include <QMenu>
+
+class AddDialog;
+class Spektrum;
+class ElState;
+class TermTable;
+class FitData;
+class DoubleAddSpectrum;
+class ResidualFit;
+
+struct MarkedPeak;
+struct TermEnergy;
+
 
 class AddSpectrum : public DiagWindow
 {

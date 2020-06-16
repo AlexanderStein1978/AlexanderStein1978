@@ -15,6 +15,9 @@
 
 #include "mdichild.h"
 
+class QPlainTextEdit;
+class QPushButton;
+
 
 class PotFitLogWindow : public MDIChild
 {

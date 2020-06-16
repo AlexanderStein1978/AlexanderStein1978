@@ -2,11 +2,12 @@
 // C++ Implementation: residualplot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
 
 #include "residualplot.h"
 #include "MainWindow.h"
@@ -17,6 +18,14 @@
 #include "utils.h"
 #include "fitdata.h"
 #include "fit.h"
+#include "tableline.h"
+#include "PerturbationInfoTable.h"
+#include "isotab.h"
+#include "Js.h"
+#include "point.h"
+#include "LocalPerturbation.h"
+#include "progression.h"
+#include "line.h"
 
 #include <stdio.h>
 

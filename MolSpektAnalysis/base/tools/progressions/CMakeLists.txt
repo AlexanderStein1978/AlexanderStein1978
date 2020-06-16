@@ -7,14 +7,21 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Progressions STATIC
-	aprog.h
+	include/aprog.h
+	include/intprog.h
+	include/progression.h
+	include/progressions.h
+	include/sortprog.h
+	include/testprog.h
+	progressions.cpp
 	intprog.cpp
-	intprog.h
-	progression.h
-    progressions.cpp
-	progressions.h
-	sortprog.h
-	testprog.h
 )
 
-target_link_libraries(Progressions Qt5::Widgets)
+target_include_directories(Progressions PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(Progressions
+	Datensatz
+	Molecule
+	MolSpektAnalysisStructs
+	Qt5::Widgets
+)

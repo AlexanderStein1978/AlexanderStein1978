@@ -12,6 +12,16 @@
 
 
 #include "cttidialog.h"
+#include "MainWindow.h"
+#include "molecule.h"
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
 
 
 CTTIDialog::CTTIDialog(MainWindow* MW) : QDialog(MW)

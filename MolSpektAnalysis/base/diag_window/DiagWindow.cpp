@@ -2,7 +2,7 @@
 // C++ Implementation: DiagWindow
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -14,6 +14,9 @@
 #include "tools.h"
 #include "utils.h"
 #include "naturalspline.h"
+#include "datensatz.h"
+#include "marker.h"
+#include "SplinePoint.h"
 
 #include <qvariant.h>
 #include <qscrollbar.h>

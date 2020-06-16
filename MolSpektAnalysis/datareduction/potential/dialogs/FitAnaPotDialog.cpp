@@ -2,7 +2,7 @@
 // C++ Implementation: FitAnaPotDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,14 @@
 
 
 #include "FitAnaPotDialog.h"
+
+#include <QPushButton>
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QListWidget>
 
 
 FitAnaPotDialog::FitAnaPotDialog(bool improve, double Ri, double Ra, double iExp, int NC, int NLRC, int* pLRC, double hCi_cP, 

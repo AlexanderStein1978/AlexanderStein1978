@@ -2,14 +2,14 @@
 // C++ Implementation: IntProg
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
 
-#include "intprog.h
+#include "intprog.h"
 #include "elstate.h"
 #include "molecule.h"
 #include "marker.h"

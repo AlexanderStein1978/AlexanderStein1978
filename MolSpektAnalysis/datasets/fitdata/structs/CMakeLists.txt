@@ -12,4 +12,6 @@ add_library(FitDataStructs STATIC
 	tlref.h
 )
 
+target_include_directories(MolSpektAnalysisStructs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(FitDataStructs Qt5::Widgets)
