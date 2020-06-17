@@ -2,7 +2,7 @@
 // C++ Interface: linetable
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -11,7 +11,8 @@
 #ifndef LINETABLE_H
 #define LINETABLE_H
 
-#include "elstate.h"
+
+#include "Transition.h"
 #include "tablewindow.h"
 #include "linetablesortfunctions.h"
 

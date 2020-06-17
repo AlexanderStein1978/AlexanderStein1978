@@ -16,6 +16,7 @@
 #include "utils.h"
 #include "isotab.h"
 #include "CoupledSineWaveFunc.h"
+#include "Transition.h"
 
 #include <QComboBox>
 #include <QDateTime>

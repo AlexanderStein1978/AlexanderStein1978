@@ -17,6 +17,7 @@
 #include "fcftab.h"
 #include "fitdata.h"
 #include "isotab.h"
+#include "TableItem.h"
 
 #include <math.h>
 

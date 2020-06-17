@@ -2,7 +2,7 @@
 // C++ Implementation: SelectLineTableDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -12,6 +12,7 @@
 #include "selectlinetabledialog.h"
 #include "MainWindow.h"
 #include "molecule.h"
+#include "Transition.h"
 
 #include <QGridLayout>
 #include <QLabel>
