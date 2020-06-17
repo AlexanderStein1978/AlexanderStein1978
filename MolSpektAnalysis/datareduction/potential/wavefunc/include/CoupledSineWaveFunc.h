@@ -2,7 +2,7 @@
 // C++ Interface: CoupledSineWaveFunc
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,7 +13,7 @@
 #define COUPLEDSINEWAVEFUNC_H
 
 
-#include "MDIChild.h"
+#include "mdichild.h"
 
 class Molecule;
 class ElState;

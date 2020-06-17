@@ -2,7 +2,7 @@
 // C++ Implementation: CoupledPotFitOutputImportDialog
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -11,7 +11,7 @@
 
 #include "coupledpotfitimportdialog.h"
 #include "MainWindow.h"
-#include "Molecule.h"
+#include "molecule.h"
 
 #include <QPushButton>
 #include <QListWidget>

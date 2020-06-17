@@ -2,7 +2,7 @@
 // C++ Implementation: elstate
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2017
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -33,7 +33,7 @@
 #include "molecule.h"
 #include "potential.h"
 #include "fitdata.h"
-#include "ComboBox.h"
+#include "Combobox.h"
 #include "Table.h"
 
 

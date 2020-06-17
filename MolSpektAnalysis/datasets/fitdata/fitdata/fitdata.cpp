@@ -2,7 +2,7 @@
 // C++ Implementation: FitData
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -22,7 +22,7 @@
 #include "potential.h"
 #include "naturalspline.h"
 #include "tableline.h"
-#include "residualfit.h"
+#include "ResidualFit.h"
 #include "termenergy.h"
 #include "heapsort.h"
 #include "isotab.h"

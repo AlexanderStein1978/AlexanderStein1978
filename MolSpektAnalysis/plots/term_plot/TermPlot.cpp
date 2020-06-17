@@ -2,7 +2,7 @@
 // C++ Implementation: TermPlot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -19,7 +19,7 @@
 #include "tools.h"
 #include "fitdata.h"
 #include "isotab.h"
-#include "tpviewlist.h"
+#include "TPViewList.h"
 #include "tableline.h"
 
 #include <qlabel.h>

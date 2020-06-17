@@ -9,7 +9,7 @@
 //
 
 
-#include "PotWorker.h"
+#include "potworker.h"
 #include "SplinePoint.h"
 #include "tableline.h"
 #include "utils.h"

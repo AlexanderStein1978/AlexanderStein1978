@@ -2,7 +2,7 @@
 // C++ Implementation: spektrum
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -22,6 +22,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextStream>
+
+#include <cmath>
 
 
 ExportLineProfileDialog::ExportLineProfileDialog(Spektrum * const i_spectrum, MainWindow* i_MW) : QWidget(i_MW) , m_spectrum(i_spectrum)

@@ -2,7 +2,7 @@
 // C++ Interface: MLRPot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,7 +13,7 @@
 #define MLRPOT_H
 
 
-#include "PotWorker.h"
+#include "potworker.h"
 
 
 class MLRPot : public PotWorker
