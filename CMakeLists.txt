@@ -3,3 +3,4 @@ project(Physics)
 
 add_subdirectory(ClassCluster)
 add_subdirectory(MolSpektAnalysis)
+add_subdirectory(googletest)
