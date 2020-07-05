@@ -88,6 +88,7 @@ public:
 					  int *NEL, TermEnergy **EL, int nGS, int *nGP, int *nGL, int **PS, TableLine **GL, int AdRows = 0);
     void calcE(double ****E, int *mJ, int **mv, int Mv, int NumWFPoints, double ****MinErr = 0, bool ****SFQSU = 0, double SFQSRad = 0.0);
 	double *getPoints(double Rmin, double Rmax, int numPoints, int FC = 0);
+    double *get_dVdR(const double Rmin, const double Rmax, const int numPoints) const;
 	double getPoint(double R, int FC = 0);
     void getDiagFuncs(double *&WFS, double *&WWFS, int NumWFPoints);
 	bool setMolData(IsoTab *IsoT, double *MU, double *IsoF);
@@ -366,6 +367,7 @@ protected:
 	virtual double Point(double R, int FC = 0);
 	virtual void setCurValuesForWantedValues();
 	virtual double *Points(double Rmin, double Rmax, int numPoints, int FC = 0);
+    virtual double *dVdR(const double Rmin, const double Rmax, const int numPoints) const;
 	
 	PotentialType Type;
 	SplinePoint *points;

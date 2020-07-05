@@ -170,6 +170,11 @@ public:
 	{
 		return Worker->getPoints(Rmin, Rmax, numPoints, FC);
 	}
+
+    inline double *get_dVdR(const double Rmin, const double Rmax, const int numPoints) const
+    {
+        return Worker->get_dVdR(Rmin, Rmax, numPoints);
+    }
 	
 	inline double getPoint(double R, int FC = 0)
 	{

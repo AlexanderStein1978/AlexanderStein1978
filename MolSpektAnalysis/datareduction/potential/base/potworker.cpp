@@ -2853,6 +2853,12 @@ double *PotWorker::getPoints(double Ri, double Ra, int N, int FC)
     return Points(Ri, Ra, N, FC);
 }
 
+double *PotWorker::get_dVdR(const double Rmin, const double Rmax, const int numPoints) const
+{
+    QMutexLocker lock(Lock);
+    return dVdR(Rmin, Rmax, numPoints);
+}
+
 PotentialData* PotWorker::getPotentialData()
 {
     int n;
@@ -2922,7 +2928,6 @@ double PotWorker::getPoint(double R, int FC)
 
 double PotWorker::Point(double R, int /*FC*/)
 {
-    //printf("Potential::getPoint(%f)\n", R);
     double U = 0.0;
     if (points == 0) return U;
     int n, N = numSplinePoints;
@@ -3003,6 +3008,56 @@ double PotWorker::Point(double R, int /*FC*/)
     //printf("R=%f, n=%d, N=%d, xd=%f, A=%f, B=%f\n", R, n, N, xd, A, B);
     return U + A * points[n-1].y + B * points[n].y + xd * xd * (A*(A*A-1.0) * points[n-1].yss
                        + B*(B*B-1.0) * points[n].yss) * 0.16666666666667;
+}
+
+double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoints) const
+{
+    const double h = (Rmin - Rmax) / (numPoints - 1);
+    double *Ret = new double[numPoints], R = rmin;
+    int n = 0;
+    if (Rmin < points[0].x)
+    {
+        const double F = -iExp * iA, exp = -iExp - 1.0;
+        for ( ; R < points[0].x && n < numPoints; ++n, R+=h) Ret[n] = F * pow(R, exp);
+    }
+    if (Rmin < points[numSplinePoints - 1].x && n < numPoints)
+    {
+        int p = 1;
+        double deltaX, dDeltaX, A, B, Q, deltaXdsix, yssF1, yssF2;
+        const double one = 1.0, three = 3.0, dsix = one / 6.0;
+        for ( ; R < points[numSplinePoints - 1].x && n < numPoints; ++n, R+=h)
+        {
+            if (R > points[p].x)
+            {
+                while (R > points[p].x) ++p;
+                dDeltaX = 1.0 / (deltaX = points[p].x - points[p-1].x);
+                Q = (points[p].y - points[p-1].y) * dDeltaX;
+                deltaXdsix = deltaX * dsix;
+                yssF1 = deltaXdsix * points[p-1].yss;
+                yssF2 = deltaXdsix * points[p].yss;
+            }
+            B = 1.0 - (A = (points[p].x - R) * dDeltaX);
+            Ret[n] = Q - (three * A * A - one) * yssF1 + (three * B * B - one) * yssF2;
+        }
+    }
+    if (n < numPoints)
+    {
+        double Res, dR;
+        const double one = 1.0;
+        int p = PLRC[NLRC-1], i;
+        for (i = NLRC - 2, Res = LRC[NLRC - 1]; i>=0 ; --i)
+        {
+            dR = one / R;
+            while (p > PLRC[i])
+            {
+                --p;
+                Res *= dR;
+            }
+            Res += static_cast<double>(PLRC[i]) * LRC[i];
+        }
+        Ret[n] = Res * pow(dR, one + static_cast<double>(PLRC[0]));
+    }
+    return Ret;
 }
 
 void PotWorker::getMaximum(double &R, double &U)
