@@ -335,6 +335,16 @@ public:
     {
         return m_saving;
     }
+
+    inline double getInnerConnectionRadius() const
+    {
+        return Worker->getInnerConnectionRadius();
+    }
+
+    inline double getOuterConnectionRadius() const
+    {
+        return Worker->getOuterConnectionRadius();
+    }
 	
 signals:
 	void FitFinished(int ThreadNum, double FQS);

@@ -124,6 +124,8 @@ public:
 	virtual PotentialData *getPotentialData();
 	void calcyss();
 	virtual void setLRCoeff(double R, int numCoefficients, int *Exponents, double *Coefficients, bool *LRCFree = 0);
+    virtual double getInnerConnectionRadius() const;
+    virtual double getOuterConnectionRadius() const;
 	
 	inline void setSFQSU(bool ****nSFQSU)
 	{

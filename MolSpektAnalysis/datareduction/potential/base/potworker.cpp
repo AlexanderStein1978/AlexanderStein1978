@@ -3060,6 +3060,19 @@ double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoint
     return Ret;
 }
 
+double PotWorker::getInnerConnectionRadius() const
+{
+    if (points != NULL) return points[0].x;
+    return -1.0;
+}
+
+double PotWorker::getOuterConnectionRadius() const
+{
+    if (Ro != 0.0) return Ro;
+    if (numSplinePoints > 0) return points[numSplinePoints - 1].x;
+    return -1.0;
+}
+
 void PotWorker::getMaximum(double &R, double &U)
 {
     Lock->lock();
