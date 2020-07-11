@@ -27,14 +27,15 @@ double IntegrationTest::testSingleIntegration(const double Rmin, const double Rm
     const double* const points = m_potential->get_dVdR(Rmin, Rmax, numPoints);
     double sum = 0.0;
     for (int n=0; n < numPoints; ++n) sum += points[n];
+    EXPECT_FALSE(isnan(sum));
     delete[] points;
     return m_potential->getPoint(Rmax) - m_potential->getPoint(Rmin) - sum * (Rmax - Rmin) / numPoints;
 }
 
 void IntegrationTest::runIntegrationTest(const double Rmin, const double Rmax, const double expectedFinalPrecision) const
 {
-    int numPoints(10);
-    for (double deviation = testSingleIntegration(Rmin, Rmax, numPoints); abs(deviation) > expectedFinalPrecision; numPoints *= 2)
+    int numPoints(20);
+    for (double deviation = testSingleIntegration(Rmin, Rmax, numPoints / 2); abs(deviation) > expectedFinalPrecision; numPoints *= 2)
     {
         double lastDeviation = deviation;
         deviation = testSingleIntegration(Rmin, Rmax, numPoints);

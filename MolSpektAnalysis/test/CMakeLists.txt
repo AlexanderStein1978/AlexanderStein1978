@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-include(GoogleTest)
+cmake_policy(SET CMP0057 NEW)
 
 project(MolSpektAnalysis_test)
+
+include(GoogleTest)
 
 add_executable(MolSpektAnalysis_test
 	integrationtest.h
