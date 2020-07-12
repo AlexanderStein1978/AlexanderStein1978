@@ -52,7 +52,7 @@ TEST_F(PotentialTest, CheckInnerWall)
     double RM(pot->getInnerConnectionRadius()), Rm(0.5 * RM);
     ASSERT_LT(0.0, Rm);
 
-    intTest->runIntegrationTest(Rm, RM, 1e-5);
+    intTest->runIntegrationTest(Rm, RM, 0.1);
 }
 
 TEST_F(PotentialTest, CheckSplineRegion)
@@ -61,7 +61,7 @@ TEST_F(PotentialTest, CheckSplineRegion)
     ASSERT_LT(0.0, Rm);
     ASSERT_LT(Rm, RM);
 
-    intTest->runIntegrationTest(Rm, RM, 1e-5);
+    intTest->runIntegrationTest(Rm, RM, 1e-3);
 }
 
 TEST_F(PotentialTest, CheckLongRangePart)

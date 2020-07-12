@@ -34,13 +34,13 @@ double IntegrationTest::testSingleIntegration(const double Rmin, const double Rm
 
 void IntegrationTest::runIntegrationTest(const double Rmin, const double Rmax, const double expectedFinalPrecision) const
 {
-    int numPoints(20);
+    int numPoints(20000);
     for (double deviation = testSingleIntegration(Rmin, Rmax, numPoints / 2); abs(deviation) > expectedFinalPrecision; numPoints *= 2)
     {
         double lastDeviation = deviation;
         deviation = testSingleIntegration(Rmin, Rmax, numPoints);
         printf("numPoints = %d, deviation = %f\n", numPoints, deviation);
-        ASSERT_GT(0.5 * abs(lastDeviation), abs(deviation));
+        ASSERT_GT(0.95 * abs(lastDeviation), abs(deviation));
     }
 }
 

@@ -3012,8 +3012,8 @@ double PotWorker::Point(double R, int /*FC*/)
 
 double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoints) const
 {
-    const double h = (Rmin - Rmax) / (numPoints - 1);
-    double *Ret = new double[numPoints], R = rmin;
+    const double h = (Rmax - Rmin) / (numPoints - 1);
+    double *Ret = new double[numPoints], R = Rmin;
     int n = 0;
     if (Rmin < points[0].x)
     {
@@ -3023,11 +3023,11 @@ double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoint
     if (Rmin < points[numSplinePoints - 1].x && n < numPoints)
     {
         int p = 1;
-        double deltaX, dDeltaX, A, B, Q, deltaXdsix, yssF1, yssF2;
+        double deltaX, dDeltaX = -1.0, A, B, Q, deltaXdsix, yssF1, yssF2;
         const double one = 1.0, three = 3.0, dsix = one / 6.0;
         for ( ; R < points[numSplinePoints - 1].x && n < numPoints; ++n, R+=h)
         {
-            if (R > points[p].x)
+            if (R > points[p].x || dDeltaX < 0.0)
             {
                 while (R > points[p].x) ++p;
                 dDeltaX = 1.0 / (deltaX = points[p].x - points[p-1].x);
@@ -3044,18 +3044,20 @@ double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoint
     {
         double Res, dR;
         const double one = 1.0;
-        int p = PLRC[NLRC-1], i;
-        for (i = NLRC - 2, Res = LRC[NLRC - 1]; i>=0 ; --i)
+        int p, i;
+        for ( ; n < numPoints; ++n, R+=h)
         {
-            dR = one / R;
-            while (p > PLRC[i])
+            for (i = NLRC - 2, p = PLRC[NLRC-1], Res = static_cast<double>(p) * LRC[NLRC - 1], dR = one / R; i>=0 ; --i)
             {
-                --p;
-                Res *= dR;
+                while (p > PLRC[i])
+                {
+                    --p;
+                    Res *= dR;
+                }
+                Res += static_cast<double>(PLRC[i]) * LRC[i];
             }
-            Res += static_cast<double>(PLRC[i]) * LRC[i];
+            Ret[n] = Res * pow(dR, one + static_cast<double>(PLRC[0]));
         }
-        Ret[n] = Res * pow(dR, one + static_cast<double>(PLRC[0]));
     }
     return Ret;
 }
