@@ -412,6 +412,7 @@ double Calculation::getEnergy()
 	int mx, my, mz, lx, ly, lz, i1, i2, p, n;
 	double r, dx, dy, dz, T, U;
 	Particle *PP1, *PP2;
+    for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
 	for (mx = 0, T = U = 0.0; mx < N; mx++) 
 		T += P[mx].vX * P[mx].vX + P[mx].vY * P[mx].vY + P[mx].vZ * P[mx].vZ;
 	for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
@@ -561,6 +562,7 @@ void Calculation::move()
 void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
+    for (int n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return;
     int n, i, x, y, z; // m;
     bool isNotFirstIt(false);
 	double hh = 0.5 * h, h6 = h / 6.0, *ax = new double[N], *ay = new double[N];
@@ -845,6 +847,7 @@ double Calculation::setEnergy(double newE)
 	int n;
 	double nE = newE, ParE, ParV, ERem = 0.0;
 	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (nE - Energy) / double(N);
+    for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
 	if (nE > Energy)
 	{
 		Energy = nE;

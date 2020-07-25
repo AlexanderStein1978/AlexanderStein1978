@@ -1,6 +1,6 @@
 #include "window.h"
 #include "Calculation.h"
-#include "picture.h"
+#include "Picture.h"
 #include "particle.h"
 
 #include <QCloseEvent>
