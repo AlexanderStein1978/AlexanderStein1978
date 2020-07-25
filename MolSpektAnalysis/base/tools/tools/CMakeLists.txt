@@ -17,7 +17,5 @@ add_library(Tools STATIC
 target_include_directories(Tools PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Tools
-	Datensatz
-	Progressions
 	Qt5::Widgets
 )

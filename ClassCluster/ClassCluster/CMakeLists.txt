@@ -8,19 +8,20 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster
     Calculation.cpp
-	Calculation.h
+    Calculation.h
     controlwindow.cpp
-	controlwindow.h
-	deltaesortfunctor.h
-	main.cpp
-	particle.h
-	picture.cpp
-	picture.h
-	window.cpp
-	window.h
+    controlwindow.h
+    deltaesortfunctor.h
+    main.cpp
+    particle.h
+    potstruct.h
+    window.cpp
+    window.h
 )
 
 target_link_libraries(ClassCluster
-	Templates
-	Qt5::Widgets
+    Potential
+    Templates
+	Tools
+    Qt5::Widgets
 )

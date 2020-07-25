@@ -9,8 +9,11 @@
 #include <QMutex>
 
 class Particle;
+class Potential;
 class QFile;
 class QTextStream;
+
+struct PotStruct;
 
 
 class Calculation : public QThread
@@ -18,7 +21,9 @@ class Calculation : public QThread
 	Q_OBJECT
 	
 	public:
-		Calculation(QObject* parent = 0);
+        enum PotRole{ClosestTwo, NextTwo, Remaining, NumPot};
+
+        Calculation(PotStruct* PotSs = nullptr, QObject* parent = 0);
 		~Calculation();
 		void initialize();
 		void run();
@@ -35,6 +40,7 @@ class Calculation : public QThread
         void rotate();
         void triggerSnapShot();
         Particle* getParticles(int &N);
+        void setPotential(const PotRole role, PotStruct &Pot);
 		
 		inline bool getMove()
 		{
@@ -66,10 +72,10 @@ class Calculation : public QThread
 
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
 
+        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
         const double PS;
-        double Energy, *Pot, *dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
-        double *XP, *YP, *ZP, *RepF, *RepP, **MAR, Speed, YMid, potRangeScale;
-		int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
+        double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
+        double *XP, *YP, *ZP, **MAR, Speed, YMid, potRangeScale;
 		Particle *P, ****G, **D;
         bool Run, rotated, *Fixed, Move, writeSnapShot;
         QFile* DebugLogFile;

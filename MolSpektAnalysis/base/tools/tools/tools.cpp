@@ -10,8 +10,6 @@
 
 #include "tools.h"
 #include "utils.h"
-#include "marker.h"
-#include "progressions.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -114,79 +112,6 @@ void Test(double &d1, double &d2, QLineEdit *L1, QLineEdit *L2)
 	}
 	L1->setText(QString::number(d1, 'g', 11));
 	L2->setText(QString::number(d2, 'g', 11));
-    }
-}
-
-void GSearchLines(Marker *marker, Marker *LaserLine, const int &AnzahlMarker, const double &ST,
-		  const double &GMH, Progressions &Prog, const int &veu, const int &Jeu, const int &NI,
-		  double ***&ELU)
-{
-    Marker *FoundLines[veu+1];
-    Marker **MB, *LL;
-    int FoundCount = 0, i, j=0, FG=0, AGMarker = 0, Ii, viu, Jiu;
-    for (i=0; i<AnzahlMarker; i++) 
-    {
-	if (marker[i].Marked) 
-	{
-	    j++;
-	    FG = i;
-	}
-	if (marker[i].HFLM >= GMH) AGMarker++; 
-    }
-    if (j==1) LL = marker + FG;
-    else LL = LaserLine;
-    Marker *GMarker[AGMarker];
-    j = 0;
-    for (i=0; i<AnzahlMarker; i++) if (marker[i].HFLM >= GMH) GMarker[j++] = marker + i;
-    double LES, ZS;
-    for (Ii=0; Ii < NI; Ii++) 
-    {
-	for (Jiu=0; Jiu < Jeu; Jiu++) 
-	{
-	    for (viu=0; viu < veu; viu++)
-	    {
-		//printf("Ii=%d, Jiu=%d, viu=%d\n", Ii, Jiu, viu);
-		if(ELU[Ii][viu][Jiu] == 0.0) break;
-		LES = LL->Line[0] + ELU[Ii][viu][Jiu];
-		j = AGMarker - 2;
-		for (i=0; i<veu; i++)
-		{
-		    if(ELU[Ii][i][Jiu] == 0.0) break;
-		    ZS = LES - ELU[Ii][i][Jiu];
-		    while (ZS < GMarker[j]->Line[0] && j>0) j--;
-		    if (GMarker[j+1]->Line[0] - ZS < ZS - GMarker[j]->Line[0]) j++;
-		    if (fabs(GMarker[j]->Line[0] - ZS) < ST) FG++;
-		    if (j==AGMarker-1) j--;
-		} 
-		if (FG > 2)
-		{
-		    printf("Progression gefunden.\n");
-		    j = AnzahlMarker - 2;
-		    for (i=0; i<veu; i++)
-		    {
-			if(ELU[Ii][i][Jiu] == 0.0) break;
-			ZS = LES - ELU[Ii][i][Jiu];
-			while (ZS < marker[j].Line[0] && j>0) j--;
-			if (marker[j+1].Line[0] - ZS < ZS - marker[j].Line[0]) j++;
-			if (fabs(marker[j].Line[0] - ZS) < ST)
-			{
-			    //printf("Gefunden: v=%d, J=%d, WN=%f\n", i, Jiu, marker[j].Line[0]);
-			    FoundLines[FoundCount] = marker + j;
-			    FoundLines[FoundCount]->DD = ZS - FoundLines[FoundCount]->Line[0];
-			    FoundLines[FoundCount]->Iso = Ii;
-			    FoundLines[FoundCount]->vss = i;
-			    FoundLines[FoundCount++]->Jss = Jiu;
-			}
-			if (j==AnzahlMarker-1) j--;
-		    } 
-		    MB = new Marker*[FoundCount];
-		    for (i=0; i<FoundCount; i++) MB[i] = FoundLines[i];
-		    Prog.Insert(MB, FoundCount, FG);
-		    printf("FoundCount=%d\n", FoundCount);
-		}
-		FoundCount = FG = 0;
-	    }
-	}
     }
 }
 

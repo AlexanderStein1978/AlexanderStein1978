@@ -27,6 +27,7 @@ target_include_directories(Spektrum PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(Spektrum
 	FCF
 	FitObject
+    Progressions
 	SpectSimulation
 	TermPlot
 	Qt5::Widgets

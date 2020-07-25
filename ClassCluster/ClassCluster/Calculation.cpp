@@ -3,6 +3,9 @@
 #include "Calculation.h"
 #include "heapsort.h"
 #include "deltaesortfunctor.h"
+#include "utils.h"
+#include "potstruct.h"
+#include "potential.h"
 
 #include <QGridLayout>
 #include <QFile>
@@ -15,23 +18,15 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeScale(PS), writeSnapShot(false)
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NPot(30000), PS(1e3),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
 {
 	//printf("Calculation::Calculation\n");
-	nx = ny = nz = 10;
-    double IntDist = 20.0, R, F, F3, P0, st, F0, F1;
+    double IntDist = 20.0, st;
+    int n, x, y;
     st = 1/PS;
-	NPot = 30000;
 	Re = 4.0;
-	R = pow(Re, 6);
-    const double De = 1000.0;
-    const double a = 2.0 * De * R;
-    const double b = De * R * R;
-    const double ratioDeRep = 0.1;
-    const double ratioReRep = 2.0;
-    const double AdBRep = 0.5 * Re * Re * Re * ratioReRep * ratioReRep * ratioReRep;
-    const double BRep = -4.0 * ratioDeRep * De * AdBRep;
-    const double ARep = AdBRep * BRep;
+    nx = ny = nz = 10;
 	Rm = st;
 	RM = st * double(NPot);
 	h = 0.001; //DefaultStepSize 
@@ -50,53 +45,15 @@ Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeSca
 	
 	YMid = 0.5 * MaxY;
 	
-	int n, x, y;
-	/*QFile Datei(PotFile);
-	Datei.open(QIODevice::ReadOnly);
-	QTextStream S(&Datei);
-	QStringList SL = S.readLine().split(' ', QString::SkipEmptyParts);
-	NPot = SL[0].toInt();
-	Re = SL[1].toDouble();
-	SL = S.readLine().split(' ', QString::SkipEmptyParts);
-	Rm = SL[0].toDouble();
-	P0 = SL[1].toDouble();
-	F0 = SL[2].toDouble();
-	SL = S.readLine().split(' ', QString::SkipEmptyParts);
-	RD = SL[0].toDouble() - Rm;
-	P1 = SL[1].toDouble();
-	F1 = SL[2].toDouble();
-	Pot = new double[NPot += (x = int(Rm / RD)) + 1];
-	dPdR = new double[NPot];
-	RepF = new double[NPot];
-	RepP = new double[NPot];
-	for (n=0; n<=x; n++) dPdR[n] = F0;
-	for (n=x-1, Pot[x] = P0 + (F = F0 * RD); n>=0; n--) Pot[n] = Pot[n+1] + F;
-	for (n=x+3, Pot[x+1] = P0, Pot[x+2] = P1, dPdR[x+1] = F0, dPdR[x+2] = F1; n < NPot; n++)
-	{
-		Pot[n] = (SL = S.readLine().split(' ', QString::SkipEmptyParts))[1].toDouble();
-		dPdR[n] = SL[2].toDouble();
-	}
-	RM = SL[0].toDouble();
-	PS = double(NPot - x - 2) / (RM - Rm);*/
-	
-	Pot = new double[NPot];
-	dPdR = new double[NPot];
-	RepF = new double[NPot];
-	RepP = new double[NPot];
-	for (n=0, R = Rm; n < NPot; n++, R += st)
-	{
-        F0 = 1.0 / R;
-        F3 = F0 * F0 * F0;
-        F = F3 * F3;
-		F1 = -a * F;
-		P0 = F * F;
-		Pot[n] = F1 + b * P0;
-        RepP[n] = ARep * F - BRep * F3;
-		F1 *= -6 * F0;
-		P0 *= -12 * F0;
-		dPdR[n] = F1 + b * P0;
-        RepF[n] = F0 * (3.0 * BRep * F3 - 6.0 * ARep * F);
-	}
+    for (n=0; n < NumPot; ++n)
+    {
+        if (nullptr != PotSs && nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
+        else
+        {
+            Pot[n] = nullptr;
+            dPdR[n] = nullptr;
+        }
+    }
 	
 	PZS = int(round(MaxZ / Re));
 	PYS = int(round(MaxY / Re)); 
@@ -130,10 +87,13 @@ Calculation::Calculation(QObject* parent): QThread(parent), PS(1e3), potRangeSca
 Calculation::~Calculation()
 {
 	int x, y, n;
-	delete[] Pot;
-	delete[] dPdR;
-	delete[] RepP;
-	delete[] RepF;
+    for (n=0; n < NumPot; ++n)
+    {
+        if (nullptr != Pot[n]) delete[] Pot[n];
+        if (nullptr != dPdR[n]) delete[] dPdR[n];
+    }
+    delete[] Pot;
+    delete[] dPdR;
 	delete[] P;
 	delete[] D;
 	delete[] XP;
@@ -272,18 +232,18 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (r <= MAR[i1][1] && r <= MAR[i2][1])
     {
-        if (calcA) a = 10.0 * dPdR[p] / r;
-        U += 10.0 * Pot[p];
+        if (calcA) a = dPdR[ClosestTwo][p] / r;
+        U += Pot[ClosestTwo][p];
     }
     else if (r <= MAR[i1][3] && r <= MAR[i2][3])
     {
-        if (calcA) a = dPdR[p] / r;
-        U += Pot[p];
+        if (calcA) a = dPdR[NextTwo][p] / r;
+        U += Pot[NextTwo][p];
     }
     else
     {
-        if (calcA) a = RepF[p] / r;
-        U += RepP[p];
+        if (calcA) a = dPdR[Remaining][p] / r;
+        U += Pot[Remaining][p];
     }
     if (abs(a) > 1e6)
     {
@@ -552,7 +512,7 @@ void Calculation::initialize()
 	double rx, rz, rys = sqrt(0.5) * MaxY / double(PYS), rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
 	double y1 = 0.5 * MaxY - rys;
 	double y2 = 0.5 * MaxY + rys;
-	double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ;
+    double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ * 1.001;
 	for (x=0; x < XS; x++) for (y=0; y < YS; y++) for (z=0; z < ZS; z++) G[x][y][z] = 0;
 	for (n=z=0, rz = 0.5 * rzs; z < PZS; z++, rz += rzs) 
 	{
@@ -951,6 +911,20 @@ double Calculation::setEnergy(double newE)
 	}
 	E = Energy;
 	return Energy;
+}
+
+void Calculation::setPotential(const PotRole role, PotStruct &PotS)
+{
+    if (Pot[role] != nullptr) delete[] Pot[role];
+    if (dPdR[role] != nullptr) delete[] dPdR[role];
+    const double dRScale = 1.0 / PotS.RZoom, Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.VZoom * dRScale;
+    Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NumPoints);
+    dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NumPoints);
+    if (PotS.RZoom != 1.0 || PotS.VZoom != 1.0) for (int n=0; n < NumPoints; ++n)
+    {
+        Pot[role][n] *= PotS.VZoom;
+        dPdR[role][n] *= devF;
+    }
 }
 
 void Calculation::setSpeed(double S)
