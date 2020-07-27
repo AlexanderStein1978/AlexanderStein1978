@@ -7,8 +7,8 @@ class Potential;
 
 struct PotStruct
 {
-    PotStruct(Potential* const Pot)
-        : pot(Pot), VZoom(1.0), RZoom(1.0)
+    PotStruct()
+        : pot(nullptr), VZoom(1.0), RZoom(1.0)
     {
     }
 

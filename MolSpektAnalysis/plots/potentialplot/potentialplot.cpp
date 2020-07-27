@@ -88,6 +88,24 @@ void PotentialPlot::addPotential(Potential *addPot)
 	Paint();
 }
 
+void PotentialPlot::removePotential(Potential *remPot)
+{
+    if (nullptr == remPot) return;
+    if (pot == remPot) plotPotential();
+    else
+    {
+        int n;
+        for (n=0; n < NCopies && potCopies[n]->getFileName() != remPot->getFileName(); ++n) ;
+        if (n < NCopies)
+        {
+            delete potCopies[n];
+            for (int m=n+1; m < NCopies; ++m) potCopies[m-1] = potCopies[m];
+            --NCopies;
+            copyP ^= copyP;
+        }
+    }
+}
+
 void PotentialPlot::clearHistory()
 {
 	printf("PotentialPlot::clearHistory()\n");
@@ -174,7 +192,11 @@ void PotentialPlot::MovePoint(int i_pointIndex, double i_newX, double i_newY)
 void PotentialPlot::plotPotential(Potential *potential)
 {
 	//printf("PotentialPlot::plotPotential, Name=%s\n", potential->getName().toAscii().data());
-	if (pot != 0) disconnect(pot, SIGNAL(propertiesChanged()), this, SLOT(PotentialChanged()));
+    if (pot != 0)
+    {
+        disconnect(pot, SIGNAL(propertiesChanged()), this, SLOT(PotentialChanged()));
+        addPotential(pot);
+    }
 	pot = potential;
 	if (pot != 0) 
 	{

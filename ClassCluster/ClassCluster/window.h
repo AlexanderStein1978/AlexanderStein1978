@@ -4,9 +4,11 @@
 
 #include <QWidget>
 
+#include "Calculation.h"
+
 class Picture;
 class Particle;
-class Calculation;
+class PotStruct;
 
 
 class Window : public QWidget
@@ -14,7 +16,7 @@ class Window : public QWidget
     Q_OBJECT
 
     public:
-        Window();
+        Window(PotStruct* PotSs = nullptr);
         ~Window();
         void start();
         void stop();
@@ -28,6 +30,7 @@ class Window : public QWidget
         void setPotentialRangeScale(const double newScale);
         void setSpeed(const double newSpeed);
         void setStepSize(const double size);
+        void setPotential(const Calculation::PotRole role, PotStruct &Pot);
         void stopCalc();
         bool isRunning() const;
         bool isMoving() const;

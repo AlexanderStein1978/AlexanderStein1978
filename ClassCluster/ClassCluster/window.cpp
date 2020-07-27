@@ -12,9 +12,9 @@
 #include <QMessageBox>
 
 
-Window::Window()
+Window::Window(PotStruct *PotSs)
 {
-    Calc = new Calculation;
+    Calc = new Calculation(PotSs);
     QBoxLayout *L = new QBoxLayout(QBoxLayout::LeftToRight, this);
     L->addWidget(Pict = new Picture(this));
     int XSize, YSize;
@@ -139,6 +139,11 @@ void Window::setStepSize(const double size)
 void Window::triggerSnapShot()
 {
     Calc->triggerSnapShot();
+}
+
+void Window::setPotential(const Calculation::PotRole role, PotStruct &Pot)
+{
+    Calc->setPotential(role, Pot);
 }
 
 void Window::writeSnapShot(Particle *P, int N)

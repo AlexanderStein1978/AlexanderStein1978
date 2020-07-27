@@ -1,0 +1,166 @@
+#include "potcontrol.h"
+#include "potstruct.h"
+#include "potential.h"
+#include "potentialplot.h"
+#include "controlwindow.h"
+
+#include <QLineEdit>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QDoubleValidator>
+#include <QLabel>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QTextStream>
+
+
+PotControl::PotControl(ControlWindow *i_parent)
+    : parent(i_parent)
+    , pot(nullptr)
+    , plot(nullptr)
+    , fileName(new QLineEdit(parent))
+    , VScale(new QLineEdit("1.0", parent))
+    , RScale(new QLineEdit("1.0", parent))
+    , openB(new QPushButton("...", parent))
+    , saveB(new QPushButton("save", parent))
+    , saveAsB(new QPushButton("save as...", parent))
+    , showBox(new QCheckBox("plot", parent))
+    , changed(false)
+{
+    VScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, VScale));
+    RScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, RScale));
+
+    connect(fileName, SIGNAL(editingFinished()), this, SLOT(Open()));
+    connect(VScale, SIGNAL(editingFinished()), this, SLOT(Changed()));
+    connect(RScale, SIGNAL(editingFinished()), this, SLOT(Changed()));
+    connect(openB, SIGNAL(clicked()), this, SLOT(ShowOpenDialog()));
+    connect(saveB, SIGNAL(clicked()), this, SLOT(Save()));
+    connect(saveAsB, SIGNAL(clicked()), this, SLOT(SaveAs()));
+    connect(showBox, SIGNAL(toggled(bool)), this, SLOT(Plot(bool)));
+}
+
+PotControl::~PotControl()
+{
+    if (nullptr != pot) delete pot;
+}
+
+void PotControl::Init(const QString& data)
+{
+    if (data.isEmpty()) return;
+    QStringList list = data.split('\t', QString::SkipEmptyParts);
+    fileName->setText(list[0]);
+    if (list.size() > 1) VScale->setText(list[1]);
+    if (list.size() > 2) RScale->setText(list[2]);
+    Open();
+}
+
+void PotControl::Serialize(QTextStream& stream) const
+{
+    stream << fileName->text() << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
+}
+
+void PotControl::FillLayout(QGridLayout* layout, const int row) const
+{
+    layout->addWidget(fileName, row, 1);
+    layout->addWidget(openB, row, 2);
+    layout->addWidget(saveB, row, 3);
+    layout->addWidget(saveAsB, row, 4);
+    layout->addWidget(new QLabel("VS:", parent), row, 5);
+    layout->addWidget(VScale, row, 6);
+    layout->addWidget(new QLabel("RS:", parent), row, 7);
+    layout->addWidget(RScale, row, 8);
+    layout->addWidget(showBox, row, 9);
+}
+
+void PotControl::FillStruct(PotStruct& potStruct) const
+{
+    potStruct.pot = pot;
+    potStruct.VZoom = VScale->text().toDouble();
+    potStruct.RZoom = RScale->text().toDouble();
+}
+
+bool PotControl::canPotBeClosed() const
+{
+    if (nullptr == pot || pot->isSaved()) return true;
+
+    QMessageBox::StandardButton result = QMessageBox::question(parent, "The potential " + fileName->text() + " is not saved!", "Do you want to save it now?",
+                                                               QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+    switch(result)
+    {
+    case QMessageBox::Yes:
+        if (!pot->writeData()) return false;
+    case QMessageBox::No:
+        return true;
+    case QMessageBox::Cancel:
+        return false;
+    default:
+        break;
+    }
+    return true;
+}
+
+void PotControl::Open()
+{
+    if (canPotBeClosed())
+    {
+        if (fileName->text().isEmpty())
+        {
+            delete pot;
+            pot = nullptr;
+        }
+        else openPotential();
+    }
+}
+
+void PotControl::ShowOpenDialog()
+{
+    if (!canPotBeClosed()) return;
+    QString startPath = (fileName->text().isEmpty() ? "../../../Physics/ClassCluster/" : fileName->text());
+    QString newPath = QFileDialog::getOpenFileName(parent, "Please select the potential file", startPath, "*.pot");
+    if (newPath.isEmpty()) return;
+    fileName->setText(newPath);
+    openPotential();
+}
+
+void PotControl::openPotential()
+{
+    Potential* newPot = new Potential;
+    if (newPot->readData(fileName->text()))
+    {
+        if (nullptr != plot && showBox->isChecked())
+        {
+            Plot(false);
+            plot->addPotential(pot);
+        }
+        if (pot != nullptr) delete pot;
+        pot = newPot;
+    }
+    else
+    {
+        delete newPot;
+        fileName->setText(pot->getFileName());
+        if (showBox->isChecked()) showBox->setChecked(false);
+    }
+}
+
+void PotControl::Save()
+{
+    if (nullptr != pot) pot->writeData();
+}
+
+void PotControl::SaveAs()
+{
+    if (nullptr != pot)
+    {
+        QString startPath = (fileName->text().isEmpty() ? "../../../Physics/ClassCluster/" : fileName->text());
+        QString newFileName = QFileDialog::getSaveFileName(parent, "Please select the potential file", startPath, "*.pot");
+        if (!newFileName.isEmpty()) fileName->setText(newFileName);
+    }
+}
+
+void PotControl::Plot(const bool show)
+{
+    if (nullptr == plot) return;
+    if (show) plot->plotPotential(pot);
+    else plot->removePotential(pot);
+}

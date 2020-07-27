@@ -3,13 +3,14 @@
 
 
 #include <QWidget>
-
+#include <QString>
 
 class QLineEdit;
 class QCloseEvent;
 class QPushButton;
 
 class Window;
+class PotControl;
 
 
 class ControlWindow : public QWidget
@@ -37,7 +38,8 @@ private:
 
     QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
-
+    PotControl** PotControls;
+    const QString SettingsFileName;
 };
 
 #endif // CONTROLWINDOW_H

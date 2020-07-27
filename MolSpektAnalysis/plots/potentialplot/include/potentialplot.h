@@ -31,6 +31,7 @@ public:
 	void ResetZoom();
 	void clearHistory();
 	void addPotential(Potential *pot);
+    void removePotential(Potential *pot);
 	void setShowHistory(bool H);
 	bool getShowHistory();
 	void PotSnapShot();

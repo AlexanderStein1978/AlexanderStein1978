@@ -14,6 +14,8 @@ add_executable(ClassCluster
     controlwindow.h
     deltaesortfunctor.h
     particle.h
+	potcontrol.cpp
+	potcontrol.h
     potstruct.h
     window.cpp
     window.h
