@@ -3,6 +3,7 @@
 #include "window.h"
 #include "potcontrol.h"
 #include "potstruct.h"
+#include "potentialplot.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -12,17 +13,18 @@
 #include <QTextStream>
 
 
-ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), SettingsFileName("../../../Physics/ClassCluster/Settings.dat")
+ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), Plot(new PotentialPlot),
+    SettingsFileName("../../../Physics/ClassCluster/Settings.dat")
 {
     QFile settingsFile(SettingsFileName);
-    QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), energy(QString::number(window->getEnergy(), 'g', 3)), rangeScale(QString::number(1.0, 'f', 3));
+    QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), energy("-1.0"), rangeScale(QString::number(1.0, 'f', 3));
     PotStruct PotSs[Calculation::NumPot];
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this);
     if (settingsFile.exists())
     {
         settingsFile.open(QIODevice::ReadOnly);
         QTextStream S(&settingsFile);
-        QStringList settings = S.readLine().split('\t', QString::SkipEmptyParts);
+        QStringList settings = S.readLine().split('\t');
         if (settings.size() == 4u)
         {
             speed = settings[0];
@@ -33,6 +35,7 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
             {
                 const QString data = S.readLine();
                 PotControls[n]->Init(data);
+                PotControls[n]->setPlot(Plot);
                 PotControls[n]->FillStruct(PotSs[n]);
             }
         }
@@ -60,9 +63,19 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
     L->setRowMinimumHeight(4, 20);
     L->addWidget(new QLabel("Interaction potentials:", this), 5, 0, 1, 4);
     L->addLayout(PotLayout, 6, 0, 1, 4);
-    PotLayout->addWidget(new QLabel("Closest 2", this), 0, 0);
-    PotLayout->addWidget(new QLabel("Next 2", this), 0, 0);
-    PotLayout->addWidget(new QLabel("Remaining", this), 0, 0);
+    PotLayout->setColumnMinimumWidth(0, 60);
+    PotLayout->setColumnStretch(1, 10);
+    PotLayout->setColumnStretch(2, 0);
+    PotLayout->setColumnStretch(3, 1);
+    PotLayout->setColumnStretch(4, 1);
+    PotLayout->setColumnMinimumWidth(5, 20);
+    PotLayout->setColumnStretch(6, 1);
+    PotLayout->setColumnMinimumWidth(7, 20);
+    PotLayout->setColumnStretch(8, 1);
+    PotLayout->setColumnStretch(9, 1);
+    PotLayout->addWidget(new QLabel("Closest 2:", this), Calculation::ClosestTwo, 0);
+    PotLayout->addWidget(new QLabel("Next 2:", this), Calculation::NextTwo, 0);
+    PotLayout->addWidget(new QLabel("Remaining:", this), Calculation::Remaining, 0);
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->FillLayout(PotLayout, n);
     connect(Start, SIGNAL(clicked()), this, SLOT(run()));
     connect(Restart, SIGNAL(clicked()), this, SLOT(restart()));
@@ -78,7 +91,7 @@ ControlWindow::~ControlWindow()
     QFile file(SettingsFileName);
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
-    S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit << '\n';
+    S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit->text() << '\n';
     if (NULL != window) delete window;
     for (int n=0; n < Calculation::NumPot; ++n)
     {
@@ -86,6 +99,7 @@ ControlWindow::~ControlWindow()
         delete PotControls[n];
     }
     delete[] PotControls;
+    if (nullptr != Plot) delete Plot;
 }
 
 void ControlWindow::closeEvent(QCloseEvent *event)

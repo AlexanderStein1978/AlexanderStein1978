@@ -47,7 +47,7 @@ PotControl::~PotControl()
 void PotControl::Init(const QString& data)
 {
     if (data.isEmpty()) return;
-    QStringList list = data.split('\t', QString::SkipEmptyParts);
+    QStringList list = data.split('\t');
     fileName->setText(list[0]);
     if (list.size() > 1) VScale->setText(list[1]);
     if (list.size() > 2) RScale->setText(list[2]);
@@ -138,14 +138,14 @@ void PotControl::openPotential()
     else
     {
         delete newPot;
-        fileName->setText(pot->getFileName());
+        if (nullptr != pot) fileName->setText(pot->getFileName());
         if (showBox->isChecked()) showBox->setChecked(false);
     }
 }
 
 void PotControl::Save()
 {
-    if (nullptr != pot) pot->writeData();
+    if (nullptr != pot) pot->writeData(fileName->text());
 }
 
 void PotControl::SaveAs()
@@ -154,7 +154,11 @@ void PotControl::SaveAs()
     {
         QString startPath = (fileName->text().isEmpty() ? "../../../Physics/ClassCluster/" : fileName->text());
         QString newFileName = QFileDialog::getSaveFileName(parent, "Please select the potential file", startPath, "*.pot");
-        if (!newFileName.isEmpty()) fileName->setText(newFileName);
+        if (!newFileName.isEmpty())
+        {
+            fileName->setText(newFileName);
+            pot->writeData(newFileName);
+        }
     }
 }
 
@@ -163,4 +167,5 @@ void PotControl::Plot(const bool show)
     if (nullptr == plot) return;
     if (show) plot->plotPotential(pot);
     else plot->removePotential(pot);
+    if (!plot->isVisible()) plot->show();
 }

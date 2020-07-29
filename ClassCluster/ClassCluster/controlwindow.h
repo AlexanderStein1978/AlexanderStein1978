@@ -11,6 +11,7 @@ class QPushButton;
 
 class Window;
 class PotControl;
+class PotentialPlot;
 
 
 class ControlWindow : public QWidget
@@ -39,6 +40,7 @@ private:
     QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
     PotControl** PotControls;
+    PotentialPlot *const Plot;
     const QString SettingsFileName;
 };
 
