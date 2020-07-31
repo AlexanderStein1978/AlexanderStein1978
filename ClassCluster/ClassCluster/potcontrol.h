@@ -47,6 +47,7 @@ private slots:
     void Save();
     void SaveAs();
     void Plot(const bool show);
+    void RecalcExtensions();
 
     void Changed()
     {
@@ -62,7 +63,7 @@ private:
     QLineEdit *fileName, *VScale, *RScale;
     QPushButton *openB, *saveB, *saveAsB;
     QCheckBox *showBox;
-    bool changed;
+    bool changed, changing;
 };
 
 #endif // POTCONTROL_H

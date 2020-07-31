@@ -40,6 +40,7 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
             }
         }
     }
+    Plot->setShowPoints(true);
     window = new Window(PotSs);
     QGridLayout *L = new QGridLayout(this), *PotLayout = new QGridLayout;
     L->setColumnStretch(0, 1);
@@ -109,7 +110,8 @@ void ControlWindow::closeEvent(QCloseEvent *event)
         event->ignore();
         return;
     }
-    if (NULL != window) window->close();
+    if (nullptr != window) window->close();
+    if (nullptr != Plot) Plot->close();
     event->accept();
 }
 

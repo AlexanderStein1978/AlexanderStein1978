@@ -26,6 +26,7 @@ PotControl::PotControl(ControlWindow *i_parent)
     , saveAsB(new QPushButton("save as...", parent))
     , showBox(new QCheckBox("plot", parent))
     , changed(false)
+    , changing(false)
 {
     VScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, VScale));
     RScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, RScale));
@@ -132,8 +133,13 @@ void PotControl::openPotential()
             Plot(false);
             plot->addPotential(pot);
         }
-        if (pot != nullptr) delete pot;
+        if (pot != nullptr)
+        {
+            disconnect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
+            delete pot;
+        }
         pot = newPot;
+        connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
     }
     else
     {
@@ -168,4 +174,13 @@ void PotControl::Plot(const bool show)
     if (show) plot->plotPotential(pot);
     else plot->removePotential(pot);
     if (!plot->isVisible()) plot->show();
+}
+
+void PotControl::RecalcExtensions()
+{
+    if (nullptr == pot || changing) return;
+    changing = true;
+    pot->cdConnectSR();
+    pot->cdConnectLR1C();
+    changing = false;
 }
