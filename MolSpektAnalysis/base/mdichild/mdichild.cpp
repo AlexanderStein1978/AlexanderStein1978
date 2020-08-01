@@ -259,7 +259,7 @@ bool MDIChild::read(QFile *Datei)
     return true;
 }
 
-QString MDIChild::getRelativePath(QString& CurrentPath, QString &MolPath)
+QString MDIChild::getRelativePath(const QString& CurrentPath, const QString &MolPath)
 {
     QStringList MolList = MolPath.split(QRegExp("[\\/]"), QString::SkipEmptyParts), LocalList = CurrentPath.split(QRegExp("[\\/]"), QString::SkipEmptyParts);
     int n, m;

@@ -144,8 +144,16 @@ void PotControl::openPotential()
     else
     {
         delete newPot;
-        if (nullptr != pot) fileName->setText(pot->getFileName());
         if (showBox->isChecked()) showBox->setChecked(false);
+    }
+    if (nullptr != pot)
+    {
+        QString path = pot->getRelativePath(parent->getProgramPath());
+        if (path != fileName->text())
+        {
+            if (path.left(2) == "..") path = "../" + path;
+            fileName->setText(path);
+        }
     }
 }
 

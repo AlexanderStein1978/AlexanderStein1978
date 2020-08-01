@@ -21,6 +21,11 @@ class ControlWindow : public QWidget
 public:
     ControlWindow();
     ~ControlWindow();
+    
+    inline const QString& getProgramPath() const
+    {
+        return ProgramPath;
+    }
 
 private slots:
     void run();
@@ -41,7 +46,7 @@ private:
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
     PotControl** PotControls;
     PotentialPlot *const Plot;
-    const QString SettingsFileName;
+    const QString SettingsFileName, ProgramPath;
 };
 
 #endif // CONTROLWINDOW_H

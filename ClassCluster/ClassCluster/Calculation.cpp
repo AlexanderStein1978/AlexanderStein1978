@@ -47,12 +47,9 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NP
 	
     for (n=0; n < NumPot; ++n)
     {
+        Pot[n] = nullptr;
+        dPdR[n] = nullptr;
         if (nullptr != PotSs && nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
-        else
-        {
-            Pot[n] = nullptr;
-            dPdR[n] = nullptr;
-        }
     }
 	
 	PZS = int(round(MaxZ / Re));

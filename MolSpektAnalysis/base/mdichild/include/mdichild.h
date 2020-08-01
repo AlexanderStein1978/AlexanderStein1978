@@ -51,9 +51,9 @@ public:
     QString getTypeString();
 	virtual bool askForQuit();
     QString getAbsolutePath(QString &CurrentPath, QString &MolPath);
-    QString getRelativePath(QString &CurrentPath, QString &MolPath);
+    QString getRelativePath(const QString &CurrentPath, const QString &MolPath);
 
-    QString getRelativePath(QString &MolPath)
+    QString getRelativePath(const QString &MolPath)
     {
         return getRelativePath(FileName, MolPath);
     }

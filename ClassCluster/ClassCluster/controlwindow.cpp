@@ -11,10 +11,11 @@
 #include <QLineEdit>
 #include <QCloseEvent>
 #include <QTextStream>
+#include <QDir>
 
 
 ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), Plot(new PotentialPlot),
-    SettingsFileName("../../../Physics/ClassCluster/Settings.dat")
+    SettingsFileName("../../../Physics/ClassCluster/Settings.dat"), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), energy("-1.0"), rangeScale(QString::number(1.0, 'f', 3));

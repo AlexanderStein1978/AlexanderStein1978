@@ -33,7 +33,6 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 {
 	//printf("TableWindow::TableWindow: typ=%d\n", typ);
 	QLabel *NL = 0, *SL = 0;
-	if (typ < -3 or typ > 5) printf("TableWindow::TableWindow: error: invalid typ=%d\n", typ);
 	IsoIcon = 0;
 	molecule = 0;
 	setMolecule(M);

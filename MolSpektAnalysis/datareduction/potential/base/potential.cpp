@@ -115,7 +115,6 @@ Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWind
     connect(Fit, SIGNAL(finished()), this, SLOT(fitFinished()));
     connect(Worker, SIGNAL(badListChanged(double,double,double)), this, SLOT(badListChanged(double,double,double)));
     connect(Worker, SIGNAL(potentialImproved(PotentialData*)), this, SLOT(potentialImproved(PotentialData*)));
-    connect(Fit, SIGNAL(terminated()), this, SLOT(fitTerminated()));
     /*DebugFile = new QFile(getFileName() + "DebugOut.dat");
     DebugFile->open(QIODevice::WriteOnly);
     DebugStream = new QTextStream(DebugFile);*/
@@ -4133,7 +4132,7 @@ bool Potential::readCoupledPotData(QString Filename)
         MW->showMDIChild(m_couplingFuncs);
     }
     else m_couplingFuncs = 0;
-    N = p;
+    if ((N = p) < 2) return false;
     if (q_e_si != 0.0) Worker->setLambdaDoubling(q_e_si, 0.0);
     if (q_e_pi != 0.0 || q_f_pi != 0.0) Pot[1]->Worker->setLambdaDoubling(q_e_pi, q_f_pi);
     if (CoupledPot != 0)
