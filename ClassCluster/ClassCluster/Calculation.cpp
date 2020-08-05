@@ -918,9 +918,9 @@ void Calculation::setPotential(const PotRole role, PotStruct &PotS)
     if (Pot[role] != nullptr) delete[] Pot[role];
     if (dPdR[role] != nullptr) delete[] dPdR[role];
     const double dRScale = 1.0 / PotS.RZoom, Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.VZoom * dRScale;
-    Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NumPoints);
-    dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NumPoints);
-    if (PotS.RZoom != 1.0 || PotS.VZoom != 1.0) for (int n=0; n < NumPoints; ++n)
+    Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NPot);
+    dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NPot);
+    if (PotS.RZoom != 1.0 || PotS.VZoom != 1.0) for (int n=0; n < NPot; ++n)
     {
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;

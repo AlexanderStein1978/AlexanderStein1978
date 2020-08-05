@@ -2,58 +2,63 @@
 // C++ Interface: constants
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2017
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
-#ifndef MAVersion
-#define MAVersion "0.2.8.0"
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#include <QString>
+
+
+const QString MAVersion("0.2.8.0");
 
 #ifdef Q_WS_WIN
-#define DIRSEP "\\"
+const QString DIRSEP("\\");
 #else
-#define DIRSEP "/"
+const QString DIRSEP("/");
 #endif
 
-#define MaxDunCoefficients 200
-#define MaxAtoms 150
-#define MaxMolecules 150
-#define MaxTermTables 150
-#define MaxDunTables 150
-#define MaxPotentials 150
-#define MaxFitDataSets 150
-#define MaxSpectSimulations 150
-#define MaxIso 50
-#define MaxStates 50
-#define MaxTransitions 100
-#define MaxLineTables 100
-#define MaxFCFTables 15
-#define MaxSpectra 20
-#define MaxProgressions 20000
-#define MaxTermRows 700000
+const int MaxDunCoefficients = 200;
+const int MaxAtoms = 150;
+const int MaxMolecules = 150;
+const int MaxTermTables = 150;
+const int MaxDunTables = 150;
+const int MaxPotentials = 150;
+const int MaxFitDataSets = 150;
+const int MaxSpectSimulations = 150;
+const int MaxIso = 50;
+const int MaxStates = 50;
+const int MaxTransitions = 100;
+const int MaxLineTables = 100;
+const int MaxFCFTables = 15;
+const int MaxSpectra = 20;
+const int MaxProgressions = 20000;
+const int MaxTermRows = 700000;
 
-#define cMaxv 200
-#define cMaxJ 500
-#define rmin 1.8
-#define rmax 200.0
-#define CMaxSearchDev 0.02
-#define NumPoints 500000
-#define NumFCF_WFPoints 100000
-#define MaxvFCF 500
-#define SaveMemory false
+const int cMaxv = 200;
+const int cMaxJ = 500;
+const double rmin = 1.8;
+const double rmax = 200.0;
+const double CMaxSearchDev = 0.02;
+const int  NumPoints = 500000;
+const int  NumFCF_WFPoints = 100000;
+const int  MaxvFCF = 500;
+const bool SaveMemory = false;
 
-#define C_hq 1.054571628e-34
-#define C_h 6.62606896e-34
-#define C_c 299792458.0
-#define C_u 1.660538782e-27
-#define C_kB 1.380658e-23
-#define C_K_C 273.15
-#define hartree_cm 219474.6313705
-#define a0_Angstrom 0.529177249
+const double C_hq = 1.054571628e-34;
+const double C_h = 6.62606896e-34;
+const double C_c = 299792458.0;
+const double C_u = 1.660538782e-27;
+const double C_kB = 1.380658e-23;
+const double C_K_C = 273.15;
+const double hartree_cm = 219474.6313705;
+const double a0_Angstrom = 0.529177249;
 
-#define def_L_gsq 0.025
+const double def_L_gsq = 0.025;
 
 enum PotentialType {NoPotential, SplinePotential, analyticalPotential, 
 	MorseLongRangePotential, TangToenniesPotential, ModifiedTangToenniesPotential};

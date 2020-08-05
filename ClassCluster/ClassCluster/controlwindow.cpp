@@ -43,6 +43,8 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
     }
     Plot->setShowPoints(true);
     window = new Window(PotSs);
+    const double cEnergy = window->getEnergy();
+    if (-1.0 != cEnergy) energy = QString::number(cEnergy, 'g', 6);
     QGridLayout *L = new QGridLayout(this), *PotLayout = new QGridLayout;
     L->setColumnStretch(0, 1);
     L->setColumnStretch(1, 1);
