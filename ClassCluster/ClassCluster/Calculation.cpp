@@ -59,13 +59,13 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NP
 	P = new Particle[N];
 	D = new Particle*[N];
 	G = new Particle***[XS];
-	MAR = new double*[N];
+    MAR = new MARStruct*[N];
 	for (x=0; x < XS; x++)
 	{
 		G[x] = new Particle**[YS];
 		for (y=0; y < YS; y++) G[x][y] = new Particle*[ZS];
 	}
-	for (n=0; n < N; n++) MAR[n] = new double[4];
+    for (n=0; n < N; n++) MAR[n] = new MARStruct[4];
 	XP = new double[N];
 	YP = new double[N];
 	ZP = new double[N];
@@ -107,62 +107,80 @@ Calculation::~Calculation()
 	delete[] Fixed;
 }
 
+void Calculation::calcMAR()
+{
+    int n, p, mx, my, mz, lx, ly, lz, i1, i2;
+    double r, dx, dy, dz;
+    Particle *PP1, *PP2;
+    for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p].R = RM;
+    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+    {
+        if (G[mx][my][mz] != 0)
+        {
+            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
+            {
+                i1 = PP1 - P;
+                i2 = PP2 - P;
+                dx = PP2->X - PP1->X;
+                dy = PP2->Y - PP1->Y;
+                dz = PP2->Z - PP1->Z;
+                r = sqrt(dx * dx + dy * dy + dz * dz);
+                for (n=0; (n<4 ? r > MAR[i1][n].R : false); n++) ;
+                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n<4)
+                {
+                    MAR[i1][n].R = r;
+                    MAR[i1][n].index = i2;
+                }
+                for (n=0; (n<4 ? r > MAR[i2][n].R : false); n++) ;
+                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n<4)
+                {
+                    MAR[i2][n].R = r;
+                    MAR[i2][n].index = i1;
+                }
+            }
+            for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
+                for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
+                        ly < YS && ly <= my + GridSizeDiv; ly++)
+                    for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
+                            lx < XS && lx <= mx + GridSizeDiv; lx++)
+                        for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
+            {
+                i1 = PP1 - P;
+                i2 = PP2 - P;
+                dx = PP2->X - PP1->X;
+                dy = PP2->Y - PP1->Y;
+                dz = PP2->Z - PP1->Z;
+                r = sqrt(dx * dx + dy * dy + dz * dz);
+                for (n=0; (n<4 ? r > MAR[i1][n].R : false); n++) ;
+                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n<4)
+                {
+                    MAR[i1][n].R = r;
+                    MAR[i1][n].index = i2;
+                }
+                for (n=0; (n<4 ? r > MAR[i2][n].R : false); n++) ;
+                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n<4)
+                {
+                    MAR[i2][n].R = r;
+                    MAR[i2][n].index = i1;
+                }
+            }
+        }
+    }
+}
+
 void Calculation::geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az)
 {
 	//printf("geta\n");
-	int mx, my, mz, lx, ly, lz, i1, i2, p, n;
-    double r, dx, dy, dz;
+    int mx, my, mz, lx, ly, lz;// i1, i2, p, n;
+    //double r, dx, dy, dz;
 	Particle *PP1, *PP2;
 	for (mx = 0; mx < N; mx++) ax[mx] = ay[mx] = az[mx] = 0.0;
-	for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
-	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
-	{
-		if (G[mx][my][mz] != 0)
-		{
-			//printf("l0\n");
-			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-				for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				dx = tx[i2] - tx[i1];
-				dy = ty[i2] - ty[i1];
-				dz = tz[i2] - tz[i1];
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-				if (n<4) MAR[i1][n] = r;
-				for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-				if (n<4) MAR[i2][n] = r;
-			}
-			//printf("l1\n");
-			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
-				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
-						ly < YS && ly <= my + GridSizeDiv; ly++)
-					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
-							lx < XS && lx <= mx + GridSizeDiv; lx++)
-						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-							for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				//printf("i1=%d, i2=%d\n", i1, i2);
-				dx = tx[i2] - tx[i1];
-				dy = ty[i2] - ty[i1];
-				dz = tz[i2] - tz[i1];
-				//printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n", 
-					//   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-				if (n<4) MAR[i1][n] = r;
-				for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-				if (n<4) MAR[i2][n] = r;
-			}
-		}
-	}
 	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
 	{
 		if (G[mx][my][mz] != 0)
@@ -196,7 +214,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
 {
     double dx, dy, dz, r, a, b;
     bool calcA = (NULL != ax && NULL != ay && NULL != az);
-    int i1 = P1 - P, i2 = P2 - P, p;
+    int i1 = P1 - P, i2 = P2 - P, p, bi1=-1, bi2=-1;
     //printf("i1=%d, i2=%d\n", i1, i2);
     switch (pos)
     {
@@ -226,13 +244,18 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     r = sqrt(dx * dx + dy * dy + dz * dz);
     p = int((r - Rm) * potRangeScale);
     if (p < 0 || p >= NPot) return;
+    for (int n=0; n<4; ++n)
+    {
+        if (P1->bound[n] == P2) bi1=n;
+        if (P2->bound[n] == P1) bi2=n;
+    }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-    if (r <= MAR[i1][1] && r <= MAR[i2][1])
+    if (bi1 <= 1 && bi2 <= 1)
     {
         if (calcA) a = dPdR[ClosestTwo][p] / r;
         U += Pot[ClosestTwo][p];
     }
-    else if (r <= MAR[i1][3] && r <= MAR[i2][3])
+    else if (bi1 <= 3 && bi2 <= 3)
     {
         if (calcA) a = dPdR[NextTwo][p] / r;
         U += Pot[NextTwo][p];
@@ -259,58 +282,8 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
 
 void Calculation::correctLocalE()
 {
-    int mx, my, mz, lx, ly, lz, i1, i2, p, n;
-    double r, dx, dy, dz;
-    Particle *PP1, *PP2;
-    for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
-    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
-    {
-        if (G[mx][my][mz] != 0)
-        {
-            //printf("l0\n");
-            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
-            {
-                i1 = PP1 - P;
-                i2 = PP2 - P;
-                dx = PP2->X - PP1->X;
-                dy = PP2->Y - PP1->Y;
-                dz = PP2->Z - PP1->Z;
-                r = sqrt(dx * dx + dy * dy + dz * dz);
-                for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-                if (n<4) MAR[i1][n] = r;
-                for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-                if (n<4) MAR[i2][n] = r;
-            }
-            //printf("l1\n");
-            for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
-                for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
-                        ly < YS && ly <= my + GridSizeDiv; ly++)
-                    for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
-                            lx < XS && lx <= mx + GridSizeDiv; lx++)
-                        for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-            {
-                i1 = PP1 - P;
-                i2 = PP2 - P;
-                //printf("i1=%d, i2=%d\n", i1, i2);
-                dx = PP2->X - PP1->X;
-                dy = PP2->Y - PP1->Y;
-                dz = PP2->Z - PP1->Z;
-                //printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n",
-                    //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
-                r = sqrt(dx * dx + dy * dy + dz * dz);
-                for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-                if (n<4) MAR[i1][n] = r;
-                for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-                if (n<4) MAR[i2][n] = r;
-            }
-        }
-    }
+    int mx, my, mz, n;
+    Particle *PP1;
     double currSumE = 0.0, EStart[N], TStart[N];
     int M[N];
     for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
@@ -406,61 +379,12 @@ double Calculation::getE(const Particle * const cP, const double X, const double
 
 double Calculation::getEnergy()
 {
-	int mx, my, mz, lx, ly, lz, i1, i2, p, n;
-	double r, dx, dy, dz, T, U;
+    int mx, my, mz, lx, ly, lz, n;
+    double T, U;
 	Particle *PP1, *PP2;
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
 	for (mx = 0, T = U = 0.0; mx < N; mx++) 
 		T += P[mx].vX * P[mx].vX + P[mx].vY * P[mx].vY + P[mx].vZ * P[mx].vZ;
-	for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p] = RM;
-	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
-	{
-		if (G[mx][my][mz] != 0)
-		{
-			//printf("l0\n");
-			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-				for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				dx = PP2->X - PP1->X;
-				dy = PP2->Y - PP1->Y;
-				dz = PP2->Z - PP1->Z;
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-				if (n<4) MAR[i1][n] = r;
-				for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-				if (n<4) MAR[i2][n] = r;
-			}
-			//printf("l1\n");
-			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
-				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
-						ly < YS && ly <= my + GridSizeDiv; ly++)
-					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
-							lx < XS && lx <= mx + GridSizeDiv; lx++)
-						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-							for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-			{
-				i1 = PP1 - P;
-				i2 = PP2 - P;
-				//printf("i1=%d, i2=%d\n", i1, i2);
-				dx = PP2->X - PP1->X;
-				dy = PP2->Y - PP1->Y;
-				dz = PP2->Z - PP1->Z;
-				//printf("tx1=%f, tx2=%f, ty1=%f, ty2=%f, tz1=%f, tz2=%f\n", 
-					//   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
-				r = sqrt(dx * dx + dy * dy + dz * dz);
-				for (n=0; (n<4 ? r > MAR[i1][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-				if (n<4) MAR[i1][n] = r;
-				for (n=0; (n<4 ? r > MAR[i2][n] : false); n++) ;
-				for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-				if (n<4) MAR[i2][n] = r;
-			}
-		}
-	}
 	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
 	{
 		if (G[mx][my][mz] != 0)
@@ -520,6 +444,27 @@ void Calculation::initialize()
             initializeParticle(P[n++], x, z, rx, y2, rz, XF, YF, ZF);
 		}
 	}
+    calcMAR();
+    for (n=0; n<N; ++n) for (x=0; x<2 && MAR[n][x].R != RM; ++x)
+    {
+        z = MAR[n][x].index;
+        for (y=0; y<2 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
+        if (MAR[z][y].index == n && z>n)
+        {
+            P[n].bound[P[n].NB++] = P+z;
+            P[z].bound[P[z].NB++] = P+n;
+        }
+    }
+    for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
+    {
+        z = MAR[n][x].index;
+        for (y=0; y<4 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
+        if (MAR[z][y].index == n && z>n && P[n].bound[0] != P+z && P[n].bound[1] != P+z)
+        {
+            P[n].bound[P[n].NB++] = P+z;
+            P[z].bound[P[z].NB++] = P+n;
+        }
+    }
 }
 
 void Calculation::initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
@@ -536,6 +481,8 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	cP.zp = ((b = int(ZF * Z)) >= 0 ? (b < ZS ? b : ZS - 1) : 0);
 	cP.prev = 0;
 	cP.next = G[cP.xp][cP.yp][cP.zp];
+    cP.NB = 0;
+    memset(cP.bound, 0, 4u * sizeof(Particle*));
 	G[cP.xp][cP.yp][cP.zp] = D[n] = &cP;
 	if (cP.next != 0) cP.next->prev = D[n];
 	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
@@ -567,9 +514,9 @@ void Calculation::run()
 	double *dvxm = new double[N], *dvym = new double[N], *dvzm = new double[N];
 	double *dxt = new double[N], *dyt = new double[N], *dzt = new double[N];
 	double *dvxt = new double[N], *dvyt = new double[N], *dvzt = new double[N];
-    double *xt = new double[N], *yt = new double[N], *zt = new double[N], /*vF,*/ R, /*lR,*/ dX, dZ;
-    double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ, /*MA,*/ ZMid = 0.5 * MaxZ; //Pi2 = 2.0 * M_PI;
-    double /*XMMiB = Re, XMMaB = MaxX - Re, ZMMiB = Re, ZMMaB = MaxZ - Re,*/ *Angle = new double[N], XMid = 0.5 * MaxX; //CA;
+    double *xt = new double[N], *yt = new double[N], *zt = new double[N], R, dX, dZ;
+    double XF = double(XS) / MaxX, YF = double(YS) / MaxY, ZF = double(ZS) / MaxZ, ZMid = 0.5 * MaxZ;
+    double *Angle = new double[N], XMid = 0.5 * MaxX;
 	Particle *PB;
 	for (n=0; n<N; n++) if (Fixed[n]) Angle[n] = tan((XMid - P[n].X) / (ZMid - P[n].Z));
 	for (i=0, Run = true; Run; i++)
@@ -618,71 +565,11 @@ void Calculation::run()
 					P[n].Z -= dZ * R;
 				}
 			}
-			/*for (n=0; n<N; n++) if (Fixed[n] && P[n].Y > YMid && P[n].X > XMMiB && P[n].X < XMMaB 
-										&& P[n].Z > ZMMiB && P[n].Z < ZMMaB)
-			{
-				for (i=0, MA = Pi2; i<N; i++) if (Fixed[i] && P[n].Y < YMid)
-				{
-					if ((CA = fabs(Angle[i] - Angle[n])) < MA)
-					{
-						MA = CA;
-						m = i;
-					}
-					else if ((CA -= Pi2) < MA)
-					{
-						MA = CA;
-						m = i;
-					}
-				}
-				P[m].Y = P[n].Y;
-				P[m].vX = P[n].vX;
-				P[m].vZ = P[n].vZ;
-				dX = P[n].X - XMid;
-				dZ = P[n].Z - ZMid;
-				lR = (R = sqrt(dX * dX + dZ * dZ)) + Re;
-				P[m].X = XMid - lR * P[m].vX;
-				P[m].Z = ZMid - lR * P[m].vZ;
-				Fixed[n] = false;
-				lR = Speed / R;
-				P[n].vX *= lR;
-				P[n].vY = 0.0;
-				P[n].vZ *= lR;
-				for (PB = G[P[m].xp][P[m].yp][P[m].zp], R = MaxX; PB != 0; PB = PB->next) 
-					if (PB->Y < YMid && !Fixed[i = P - PB]) 
-				{
-					dX = PB->X - P[m].X;
-					dZ = PB->Z - P[m].Z;
-					if ((lR = sqrt(dX * dX + dZ * dZ)) < R)
-					{
-						R = lR;
-						x=i;
-					}
-				}
-				if (R < MaxX)
-				{
-					Fixed[x] = true;
-					dX = P[x].X - XMid;
-					dZ = P[x].Z - ZMid;
-					R = 1.0 / sqrt(dX * dX + dZ * dZ);
-					P[x].vX = dX * R;
-					P[x].vZ = dZ * R;
-				}
-			}*/
 		}
 		for (n=0, U = T = 0.0; n<N; n++) 
 			T += P[n].vX * P[n].vX + P[n].vY * P[n].vY + P[n].vZ * P[n].vZ;
 		geta(xt, yt, zt, ax, ay, az);
 		if (E == 0.0 || T == 0.0 || Move) E = T + U;
-		/*else if (T + U != E && E > U)
-		{
-			vF = sqrt((E - U) / T);
-			for (n=0; n<N; n++)
-			{
-				P[n].vX *= vF;
-				P[n].vY *= vF;
-				P[n].vZ *= vF;
-			}
-		}*/
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
 			xt[n] = P[n].X + hh * P[n].vX;

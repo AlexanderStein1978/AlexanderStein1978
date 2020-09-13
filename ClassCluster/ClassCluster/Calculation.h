@@ -59,6 +59,13 @@ class Calculation : public QThread
         void WriteSnapShot(Particle* P, int N);
 		
 	private:
+
+        struct MARStruct
+        {
+            double R;
+            double index;
+        };
+
         enum Positions{temporaryPos, lastPos, currentPos, particles};
 
         void getU(const Particle* const P1, const Particle* const P2, double &U, const double* const tx, const double* const ty,
@@ -72,11 +79,14 @@ class Calculation : public QThread
 
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
 
+        void calcMAR();
+
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
-        double *XP, *YP, *ZP, **MAR, Speed, YMid, potRangeScale;
+        double *XP, *YP, *ZP, Speed, YMid, potRangeScale;
 		Particle *P, ****G, **D;
+        MARStruct **MAR;
         bool Run, rotated, *Fixed, Move, writeSnapShot;
         QFile* DebugLogFile;
         QTextStream* DebugLog;
