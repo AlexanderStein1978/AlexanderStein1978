@@ -448,8 +448,9 @@ void Calculation::initialize()
     for (n=0; n<N; ++n) for (x=0; x<2 && MAR[n][x].R != RM; ++x)
     {
         z = MAR[n][x].index;
+        if (z <= n) continue;
         for (y=0; y<2 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
-        if (MAR[z][y].index == n && z>n)
+        if (y<2 && MAR[z][y].index == n)
         {
             P[n].bound[P[n].NB++] = P+z;
             P[z].bound[P[z].NB++] = P+n;
@@ -458,8 +459,9 @@ void Calculation::initialize()
     for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
     {
         z = MAR[n][x].index;
+        if (z <= n) continue;
         for (y=0; y<4 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
-        if (MAR[z][y].index == n && z>n && P[n].bound[0] != P+z && P[n].bound[1] != P+z)
+        if (y<4 && MAR[z][y].index == n && P[n].bound[0] != P+z && P[n].bound[1] != P+z)
         {
             P[n].bound[P[n].NB++] = P+z;
             P[z].bound[P[z].NB++] = P+n;
