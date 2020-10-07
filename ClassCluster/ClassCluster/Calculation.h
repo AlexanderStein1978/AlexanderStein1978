@@ -10,6 +10,7 @@
 
 class Particle;
 class Potential;
+class CalculationTest;
 class QFile;
 class QTextStream;
 
@@ -59,6 +60,8 @@ class Calculation : public QThread
         void WriteSnapShot(Particle* P, int N);
 		
 	private:
+
+        friend class CalculationTest;
 
         struct MARStruct
         {

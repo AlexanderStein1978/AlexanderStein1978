@@ -55,7 +55,7 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NP
 	PZS = int(round(MaxZ / Re));
 	PYS = int(round(MaxY / Re)); 
 	PXS = int(round(MaxX / Re));
-	N = 2 * PXS * PYS;
+    N = 2 * PXS * PZS;
 	P = new Particle[N];
 	D = new Particle*[N];
 	G = new Particle***[XS];
