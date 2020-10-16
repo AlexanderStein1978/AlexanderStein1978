@@ -74,7 +74,7 @@ protected:
 
 TEST_F(CalculationTest, CheckParticleBindingInitialisation)
 {
-    for (int z=1; z < getPZS() - 1; ++z) for (int x=1; x < getPXS(); ++x)
+    for (int z=1; z < getPZS() - 1; ++z) for (int x=1; x < getPXS() - 1; ++x)
     {
         int index = 2 * (getPXS() * z + x);
         EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index)) << "index = " << index;
