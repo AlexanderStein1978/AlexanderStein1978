@@ -52,6 +52,11 @@ class Calculation : public QThread
         {
             potRangeScale = PS / newScale;
         }
+
+        inline double getRe() const
+        {
+            return Re;
+        }
 		
 		QMutex mutex;
 		

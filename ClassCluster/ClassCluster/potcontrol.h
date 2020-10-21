@@ -28,6 +28,8 @@ public:
     void Serialize(QTextStream& stream) const;
     void FillLayout(QGridLayout* layout, const int row) const;
     void FillStruct(PotStruct& potStruct) const;
+    void closePot();
+    void setRelativePath();
     bool canPotBeClosed() const;
 
     inline bool isChanged() const
@@ -48,6 +50,7 @@ private slots:
     void SaveAs();
     void Plot(const bool show);
     void RecalcExtensions();
+    void adjustRe();
 
     void Changed()
     {
@@ -61,7 +64,7 @@ private:
     Potential* pot;
     PotentialPlot* plot;
     QLineEdit *fileName, *VScale, *RScale;
-    QPushButton *openB, *saveB, *saveAsB;
+    QPushButton *openB, *saveB, *saveAsB, *adjustReB;
     QCheckBox *showBox;
     bool changed, changing;
 };

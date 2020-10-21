@@ -21,6 +21,7 @@ class ControlWindow : public QWidget
 public:
     ControlWindow();
     ~ControlWindow();
+    double getRe() const;
     
     inline const QString& getProgramPath() const
     {

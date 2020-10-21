@@ -24,6 +24,7 @@ PotControl::PotControl(ControlWindow *i_parent)
     , openB(new QPushButton("...", parent))
     , saveB(new QPushButton("save", parent))
     , saveAsB(new QPushButton("save as...", parent))
+    , adjustReB(new QPushButton("adjust Re", parent))
     , showBox(new QCheckBox("plot", parent))
     , changed(false)
     , changing(false)
@@ -37,6 +38,7 @@ PotControl::PotControl(ControlWindow *i_parent)
     connect(openB, SIGNAL(clicked()), this, SLOT(ShowOpenDialog()));
     connect(saveB, SIGNAL(clicked()), this, SLOT(Save()));
     connect(saveAsB, SIGNAL(clicked()), this, SLOT(SaveAs()));
+    connect(adjustReB, SIGNAL(clicked()), this, SLOT(adjustRe()));
     connect(showBox, SIGNAL(toggled(bool)), this, SLOT(Plot(bool)));
 }
 
@@ -70,7 +72,8 @@ void PotControl::FillLayout(QGridLayout* layout, const int row) const
     layout->addWidget(VScale, row, 6);
     layout->addWidget(new QLabel("RS:", parent), row, 7);
     layout->addWidget(RScale, row, 8);
-    layout->addWidget(showBox, row, 9);
+    layout->addWidget(adjustReB, row, 9);
+    layout->addWidget(showBox, row, 10);
 }
 
 void PotControl::FillStruct(PotStruct& potStruct) const
@@ -140,20 +143,24 @@ void PotControl::openPotential()
         }
         pot = newPot;
         connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
+        pot->setName(fileName->text().left(fileName->text().indexOf('.')));
+        pot->show();
     }
     else
     {
         delete newPot;
         if (showBox->isChecked()) showBox->setChecked(false);
     }
-    if (nullptr != pot)
+    if (nullptr != pot) setRelativePath();
+}
+
+void PotControl::setRelativePath()
+{
+    QString path = pot->getRelativePath(parent->getProgramPath());
+    if (path != fileName->text())
     {
-        QString path = pot->getRelativePath(parent->getProgramPath());
-        if (path != fileName->text())
-        {
-            if (path.left(2) == "..") path = "../" + path;
-            fileName->setText(path);
-        }
+        if (path.left(2) == "..") path = "../" + path;
+        fileName->setText(path);
     }
 }
 
@@ -170,8 +177,8 @@ void PotControl::SaveAs()
         QString newFileName = QFileDialog::getSaveFileName(parent, "Please select the potential file", startPath, "*.pot");
         if (!newFileName.isEmpty())
         {
-            fileName->setText(newFileName);
             pot->writeData(newFileName);
+            setRelativePath();
         }
     }
 }
@@ -191,4 +198,16 @@ void PotControl::RecalcExtensions()
     pot->cdConnectSR();
     pot->cdConnectLR1C();
     changing = false;
+}
+
+void PotControl::adjustRe()
+{
+    double Re, De, tRe = parent->getRe();
+    pot->getReDe(Re, De);
+    RScale->setText(QString::number(Re / tRe, 'f'));
+}
+
+void PotControl::closePot()
+{
+    pot->close();
 }

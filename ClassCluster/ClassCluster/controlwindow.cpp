@@ -77,6 +77,7 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
     PotLayout->setColumnMinimumWidth(7, 20);
     PotLayout->setColumnStretch(8, 1);
     PotLayout->setColumnStretch(9, 1);
+    PotLayout->setColumnStretch(10, 1);
     PotLayout->addWidget(new QLabel("Closest 2:", this), Calculation::ClosestTwo, 0);
     PotLayout->addWidget(new QLabel("Next 2:", this), Calculation::NextTwo, 0);
     PotLayout->addWidget(new QLabel("Remaining:", this), Calculation::Remaining, 0);
@@ -115,7 +116,13 @@ void ControlWindow::closeEvent(QCloseEvent *event)
     }
     if (nullptr != window) window->close();
     if (nullptr != Plot) Plot->close();
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->closePot();
     event->accept();
+}
+
+double ControlWindow::getRe() const
+{
+    return window->getRe();
 }
 
 void ControlWindow::run()

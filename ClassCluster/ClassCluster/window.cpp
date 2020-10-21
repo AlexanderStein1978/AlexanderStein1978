@@ -75,6 +75,11 @@ void Window::draw(double* XP, double* YP, double* ZP, int N)
     Pict->repaint();
 }
 
+double Window::getRe() const
+{
+    return Calc->getRe();
+}
+
 void Window::start()
 {
     Calc->start();

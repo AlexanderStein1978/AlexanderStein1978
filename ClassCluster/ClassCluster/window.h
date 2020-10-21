@@ -34,6 +34,7 @@ class Window : public QWidget
         void stopCalc();
         bool isRunning() const;
         bool isMoving() const;
+        double getRe() const;
 
     private slots:
         void draw(double *XP, double *YP, double *ZP, int N);
