@@ -109,7 +109,8 @@ void PotControl::Open()
     {
         if (fileName->text().isEmpty())
         {
-            delete pot;
+            pot->close();
+            pot->deleteLater();
             pot = nullptr;
         }
         else openPotential();
@@ -134,12 +135,13 @@ void PotControl::openPotential()
         if (nullptr != plot && showBox->isChecked())
         {
             Plot(false);
-            plot->addPotential(pot);
+            plot->addPotential(newPot);
         }
         if (pot != nullptr)
         {
             disconnect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
-            delete pot;
+            pot->close();
+            pot->deleteLater();
         }
         pot = newPot;
         connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
