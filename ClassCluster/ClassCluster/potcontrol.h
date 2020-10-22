@@ -30,6 +30,7 @@ public:
     void FillStruct(PotStruct& potStruct) const;
     void closePot();
     void setRelativePath();
+    void setFileName(const QString& newFileName);
     bool canPotBeClosed() const;
 
     inline bool isChanged() const
@@ -63,6 +64,7 @@ private:
     ControlWindow* parent;
     Potential* pot;
     PotentialPlot* plot;
+    QString fileNBackUp;
     QLineEdit *fileName, *VScale, *RScale;
     QPushButton *openB, *saveB, *saveAsB, *adjustReB;
     QCheckBox *showBox;

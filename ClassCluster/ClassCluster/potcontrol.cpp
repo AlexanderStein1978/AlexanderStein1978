@@ -105,7 +105,7 @@ bool PotControl::canPotBeClosed() const
 
 void PotControl::Open()
 {
-    if (canPotBeClosed())
+    if (fileNBackUp != fileName->text() && canPotBeClosed())
     {
         if (fileName->text().isEmpty())
         {
@@ -159,10 +159,10 @@ void PotControl::openPotential()
 void PotControl::setRelativePath()
 {
     QString path = pot->getRelativePath(parent->getProgramPath());
-    if (path != fileName->text())
+    if (path != fileNBackUp)
     {
         if (path.left(2) == "..") path = "../" + path;
-        fileName->setText(path);
+        setFileName(path);
     }
 }
 
@@ -212,4 +212,10 @@ void PotControl::adjustRe()
 void PotControl::closePot()
 {
     pot->close();
+}
+
+void PotControl::setFileName(const QString& newFileName)
+{
+    fileNBackUp = newFileName;
+    fileName->setText(newFileName);
 }
