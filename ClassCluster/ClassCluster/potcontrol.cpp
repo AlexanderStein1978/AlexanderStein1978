@@ -145,7 +145,10 @@ void PotControl::openPotential()
         }
         pot = newPot;
         connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
-        pot->setName(fileName->text().left(fileName->text().indexOf('.')));
+        fileNBackUp = fileName->text();
+        int n = fileNBackUp.lastIndexOf(DIRSEP) + 1;
+        pot->setName(fileNBackUp.mid(n, fileNBackUp.indexOf('.', n) - n));
+        pot->Saved();
         pot->show();
     }
     else

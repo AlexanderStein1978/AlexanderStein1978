@@ -84,6 +84,8 @@ public slots:
 	virtual void setName(QString name);
 	void show();
 	void Changed();
+    void Saved();
+
 protected:
 	void setImported();
 	void setNewCreated();
@@ -98,8 +100,7 @@ protected:
     void closeEvent(QCloseEvent *i_event);
 		
 	MainWindow *MW;
-protected slots:
-	void Saved();
+
 signals:
 	void hidden(bool);
 	void nameChanged(QString);
