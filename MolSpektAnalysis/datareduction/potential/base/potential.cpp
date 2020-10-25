@@ -3813,14 +3813,14 @@ bool Potential::readPointPot(QString FileName)
     Tab->setHorizontalHeaderLabels(QStringList() << "R [A]" << "Energy [cm-1]" << "d^2E/dR^2");
     Tab->blockSignals(false);
     //printf("Vor calcyss\n");
-    calcyss();
+    calcyss(false);
     //printf("Ende readPointPot\n");
     return true;
 }
 
-void Potential::calcyss()
+void Potential::calcyss(const bool movingPoints)
 {
-    Worker->calcyss();
+    Worker->calcyss(movingPoints);
     UpdateTab();
     Changed();
     //printf("Potential::calcyss\n");
@@ -3928,7 +3928,7 @@ void Potential::setPointData(int N, double *R, double *E)
     }
     Tab->blockSignals(false);
     Worker->setSplinePot(N, points, 0, 0, 0, 0.0, 0.0, 0.0);
-    calcyss();
+    calcyss(false);
     Changed();
 }
 
@@ -5113,7 +5113,7 @@ void Potential::UpdatePot(int type)
         Worker->setAdCorr(NAdCorr, adCorr, TAdCorr, PAdCorr, RIso1AdCorr, RIso2AdCorr, AdCorr_Rm, AdCorr_b, adCorrFree);
         Worker->setUinf(Uinf);
         Worker->setR_o(Ro);
-        if (calcYss) calcyss();
+        if (calcYss) calcyss(false);
     }
     else if (type == -1 ? Tab->item(0, 0)->text().indexOf("A0") >= 0 || Tab->item(0, 0)->text().indexOf("B") >= 0 : type == 3)
     {
@@ -5531,7 +5531,7 @@ void Potential::addPoint(double x, double y)
     if (Worker->addPoint(x, y))
     {
         UpdateTab();
-        calcyss();
+        calcyss(true);
         Changed();
     }
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");
@@ -5542,7 +5542,7 @@ void Potential::movePoint(int &n, double x, double y)
     if (Worker->movePoint(n, x, y))
     {
         UpdateTab();
-        calcyss();
+        calcyss(true);
         Changed();
     }
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");
@@ -5553,7 +5553,7 @@ void Potential::removePoint(int n)
     if (Worker->removePoint(n))
     {
         UpdateTab();
-        calcyss();
+        calcyss(true);
         Changed();
     }
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");

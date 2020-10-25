@@ -5823,7 +5823,7 @@ void MainWindow::cdConnectLR()
 void MainWindow::calcyss()
 {
 	Potential *P = dynamic_cast<Potential*>(workspace->activeSubWindow()->widget());
-	P->calcyss();
+    P->calcyss(false);
 }
 
 void MainWindow::plotShowMouseCross(bool show)

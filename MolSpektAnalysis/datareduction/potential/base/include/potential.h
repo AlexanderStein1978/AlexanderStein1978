@@ -159,7 +159,7 @@ public:
 	void DeleteRows();
 	void setWorker(PotWorker *NWorker);
 	void calcFQS_SFQS(bool ****SFQSU = 0, double SFQSRad = 0.0);
-	void calcyss();
+    void calcyss(const bool movingPoints);
 	
 	inline void getSFQSU(bool ****&SFQSU, int *&mJ, int **&mv)
 	{

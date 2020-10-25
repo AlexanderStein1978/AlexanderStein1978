@@ -1773,11 +1773,11 @@ void PotWorker::updatePotential(double* C)
                 LRC[SMap[i] - numSplinePoints - 1] += (C[i] * pow(Ra, PLRC[SMap[i] - numSplinePoints - 1]));
         }
     }
-    calcyss();
+    calcyss(false);
     Lock->unlock();
 }
 
-void PotWorker::calcyss()
+void PotWorker::calcyss(const bool movingPoints)
 {
     double ED, Rb, ys, Ra = points[numSplinePoints - 1].x;
     int i, n;
@@ -1790,12 +1790,20 @@ void PotWorker::calcyss()
             ys += double(PLRC[i]) / Ra * Rb;
         }
         ED -= Uinf;
-        //if (GS)
-        //{
-        for (n=0, iO -= ED; n < numSplinePoints; n++) points[n].y -= ED;
-        //Uinf = 0.0;
-        //}
-        for (n=0; n < numSplinePoints; n++) 
+        if (movingPoints)
+        {
+            double deltaLRC = ED * pow(Ra, PLRC[NLRC - 1]);
+            LRC[NLRC - 1] -= deltaLRC;
+            ys -= static_cast<double>(PLRC[NLRC - 1]) / Ra * deltaLRC;
+            if (numSplinePoints == 1)
+            {
+                double iF = pow(Ra, -iExp);
+                iA = -ys * Ra / (iExp * iF);
+                iO = points[0].y - iA * iF;
+            }
+        }
+        else for (n=0, iO -= ED; n < numSplinePoints; n++) points[n].y -= ED;
+        if (numSplinePoints > 1) for (n=0; n < numSplinePoints; n++)
         {
             for (i=0, points[n].yss = iA * L[n][0]; i < numSplinePoints; i++) 
                 points[n].yss += points[i].y * L[n][i+1];
@@ -2014,7 +2022,7 @@ double PotWorker::FitAnaPot(int NumWFPoints, bool robustWeighting, bool UseSVD, 
     double *bC = 0;
     cdConnectLR1C();
     cdConnectSR();
-    if (getType() == SplinePotential) calcyss();
+    if (getType() == SplinePotential) calcyss(false);
     saveCoefficients(bC);
     estMinErr(MaxErr, NFC = int(2.0 * el_S) + 1, mJ, mv, nEs, NEL, EL, nGS, nGL, GL);
     for (n=0; n < nEs; n++) NLevels += NEL[n];

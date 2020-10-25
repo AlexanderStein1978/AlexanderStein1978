@@ -122,7 +122,7 @@ public:
 	void getSFQSU(bool ****&SFQSU, int *&mJ, int **&mv);
 	void CalcAdCorrPot(double* InPot, double* OutPot, double Rmin, double Step, int NPoints, double MIso1, double MIso2);
 	virtual PotentialData *getPotentialData();
-	void calcyss();
+    void calcyss(const bool movingPoints);
 	virtual void setLRCoeff(double R, int numCoefficients, int *Exponents, double *Coefficients, bool *LRCFree = 0);
     virtual double getInnerConnectionRadius() const;
     virtual double getOuterConnectionRadius() const;
