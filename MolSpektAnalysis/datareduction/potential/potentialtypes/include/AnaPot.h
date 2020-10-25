@@ -34,7 +34,7 @@ class AnaPot : public PotWorker
 		void getExchangeCoeff(double &A_ex, double &beta, double &gamma);
 		void cdConnectLR1C();
 		void cdConnectLR(int firstCoeff);
-		void cdConnectSR();
+		void cdConnectSR(const bool wasMovingPoints);
 		double calcPotCoeff(int numPoints, double *R, double *U, double *Sig, int numCoeff, double Rm, double b);
 		double fitPotential(int NPoints, double R0, double h, double *U, double *Sig, int NCoeff, int NLRC, int *pLRC,
 							double Ri, double Ra, double Rm, double b, double Uinf, double iExp);

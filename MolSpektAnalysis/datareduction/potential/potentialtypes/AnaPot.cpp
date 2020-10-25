@@ -586,7 +586,7 @@ void AnaPot::cdConnectLR(int pnC)
     Lock->unlock();
 }
 
-void AnaPot::cdConnectSR()
+void AnaPot::cdConnectSR(const bool)
 {
     if (nPotCoeff == 0) return;
     double z, iR, d;
@@ -1070,7 +1070,7 @@ void AnaPot::restorePotential(double* bC)
     if (ExcIntFree) A_ex = bC[nPotCoeff + nLRCoeff + n];
     Lock->unlock();
     cdConnectLR1C();
-    cdConnectSR();
+    cdConnectSR(false);
 }
 
 void AnaPot::saveCoefficients(double*& bC)
@@ -1101,6 +1101,6 @@ void AnaPot::updatePotential(double *CD)
     }
     Lock->unlock();
     cdConnectLR1C();
-    cdConnectSR();
+    cdConnectSR(false);
     //LRCoeff[nLRCoeff - 1] = 0.0;
 }

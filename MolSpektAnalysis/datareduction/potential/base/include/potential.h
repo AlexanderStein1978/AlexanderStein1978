@@ -385,7 +385,7 @@ private:
 	double fitN_V, fitN_A, fitN_maxr, FQSv, bFQS;
 	ElState *State;
 	int maxSplinePoints, NFC, threadNum, NFitIt;
-    bool m_saving, showFitResult, getTexTableSplineFitRunning, writePotFitTraceTab;
+    bool m_saving, showFitResult, getTexTableSplineFitRunning, writePotFitTraceTab, mWasMoving;
 	TableWindow *BadList;
 	QPixmap *FixPix;
 	FitData *fitData;

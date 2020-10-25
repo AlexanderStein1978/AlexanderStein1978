@@ -105,7 +105,7 @@ public:
 	void unlockBadList();
 	virtual void cdConnectLR(int firstC);
 	virtual void cdConnectLR1C();
-	virtual void cdConnectSR();
+	virtual void cdConnectSR(const bool wasMovingPoints);
 	void getS(double &Rmin, double &Rmax, int &NPoints, int &NC, double **&S);
 	double getMinR(double E, double Prec);
 	void getMaximum(double &R, double &U);

@@ -2021,7 +2021,7 @@ double PotWorker::FitAnaPot(int NumWFPoints, bool robustWeighting, bool UseSVD, 
     double C[NumFreePar];// aimp;
     double *bC = 0;
     cdConnectLR1C();
-    cdConnectSR();
+    cdConnectSR(false);
     if (getType() == SplinePotential) calcyss(false);
     saveCoefficients(bC);
     estMinErr(MaxErr, NFC = int(2.0 * el_S) + 1, mJ, mv, nEs, NEL, EL, nGS, nGL, GL);
@@ -2592,7 +2592,7 @@ void PotWorker::cdConnectLR(int p1)
     }
 }
 
-void PotWorker::cdConnectSR()
+void PotWorker::cdConnectSR(const bool wasMovingPoints)
 {
     if (Fit->isRunning()) return;
     if (points != 0)
@@ -2600,7 +2600,7 @@ void PotWorker::cdConnectSR()
         double xd = points[1].x - points[0].x, ds = 0.16666666666667;
         iA = ds * pow(points[0].x, iExp + 1.0) 
             * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
-        if (iA < 0.0)
+        if (iA < 0.0 && !wasMovingPoints)
         {
             points[0].y += points[1].y - points[2].y;
             iA = ds * pow(points[0].x, iExp + 1.0) 

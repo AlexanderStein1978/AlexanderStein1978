@@ -69,7 +69,8 @@
 using std::numeric_limits;
 
 
-Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWindow(MDIChild::PotData, Main, Mol), m_saving(false)
+Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWindow(MDIChild::PotData, Main, Mol), m_saving(false),
+    mWasMoving(false)
 {
     setFilter("Potentials (*.pot)");
     setFileExt(".pot");
@@ -120,7 +121,7 @@ Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWind
     DebugStream = new QTextStream(DebugFile);*/
 }
 
-Potential::Potential(const Potential &C) : TableWindow(PotData, C.MW, C.molecule), m_saving(false)
+Potential::Potential(const Potential &C) : TableWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
 {
     //printf("Potential::Potential(const Potential &C)\n");
     int n;
@@ -1705,6 +1706,7 @@ void Potential::FitSplinePot(bool showResult, int MaxIt, double threshFakt)
                         "A fit of the potential cannot be started while there is already a fit of the same potential running!");
         return;
     }
+    mWasMoving = false;
     setFitData();
     if (!Worker->isFitDataAv()) return; 
     showFitResult = showResult;
@@ -1861,6 +1863,7 @@ void Potential::FitAnaPot(bool showResult, bool robustWeighting, bool UseSVD, do
     bool improvePotential = ((Worker->isAnaPotAv() || Worker->isSplinePot()) && !transform);
     int *pLRC = Worker->getSplinePLRC();
     PotentialType FType;
+    mWasMoving = false;
     if (!WritePotFitTraceTab && writePotFitTraceTab) disconnect(Worker, SIGNAL(firstFCFCalculated(FitResult,double)), this, SLOT(CreateFirstPotFitTraceTabRows(FitResult,double)));
     else if (!writePotFitTraceTab && WritePotFitTraceTab) connect(Worker, SIGNAL(firstFCFCalculated(FitResult,double)), this, SLOT(CreateFirstPotFitTraceTabRows(FitResult,double)));
     writePotFitTraceTab = WritePotFitTraceTab;
@@ -2494,6 +2497,7 @@ double Potential::FitTangToenniesPot(bool showResult)
     {
         double FQS, WeightSum, *WF;
         int NWF, *WFR, NumFreePar;
+        mWasMoving = false;
         if (molecule->getNumIso() == 0)
         {
             QMessageBox::information(this, "MolSpektAnalysis", "The potential has to be assigned to a molecule with atomic data first!");
@@ -2780,6 +2784,7 @@ bool Potential::readData(QString Filename)
     QTextStream S(&Datei);
     QString Spacer = " | ";
     QStringList L;
+    mWasMoving = false;
     if ((Buffer = S.readLine()).left(8) != "Source: ") Success = false; 
     else 
     {
@@ -3768,6 +3773,7 @@ bool Potential::readPointPot(QString FileName)
     QTextStream S(&File);
     QString Buffer;
     QStringList L;
+    mWasMoving = false;
     Tab->blockSignals(true);
     while (!S.atEnd())
     {
@@ -3904,7 +3910,7 @@ void Potential::cdConnectLR(int p1)
 void Potential::cdConnectSR()
 {
     if (Fit->isRunning()) return;
-    Worker->cdConnectSR();
+    Worker->cdConnectSR(mWasMoving);
     UpdateTab();
     Changed();
 }
@@ -3960,6 +3966,7 @@ bool Potential::readCoupledPotData(QString Filename)
     Potential *Pot[N];
     AnaPot *aPot;
     MTTPot *couplingFuncs;
+    mWasMoving = false;
     for (p=0; p<N-2; p++)
     {
         if (p>0) 
@@ -4025,7 +4032,7 @@ bool Potential::readCoupledPotData(QString Filename)
         }
         aPot->setLRCoeff(Ra, nLRCoeff, pLRCoeff, LRCoeff);
         aPot->setInnerWall(Ri, 0.0, iExp, 0.0);
-        aPot->cdConnectSR();
+        aPot->cdConnectSR(mWasMoving);
         Pot[p]->setWorker(aPot);
     }
     while (!St.atEnd())
@@ -4177,6 +4184,7 @@ bool Potential::readPotData(QString FileName)
     QTextStream St(&File);
     QString Buffer;
     AnaPot *aPot = new AnaPot(Fit);
+    mWasMoving = false;
     Buffer = St.readLine();
     if (Buffer.left(5).toInt() > 0) return false;
     setName((getFName().split('.'))[0]);
@@ -4849,6 +4857,7 @@ void Potential::updatePot()
 void Potential::UpdatePot(int type)
 {
     if (Fit->isRunning()) return;
+    mWasMoving = false;
     if (type == -2)
     {
         if (testIfSplinePot())
@@ -5345,6 +5354,7 @@ void Potential::setCoefficients()
     Tab->blockSignals(true);
     QStringList Set;
     int n, N = Tab->rowCount();
+    mWasMoving = false;
     for (n=0; n<N; n++) Set << Tab->item(n, 0)->text();
     CoefficientDialog *D = new CoefficientDialog(this, Set);
     if (D->exec() == QDialog::Rejected) return;
@@ -5530,6 +5540,7 @@ void Potential::addPoint(double x, double y)
 {
     if (Worker->addPoint(x, y))
     {
+        mWasMoving = true;
         UpdateTab();
         calcyss(true);
         Changed();
@@ -5541,6 +5552,7 @@ void Potential::movePoint(int &n, double x, double y)
 {
     if (Worker->movePoint(n, x, y))
     {
+        mWasMoving = true;
         UpdateTab();
         calcyss(true);
         Changed();
@@ -5552,6 +5564,7 @@ void Potential::removePoint(int n)
 {
     if (Worker->removePoint(n))
     {
+        mWasMoving = true;
         UpdateTab();
         calcyss(true);
         Changed();
