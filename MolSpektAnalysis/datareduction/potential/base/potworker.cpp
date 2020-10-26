@@ -1794,7 +1794,7 @@ void PotWorker::calcyss(const bool movingPoints)
         {
             double deltaLRC = ED * pow(Ra, PLRC[NLRC - 1]);
             LRC[NLRC - 1] -= deltaLRC;
-            ys -= static_cast<double>(PLRC[NLRC - 1]) / Ra * deltaLRC;
+            ys -= static_cast<double>(PLRC[NLRC - 1]) / Ra * ED;
             if (numSplinePoints == 1)
             {
                 double iF = pow(Ra, -iExp);
