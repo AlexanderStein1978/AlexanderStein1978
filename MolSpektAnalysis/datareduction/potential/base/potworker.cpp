@@ -2533,16 +2533,38 @@ void PotWorker::cdConnectLR1C()
     if (Fit->isRunning()) return;
     if (points != 0)
     {
-        int n;
-        double dx = points[numSplinePoints - 1].x - points[numSplinePoints - 2].x, Lys = 0.0, dE = Uinf - points[numSplinePoints - 1].y;
-        double ys = (points[numSplinePoints - 1].y - points[numSplinePoints - 2].y) / dx 
-                  + 1.0/6.0 * dx * (points[numSplinePoints - 2].yss + 2.0 * points[numSplinePoints - 1].yss);
-        for (n=0; n < NLRC - 1; n++) Lys += double(PLRC[n]) * LRC[n] * pow(points[numSplinePoints - 1].x, -PLRC[n] - 1);
-        LRC[NLRC - 1] = (ys - Lys) / double(PLRC[NLRC - 1]) * pow(points[numSplinePoints - 1].x, PLRC[NLRC - 1] + 1);
-        for (n=0; n < NLRC; n++) dE -= LRC[n] * pow(points[numSplinePoints - 1].x, -PLRC[n]);
-        for (n=0; n < numSplinePoints; n++) points[n].y += dE;
-        iO += dE;
+        if (numSplinePoints > 1)
+        {
+            int n;
+            double dx = points[numSplinePoints - 1].x - points[numSplinePoints - 2].x, Lys = 0.0, dE = Uinf - points[numSplinePoints - 1].y;
+            double ys = (points[numSplinePoints - 1].y - points[numSplinePoints - 2].y) / dx 
+                      + 1.0/6.0 * dx * (points[numSplinePoints - 2].yss + 2.0 * points[numSplinePoints - 1].yss);
+            for (n=0; n < NLRC - 1; n++) Lys += double(PLRC[n]) * LRC[n] * pow(points[numSplinePoints - 1].x, -PLRC[n] - 1);
+            LRC[NLRC - 1] = (ys - Lys) / double(PLRC[NLRC - 1]) * pow(points[numSplinePoints - 1].x, PLRC[NLRC - 1] + 1);
+            for (n=0; n < NLRC; n++) dE -= LRC[n] * pow(points[numSplinePoints - 1].x, -PLRC[n]);
+            for (n=0; n < numSplinePoints; n++) points[n].y += dE;
+            iO += dE;
+        }
+        else cdConnectLRWithSR();
     }
+}
+
+void PotWorker::cdConnectLRWithSR()
+{
+    double ED, Rb, ys, Ra = points[numSplinePoints - 1].x;
+    int i;
+    for (i=0, ED = points[numSplinePoints - 1].y, ys = 0.0; i < NLRC; i++)
+    {
+        ED += (Rb = LRC[i] * pow(Ra, -PLRC[i]));
+        ys += double(PLRC[i]) / Ra * Rb;
+    }
+    ED -= Uinf;
+    double deltaLRC = ED * pow(Ra, PLRC[NLRC - 1]);
+    LRC[NLRC - 1] -= deltaLRC;
+    ys -= static_cast<double>(PLRC[NLRC - 1]) / Ra * ED;
+    double iF = pow(Ra, -iExp);
+    iA = -ys * Ra / (iExp * iF);
+    iO = points[0].y - iA * iF;
 }
 
 void PotWorker::cdConnectLR(int p1)

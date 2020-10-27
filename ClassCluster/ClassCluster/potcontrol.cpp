@@ -193,7 +193,11 @@ void PotControl::Plot(const bool show)
     if (nullptr == plot) return;
     if (show) plot->plotPotential(pot);
     else plot->removePotential(pot);
-    if (!plot->isVisible()) plot->show();
+    if (!plot->isVisible())
+    {
+        plot->setShowHistory(false);
+        plot->show();
+    }
 }
 
 void PotControl::RecalcExtensions()

@@ -2,11 +2,12 @@
 // C++ Implementation: potentialplot
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
 
 #include "potentialplot.h"
 #include "potential.h"
@@ -18,6 +19,8 @@
 
 #include <QPainter>
 #include <QMenu>
+#include <QToolButton>
+
 
 PotentialPlot::PotentialPlot(Potential *potential, MainWindow *MW) : DiagWindow(MDIChild::SimpleDiagWindow, MW)
 {
@@ -425,6 +428,7 @@ void PotentialPlot::setShowHistory(bool H)
 
 void PotentialPlot::ShowPopupMenu(const QPoint& i_point)
 {
+    if (ZoomB->isChecked()) return;
     if (sPoint != -1) pointMenu->popup(i_point);
     else pictureMenu->popup(i_point);
 }

@@ -411,6 +411,7 @@ private:
 	void fillWantedValueEQS(int NEQ, double *Sig, double **EQS, double *DE);
 	bool isStopFit();
 	void calcFitResult();
+    void cdConnectLRWithSR();
 	
 	WantedCoeffValue *WantedValues;
 	int NumWantedValues;
