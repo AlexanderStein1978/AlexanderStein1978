@@ -2785,6 +2785,7 @@ bool Potential::readData(QString Filename)
     QString Spacer = " | ";
     QStringList L;
     mWasMoving = false;
+    PreliminaryPotentialType potType = likelyASplinePotential;
     if ((Buffer = S.readLine()).left(8) != "Source: ") Success = false; 
     else 
     {
@@ -2796,7 +2797,11 @@ bool Potential::readData(QString Filename)
             for (r=0, cc = Tab->columnCount(); !S.atEnd(); r++)
             {
                 if (Tab->rowCount() == r) Tab->setRowCount(r + 100);
-                if ((Buffer = S.readLine()).left(15) == "Column titles: ") Buffer = S.readLine();
+                if ((Buffer = S.readLine()).left(15) == "Column titles: ")
+                {
+                    if (Buffer == "Column titles: R [A] | E [cm^-1] | d^2E/dR^2") potType = splinePot;
+                    Buffer = S.readLine();
+                }
                 if (Buffer.left(21) == "Coupling information:") break;
                 L = Buffer.split(Spacer);
                 if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
@@ -2895,7 +2900,7 @@ bool Potential::readData(QString Filename)
     else 
     {
         //printf("TableWindow::readData successfull\n");
-        UpdatePot(-2);
+        UpdatePot(potType);
     }
     Tab->blockSignals(false);
     if (notSaved) Changed();
@@ -3375,7 +3380,7 @@ void Potential::getTexTable(int NumWFPoints, double FQS)
             for (n=0; n < numSplinePoints; n++) 
                 Tab->item(n, 0)->setText(QString::number(points[n].x, 'f', 2));
             delete points;
-            UpdatePot(1);
+            UpdatePot(splinePot);
             getTexTableSplineFitRunning = true;
             FitSplinePot(false);
             return;
@@ -4850,19 +4855,19 @@ void Potential::getFixedCoefficients(int& N, int*& Rows)
 
 void Potential::updatePot()
 {
-    UpdatePot(Worker->getType() != NoPotential ? -1 : -2);
+    UpdatePot(Worker->getType() != NoPotential ? unknown : likelyASplinePotential);
     Changed();
 }
 
-void Potential::UpdatePot(int type)
+void Potential::UpdatePot(PreliminaryPotentialType type)
 {
     if (Fit->isRunning()) return;
     mWasMoving = false;
-    if (type == -2)
+    if (type == likelyASplinePotential)
     {
         if (testIfSplinePot())
         {
-            type = 1;
+            type = splinePot;
             /*if (2.0 * (points[N-2].x - points[N-3].x) < points[N-1].x - points[N-2].x 
                          && points[N-1].yss != 0.0) 
             {
@@ -4874,13 +4879,13 @@ void Potential::UpdatePot(int type)
         {
             Tab->setHorizontalHeaderLabels(QStringList() 
                     << "coefficient" << "value" << "error" << "sig. digits");
-            if (Tab->item(2, 0)->text().indexOf("R_ref") >= 0) type = 2;
-            else if (Tab->item(0, 0)->text().indexOf("A0") >= 0) type = 3;
-            else type = 0;
+            if (Tab->item(2, 0)->text().indexOf("R_ref") >= 0) type = morseLongRange;
+            else if (Tab->item(0, 0)->text().indexOf("A0") >= 0) type = modTangToen;
+            else type = anaPot;
         }
     }
     LRCTabOffs = adCorrTabOffs = ExcIntATabPos = -1;
-    if (type == 0 || (type == -1 && Worker->isAnaPotAv()))
+    if (type == anaPot || (type == unknown && Worker->isAnaPotAv()))
     {
         int nPotCoeff, nLRCoeff, *pLRCoeff, n, r, NR, NAdCorr, TAdCorr = 0, PAdCorr = 0, NSpinRGamma;
         double Ri, Ra, iExp, iOff, iCoeff, Tm, De, *PotCoeff, *LRCoeff, A_ex = 0.0, beta = 0.0, gamma = 0.0, *adCorr, AdCorr_b, AdCorr_Rm;
@@ -4975,8 +4980,8 @@ void Potential::UpdatePot(int type)
         Worker->setLambdaDoubling(q_e, q_f);
         Worker->setSpinRGamma(NSpinRGamma, SpinRGamma, SpinRR1, SpinRR2, AdCorr_b, AdCorr_Rm);
     }
-    else if (type == -1 ? (Tab->rowCount() > 6 ? (Tab->item(2, 0) != 0 ? 
-                Tab->item(2, 0)->text().indexOf("R_ref") >= 0 : false) : false) : type == 2)
+    else if (type == unknown ? (Tab->rowCount() > 6 ? (Tab->item(2, 0) != 0 ? 
+                Tab->item(2, 0)->text().indexOf("R_ref") >= 0 : false) : false) : type == morseLongRange)
     {
         MLRPot *LPot = dynamic_cast<MLRPot*>(Worker);
         if (LPot == 0) setWorker(LPot = new MLRPot(Fit));
@@ -5026,7 +5031,7 @@ void Potential::UpdatePot(int type)
         else Worker->setAdCorr(0, 0, 0, 0, 0.0, 0.0);
         LPot->setCoefficients(p, q, T, De, Re, Rref, Nb, b, NCi, pCi, Ci);
     }
-    else if (type == 1 || (type == -1 && testIfSplinePot()))
+    else if (type == splinePot || (type == unknown && testIfSplinePot()))
     {
         double x, iA = 0.0, iO = 0.0, iExp = 6.0, Uinf = 0.0, RIso1AdCorr = 0.0, RIso2AdCorr = 0.0, AdCorr_b = 0.0, AdCorr_Rm = 0, Ro = 0.0, *LRC, *adCorr;
         int i, n, N = Tab->rowCount(), NAdCorr, numSplinePoints, NLRC, TAdCorr = 0, PAdCorr = 0, *PLRC;
@@ -5124,7 +5129,7 @@ void Potential::UpdatePot(int type)
         Worker->setR_o(Ro);
         if (calcYss) calcyss(false);
     }
-    else if (type == -1 ? Tab->item(0, 0)->text().indexOf("A0") >= 0 || Tab->item(0, 0)->text().indexOf("B") >= 0 : type == 3)
+    else if (type == unknown ? Tab->item(0, 0)->text().indexOf("A0") >= 0 || Tab->item(0, 0)->text().indexOf("B") >= 0 : type == modTangToen)
     {
         double *A, *C, alpha, beta, gamma, Uinf, *SA = 0, *SC = 0, Salpha = 0.0;
         double Sinf = 0.0, Sbeta = 0.0, B = 0.0, alpha1 = 0.0, *adCorr, RIso1AdCorr = 0.0, RIso2AdCorr = 0.0, AdCorr_Rm = 0.0, AdCorr_b = 0.0;
@@ -5225,7 +5230,7 @@ void Potential::UpdatePot(int type)
             }
         }
     }
-    else if (type == -1 ? Tab->item(0, 0)->text()[0] == 'A' && Tab->rowCount() > 5 : type == 4)
+    else if (type == unknown ? Tab->item(0, 0)->text()[0] == 'A' && Tab->rowCount() > 5 : type == tangToennies)
     {
         int n, m, N, NA, NR = Tab->rowCount(), NAdCorr, TAdCorr = 0, PAdCorr = 0;
         double *A, b, Uinf, *C, *adCorr, RIso1AdCorr = 0.0, RIso2AdCorr = 0.0, AdCorr_b = 0.0, AdCorr_Rm = 0.0;

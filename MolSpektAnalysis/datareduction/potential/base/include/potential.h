@@ -61,7 +61,9 @@ class QProgressBar;
 class Potential : public TableWindow
 {
 	Q_OBJECT
-			
+    
+    enum PreliminaryPotentialType{likelyASplinePotential = -2, unknown, anaPot, splinePot, morseLongRange, modTangToen, tangToennies};
+    
 public:
     Potential(MainWindow *MW = 0, Molecule *Mol = 0, int ThreadNum = -1);
 	Potential(const Potential &C);
@@ -100,7 +102,7 @@ public:
 	ElState *getElState();
 	void setMolecule(Molecule *Mol);
     void getTexTable(int NumWFPoints, double FQS = -1.0);
-	void UpdatePot(int type = -1);
+	void UpdatePot(PreliminaryPotentialType type = unknown);
 	double getMinR();
 	double getMaxR();
     double getD0(int NumWFPoints);
