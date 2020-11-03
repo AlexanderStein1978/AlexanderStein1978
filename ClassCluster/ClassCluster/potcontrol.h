@@ -5,6 +5,7 @@
 #include <QObject>
 
 class ControlWindow;
+class MainWindow;
 class Potential;
 class PotentialPlot;
 class PotStruct;
@@ -14,6 +15,7 @@ class QPushButton;
 class QCheckBox;
 class QGridLayout;
 class QTextStream;
+class QComboBox;
 
 
 class PotControl : QObject
@@ -21,37 +23,25 @@ class PotControl : QObject
     Q_OBJECT
 
 public:
-    PotControl(ControlWindow* parent);
+    PotControl(ControlWindow* parent, MainWindow* mw);
     virtual ~PotControl();
 
     void Init(const QString& data);
     void Serialize(QTextStream& stream) const;
     void FillLayout(QGridLayout* layout, const int row) const;
     void FillStruct(PotStruct& potStruct) const;
-    void closePot();
-    void setRelativePath();
-    void setFileName(const QString& newFileName);
-    bool canPotBeClosed() const;
+    void UpdatePotentialBox();
 
     inline bool isChanged() const
     {
         return changed;
     }
 
-    inline void setPlot(PotentialPlot *const i_plot)
-    {
-        plot = i_plot;
-    }
-
 private slots:
-
-    void Open();
-    void ShowOpenDialog();
-    void Save();
-    void SaveAs();
     void Plot(const bool show);
     void RecalcExtensions();
     void adjustRe();
+    void PotentialBoxIndexChanged(const int newIndex);
 
     void Changed()
     {
@@ -59,15 +49,15 @@ private slots:
     }
 
 private:
-    void openPotential();
+    void exchangePotential(Potential *const newPot);
 
     ControlWindow* parent;
     Potential* pot;
-    PotentialPlot* plot;
-    QString fileNBackUp;
-    QLineEdit *fileName, *VScale, *RScale;
-    QPushButton *openB, *saveB, *saveAsB, *adjustReB;
+    QLineEdit *VScale, *RScale;
+    QComboBox *PotentialBox;
+    QPushButton *adjustReB;
     QCheckBox *showBox;
+    MainWindow* MW;
     bool changed, changing;
 };
 

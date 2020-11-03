@@ -4,6 +4,7 @@
 #include "potcontrol.h"
 #include "potstruct.h"
 #include "potentialplot.h"
+#include "MainWindow.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -14,13 +15,12 @@
 #include <QDir>
 
 
-ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), Plot(new PotentialPlot),
-    SettingsFileName("../../../Physics/ClassCluster/Settings.dat"), ProgramPath(QDir::currentPath())
+ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr),
+    SettingsFileName("../../../Physics/ClassCluster/Settings.dat"), MW(mw), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), energy("-1.0"), rangeScale(QString::number(1.0, 'f', 3));
-    PotStruct PotSs[Calculation::NumPot];
-    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this);
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
     if (settingsFile.exists())
     {
         settingsFile.open(QIODevice::ReadOnly);
@@ -36,13 +36,10 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
             {
                 const QString data = S.readLine();
                 PotControls[n]->Init(data);
-                PotControls[n]->setPlot(Plot);
-                PotControls[n]->FillStruct(PotSs[n]);
             }
         }
     }
-    Plot->setShowPoints(true);
-    window = new Window(PotSs);
+    prepareWindow();
     const double cEnergy = window->getEnergy();
     if (-1.0 != cEnergy) energy = QString::number(cEnergy, 'g', 6);
     QGridLayout *L = new QGridLayout(this), *PotLayout = new QGridLayout;
@@ -68,16 +65,14 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
     L->addWidget(new QLabel("Interaction potentials:", this), 5, 0, 1, 4);
     L->addLayout(PotLayout, 6, 0, 1, 4);
     PotLayout->setColumnMinimumWidth(0, 60);
-    PotLayout->setColumnStretch(1, 10);
-    PotLayout->setColumnStretch(2, 0);
+    PotLayout->setColumnStretch(1, 1);
+    PotLayout->setColumnStretch(2, 10);
     PotLayout->setColumnStretch(3, 1);
-    PotLayout->setColumnStretch(4, 1);
-    PotLayout->setColumnMinimumWidth(5, 20);
-    PotLayout->setColumnStretch(6, 1);
-    PotLayout->setColumnMinimumWidth(7, 20);
+    PotLayout->setColumnMinimumWidth(4, 20);
+    PotLayout->setColumnStretch(5, 1);
+    PotLayout->setColumnMinimumWidth(6, 20);
+    PotLayout->setColumnStretch(7, 1);
     PotLayout->setColumnStretch(8, 1);
-    PotLayout->setColumnStretch(9, 1);
-    PotLayout->setColumnStretch(10, 1);
     PotLayout->addWidget(new QLabel("Closest 2:", this), Calculation::ClosestTwo, 0);
     PotLayout->addWidget(new QLabel("Next 2:", this), Calculation::NextTwo, 0);
     PotLayout->addWidget(new QLabel("Remaining:", this), Calculation::Remaining, 0);
@@ -89,6 +84,7 @@ ControlWindow::ControlWindow() : window(nullptr), PotControls(new PotControl*[Ca
     connect(Speed, SIGNAL(editingFinished()), this, SLOT(speedChanged()));
     connect(WriteSnapShot, SIGNAL(clicked()), this, SLOT(writeSnapShot()));
     connect(RestoreSnapShot, SIGNAL(clicked()), this, SLOT(restoreSnapShot()));
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 ControlWindow::~ControlWindow()
@@ -97,7 +93,6 @@ ControlWindow::~ControlWindow()
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
     S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit->text() << '\n';
-    if (NULL != window) delete window;
     for (int n=0; n < Calculation::NumPot; ++n)
     {
         PotControls[n]->Serialize(S);
@@ -107,16 +102,9 @@ ControlWindow::~ControlWindow()
     if (nullptr != Plot) delete Plot;
 }
 
-void ControlWindow::closeEvent(QCloseEvent *event)
+void ControlWindow::focusInEvent(QFocusEvent *event)
 {
-    for (int n=0; n < Calculation::NumPot; ++n) if (!PotControls[n]->canPotBeClosed())
-    {
-        event->ignore();
-        return;
-    }
-    if (nullptr != window) window->close();
-    if (nullptr != Plot) Plot->close();
-    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->closePot();
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->UpdatePotentialBox();
     event->accept();
 }
 
@@ -125,8 +113,17 @@ double ControlWindow::getRe() const
     return window->getRe();
 }
 
+void ControlWindow::prepareWindow()
+{
+    PotStruct PotSs[Calculation::NumPot];
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->FillStruct(PotSs[n]);
+    window = new Window(PotSs);
+    MW->showMDIChild(window);
+}
+
 void ControlWindow::run()
 {
+    if (nullptr == window) prepareWindow();
     if (window->isRunning())
     {
         window->stop();
@@ -166,6 +163,20 @@ void ControlWindow::rotate()
 {
     if (NULL == window) run();
     window->rotate();
+}
+
+void ControlWindow::showPotential(Potential * const pot, const bool plot)
+{
+    if (nullptr == Plot)
+    {
+        Plot = new PotentialPlot;
+        Plot->setShowHistory(false);
+        Plot->setShowPoints(true);
+        MW->showMDIChild(Plot);
+    }
+    else if (!Plot->isVisible()) Plot->show();
+    if (plot) Plot->plotPotential(pot);
+    else Plot->removePotential(pot);
 }
 
 void ControlWindow::speedChanged()

@@ -11,7 +11,9 @@ class QPushButton;
 
 class Window;
 class PotControl;
+class Potential;
 class PotentialPlot;
+class MainWindow;
 
 
 class ControlWindow : public QWidget
@@ -19,9 +21,10 @@ class ControlWindow : public QWidget
     Q_OBJECT
 
 public:
-    ControlWindow();
+    ControlWindow(MainWindow *const mw);
     ~ControlWindow();
     double getRe() const;
+    void showPotential(Potential* const pot, const bool plot);
     
     inline const QString& getProgramPath() const
     {
@@ -38,15 +41,17 @@ private slots:
     void restoreSnapShot();
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void focusInEvent(QFocusEvent *event) override;
 
 private:
-    Window* window;
+    void prepareWindow();
 
+    Window* window;
     QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
     PotControl** PotControls;
-    PotentialPlot *const Plot;
+    PotentialPlot* Plot;
+    MainWindow *MW;
     const QString SettingsFileName, ProgramPath;
 };
 
