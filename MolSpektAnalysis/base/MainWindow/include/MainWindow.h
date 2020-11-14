@@ -370,7 +370,7 @@ class MainWindow : public QMainWindow
 		void WindowActivated(QMdiSubWindow *w);
 
 	signals:
-		void quitApp();
+        void MainWindowCloses();
 		void MoleculesChanged();
 		void SpectrumChanged(Spektrum *Spectrum);
 		void newSpectrum(Spektrum *Spectrum);

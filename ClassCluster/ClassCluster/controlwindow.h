@@ -40,6 +40,7 @@ private slots:
     void writeSnapShot();
     void restoreSnapShot();
     void showParticleWatchWindow();
+    void saveSettings();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;

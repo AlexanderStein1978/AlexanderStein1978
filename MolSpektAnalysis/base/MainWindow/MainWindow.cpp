@@ -1803,12 +1803,16 @@ Spektrum *MainWindow::getSpectrum(QString FileName)
 
 void MainWindow::quit()
 {
-	if (checkSaved()) emit quitApp();
+    this->close();
 }
 
 void MainWindow::closeEvent(QCloseEvent *E)
 {
-	if (checkSaved()) E->accept();
+    if (checkSaved())
+    {
+        E->accept();
+        emit MainWindowCloses();
+    }
 	else E->ignore();
 }
 

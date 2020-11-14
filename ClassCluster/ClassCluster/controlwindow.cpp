@@ -87,22 +87,14 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), PotContro
     connect(WriteSnapShot, SIGNAL(clicked()), this, SLOT(writeSnapShot()));
     connect(RestoreSnapShot, SIGNAL(clicked()), this, SLOT(restoreSnapShot()));
     connect(ShowParticleWatchWindow, SIGNAL(clicked()), this, SLOT(showParticleWatchWindow()));
+    connect(MW, SIGNAL(MainWindowCloses()), this, SLOT(saveSettings()));
     setFocusPolicy(Qt::StrongFocus);
 }
 
 ControlWindow::~ControlWindow()
 {
-    QFile file(SettingsFileName);
-    file.open(QIODevice::WriteOnly);
-    QTextStream S(&file);
-    S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit->text() << '\n';
-    for (int n=0; n < Calculation::NumPot; ++n)
-    {
-        PotControls[n]->Serialize(S);
-        delete PotControls[n];
-    }
+    for (int n=0; n < Calculation::NumPot; ++n) delete PotControls[n];
     delete[] PotControls;
-    if (nullptr != Plot) delete Plot;
 }
 
 void ControlWindow::focusInEvent(QFocusEvent *event)
@@ -212,4 +204,13 @@ void ControlWindow::restoreSnapShot()
     Start->setText("Stop");
     if (isMoving) Move->setText("Hold");
     else Move->setText("Move");
+}
+
+void ControlWindow::saveSettings()
+{
+    QFile file(SettingsFileName);
+    file.open(QIODevice::WriteOnly);
+    QTextStream S(&file);
+    S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit->text() << '\n';
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(S);
 }
