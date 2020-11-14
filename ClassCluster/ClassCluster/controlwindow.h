@@ -39,6 +39,7 @@ private slots:
     void speedChanged();
     void writeSnapShot();
     void restoreSnapShot();
+    void showParticleWatchWindow();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
@@ -48,7 +49,7 @@ private:
 
     Window* window;
     QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
-    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *Rotate, *Move;
+    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move;
     PotControl** PotControls;
     PotentialPlot* Plot;
     MainWindow *MW;

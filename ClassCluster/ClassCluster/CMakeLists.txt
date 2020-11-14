@@ -14,9 +14,17 @@ add_executable(ClassCluster
     controlwindow.h
     deltaesortfunctor.h
     particle.h
-	potcontrol.cpp
-	potcontrol.h
+    particlecontribution.cpp
+    particlecontribution.h
+    particlewatchtable.cpp
+    particlewatchtable.h
+    potcontrol.cpp
+    potcontrol.h
     potstruct.h
+    watchpoint.cpp
+    watchpoint.h
+    watchstep.cpp
+    watchstep.h
     window.cpp
     window.h
 )
@@ -24,6 +32,6 @@ add_executable(ClassCluster
 target_link_libraries(ClassCluster
     Potential
     Templates
-	Tools
+    Tools
     Qt5::Widgets
 )

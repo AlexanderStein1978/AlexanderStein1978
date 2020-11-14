@@ -9,6 +9,7 @@
 class Picture;
 class Particle;
 class PotStruct;
+class WatchPoint;
 
 
 class Window : public QWidget
@@ -35,6 +36,11 @@ class Window : public QWidget
         bool isRunning() const;
         bool isMoving() const;
         double getRe() const;
+        void setParticleWatchPoint(WatchPoint* point);
+        void setParticleWatch(const int indexToWatch);
+        int getXDim() const;
+        int getNumParticles() const;
+        static int getNumSteps();
 
     private slots:
         void draw(double *XP, double *YP, double *ZP, int N);

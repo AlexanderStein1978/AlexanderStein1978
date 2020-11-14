@@ -5,6 +5,7 @@
 #include "potstruct.h"
 #include "potentialplot.h"
 #include "MainWindow.h"
+#include "particlewatchtable.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -51,8 +52,9 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), PotContro
     L->addWidget(Restart = new QPushButton("Restart", this), 0, 1);
     L->addWidget(Rotate = new QPushButton("Rotate", this), 0, 2);
     L->addWidget(Move = new QPushButton("Move", this), 0, 3);
-    L->addWidget(WriteSnapShot = new QPushButton("Write snapshot", this), 1, 0, 1, 2);
-    L->addWidget(RestoreSnapShot = new QPushButton("Restore snapshot", this), 1, 2, 1, 2);
+    L->addWidget(WriteSnapShot = new QPushButton("Write snapshot", this), 1, 0);
+    L->addWidget(RestoreSnapShot = new QPushButton("Restore snapshot", this), 1, 1);
+    L->addWidget(ShowParticleWatchWindow = new QPushButton("Show particle amplification watch window", this), 1, 2, 1, 2);
     L->addWidget(new QLabel("Speed:", this), 2, 0);
     L->addWidget(Speed = new QLineEdit(speed, this), 2, 1);
     L->addWidget(new QLabel("Step size:", this), 2, 2);
@@ -84,6 +86,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), PotContro
     connect(Speed, SIGNAL(editingFinished()), this, SLOT(speedChanged()));
     connect(WriteSnapShot, SIGNAL(clicked()), this, SLOT(writeSnapShot()));
     connect(RestoreSnapShot, SIGNAL(clicked()), this, SLOT(restoreSnapShot()));
+    connect(ShowParticleWatchWindow, SIGNAL(clicked()), this, SLOT(showParticleWatchWindow()));
     setFocusPolicy(Qt::StrongFocus);
 }
 
@@ -177,6 +180,11 @@ void ControlWindow::showPotential(Potential * const pot, const bool plot)
     else if (!Plot->isVisible()) Plot->show();
     if (plot) Plot->plotPotential(pot);
     else Plot->removePotential(pot);
+}
+
+void ControlWindow::showParticleWatchWindow()
+{
+    MW->showMDIChild(new ParticleWatchTable(window, MW));
 }
 
 void ControlWindow::speedChanged()

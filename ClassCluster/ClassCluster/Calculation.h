@@ -11,6 +11,7 @@
 class Particle;
 class Potential;
 class CalculationTest;
+class WatchPoint;
 class QFile;
 class QTextStream;
 
@@ -42,6 +43,16 @@ class Calculation : public QThread
         void triggerSnapShot();
         Particle* getParticles(int &N);
         void setPotential(const PotRole role, PotStruct &Pot);
+        
+        void setParticleWatchPoint(WatchPoint* point)
+        {
+            ParticleWatchPoint = point;
+        }
+        
+        inline void setParticleWatchIndex(const int indexToWatch)
+        {
+            watchParticle = indexToWatch;
+        }
 		
 		inline bool getMove()
 		{
@@ -56,6 +67,26 @@ class Calculation : public QThread
         inline double getRe() const
         {
             return Re;
+        }
+
+        inline void setWatchParticle(const int index)
+        {
+            watchParticle = index;
+        }
+
+        inline static int getNumACalcsPerIt()
+        {
+            return 4;
+        }
+
+        inline int getNumParticles() const
+        {
+            return N;
+        }
+
+        inline int getNumXDimParticles() const
+        {
+            return PXS;
         }
 		
 		QMutex mutex;
@@ -89,11 +120,12 @@ class Calculation : public QThread
 
         void calcMAR();
 
-        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot;
+        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
         double *XP, *YP, *ZP, Speed, YMid, potRangeScale;
 		Particle *P, ****G, **D;
+        WatchPoint* ParticleWatchPoint;
         MARStruct **MAR;
         bool Run, rotated, *Fixed, Move, writeSnapShot;
         QFile* DebugLogFile;

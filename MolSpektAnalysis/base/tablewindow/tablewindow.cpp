@@ -78,7 +78,8 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 			setMinimumSize(300, 300);
 			break;
 	}
-	if (Typ != FranckCondonView && Typ != TextTable1 && Typ != TextTable2 && Typ != FitSeriesResultTable && Typ != FranckCondonTable)
+    if (Typ != FranckCondonView && Typ != TextTable1 && Typ != TextTable2 && Typ != FitSeriesResultTable && Typ != FranckCondonTable
+            && Typ != External)
 	{
 		NL = new QLabel("Name: ", this);
 		NL->setGeometry(10, 10, 50, 20);
@@ -303,6 +304,8 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 			Progress->setMinimum(0);
 			L->addWidget(Tab = new QTableWidget(this), 1, 0, 1, 3);
 			break;
+        case External:
+            break;
 		default:
 			printf("TableWindow::TableWindow: Error: The type %d is not a valid type for a tablewindow!", typ);
 			break;
@@ -312,10 +315,10 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(Changed()));
 		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(tabItemChanged(QTableWidgetItem*)));
 	}
-	if (Typ != -1 && Typ != -2 && Typ != 3 && Typ != 5) connect(Source, SIGNAL(editingFinished()), this, SIGNAL(SourceChanged()));
+    if (Typ != -1 && Typ != -2 && Typ != 3 && Typ != 5 && Typ != External)
+        connect(Source, SIGNAL(editingFinished()), this, SIGNAL(SourceChanged()));
 	Saved();
 }
-
 
 TableWindow::~TableWindow()
 {

@@ -29,7 +29,7 @@ public:
 	typedef enum Typ {FitDataSet = -3, TextTable2, TextTable1, TermEnergyTable, DunhamTable, TermEnergyView, FranckCondonView, LineTab, 
 		       FranckCondonTable, FitSeriesResultTable, SimpleMDIChild, SimpleDiagWindow, TermEnergyPlot, WaveFunctionPlot,
 			   DataSetPlot, ResidPlot, AddSpect, SpectrumSimulation, AtomData, MolData, IntensityHistogramPlot, Pict, PotData, Spect,
-               FCFJDependency, CouplingFunction} Type;
+               FCFJDependency, CouplingFunction, External} Type;
 	
    	MDIChild(Type type = SimpleMDIChild, MainWindow *MW = 0,
 			 QString filter = "files (*.*)", QString FileExt = ".dat");

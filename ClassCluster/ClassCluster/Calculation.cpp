@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "potstruct.h"
 #include "potential.h"
+#include "watchpoint.h"
 
 #include <QGridLayout>
 #include <QFile>
@@ -18,7 +19,7 @@
 #include <cstdlib>
 
 
-Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NPot(30000), PS(1e3),
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
     Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
 {
 	//printf("Calculation::Calculation\n");
@@ -277,6 +278,11 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         ay[i2] -= b;
         az[i1] += (b = a * dz);
         az[i2] -= b;
+        if (particleWatchStep >= 0)
+        {
+            if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, ax[i1], ay[i1], az[i1]);
+            else if (watchParticle == i2) ParticleWatchPoint->set(particleWatchStep, i1, ax[i2], ay[i2], az[i2]);
+        }
     }
 }
 
@@ -570,6 +576,7 @@ void Calculation::run()
 		}
 		for (n=0, U = T = 0.0; n<N; n++) 
 			T += P[n].vX * P[n].vX + P[n].vY * P[n].vY + P[n].vZ * P[n].vZ;
+        if (watchParticle >= 0) particleWatchStep = 0;
 		geta(xt, yt, zt, ax, ay, az);
 		if (E == 0.0 || T == 0.0 || Move) E = T + U;
 		for (n=0; n<N; n++) if (!Fixed[n])
@@ -583,6 +590,7 @@ void Calculation::run()
 		}
 		for (n=0, U = T = 0.0; n<N; n++) 
 			T += dxt[n] * dxt[n] + dyt[n] * dyt[n] + dzt[n] * dzt[n];
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, ax[watchParticle], ay[watchParticle], az[watchParticle]);
 		geta(xt, yt, zt, dvxt, dvyt, dvzt);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
@@ -598,6 +606,7 @@ void Calculation::run()
 		}
 		for (n=0, U = T = 0.0; n<N; n++) 
 			T += dxm[n] * dxm[n] + dym[n] * dym[n] + dzm[n] * dzm[n];
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvxt[watchParticle], dvyt[watchParticle], dvzt[watchParticle]);
 		geta(xt, yt, zt, dvxm, dvym, dvzm);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
@@ -619,6 +628,7 @@ void Calculation::run()
 		}
 		for (n=0, U = T = 0.0; n<N; n++) 
 			T += dxt[n] * dxt[n] + dyt[n] * dyt[n] + dzt[n] * dzt[n];
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvxm[watchParticle], dvym[watchParticle], dvzm[watchParticle]);
 		geta(xt, yt, zt, dvxt, dvyt, dvzt);
 		for (n=0; n<N; n++) if (!Fixed[n])
 		{
@@ -651,6 +661,9 @@ void Calculation::run()
             WriteSnapshot();
             writeSnapShot = false;
         }
+        if (watchParticle >= 0)
+            ParticleWatchPoint->setSum(particleWatchStep, dvxt[watchParticle] - ParticleWatchPoint->getSumX(1),
+                                       dvyt[watchParticle] - ParticleWatchPoint->getSumY(1), dvzt[watchParticle] - ParticleWatchPoint->getSumZ(1));
         if (i==147)
         {
             printf("Break!");
@@ -693,6 +706,11 @@ void Calculation::run()
 		}
 		mutex.unlock();
 		emit PictureChanged(XP, YP, ZP, N);
+        if (watchParticle >= 0)
+        {
+            particleWatchStep = -1;
+            break;
+        }
 	}
 	delete[] ax;
 	delete[] ay;

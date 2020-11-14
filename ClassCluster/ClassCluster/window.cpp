@@ -75,9 +75,24 @@ void Window::draw(double* XP, double* YP, double* ZP, int N)
     Pict->repaint();
 }
 
+int Window::getNumParticles() const
+{
+    return Calc->getNumParticles();
+}
+
 double Window::getRe() const
 {
     return Calc->getRe();
+}
+
+int Window::getNumSteps()
+{
+    return Calculation::getNumACalcsPerIt();
+}
+
+int Window::getXDim() const
+{
+    return Calc->getNumXDimParticles();
 }
 
 void Window::start()
@@ -129,6 +144,26 @@ double Window::getEnergy() const
 double Window::setEnergy(const double E)
 {
     return Calc->setEnergy(E);
+}
+
+void Window::setParticleWatchPoint(WatchPoint *point)
+{
+    Calc->setParticleWatchPoint(point);
+}
+
+void Window::setParticleWatch(const int indexToWatch)
+{
+    bool CalcWasRunning = Calc->isRunning();
+    if (CalcWasRunning)
+    {
+        Calc->stop();
+        Calc->wait();
+    }
+    Calc->setParticleWatchIndex(indexToWatch);
+    Calc->start();
+    Calc->wait();
+    Calc->setParticleWatchIndex(-1);
+    if (CalcWasRunning) Calc->start();
 }
 
 void Window::setPotentialRangeScale(const double newScale)
