@@ -12,20 +12,11 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster_test
 	test_Calculation.cpp
-	../ClassCluster/Calculation.h
-	../ClassCluster/Calculation.cpp
-        ../ClassCluster/particlecontribution.h
-        ../ClassCluster/particlecontribution.cpp
-        ../ClassCluster/watchpoint.h
-        ../ClassCluster/watchpoint.cpp
-        ../ClassCluster/watchstep.h
-        ../ClassCluster/watchstep.cpp
-        ../ClassCluster/window.h
-        ../ClassCluster/window.cpp
 	main.cpp
 )
 
 target_link_libraries(ClassCluster_test
+        Simulation
 	Potential
 	Templates
 	Tools

@@ -8,30 +8,12 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster
     main.cpp
-    Calculation.cpp
-    Calculation.h
-    controlwindow.cpp
-    controlwindow.h
-    deltaesortfunctor.h
-    particle.h
-    particlecontribution.cpp
-    particlecontribution.h
-    particlewatchtable.cpp
-    particlewatchtable.h
-    potcontrol.cpp
-    potcontrol.h
-    potstruct.h
-    watchpoint.cpp
-    watchpoint.h
-    watchstep.cpp
-    watchstep.h
-    window.cpp
-    window.h
 )
 
 target_link_libraries(ClassCluster
-    Potential
-    Templates
-    Tools
+    ControlWindow
+    MolSpektAnalysisMainWindow
+    ParticleWatch
+    Simulation
     Qt5::Widgets
 )

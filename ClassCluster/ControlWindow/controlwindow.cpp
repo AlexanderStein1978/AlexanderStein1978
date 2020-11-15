@@ -17,7 +17,7 @@
 
 
 ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr),
-    SettingsFileName("../../../Physics/ClassCluster/Settings.dat"), MW(mw), ProgramPath(QDir::currentPath())
+    SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), MW(mw), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), energy("-1.0"), rangeScale(QString::number(1.0, 'f', 3));

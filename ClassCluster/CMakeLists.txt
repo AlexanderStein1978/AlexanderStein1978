@@ -1,2 +1,5 @@
-add_subdirectory(ClassCluster)
+add_subdirectory(Main)
+add_subdirectory(Simulation)
+add_subdirectory(ControlWindow)
+add_subdirectory(ParticleWatch)
 add_subdirectory(test)

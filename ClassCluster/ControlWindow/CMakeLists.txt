@@ -1,37 +1,24 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-project(ClassCluster)
+project(ControlWindow)
 
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_executable(ClassCluster
-    main.cpp
-    Calculation.cpp
-    Calculation.h
+add_library(ControlWindow STATIC
+    include/potstruct.h
+    include/controlwindow.h
     controlwindow.cpp
-    controlwindow.h
-    deltaesortfunctor.h
-    particle.h
-    particlecontribution.cpp
-    particlecontribution.h
-    particlewatchtable.cpp
-    particlewatchtable.h
     potcontrol.cpp
     potcontrol.h
-    potstruct.h
-    watchpoint.cpp
-    watchpoint.h
-    watchstep.cpp
-    watchstep.h
-    window.cpp
-    window.h
 )
 
-target_link_libraries(ClassCluster
+target_include_directories(ControlWindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(ControlWindow
+    ParticleWatch
     Potential
-    Templates
-    Tools
+    Simulation
     Qt5::Widgets
 )

@@ -10,8 +10,8 @@
 
 
 #include "gtest/gtest.h"
-#include "../ClassCluster/Calculation.h"
-#include "../ClassCluster/particle.h"
+#include "Calculation.h"
+#include "particle.h"
 
 
 class CalculationTest : public ::testing::Test

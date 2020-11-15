@@ -9,7 +9,7 @@ find_package(Qt5 COMPONENTS PrintSupport Widgets REQUIRED)
 add_library(MolSpektAnalysisMainWindow STATIC
 	include/MainWindow.h
 	include/inputdialog.h
-    inputdialog.cpp
+        inputdialog.cpp
 	MainWindow.cpp
 	showaction.h
 )
