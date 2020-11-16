@@ -39,7 +39,7 @@ ParticleWatchTable::ParticleWatchTable(Window *iwindow, MainWindow *MW) : TableW
     for (int i=0; i < numParticles; ++i) ParticleBox->addItem(QString::number(i));
 
     StepBox->setEditable(false);
-    for (int i=0; i < numParticles; ++i) StepBox->addItem(QString::number(i));
+    for (int i=0; i < window->getNumSteps(); ++i) StepBox->addItem(QString::number(i));
 
     CoordBox->setEditable(false);
     CoordBox->addItems(QStringList() << "x" << "y" << "z");
@@ -62,6 +62,7 @@ void ParticleWatchTable::stepChanged(const int i)
 
 void ParticleWatchTable::nextClicked()
 {
+    mWatchPoint.reset();
     window->setParticleWatch(ParticleBox->currentText().toInt());
     stepChanged(StepBox->currentIndex());
 }

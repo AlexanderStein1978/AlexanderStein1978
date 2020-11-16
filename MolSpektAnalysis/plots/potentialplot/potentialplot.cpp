@@ -231,9 +231,8 @@ void PotentialPlot::PotentialChanged()
 	}
 	else
 	{
-		//printf("No History, vor delete\n");
-		delete potCopies[0];
-		//printf("Nach delete\n");
+		if (NCopies > 0) delete potCopies[0];
+        else ++NCopies;
 		potCopies[0] = new Potential(*pot);
 	}
 	if (showPoints)

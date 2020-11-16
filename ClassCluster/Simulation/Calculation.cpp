@@ -215,7 +215,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
 {
     double dx, dy, dz, r, a, b;
     bool calcA = (NULL != ax && NULL != ay && NULL != az);
-    int i1 = P1 - P, i2 = P2 - P, p, bi1=-1, bi2=-1;
+    int i1 = P1 - P, i2 = P2 - P, p, bi1=N, bi2=N;
     //printf("i1=%d, i2=%d\n", i1, i2);
     switch (pos)
     {
@@ -280,8 +280,8 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         az[i2] -= b;
         if (particleWatchStep >= 0)
         {
-            if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, ax[i1], ay[i1], az[i1]);
-            else if (watchParticle == i2) ParticleWatchPoint->set(particleWatchStep, i1, ax[i2], ay[i2], az[i2]);
+            if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, a * dx, a * dy, a * dz);
+            else if (watchParticle == i2) ParticleWatchPoint->set(particleWatchStep, i1, -a * dx, -a * dy, -a * dz);
         }
     }
 }
