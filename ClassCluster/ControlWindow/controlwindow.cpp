@@ -179,7 +179,7 @@ void ControlWindow::plotClosing()
 {
     disconnect(Plot, SIGNAL(closing()), this, SLOT(plotClosing()));
     Plot = nullptr;
-    for (int i=0; Calculation::NumPot; ++i) PotControls[i]->PLotCloses();
+    for (int i=0; i < Calculation::NumPot; ++i) PotControls[i]->PLotCloses();
 }
 
 void ControlWindow::showParticleWatchWindow()
