@@ -132,6 +132,12 @@ void PotentialPlot::clearHistory()
 	Paint();
 }
 
+void PotentialPlot::closeEvent(QCloseEvent *E)
+{
+    emit closing();
+    E->accept();
+}
+
 bool PotentialPlot::getShowDiagFuncs()
 {
 	return showDiagFuncs;

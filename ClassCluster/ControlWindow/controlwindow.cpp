@@ -168,10 +168,18 @@ void ControlWindow::showPotential(Potential * const pot, const bool plot)
         Plot->setShowHistory(false);
         Plot->setShowPoints(true);
         MW->showMDIChild(Plot);
+        connect(Plot, SIGNAL(closing()), this, SLOT(plotClosing()));
     }
     else if (!Plot->isVisible()) Plot->show();
     if (plot) Plot->plotPotential(pot);
     else Plot->removePotential(pot);
+}
+
+void ControlWindow::plotClosing()
+{
+    disconnect(Plot, SIGNAL(closing()), this, SLOT(plotClosing()));
+    Plot = nullptr;
+    for (int i=0; Calculation::NumPot; ++i) PotControls[i]->PLotCloses();
 }
 
 void ControlWindow::showParticleWatchWindow()

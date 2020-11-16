@@ -31,6 +31,7 @@ public:
     void FillLayout(QGridLayout* layout, const int row) const;
     void FillStruct(PotStruct& potStruct) const;
     void UpdatePotentialBox();
+    void PLotCloses();
 
     inline bool isChanged() const
     {

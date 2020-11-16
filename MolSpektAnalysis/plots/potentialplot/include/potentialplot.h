@@ -40,6 +40,12 @@ public:
 	
 public slots:
 	void PotentialChanged();
+
+protected:
+    void closeEvent(QCloseEvent *E) override;
+
+signals:
+    void closing();
 	
 private slots:
 	void addPoint();

@@ -41,6 +41,7 @@ private slots:
     void restoreSnapShot();
     void showParticleWatchWindow();
     void saveSettings();
+    void plotClosing();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;

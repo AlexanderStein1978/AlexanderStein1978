@@ -99,6 +99,13 @@ void PotControl::Plot(const bool show)
     parent->showPotential(pot, show);
 }
 
+void PotControl::PLotCloses()
+{
+    showBox->blockSignals(true);
+    showBox->setChecked(false);
+    showBox->blockSignals(false);
+}
+
 void PotControl::RecalcExtensions()
 {
     if (nullptr == pot || changing) return;
