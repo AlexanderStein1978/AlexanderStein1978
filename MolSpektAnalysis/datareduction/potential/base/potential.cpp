@@ -5031,7 +5031,7 @@ void Potential::UpdatePot(PreliminaryPotentialType type)
         else Worker->setAdCorr(0, 0, 0, 0, 0.0, 0.0);
         LPot->setCoefficients(p, q, T, De, Re, Rref, Nb, b, NCi, pCi, Ci);
     }
-    else if (type == splinePot || (type == unknown && testIfSplinePot()))
+    else if (type == splinePot || Worker->isSplinePot() || (type == unknown && testIfSplinePot()))
     {
         double x, iA = 0.0, iO = 0.0, iExp = 6.0, Uinf = 0.0, RIso1AdCorr = 0.0, RIso2AdCorr = 0.0, AdCorr_b = 0.0, AdCorr_Rm = 0, Ro = 0.0, *LRC, *adCorr;
         int i, n, N = Tab->rowCount(), NAdCorr, numSplinePoints, NLRC, TAdCorr = 0, PAdCorr = 0, *PLRC;
