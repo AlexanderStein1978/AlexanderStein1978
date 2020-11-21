@@ -327,19 +327,20 @@ void Calculation::correctLocalE()
             if (EDelta >= curPar->T)
             {
                 curPar->vX = curPar->vY = curPar->vZ = 0.0;
+                currSumE -= curPar->T;
                 if (EDelta > curPar->T)
                 {
-                    curPar->E -= curPar->deltaE - curPar->T;
+                    curPar->E -= curPar->deltaE;
                     curPar->U -= curPar->deltaU;
+                    curPar->T -= curPar->deltaT;
                     M[EOrder[n]] = 1;
                 }
                 else
                 {
                     curPar->E -= curPar->T;
+                    curPar->T = 0.0;
                     M[EOrder[n]] = 2;
                 }
-                currSumE -= curPar->T;
-                curPar->T = 0.0;
             }
             else
             {
