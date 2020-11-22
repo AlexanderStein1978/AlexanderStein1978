@@ -268,7 +268,8 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     }
     if (abs(a) > 1e6)
     {
-        printf("i1=%d, i2=%d, a=%f\n", i1, i2, a);
+        printf("i1=%d, i2=%d, a=%f gets reduced to 1000000\n", i1, i2, a);
+        a=1e6;
     }
     if (calcA)
     {
