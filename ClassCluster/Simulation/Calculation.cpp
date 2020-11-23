@@ -19,6 +19,9 @@
 #include <cstdlib>
 
 
+const double UaMax = 1e6;
+
+
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
     Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
 {
@@ -266,10 +269,10 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         if (calcA) a = dPdR[Remaining][p] / r;
         U += Pot[Remaining][p];
     }
-    if (abs(a) > 1e6)
+    if (abs(a) > UaMax)
     {
-        printf("i1=%d, i2=%d, a=%f gets reduced to 1000000\n", i1, i2, a);
-        a=1e6;
+        printf("i1=%d, i2=%d, a=%f gets reduced to %f\n", i1, i2, a, UaMax);
+        a = UaMax;
     }
     if (calcA)
     {
@@ -833,6 +836,7 @@ void Calculation::setPotential(const PotRole role, PotStruct &PotS)
     {
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;
+        if (Pot[role][n] > UaMax) Pot[role][n] = UaMax;
     }
 }
 
