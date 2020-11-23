@@ -2619,16 +2619,20 @@ void PotWorker::cdConnectSR(const bool wasMovingPoints)
     if (Fit->isRunning()) return;
     if (points != 0)
     {
-        double xd = points[1].x - points[0].x, ds = 0.16666666666667;
-        iA = ds * pow(points[0].x, iExp + 1.0) 
-            * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
-        if (iA < 0.0 && !wasMovingPoints)
+        if (numSplinePoints > 1)
         {
-            points[0].y += points[1].y - points[2].y;
+            double xd = points[1].x - points[0].x, ds = 0.16666666666667;
             iA = ds * pow(points[0].x, iExp + 1.0) 
-                * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
+               * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
+            if (iA < 0.0 && !wasMovingPoints && numSplinePoints > 2)
+            {
+                points[0].y += points[1].y - points[2].y;
+                iA = ds * pow(points[0].x, iExp + 1.0) 
+                   * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
+            }
+            iO = points[0].y - iA * pow(points[0].x, -iExp);
         }
-        iO = points[0].y - iA * pow(points[0].x, -iExp);
+        else cdConnectLRWithSR();
     }
 }
 
