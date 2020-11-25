@@ -52,9 +52,9 @@ void PotControl::Init(const QString& data)
     if (list.size() > 2) RScale->setText(list[2]);
 }
 
-void PotControl::Serialize(QTextStream& stream) const
+void PotControl::Serialize(QTextStream& stream, const QString &programPath) const
 {
-    stream << (pot != nullptr ? pot->getFileName() : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
+    stream << (pot != nullptr ? pot->getRelativePath(programPath) : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
 }
 
 void PotControl::FillLayout(QGridLayout* layout, const int row) const
@@ -133,5 +133,5 @@ void PotControl::adjustRe()
 {
     double Re, De, tRe = parent->getRe();
     pot->getReDe(Re, De);
-    RScale->setText(QString::number(Re / tRe, 'f'));
+    RScale->setText(QString::number(tRe / Re, 'f'));
 }

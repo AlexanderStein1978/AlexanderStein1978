@@ -81,7 +81,7 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NP
     DebugLogFile->open(QIODevice::WriteOnly);
     DebugLog = new QTextStream(DebugLogFile);
     *DebugLog << "It\t";
-    for (n=0; n<N; ++n) *DebugLog << "E[" << n << "]    \tT    \tdeletaE\tnew E  \tM\t";
+    for (n=0; n<N; ++n) *DebugLog << "E[" << n << "]    \tT    \tdeltaE\tnew E  \tM\t";
     *DebugLog << "\n";
 }
 

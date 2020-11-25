@@ -220,5 +220,5 @@ void ControlWindow::saveSettings()
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
     S << Speed->text() << '\t' << StepE->text() << '\t' << EnE->text() << '\t' << PotRangeScaleEdit->text() << '\n';
-    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(S);
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(S, ProgramPath);
 }
