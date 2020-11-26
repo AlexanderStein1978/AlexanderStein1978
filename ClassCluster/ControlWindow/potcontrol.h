@@ -32,11 +32,7 @@ public:
     void FillStruct(PotStruct& potStruct) const;
     void UpdatePotentialBox();
     void PLotCloses();
-
-    inline bool isChanged() const
-    {
-        return changed;
-    }
+    bool isChangedSinceLastRun();
 
 private slots:
     void Plot(const bool show);

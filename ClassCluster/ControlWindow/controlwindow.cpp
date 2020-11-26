@@ -128,7 +128,7 @@ void ControlWindow::run()
     {
         if (!window->isVisible()) window->show();
         window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
-        for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChanged())
+        for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
         {
             PotStruct Pots;
             PotControls[n]->FillStruct(Pots);
