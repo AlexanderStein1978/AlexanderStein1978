@@ -87,6 +87,14 @@ void Gaussian::GetValues(double &o_B, double &o_E, double &o_Width, double &o_Of
     o_Offset = Offset;
 }
 
+void Gaussian::SetValues(const double Intensity, const double CenterFreq, const double Width, const double iOffset)
+{
+    B = Intensity;
+    E = CenterFreq;
+    G = 0.6006 * Width;
+    Offset = iOffset;
+}
+
 void Gaussian::GetDataRange(double &o_Estart, double &o_Eend) const
 {
     o_Estart = m_Estart;

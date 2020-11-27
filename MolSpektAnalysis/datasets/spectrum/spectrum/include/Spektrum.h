@@ -65,7 +65,7 @@ public:
 	void setFileName(QString FileName);
     void DisplayMarkers();
 	void GetMarker(int &AnzahlMarker, Marker *&marker);
-	int getNLines();
+    int getNPoints();
 	void ShowMarker();
     void FitLine( double LP );
     void PictureClicked( QPoint * P );

@@ -21,7 +21,8 @@ class Gaussian : public FitObject
 public:
     Gaussian(double *x, double *y, double *Sig, int N);
     virtual ~Gaussian();
-    void GetValues(double& o_B, double& o_E, double& o_Width, double& o_Offset) const;
+    void GetValues(double& o_Intensity, double& o_CenterFreq, double& o_Width, double& o_Offset) const;
+    void SetValues(const double Intensity, const double CenterFreq, const double Width, const double Offset);
     void GetDataRange(double& o_Estart, double& o_Eend) const;
     double GetPoint(double i_E) const;
     double GetProfilePoint(double i_relE) const;

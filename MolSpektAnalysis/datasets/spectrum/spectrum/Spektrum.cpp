@@ -5028,7 +5028,7 @@ void Spektrum::ShowMarker()
 	else if (!DMarkers) DisplayMarkers();
 }
 
-int Spektrum::getNLines()
+int Spektrum::getNPoints()
 {
 	return Daten->GetDSL();
 }

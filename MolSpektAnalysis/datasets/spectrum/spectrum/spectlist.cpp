@@ -77,7 +77,7 @@ void SpectList::AutoSLP()
 		}
 		printf("File %s:\n", FN.toLatin1().data());
 		LS << "File " + FN + ":\n";
-		if (S->getNLines() == 0) 
+        if (S->getNPoints() == 0)
 		{
 			printf("Error, file is not a spectrum!\n");
 			LS << "Error, file is not a spectrum!\n";
