@@ -52,6 +52,16 @@ void PotControl::Init(const QString& data)
     if (list.size() > 2) RScale->setText(list[2]);
 }
 
+bool PotControl::isChangedSinceLastRun()
+{
+    if (changed)
+    {
+        changed = false;
+        return true;
+    }
+    return false;
+}
+
 void PotControl::Serialize(QTextStream& stream, const QString &programPath) const
 {
     stream << (pot != nullptr ? pot->getRelativePath(programPath) : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
@@ -113,6 +123,7 @@ void PotControl::RecalcExtensions()
     pot->cdConnectSR();
     pot->cdConnectLR1C();
     changing = false;
+    changed = true;
 }
 
 void PotControl::UpdatePotentialBox()
