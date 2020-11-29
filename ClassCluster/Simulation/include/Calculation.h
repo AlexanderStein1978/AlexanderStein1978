@@ -115,10 +115,10 @@ class Calculation : public QThread
         void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
                                 const double XF, const double YF, const double ZF) const;
         void WriteSnapshot();
-
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
-
         void calcMAR();
+        void updateBindings();
+        static double dist(const Particle *const P1, const Particle *const P2);
 
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;

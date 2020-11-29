@@ -674,6 +674,7 @@ void Calculation::run()
             printf("Break!");
         }
         printf("iteration=%d, ", i);
+        updateBindings();
         *DebugLog << i;
         if (isNotFirstIt) correctLocalE();
         else isNotFirstIt = true;
@@ -736,6 +737,32 @@ void Calculation::run()
 	delete[] yt;
 	delete[] zt;
 	delete[] Angle;
+}
+
+void Calculation::updateBindings()
+{
+    for (int n=0; n<N; ++n) for (int i1 = 0; i1 < 4; ++i1) if (P - P[n].bound[i1] > n) for (int i2 = 0; i2 < 4; ++i2) if (i1 != i2 && P - P[n].bound[i2] > n)
+        for (int i3 = 0; i3 < 4; ++i3)
+            if (P - P[n].bound[i1]->bound[i3] > n && P[n].bound[i1]->bound[i3] != P[n].bound[i2]
+                    && dist(P+n, P[n].bound[i2]) + dist(P[n].bound[i1], P[n].bound[i1]->bound[i3]) > dist(P[n].bound[i1], P[n].bound[i2]) + dist(P+n, P[n].bound[i1]->bound[i3]))
+    {
+        for (int i4 = 0; i4 < 4; ++i4)
+        {
+            if (P[n].bound[i2]->bound[i4] == P+n) P[n].bound[i2]->bound[i4] = P[n].bound[i1];
+            if (P[n].bound[i1]->bound[i3]->bound[i4] == P[n].bound[i1]) P[n].bound[i1]->bound[i3]->bound[i4] = P+n;
+        }
+        Particle* PB = P[n].bound[i2];
+        P[n].bound[i2] = P[n].bound[i1]->bound[i3];
+        P[n].bound[i1]->bound[i3] = PB;
+    }
+}
+
+double Calculation::dist(const Particle * const P1, const Particle * const P2)
+{
+    double dx = P1->X - P2->X;
+    double dy = P1->Y - P2->Y;
+    double dz = P1->Z - P2->Z;
+    return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 void Calculation::WriteSnapshot()
