@@ -33,11 +33,12 @@ public:
 	virtual void setData(double *x, double *y, double *Sig, int N);
     void InitDebugLogging(QString FileName);
     void EndDebugLogging();
+    double GetSigma() const;
 		
 protected:
     virtual bool getCalcYAndDerivatives(double *Ycalc, double **deriv);
 	virtual void getDerivatives(double **deriv);
-    virtual bool getCalcY(double *Ycalc);
+    virtual bool getCalcY(double *Ycalc) const;
 	virtual void getPar(double *Par);
 	virtual void setPar(double *Par);
 	virtual void updatePar(double *C);

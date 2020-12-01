@@ -22,8 +22,8 @@
 
 
 
-LineDialog::LineDialog(MainWindow *parent) : QWidget(parent), mSpektrum(nullptr), mLine(nullptr), MW(parent), SpektrumBox(new QComboBox(this)),
-    LineBox(new QComboBox(this)), IntensityEdit(new QLineEdit(this)), CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)),
+LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), mSpektrum(nullptr), mLine(nullptr), MW(parent),
+    SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)), IntensityEdit(new QLineEdit(this)), CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)),
     OffsetEdit(new QLineEdit(this)), DataRangeLabel(new QLabel(this))
 {
     SpektrumBox->setEditable(false);
@@ -53,72 +53,17 @@ LineDialog::LineDialog(MainWindow *parent) : QWidget(parent), mSpektrum(nullptr)
     connect(CenterFreqEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(WidthEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(OffsetEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
-    Update();
 }
 
-void LineDialog::Update()
-{
-    SpektrumBox->blockSignals(true);
-    SpektrumBox->clear();
-    if (nullptr != MW)
-    {
-        int NSpectra = MW->getNumSpectra();
-        for (int n=0; n < NSpectra; ++n)
-        {
-            Spektrum* curSpect = MW->getSpectrum(n);
-            if (curSpect->GetNumFittedLines() > 0)
-            {
-                SpektrumBox->addItem(curSpect->getFName());
-                if (mSpektrum == curSpect) SpektrumBox->setCurrentIndex(SpektrumBox->count() - 1);
-            }
-        }
-    }
-    SpektrumBox->blockSignals(false);
-    SpektrumChanged(SpektrumBox->currentText());
-}
 
-void LineDialog::SpektrumChanged(const QString &Name)
-{
-    LineBox->blockSignals(true);
-    int curIndex = LineBox->currentIndex();
-    LineBox->clear();
-    if (nullptr != MW)
-    {
-        int NSpectra = MW->getNumSpectra();
-        for (int n=0; n < NSpectra; ++n)
-        {
-            Spektrum* curSpect = MW->getSpectrum(n);
-            if (curSpect->getFName() == Name)
-            {
-                mSpektrum = curSpect;
-                break;
-            }
-        }
-        if (nullptr != mSpektrum)
-        {
-            int nLines = mSpektrum->GetNumFittedLines();
-            for (int n=0; n < nLines; ++n) LineBox->addItem(QString::number(n));
-            if (nullptr != mLine)
-            {
-                if (curIndex > nLines) curIndex = nLines;
-                else ++curIndex;
-                Gaussian* curLine = nullptr;
-                while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
-                if (curLine == mLine) LineBox->setCurrentIndex(curIndex);
-            }
-        }
-    }
-    LineBox->blockSignals(false);
-    LineChanged(curIndex);
-}
 
 void LineDialog::LineChanged(const int index)
 {
+    LineWindowBase::LineChanged(index);
     CenterFreqEdit->blockSignals(true);
     IntensityEdit->blockSignals(true);
     OffsetEdit->blockSignals(true);
     WidthEdit->blockSignals(true);
-    mLine = (nullptr != mSpektrum && index < mSpektrum->GetNumFittedLines() ? mSpektrum->GetFittedLine(index) : nullptr);
     if (nullptr != mLine)
     {
         double CenterFreq, Intensity, Offset, Width, FStart, FEnd;

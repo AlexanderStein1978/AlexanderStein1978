@@ -119,6 +119,16 @@ bool Gaussian::getCalcYAndDerivatives(double *Ycalc, double **deriv)
     return true;
 }
 
+bool Gaussian::getCalcY(double *Ycalc) const
+{
+    double dG = 1.0 / G;
+    for (int n=0; n < nData; ++n)
+    {
+        double arg = (X[n] - E) * dG;
+        Ycalc[n] = Offset + B * exp(-arg * arg);
+    }
+}
+
 double Gaussian::GetPoint(double i_E) const
 {
     double arg = (i_E - E) / G;

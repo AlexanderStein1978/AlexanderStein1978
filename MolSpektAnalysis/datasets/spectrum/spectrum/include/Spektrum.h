@@ -134,7 +134,7 @@ public:
 	int getType();
 	void setType(int newType);
 	void setData(double **Data, int numRows);
-    void FitGaussianLineProfile(double &o_energy, double &o_intensity, double &o_width, double &o_intensityOffset, double &o_sigma);
+    double FitGaussianLineProfile(int lineIndex = -1, const int MaxIterations = 100, const double MinImprovements = 0.01, const double MinFreq = -1.0, const double MaxFreq = -1.0);
     void SimulateAbsorption(const std::vector<SimulationStateProperty>& i_parametersVector);
 	
 	inline double getMinH()
@@ -144,12 +144,12 @@ public:
 
     inline int GetNumFittedLines()
     {
-        return m_fitedLineVector.size();
+        return m_fittedLineVector.size();
     }
 
     const Gaussian* GetFittedLine(const int i_index)
     {
-        return m_fitedLineVector[i_index];
+        return m_fittedLineVector[i_index];
     }
 
 signals:
@@ -195,7 +195,7 @@ private:
 	AProg *Assigned;
 	Band *band;
 	LineTable **LineTablesAT;
-    std::vector<Gaussian*> m_fitedLineVector;
+    std::vector<Gaussian*> m_fittedLineVector;
     PointwiseLineProfile m_simulationProfile;
 };
 

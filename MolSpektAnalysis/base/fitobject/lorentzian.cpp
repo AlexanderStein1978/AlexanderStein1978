@@ -34,7 +34,7 @@ Lorentzian::Lorentzian(double* x, double* y, double* Sig, int N) : FitObject(3)
 	setData(x, y, Sig, N);
 }
 
-bool Lorentzian::getCalcY(double* YCalc)
+bool Lorentzian::getCalcY(double* YCalc) const
 {
     int n;
 	double AG = A * Gamma;

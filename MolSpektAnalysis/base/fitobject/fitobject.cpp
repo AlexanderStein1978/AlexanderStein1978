@@ -128,7 +128,7 @@ bool FitObject::getCalcYAndDerivatives(double *Ycalc, double **/*deriv*/)
     return getCalcY(Ycalc);
 }
 
-bool FitObject::getCalcY(double* Ycalc)
+bool FitObject::getCalcY(double* Ycalc) const
 {
 	int n;
 	for (n=0; n < nData; n++) Ycalc[n] = 0.0;
@@ -149,6 +149,21 @@ void FitObject::getPar(double* Par)
 
 void FitObject::setNPar()
 {
+}
+
+double FitObject::GetSigma() const
+{
+    if (nData <= 0) return -1.0;
+    double Sigma, FQS = 0.0, *YC = new double[nData];
+    bool result = getCalcY(YC);
+    if (result)
+    {
+        for (int n=0; n < nData; ++n) FQS += sqr(Y[n] - YC[n]) * sig[n];
+        Sigma = sqrt(FQS / (nData - 1.0));
+    }
+    else Sigma = -1.0;
+    delete[] YC;
+    return Sigma;
 }
 
 double FitObject::LevenbergMarquardt(int MaxIt, double MinImp)

@@ -26,7 +26,7 @@ public:
 	
 protected:
 	void getDerivatives(double **deriv);
-    bool getCalcY(double *YCalc);
+    bool getCalcY(double *YCalc) const override;
 	void getPar(double *Par);
 	void setPar(double *Par);
 	void updatePar(double *C);

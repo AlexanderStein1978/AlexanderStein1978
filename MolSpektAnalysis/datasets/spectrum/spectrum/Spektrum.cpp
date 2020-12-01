@@ -52,7 +52,7 @@
 #define OnlyDoublet false
 //#define Strontium
 
-Spektrum::Spektrum(MainWindow *MW) : DiagWindow(MDIChild::Spect, MW), Rauschen(-1.0), m_fitedLineVector()
+Spektrum::Spektrum(MainWindow *MW) : DiagWindow(MDIChild::Spect, MW), Rauschen(-1.0), m_fittedLineVector()
 {
 	LaserFTol = 0.3;
     LaserFrequency = 0.0;
@@ -102,7 +102,7 @@ Spektrum::~Spektrum()
 	delete[] MStop.Line;
 	if (GMarker != NULL) delete[] GMarker;
 	delete[] LineTablesAT;
-    for (size_t n =0; n < m_fitedLineVector.size(); ++n) delete m_fitedLineVector[n];
+    for (size_t n =0; n < m_fittedLineVector.size(); ++n) delete m_fittedLineVector[n];
 }
 
 void Spektrum::addMarker(bool autoaccept)
@@ -758,21 +758,18 @@ void Spektrum::markRegion(QRect *i_regionToMark)
     }
 }
 
-void Spektrum::FitGaussianLineProfile(double &o_energy, double &o_intensity, double &o_width, double &o_intensityOffset, double &o_sigma)
+double Spektrum::FitGaussianLineProfile(int lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
 {
     if (Rauschen == -1.0) editFind();
-    double sig = 1.0 / (Rauschen * Rauschen), cx = m_minSelectedFrequency;
+    double sig = 1.0 / (Rauschen * Rauschen), minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
+    double cx = minFrequency;
     int nStart, N = 0;
-    for (int n=0; n < Daten->GetDSL() && cx < m_maxSelectedFrequency; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
+    for (int n=0; n < Daten->GetDSL() && cx < maxFrequency; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
     {
         if (N==0) nStart = n;
-        if (cx <= m_maxSelectedFrequency) ++N;
+        if (cx <= maxFrequency) ++N;
     }
-    if (N==0)
-    {
-        o_sigma = -1.0;
-        return;
-    }
+    if (N==0) return -1.0;
     double *X = new double[N], *Y = new double[N], *Sig = new double[N];
     int n, m;
     for (n = nStart, m=0; m < N; ++n, ++m)
@@ -781,12 +778,12 @@ void Spektrum::FitGaussianLineProfile(double &o_energy, double &o_intensity, dou
         Y[m] = Daten->GetValue(n, 1);
         Sig[m] = sig;
     }
-    Gaussian* line = new Gaussian(X, Y, Sig, N);
-    double chiSq = line->LevenbergMarquardt(100, 0.01);
-    o_sigma = sqrt(chiSq / (N-1));
-    line->GetValues(o_intensity, o_energy, o_width, o_intensityOffset);
-    m_fitedLineVector.push_back(line);
+    Gaussian* line(lineIndex >= 0 && lineIndex < m_fittedLineVector.size() ? m_fittedLineVector[lineIndex] : new Gaussian(X, Y, Sig, N));
+    double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
+    double o_sigma = sqrt(chiSq / (N-1));
+    if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size()) m_fittedLineVector.push_back(line);
     Paint();
+    return o_sigma;
 }
 
 void Spektrum::PictureClicked(QPoint *P)
@@ -1220,9 +1217,9 @@ void Spektrum::PSpektrum(QPainter &P, const QRect &A, bool PrintFN)
     int xm = ScaleYWidth + 2, xM = A.width() - 2, x, yc, yl;
     int ym = ScaleTopOffset + 2, yM = A.height() - ScaleXHeight - 2;
     double Estart, Eend, dXSF = 1.0 / XSF;
-    for (size_t n = 0; n < m_fitedLineVector.size(); ++n)
+    for (size_t n = 0; n < m_fittedLineVector.size(); ++n)
     {
-        Gaussian* line = m_fitedLineVector[n];
+        Gaussian* line = m_fittedLineVector[n];
         line->GetDataRange(Estart, Eend);
         int xStart = ((x = int(XO + XSF * Estart)) > xm ? x : xm);
         int xEnd = ((x = int (XO + XSF * Eend)) < xM ? x : xM);

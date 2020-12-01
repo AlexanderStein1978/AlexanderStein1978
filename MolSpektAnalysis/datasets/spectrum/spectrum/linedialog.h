@@ -12,35 +12,24 @@
 #define LINEDIALOG_H
 
 
-#include <QWidget>
+#include "linewindowbase.h"
 
-class QComboBox;
 class QLineEdit;
 class QLabel;
 
-class Spektrum;
-class Gaussian;
-class MainWindow;
 
-
-class LineDialog : public QWidget
+class LineDialog : public LineWindowBase
 {
     Q_OBJECT
 public:
-    explicit LineDialog(MainWindow *parent = 0);
-    void Update();
+    explicit LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 private slots:
-    void SpektrumChanged(const QString& Name);
-    void LineChanged(const int index);
-    void UpdateLine();
+    virtual void LineChanged(const int index) override;
 
 private:
-    Spektrum* mSpektrum;
-    Gaussian* mLine;
-    MainWindow* MW;
+    void UpdateLine();
 
-    QComboBox *SpektrumBox, *LineBox;
     QLineEdit *IntensityEdit, *CenterFreqEdit, *WidthEdit, *OffsetEdit;
     QLabel *DataRangeLabel;
 };

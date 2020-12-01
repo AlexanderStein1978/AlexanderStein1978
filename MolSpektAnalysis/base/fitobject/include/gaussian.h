@@ -27,6 +27,7 @@ public:
     double GetPoint(double i_E) const;
     double GetProfilePoint(double i_relE) const;
 
+
     inline double GetEcenter() const
     {
         return E;
@@ -34,6 +35,7 @@ public:
 
 protected:
     bool getCalcYAndDerivatives(double *Ycalc, double **deriv) override;
+    bool getCalcY(double *Ycalc) const override;
     void getPar(double *Par) override;
     void setPar(double *Par) override;
     void updatePar(double *C) override;
