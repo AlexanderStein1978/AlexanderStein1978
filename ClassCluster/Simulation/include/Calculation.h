@@ -119,6 +119,7 @@ class Calculation : public QThread
         void calcMAR();
         void updateBindings();
         static double dist(const Particle *const P1, const Particle *const P2);
+        static bool isNotBound(const Particle *const P1, const Particle *const P2);
 
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;

@@ -741,10 +741,13 @@ void Calculation::run()
 
 void Calculation::updateBindings()
 {
-    for (int n=0; n<N; ++n) for (int i1 = 0; i1 < 4; ++i1) if (P - P[n].bound[i1] > n) for (int i2 = 0; i2 < 4; ++i2) if (i1 != i2 && P - P[n].bound[i2] > n)
-        for (int i3 = 0; i3 < 4; ++i3)
-            if (P - P[n].bound[i1]->bound[i3] > n && P[n].bound[i1]->bound[i3] != P[n].bound[i2]
-                    && dist(P+n, P[n].bound[i2]) + dist(P[n].bound[i1], P[n].bound[i1]->bound[i3]) > dist(P[n].bound[i1], P[n].bound[i2]) + dist(P+n, P[n].bound[i1]->bound[i3]))
+    for (int n=0; n<N; ++n) for (int i1 = 0; i1 < 4 && nullptr != P[n].bound[i1]; ++i1) if (P[n].bound[i1] - P > n)
+        for (int i2 = 0; i2 < 4 && nullptr != P[n].bound[i2]; ++i2) if (i1 != i2 && P[n].bound[i2] - P > n)
+        for (int i3 = 0; i3 < 4 && nullptr != P[n].bound[i1]->bound[i3]; ++i3)
+        if (P[n].bound[i1]->bound[i3] - P > n && P[n].bound[i1]->bound[i3] != P[n].bound[i1]
+            && isNotBound(P+n, P[n].bound[i1]->bound[i3]) && isNotBound(P[n].bound[i1], P[n].bound[i2])
+            && dist(P+n, P[n].bound[i2]) + dist(P[n].bound[i1], P[n].bound[i1]->bound[i3])
+                > dist(P[n].bound[i1], P[n].bound[i2]) + dist(P+n, P[n].bound[i1]->bound[i3]))
     {
         for (int i4 = 0; i4 < 4; ++i4)
         {
@@ -763,6 +766,12 @@ double Calculation::dist(const Particle * const P1, const Particle * const P2)
     double dy = P1->Y - P2->Y;
     double dz = P1->Z - P2->Z;
     return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+bool Calculation::isNotBound(const Particle *const P1, const Particle *const P2)
+{
+    for (int i=0; i<4; ++i) if (P1->bound[i] == P2) return false;
+    return true;
 }
 
 void Calculation::WriteSnapshot()

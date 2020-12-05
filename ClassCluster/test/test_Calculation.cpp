@@ -105,9 +105,9 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
 {
     int indexRowLength = 2 * getPXS();
     swapParticlePositions(indexRowLength + 2, indexRowLength + 4);
-    swapParticlePositions(10 * indexRowLength, 11 * indexRowLength);
+    swapParticlePositions(10 * indexRowLength + 2, 11 * indexRowLength + 2);
     updateBindings();
-
+    
     EXPECT_TRUE(areParticlesBound(indexRowLength + 4, indexRowLength));
     EXPECT_TRUE(areParticlesBound(indexRowLength + 4, indexRowLength + 4));
     EXPECT_TRUE(areParticlesBound(indexRowLength + 4, 2));
