@@ -741,22 +741,29 @@ void Calculation::run()
 
 void Calculation::updateBindings()
 {
-    for (int n=0; n<N; ++n) for (int i1 = 0; i1 < 4 && nullptr != P[n].bound[i1]; ++i1) if (P[n].bound[i1] - P > n)
-        for (int i2 = 0; i2 < 4 && nullptr != P[n].bound[i2]; ++i2) if (i1 != i2 && P[n].bound[i2] - P > n)
-        for (int i3 = 0; i3 < 4 && nullptr != P[n].bound[i1]->bound[i3]; ++i3)
-        if (P[n].bound[i1]->bound[i3] - P > n && P[n].bound[i1]->bound[i3] != P[n].bound[i1]
-            && isNotBound(P+n, P[n].bound[i1]->bound[i3]) && isNotBound(P[n].bound[i1], P[n].bound[i2])
-            && dist(P+n, P[n].bound[i2]) + dist(P[n].bound[i1], P[n].bound[i1]->bound[i3])
-                > dist(P[n].bound[i1], P[n].bound[i2]) + dist(P+n, P[n].bound[i1]->bound[i3]))
+    double randF = static_cast<double>(static_cast<int>(Particle::NBound) * N) / RAND_MAX;
+    for (int n=0; n < static_cast<int>(Particle::NBound)*N/2; ++n)
     {
-        for (int i4 = 0; i4 < 4; ++i4)
+        int random(static_cast<int>(static_cast<double>(rand()) * randF));
+        int i0 = random % N, i1(random % static_cast<int>(Particle::NBound));
+        if (i0 == N || i1 == static_cast<int>(Particle::NBound) || nullptr == P[i0].bound[i1]) continue;
+        std::map<double,int> map1, map2;
+        for (int i2 = 0; i2 < static_cast<int>(Particle::NBound); ++i2)
         {
-            if (P[n].bound[i2]->bound[i4] == P+n) P[n].bound[i2]->bound[i4] = P[n].bound[i1];
-            if (P[n].bound[i1]->bound[i3]->bound[i4] == P[n].bound[i1]) P[n].bound[i1]->bound[i3]->bound[i4] = P+n;
+            if (i1 != i2 && nullptr != P[i0].bound[i2] && isNotBound(P[i0].bound[i1], P[i0].bound[i2]))
+                map1.insert(std::make_pair(dist(P+n, P[i0].bound[i2]) - dist(P[i0].bound[i1], P[i0].bound[i2]), i2));
+            if (P + i0 != P[i0].bound[i1]->bound[i2] && nullptr != P[i0].bound[i1]->bound[i2] && isNotBound(P + i0, P[i0].bound[i1]->bound[i2]))
+                map1.insert(std::make_pair(dist(P[i0].bound[i1], P[i0].bound[i1]->bound[i2]) - dist(P+n, P[i0].bound[i1]->bound[i2]), i2));
         }
-        Particle* PB = P[n].bound[i2];
-        P[n].bound[i2] = P[n].bound[i1]->bound[i3];
-        P[n].bound[i1]->bound[i3] = PB;
+        for (std::map<double,int>::const_reverse_iterator it1 = map1.rbegin(), it2 = map2.rbegin(); it1 != map1.rend() && it2 != map2.rend() && it1->first + it2->first > 0.0; ++it1, ++it2)
+        {
+            for (int i4 = 0; i4 < static_cast<int>(Particle::NBound); ++i4)
+            {
+                if (P[i0].bound[it1->second]->bound[i4] == P + i0) P[i0].bound[it1->second]->bound[i4] = P[i0].bound[i1];
+                if (P[i0].bound[i1]->bound[it2->second]->bound[i4] == P[i0].bound[i1]) P[i0].bound[i1]->bound[it2->second]->bound[i4] = P + i0;
+            }
+            std::swap(P[i0].bound[it1->second], P[i0].bound[i1]->bound[it2->second]);
+        }
     }
 }
 
