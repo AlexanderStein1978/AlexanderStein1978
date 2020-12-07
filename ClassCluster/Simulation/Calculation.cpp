@@ -751,9 +751,9 @@ void Calculation::updateBindings()
         for (int i2 = 0; i2 < static_cast<int>(Particle::NBound); ++i2)
         {
             if (i1 != i2 && nullptr != P[i0].bound[i2] && isNotBound(P[i0].bound[i1], P[i0].bound[i2]))
-                map1.insert(std::make_pair(dist(P+n, P[i0].bound[i2]) - dist(P[i0].bound[i1], P[i0].bound[i2]), i2));
+                map1.insert(std::make_pair(dist(P + i0, P[i0].bound[i2]) - dist(P[i0].bound[i1], P[i0].bound[i2]), i2));
             if (P + i0 != P[i0].bound[i1]->bound[i2] && nullptr != P[i0].bound[i1]->bound[i2] && isNotBound(P + i0, P[i0].bound[i1]->bound[i2]))
-                map1.insert(std::make_pair(dist(P[i0].bound[i1], P[i0].bound[i1]->bound[i2]) - dist(P+n, P[i0].bound[i1]->bound[i2]), i2));
+                map2.insert(std::make_pair(dist(P[i0].bound[i1], P[i0].bound[i1]->bound[i2]) - dist(P + i0, P[i0].bound[i1]->bound[i2]), i2));
         }
         for (std::map<double,int>::const_reverse_iterator it1 = map1.rbegin(), it2 = map2.rbegin(); it1 != map1.rend() && it2 != map2.rend() && it1->first + it2->first > 0.0; ++it1, ++it2)
         {

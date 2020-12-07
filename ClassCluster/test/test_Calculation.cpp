@@ -58,7 +58,7 @@ protected:
         return areParticlesBound(Calc.P + index1, Calc.P + index2);
     }
 
-    bool areParticleBindingsCorrectlyInitialized(int index)
+    bool areParticleBindingsCorrectlyInitialized(int index) const
     {
         return (areParticlesBound(Calc.P + index, Calc.P + index - 2)
              && areParticlesBound(Calc.P + index, Calc.P + index + 2)
@@ -78,16 +78,38 @@ protected:
         Calc.updateBindings();
     }
 
-    int getPXS()
+    int getPXS() const
     {
         return Calc.PXS;
     }
 
-    int getPZS()
+    int getPZS() const
     {
         return Calc.PZS;
     }
-
+    
+    double getDist(const int index1, const int index2) const
+    {
+        return Calculation::dist(Calc.P + index1, Calc.P + index2);
+    }
+    
+    int getBoundParticleIndex(const int particleIndex, const int bindingIndex) const
+    {
+        return Calc.P[particleIndex].bound[bindingIndex] - Calc.P;
+    }
+    
+    int getNumParticles() const
+    {
+        return Calc.N;
+    }
+    
+    bool isNoBindingDoubled(const int particleIndex) const
+    {
+       for (int i=0; i < Particle::NBound - 1; ++i) for (int j=i+1; j < Particle::NBound; ++j)
+           if (Calc.P[particleIndex].bound[i] == Calc.P[particleIndex].bound[j]) return false;
+        return true;
+    }
+    
     Calculation Calc;
 };
 
@@ -108,19 +130,17 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
     swapParticlePositions(10 * indexRowLength + 2, 11 * indexRowLength + 2);
     updateBindings();
     
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 4, indexRowLength));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 4, indexRowLength + 4));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 4, 2));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 4, 2 * indexRowLength + 2));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 2, indexRowLength + 6));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 2, 4));
-    EXPECT_TRUE(areParticlesBound(indexRowLength + 2, 2 * indexRowLength + 4));
-
-    EXPECT_TRUE(areParticlesBound(11 * indexRowLength + 2, 10 * indexRowLength));
-    EXPECT_TRUE(areParticlesBound(11 * indexRowLength + 2, 10 * indexRowLength + 4));
-    EXPECT_TRUE(areParticlesBound(11 * indexRowLength + 2, 9 * indexRowLength + 2));
-    EXPECT_TRUE(areParticlesBound(11 * indexRowLength + 2, 11 * indexRowLength + 2));
-    EXPECT_TRUE(areParticlesBound(10 * indexRowLength + 2, 11 * indexRowLength));
-    EXPECT_TRUE(areParticlesBound(10 * indexRowLength + 2, 11 * indexRowLength + 4));
-    EXPECT_TRUE(areParticlesBound(10 * indexRowLength + 2, 12 * indexRowLength + 2));
+    for (int i=0; i < getNumParticles(); ++i)
+    {
+        EXPECT_TRUE(isNoBindingDoubled(i));
+        
+        for (int j=0; j < Particle::NBound; ++j)
+        {
+            int k = getBoundParticleIndex(i, j);
+            if (k<0) break;
+            
+            EXPECT_TRUE(areParticlesBound(i, k));
+            EXPECT_LT(getDist(i, k), 6.0);           
+        }
+    }
 }
