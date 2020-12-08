@@ -28,7 +28,7 @@ class LineProfileFitWindow : public LineWindowBase
 {
     Q_OBJECT
 public:
-    LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr, QWidget *parent = nullptr);
+    LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 private slots:
     virtual void LineChanged(const int index) override;

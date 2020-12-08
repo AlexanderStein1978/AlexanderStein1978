@@ -10,6 +10,10 @@
 
 
 #include "linewindowbase.h"
+#include "MainWindow.h"
+#include "Spektrum.h"
+
+#include <QComboBox>
 
 
 LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, Gaussian *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
@@ -65,7 +69,7 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
             {
                 if (curIndex > nLines) curIndex = nLines;
                 else ++curIndex;
-                Gaussian* curLine = nullptr;
+                const Gaussian* curLine = nullptr;
                 while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
                 if (curLine == mLine) LineBox->setCurrentIndex(curIndex);
             }

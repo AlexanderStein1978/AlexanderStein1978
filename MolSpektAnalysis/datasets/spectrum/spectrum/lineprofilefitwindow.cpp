@@ -23,7 +23,7 @@
 #include <QDoubleValidator>
 
 
-LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaussian *line, QWidget *parent) : LineWindowBase(mw, spect, line, parent),
+LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaussian *line) : LineWindowBase(mw, spect, line),
     MaxIterationEdit(new QLineEdit("100", this)), MinImprovementEdit(new QLineEdit("0.01", this)), MinFreqEdit(new QLineEdit(this)), MaxFreqEdit(new QLineEdit(this)),
     PerformFitButton(new QPushButton("Run fit", this)), ResultSigmaLabel(new QLabel(this))
 {
@@ -44,9 +44,9 @@ LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaus
     L->addWidget(PerformFitButton, 4, 0, 1, 2);
     L->addWidget(ResultSigmaLabel, 4, 2, 1, 2);
     MaxIterationEdit->setValidator(new QIntValidator(1, 1000000, MaxIterationEdit));
-    MinImprovementEdit->setValidator(new QDoubleValidator(1e-10, 1e10, MinImprovementEdit));
-    MinFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, MinFreqEdit));
-    MaxFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, MaxFreqEdit));
+    MinImprovementEdit->setValidator(new QDoubleValidator(1e-10, 1e10, 0, MinImprovementEdit));
+    MinFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, 0, MinFreqEdit));
+    MaxFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, 0, MaxFreqEdit));
     connect(SpektrumBox, SIGNAL(currentTextChanged(QString)), this, SLOT(SpektrumChanged(QString)));
     connect(LineBox, SIGNAL(currentIndexChanged(int)), this, SLOT(LineChanged(int)));
     connect(PerformFitButton, SIGNAL(clicked()), this, SLOT(RunFit()));
@@ -68,5 +68,5 @@ void LineProfileFitWindow::RunFit()
 
 void LineProfileFitWindow::UpdateSigma()
 {
-    if (nullptr != mLine) ResultSigmaLabel->setText("Sigma: " + QString::number(mLine->GetSigma());
+    if (nullptr != mLine) ResultSigmaLabel->setText("Sigma: " + QString::number(mLine->GetSigma()));
 }

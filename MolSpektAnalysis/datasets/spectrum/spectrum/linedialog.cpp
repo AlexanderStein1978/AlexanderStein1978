@@ -22,9 +22,8 @@
 
 
 
-LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), mSpektrum(nullptr), mLine(nullptr), MW(parent),
-    SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)), IntensityEdit(new QLineEdit(this)), CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)),
-    OffsetEdit(new QLineEdit(this)), DataRangeLabel(new QLabel(this))
+LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this)),
+    CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), DataRangeLabel(new QLabel(this))
 {
     SpektrumBox->setEditable(false);
     LineBox->setEditable(false);

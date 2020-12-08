@@ -142,12 +142,12 @@ public:
 		return MinPeakHeight;
 	}
 
-    inline int GetNumFittedLines()
+    inline int GetNumFittedLines() const
     {
         return m_fittedLineVector.size();
     }
 
-    const Gaussian* GetFittedLine(const int i_index)
+    Gaussian* GetFittedLine(const int i_index)
     {
         return m_fittedLineVector[i_index];
     }
