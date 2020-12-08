@@ -12,11 +12,17 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_library(Spektrum STATIC
 	include/exportlineprofiledialog.h
 	include/feldialog.h
-	include/selectlinetabledialog.h
+        include/linedialog.h
+        include/lineprofilefitwindow.h
+        include/linewindowbase.h
+        include/selectlinetabledialog.h
 	include/spectlist.h
 	include/Spektrum.h
-    exportlineprofiledialog.cpp
+        exportlineprofiledialog.cpp
 	feldialog.cpp
+        linedialog.cpp
+        lineprofilefitwindow.cpp
+        linewindowbase.cpp
 	selectlinetabledialog.cpp
 	spectlist.cpp
 	Spektrum.cpp
