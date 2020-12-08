@@ -29,7 +29,7 @@ public:
     LineWindowBase(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 protected slots:
-    void SpektrumChanged(const QString& SpectName);
+    virtual void SpektrumChanged(const QString& SpectName);
     virtual void LineChanged(const int index);
 
 protected:

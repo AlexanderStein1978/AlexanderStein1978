@@ -32,6 +32,7 @@ public:
 
 private slots:
     virtual void LineChanged(const int index) override;
+    virtual void SpektrumChanged(const QString &SpectName) override;
     void RunFit();
     void UpdateSigma();
 

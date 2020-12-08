@@ -83,6 +83,8 @@
 #include "CoupledSineWaveFunc.h"
 #include "selectlinetabledialog.h"
 #include "CreateAnaPotSeriesControl.h"
+#include "linedialog.h"
+#include "lineprofilefitwindow.h"
 
 
 MainWindow::MainWindow()
@@ -7655,24 +7657,17 @@ void MainWindow::SpectrumTest_Transition()
 void MainWindow::SpectrumFitGaussianLineProfile()
 {
     Spektrum *S = activeSpectrum();
-    double I, E, Width, Offset, Sigma;
-    S->FitGaussianLineProfile(E, I, Width, Offset, Sigma);
-    if (Sigma > 0.0)
+    int index = -1;
+    double Sigma = S->FitGaussianLineProfile(index);
+    if (Sigma > 0.0 && index >= 0)
     {
-        QTableWidget* Tab = new QTableWidget(5, 2, this);
-        Tab->setHorizontalHeaderLabels(QStringList() << "Name" << "Value");
-        Tab->setItem(0, 0, new QTableWidgetItem("Energy [cm^-1]:"));
-        Tab->setItem(0, 1, new QTableWidgetItem(QString::number(E, 'f', 4)));
-        Tab->setItem(1, 0, new QTableWidgetItem("Intensity [a.u.]:"));
-        Tab->setItem(1, 1, new QTableWidgetItem(QString::number(I, 'g', 3)));
-        Tab->setItem(2, 0, new QTableWidgetItem("Width [cm^-1]:"));
-        Tab->setItem(2, 1, new QTableWidgetItem(QString::number(Width, 'f', 4)));
-        Tab->setItem(3, 0, new QTableWidgetItem("Intensity offset:"));
-        Tab->setItem(3, 1, new QTableWidgetItem(QString::number(Offset, 'g', 3)));
-        Tab->setItem(4, 0, new QTableWidgetItem("Sigma"));
-        Tab->setItem(4, 1, new QTableWidgetItem(QString::number(Sigma, 'f', 2)));
-        workspace->addSubWindow(Tab);
-        Tab->show();
+        Gaussian* line = S->GetFittedLine(index);
+        LineDialog* lineD = new LineDialog(this, S, line);
+        LineProfileFitWindow* fitWindow = new LineProfileFitWindow(this, S, line);
+        workspace->addSubWindow(lineD);
+        workspace->addSubWindow(fitWindow);
+        lineD->show();
+        fitWindow->show();
     }
 }
 

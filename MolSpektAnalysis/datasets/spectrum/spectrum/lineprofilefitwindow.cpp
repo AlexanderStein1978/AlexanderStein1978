@@ -61,9 +61,19 @@ void LineProfileFitWindow::LineChanged(const int index)
 void LineProfileFitWindow::RunFit()
 {
     if (nullptr != mSpektrum)
+    {
+        int lineIndex = LineBox->currentIndex();
         ResultSigmaLabel->setText("Sigma: " + QString::number(
-            mSpektrum->FitGaussianLineProfile(LineBox->currentIndex(), MaxIterationEdit->text().toDouble(), MinImprovementEdit->text().toDouble(), MinFreqEdit->text().toDouble(),
+            mSpektrum->FitGaussianLineProfile(lineIndex, MaxIterationEdit->text().toDouble(), MinImprovementEdit->text().toDouble(), MinFreqEdit->text().toDouble(),
                                               MaxFreqEdit->text().toDouble())));
+        if (lineIndex >= LineBox->count()) SpektrumChanged(mSpektrum->getFName());
+    }
+}
+
+void LineProfileFitWindow::SpektrumChanged(const QString &SpectName)
+{
+    LineWindowBase::SpektrumChanged(SpectName);
+    LineBox->addItem("new");
 }
 
 void LineProfileFitWindow::UpdateSigma()

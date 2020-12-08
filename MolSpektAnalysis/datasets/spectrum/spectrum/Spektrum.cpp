@@ -758,7 +758,7 @@ void Spektrum::markRegion(QRect *i_regionToMark)
     }
 }
 
-double Spektrum::FitGaussianLineProfile(int lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
+double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
 {
     if (Rauschen == -1.0) editFind();
     double sig = 1.0 / (Rauschen * Rauschen), minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
@@ -781,7 +781,11 @@ double Spektrum::FitGaussianLineProfile(int lineIndex, const int MaxIterations, 
     Gaussian* line(lineIndex >= 0 && lineIndex < m_fittedLineVector.size() ? m_fittedLineVector[lineIndex] : new Gaussian(X, Y, Sig, N));
     double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
     double o_sigma = sqrt(chiSq / (N-1));
-    if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size()) m_fittedLineVector.push_back(line);
+    if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size())
+    {
+        lineIndex = static_cast<int>(m_fittedLineVector.size());
+        m_fittedLineVector.push_back(line);
+    }
     Paint();
     return o_sigma;
 }
