@@ -52,9 +52,8 @@ LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaus
     connect(PerformFitButton, SIGNAL(clicked()), this, SLOT(RunFit()));
 }
 
-void LineProfileFitWindow::LineChanged(const int index)
+void LineProfileFitWindow::lineChanged()
 {
-    LineWindowBase::LineChanged(index);
     UpdateSigma();
 }
 
@@ -70,10 +69,18 @@ void LineProfileFitWindow::RunFit()
     }
 }
 
-void LineProfileFitWindow::SpektrumChanged(const QString &SpectName)
+void LineProfileFitWindow::connectSpectrum()
 {
-    LineWindowBase::SpektrumChanged(SpectName);
-    LineBox->addItem("new");
+    if (nullptr != mSpektrum)
+    {
+        LineBox->addItem("new");
+        connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(UpdateSigma()));
+    }
+}
+
+void LineProfileFitWindow::disconnectSpectrum()
+{
+    if (nullptr != mSpektrum) disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(UpdateSigma()));
 }
 
 void LineProfileFitWindow::UpdateSigma()

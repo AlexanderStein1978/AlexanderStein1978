@@ -25,11 +25,13 @@ public:
     explicit LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 private slots:
-    virtual void LineChanged(const int index) override;
+    void UpdateLine();
+    void lineChanged() override;
 
 private:
-    void UpdateLine();
-
+    void disconnectSpectrum() override;
+    void connectSpectrum() override;
+    
     QLineEdit *IntensityEdit, *CenterFreqEdit, *WidthEdit, *OffsetEdit;
     QLabel *DataRangeLabel;
 };
