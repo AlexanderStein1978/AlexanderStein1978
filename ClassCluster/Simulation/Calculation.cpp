@@ -330,21 +330,42 @@ void Calculation::correctLocalE()
             const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
             if (EDelta >= curPar->T)
             {
-                curPar->vX = curPar->vY = curPar->vZ = 0.0;
-                currSumE -= curPar->T;
-                if (EDelta > curPar->T)
+                if (curPar->U > 0.0)
                 {
+                    const double TMin = 25e4;
+                    if (curPar->T > TMin)
+                    {
+                        const double vF = sqrt(TMin / curPar->T);
+                        curPar->vX *= vF;
+                        curPar->vY *= vF;
+                        curPar->vZ *= vF;
+                        currSumE -= curPar->T + TMin;
+                        M[EOrder[n]] = 4;
+                    }
+                    else M[EOrder[n]] = 5;
                     curPar->E -= curPar->deltaE;
                     curPar->U -= curPar->deltaU;
                     curPar->T -= curPar->deltaT;
-                    M[EOrder[n]] = 1;
                 }
                 else
                 {
-                    curPar->E -= curPar->T;
-                    curPar->T = 0.0;
-                    M[EOrder[n]] = 2;
+                    curPar->vX = curPar->vY = curPar->vZ = 0.0;
+                    currSumE -= curPar->T;
+                    if (EDelta > curPar->T)
+                    {
+                        curPar->E -= curPar->deltaE;
+                        curPar->U -= curPar->deltaU;
+                        curPar->T -= curPar->deltaT;
+                        M[EOrder[n]] = 1;
+                    }
+                    else
+                    {
+                        curPar->E -= curPar->T;
+                        curPar->T = 0.0;
+                        M[EOrder[n]] = 2;
+                    }
                 }
+
             }
             else
             {
