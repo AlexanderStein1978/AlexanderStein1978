@@ -29,11 +29,14 @@ public:
     LineWindowBase(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 protected slots:
-    virtual void SpektrumChanged(const QString& SpectName);
-    virtual void LineChanged(const int index);
+    void SpektrumChanged(const QString& SpectName);
+    void LineChanged(const int index);
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
+    virtual void disconnectSpectrum() = 0;
+    virtual void connectSpectrum() = 0;
+    virtual void lineChanged() = 0;
 
     QComboBox *SpektrumBox, *LineBox;
     MainWindow *MW;

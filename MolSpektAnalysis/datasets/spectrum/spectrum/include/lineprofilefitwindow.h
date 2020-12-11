@@ -31,12 +31,14 @@ public:
     LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
 private slots:
-    virtual void LineChanged(const int index) override;
-    virtual void SpektrumChanged(const QString &SpectName) override;
     void RunFit();
     void UpdateSigma();
 
 private:
+    void disconnectSpectrum() override;
+    void connectSpectrum() override;
+    void lineChanged() override;
+    
     QLineEdit *MaxIterationEdit, *MinImprovementEdit, *MinFreqEdit, *MaxFreqEdit;
     QPushButton *PerformFitButton;
     QLabel *ResultSigmaLabel;

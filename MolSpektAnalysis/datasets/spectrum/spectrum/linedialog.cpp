@@ -54,11 +54,18 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
     connect(OffsetEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
 }
 
-
-
-void LineDialog::LineChanged(const int index)
+void LineDialog::connectSpectrum()
 {
-    LineWindowBase::LineChanged(index);
+    if (nullptr != mSpektrum) connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+}
+
+void LineDialog::disconnectSpectrum()
+{
+    if (nullptr != mSpektrum) disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+}
+
+void LineDialog::lineChanged()
+{
     CenterFreqEdit->blockSignals(true);
     IntensityEdit->blockSignals(true);
     OffsetEdit->blockSignals(true);
