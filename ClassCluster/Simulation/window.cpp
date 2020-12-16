@@ -136,14 +136,19 @@ void Window::setSpeed(const double newSpeed)
     Calc->setSpeed(newSpeed);
 }
 
-double Window::getEnergy() const
+double Window::getPotentialEnergy() const
 {
-    return Calc->getEnergy();
+    return Calc->getPotentialEnergy();
 }
 
-double Window::setEnergy(const double E)
+double Window::getKineticEnergy() const
 {
-    return Calc->setEnergy(E);
+    return Calc->getKineticEnergy();
+}
+
+double Window::setKineticEnergy(const double T)
+{
+    return Calc->setKineticEnergy(T);
 }
 
 void Window::setParticleWatchPoint(WatchPoint *point)

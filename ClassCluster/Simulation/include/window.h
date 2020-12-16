@@ -26,8 +26,9 @@ class Window : public QWidget
         void rotate();
         void triggerSnapShot();
         void restoreSnapShot(bool &isMoving);
-        double getEnergy() const;
-        double setEnergy(const double E);
+        double getPotentialEnergy() const;
+        double getKineticEnergy() const;
+        double setKineticEnergy(const double newT);
         void setPotentialRangeScale(const double newScale);
         void setSpeed(const double newSpeed);
         void setStepSize(const double size);

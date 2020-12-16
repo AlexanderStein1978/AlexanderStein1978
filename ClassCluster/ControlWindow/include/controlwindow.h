@@ -42,15 +42,21 @@ private slots:
     void showParticleWatchWindow();
     void saveSettings();
     void plotClosing();
+    void EChanged();
+    void TChanged();
+    void ValueChanged();
+    void EnergyRelevantValueChanged();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
 
 private:
     void prepareWindow();
+    void start();
+    bool stopIfItsRunning();
 
     Window* window;
-    QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
+    QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move;
     PotControl** PotControls;
     PotentialPlot* Plot;
