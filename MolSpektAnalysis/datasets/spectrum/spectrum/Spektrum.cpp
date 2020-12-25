@@ -370,7 +370,22 @@ bool Spektrum::readData(QString DateiName)
 			TextDaten = "";
 		else TextDaten += "\n";
 	}
-    TextDaten +=  stream.readAll();
+    TextDaten = stream.readLine();
+    if (TextDaten == "Fitted Gaussian line profiles:")
+    {
+        stream.readLine();
+        while (true)
+        {
+            TextDaten = stream.readLine();
+            if (TextDaten == "Spectrum:") break;
+            Gaussian* lineProfile = new Gaussian(TextDaten);
+            if (lineProfile->isValid()) m_fittedLineVector.push_back(lineProfile);
+            else delete lineProfile;
+        }
+        TextDaten.clear();
+    }
+    else TextDaten += '\n';
+    TextDaten += stream.readAll();
     Datei.close();
     l = TextDaten.length();
     printf("Daten eingelesen. Dateigröße=%d Bytes\n", l);
@@ -566,7 +581,14 @@ bool Spektrum::writeData(QString FileName)
 		default:
 			S << "type=" << QString::number(Type) << "\n";
 			break;
-	} 
+    }
+    if (m_fittedLineVector.size() > 0)
+    {
+        S << "Fitted Gaussian line profiles:\n"
+          << "B\tE\tG\tOffset\tE start\tE end\tis subtracted\n";
+        for (std::vector<Gaussian*>::const_iterator it = m_fittedLineVector.begin(); it != m_fittedLineVector.end(); ++it) (*it)->Serialize(S);
+        S << "Spectrum:\n";
+    }
 	for (r=0; r<N; r++) 
 		S << QString::number(Daten->GetValue(r, 0), 'f', 6) << "\t" 
 				<< QString::number(Daten->GetValue(r, 1), 'f', 6) 
@@ -787,7 +809,30 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations,
         m_fittedLineVector.push_back(line);
     }
     Paint();
+    Changed();
     return o_sigma;
+}
+
+void Spektrum::RemoveFittedLine(const int i_index)
+{
+    if (m_fittedLineVector[i_index]->isLineSubtracted()) SubtractFittedLine(i_index, false);
+    delete m_fittedLineVector[i_index];
+    m_fittedLineVector.erase(m_fittedLineVector.begin() + i_index);
+    Paint();
+    Changed();
+}
+
+void Spektrum::SubtractFittedLine(const int i_index, const bool subtract)
+{
+    if (m_fittedLineVector[i_index]->isLineSubtracted() == subtract) return;
+    int N(m_fittedLineVector[i_index]->GetNData());
+    double start, end, data[N];
+    m_fittedLineVector[i_index]->GetDataRange(start, end);
+    m_fittedLineVector[i_index]->getLineY(data);
+    Daten->SubtractLine(start, end, N, data, subtract);
+    m_fittedLineVector[i_index]->setSubtracted(subtract);
+    Paint();
+    Changed();
 }
 
 void Spektrum::PictureClicked(QPoint *P)

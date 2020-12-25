@@ -23,7 +23,8 @@
 
 
 LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this)),
-    CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), DataRangeLabel(new QLabel(this))
+    CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), SubtractButton(new QPushButton(this)),
+    DeleteButton(new QPushButton("Remove line", this)), DataRangeLabel(new QLabel(this))
 {
     SpektrumBox->setEditable(false);
     LineBox->setEditable(false);
@@ -37,17 +38,21 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
     L->addWidget(new QLabel("Line:", this), 0, 2);
     L->addWidget(LineBox, 0, 3);
     L->setRowMinimumHeight(1, 20);
-    L->addWidget(new QLabel("Intensity:", this), 2, 0);
-    L->addWidget(IntensityEdit, 2, 1);
-    L->addWidget(new QLabel("Center frequency:", this), 2, 2);
-    L->addWidget(CenterFreqEdit, 2, 3);
-    L->addWidget(new QLabel("Width:", this), 3, 0);
-    L->addWidget(WidthEdit, 3, 1);
-    L->addWidget(new QLabel("Offset:", this), 3, 2);
-    L->addWidget(OffsetEdit, 3, 3);
-    L->addWidget(DataRangeLabel, 4, 0, 1, 4);
+    L->addWidget(SubtractButton, 2, 0, 1, 2);
+    L->addWidget(DeleteButton, 2, 2, 1, 2);
+    L->addWidget(new QLabel("Intensity:", this), 3, 0);
+    L->addWidget(IntensityEdit, 3, 1);
+    L->addWidget(new QLabel("Center frequency:", this), 3, 2);
+    L->addWidget(CenterFreqEdit, 3, 3);
+    L->addWidget(new QLabel("Width:", this), 4, 0);
+    L->addWidget(WidthEdit, 4, 1);
+    L->addWidget(new QLabel("Offset:", this), 4, 2);
+    L->addWidget(OffsetEdit, 4, 3);
+    L->addWidget(DataRangeLabel, 5, 0, 1, 4);
     connect(SpektrumBox, SIGNAL(currentTextChanged(QString)), this, SLOT(SpektrumChanged(QString)));
     connect(LineBox, SIGNAL(currentIndexChanged(int)), this, SLOT(LineChanged(int)));
+    connect(SubtractButton, SIGNAL(clicked()), this, SLOT(SubtractLine()));
+    connect(DeleteButton, SIGNAL(clicked()), this, SLOT(DeleteLine()));
     connect(IntensityEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(CenterFreqEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(WidthEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
@@ -93,6 +98,7 @@ void LineDialog::lineChanged()
     IntensityEdit->blockSignals(false);
     OffsetEdit->blockSignals(false);
     WidthEdit->blockSignals(false);
+    updateSubtractButton();
 }
 
 void LineDialog::UpdateLine()
@@ -102,4 +108,27 @@ void LineDialog::UpdateLine()
         mLine->SetValues(IntensityEdit->text().toDouble(), CenterFreqEdit->text().toDouble(), WidthEdit->text().toDouble(), OffsetEdit->text().toDouble());
         mSpektrum->Changed();
     }
+}
+
+void LineDialog::updateSubtractButton()
+{
+    if (nullptr != mLine)
+    {
+        if (mLine->isLineSubtracted()) SubtractButton->setText("Readd line");
+        else SubtractButton->setText("Subtract line");
+    }
+}
+
+void LineDialog::SubtractLine()
+{
+    if (nullptr != mSpektrum && nullptr != mLine)
+    {
+        mSpektrum->SubtractFittedLine(LineBox->currentIndex(), !mLine->isLineSubtracted());
+        updateSubtractButton();
+    }
+}
+
+void LineDialog::DeleteLine()
+{
+    if (nullptr != mSpektrum && nullptr != mLine) mSpektrum->RemoveFittedLine(LineBox->currentIndex());
 }

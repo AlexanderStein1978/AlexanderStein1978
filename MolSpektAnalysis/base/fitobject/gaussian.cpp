@@ -2,7 +2,7 @@
 // C++ Implementation: Gaussian
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -75,6 +75,21 @@ Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y
     else m_Estart = m_Eend = -1.0;
 }
 
+Gaussian::Gaussian(const QString &data) : FitObject(4), B(0.0), E(0.0), G(0.0), Offset(0.0), m_Estart(0.0), m_Eend(0.0), isSubtracted(false)
+{
+    QStringList L = data.split('\t', QString::SkipEmptyParts);
+    if (L.size() >= 7)
+    {
+        B = L[0].toDouble();
+        E = L[1].toDouble();
+        G = L[2].toDouble();
+        Offset = L[3].toDouble();
+        m_Estart = L[4].toDouble();
+        m_Eend = L[5].toDouble();
+        isSubtracted = (L[6] == "true");
+    }
+}
+
 Gaussian::~Gaussian()
 {
 }
@@ -127,6 +142,17 @@ bool Gaussian::getCalcY(double *Ycalc) const
         double arg = (X[n] - E) * dG;
         Ycalc[n] = Offset + B * exp(-arg * arg);
     }
+    return true;
+}
+
+void Gaussian::getLineY(double *Ycalc) const
+{
+    double dG = 1.0 / G;
+    for (int n=0; n < nData; ++n)
+    {
+        double arg = (X[n] - E) * dG;
+        Ycalc[n] = B * exp(-arg * arg);
+    }
 }
 
 double Gaussian::GetPoint(double i_E) const
@@ -163,4 +189,10 @@ void Gaussian::updatePar(double *C)
     E += C[1];
     G += C[2];
     Offset += C[3];
+}
+
+void Gaussian::Serialize(QTextStream &stream) const
+{
+    stream << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 8) << '\t' << QString::number(G, 'g', 8) << '\t' << QString::number(Offset, 'g', 8)
+           << '\t' << QString::number(m_Estart, 'g', 8) << '\t' << QString::number(m_Eend, 'g', 8) << '\t' << (isSubtracted ? "true" : "false") << '\n';
 }

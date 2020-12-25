@@ -16,6 +16,7 @@
 
 class QLineEdit;
 class QLabel;
+class QPushButton;
 
 
 class LineDialog : public LineWindowBase
@@ -26,13 +27,17 @@ public:
 
 private slots:
     void UpdateLine();
+    void SubtractLine();
+    void DeleteLine();
     void lineChanged() override;
 
 private:
     void disconnectSpectrum() override;
     void connectSpectrum() override;
+    void updateSubtractButton();
     
     QLineEdit *IntensityEdit, *CenterFreqEdit, *WidthEdit, *OffsetEdit;
+    QPushButton *SubtractButton, *DeleteButton;
     QLabel *DataRangeLabel;
 };
 
