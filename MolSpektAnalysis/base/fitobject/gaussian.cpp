@@ -129,7 +129,7 @@ bool Gaussian::getCalcYAndDerivatives(double *Ycalc, double **deriv)
         deriv[n][0] = ex;
         deriv[n][1] = dG * fac;
         deriv[n][2] = arg * deriv[n][1];
-        deriv[2][3] = 1.0;
+        deriv[n][3] = 1.0;
     }
     return true;
 }

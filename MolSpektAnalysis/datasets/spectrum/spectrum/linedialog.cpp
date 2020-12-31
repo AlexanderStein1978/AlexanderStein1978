@@ -26,8 +26,6 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
     CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), SubtractButton(new QPushButton(this)),
     DeleteButton(new QPushButton("Remove line", this)), DataRangeLabel(new QLabel(this))
 {
-    SpektrumBox->setEditable(false);
-    LineBox->setEditable(false);
     IntensityEdit->setValidator(new QDoubleValidator(IntensityEdit));
     CenterFreqEdit->setValidator(new QDoubleValidator(CenterFreqEdit));
     WidthEdit->setValidator(new QDoubleValidator(WidthEdit));
@@ -57,6 +55,7 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
     connect(CenterFreqEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(WidthEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(OffsetEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
+    focusInEvent(nullptr);
 }
 
 void LineDialog::connectSpectrum()

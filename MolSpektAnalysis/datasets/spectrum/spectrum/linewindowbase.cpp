@@ -19,7 +19,8 @@
 LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, Gaussian *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
     MW(mw), mSpektrum(spect), mLine(line)
 {
-    focusInEvent(nullptr);
+    SpektrumBox->setEditable(false);
+    LineBox->setEditable(false);
 }
 
 void LineWindowBase::focusInEvent(QFocusEvent *event)

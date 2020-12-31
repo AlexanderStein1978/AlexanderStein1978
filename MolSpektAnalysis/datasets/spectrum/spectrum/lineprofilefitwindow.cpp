@@ -50,6 +50,7 @@ LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaus
     connect(SpektrumBox, SIGNAL(currentTextChanged(QString)), this, SLOT(SpektrumChanged(QString)));
     connect(LineBox, SIGNAL(currentIndexChanged(int)), this, SLOT(LineChanged(int)));
     connect(PerformFitButton, SIGNAL(clicked()), this, SLOT(RunFit()));
+    focusInEvent(nullptr);
 }
 
 void LineProfileFitWindow::lineChanged()
