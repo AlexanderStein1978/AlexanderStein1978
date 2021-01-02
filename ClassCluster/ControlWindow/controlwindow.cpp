@@ -254,7 +254,7 @@ void ControlWindow::ValueChanged()
 {
     if (window->isRunning())
     {
-        window->stop();
+        window->stopCalc();
         start();
     }
 }
@@ -270,7 +270,7 @@ bool ControlWindow::stopIfItsRunning()
 {
     if (window->isRunning())
     {
-        window->stop();
+        window->stopCalc();
         return true;
     }
     return false;
