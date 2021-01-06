@@ -2,7 +2,7 @@
 // C++ Interface: potential
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,22 +13,19 @@
 #define POTENTIAL_H
 
 
+#include "PotFit.h"
 #include "tools.h"
 #include "tablewindow.h"
 #include "montecarlosim.h"
 #include "fit.h"
 #include "potworker.h"
-#include "PotFit.h"
+
 
 #include <QDialog>
 #include <QThread>
 
 class ElState;
 class IsoTab;
-class TermEnergy;
-class TableLine;
-class TermTable;
-class FitData;
 class NaturalSpline;
 class AnaPot;
 class MTTPot;
