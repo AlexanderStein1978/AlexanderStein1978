@@ -278,7 +278,7 @@ void Datensatz::SubtractLine(const double Xstart, const double Xend, const int N
     if (abs(AE->First->Daten[999][0] - Xstart) < abs(AE->Daten[0][0] - Xstart)) AE = AE->First;
     double min = abs(AE->Daten[0][0] - Xstart), d;
     int i=1;
-    while (i <= 999 && (d = abs(AE->Daten[i][0])) < min)
+    while (i <= 999 && (d = abs(AE->Daten[i][0] - Xstart)) < min)
     {
         min = d;
         ++i;

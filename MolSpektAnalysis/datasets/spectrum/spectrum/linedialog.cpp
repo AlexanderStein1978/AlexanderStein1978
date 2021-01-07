@@ -60,12 +60,20 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
 
 void LineDialog::connectSpectrum()
 {
-    if (nullptr != mSpektrum) connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+    if (nullptr != mSpektrum)
+    {
+        connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+        connect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+    }
 }
 
 void LineDialog::disconnectSpectrum()
 {
-    if (nullptr != mSpektrum) disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+    if (nullptr != mSpektrum)
+    {
+        disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+        disconnect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+    }
 }
 
 void LineDialog::lineChanged()
