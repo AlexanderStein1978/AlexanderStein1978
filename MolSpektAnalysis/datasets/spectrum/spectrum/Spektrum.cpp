@@ -819,6 +819,7 @@ void Spektrum::RemoveFittedLine(const int i_index)
     delete m_fittedLineVector[i_index];
     m_fittedLineVector.erase(m_fittedLineVector.begin() + i_index);
     Paint();
+    emit FittedLineRemoved();
     Changed();
 }
 

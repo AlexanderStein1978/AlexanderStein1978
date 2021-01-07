@@ -31,6 +31,7 @@ public:
 protected slots:
     void SpektrumChanged(const QString& SpectName);
     void LineChanged(const int index);
+    void LineRemoved();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
