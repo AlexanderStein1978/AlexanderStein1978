@@ -69,7 +69,7 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
             for (int n=0; n < nLines; ++n) LineBox->addItem(QString::number(n));
             if (nullptr != mLine)
             {
-                if (curIndex > nLines) curIndex = nLines;
+                if (curIndex < 0 || curIndex > nLines) curIndex = nLines;
                 else ++curIndex;
                 const Gaussian* curLine = nullptr;
                 while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
@@ -82,9 +82,16 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
     LineChanged(curIndex);
 }
 
+void LineWindowBase::LineRemoved()
+{
+    SpektrumChanged(mSpektrum->getFName());
+}
+
+
 void LineWindowBase::LineChanged(const int index)
 {
-    mLine = (nullptr != mSpektrum && index < mSpektrum->GetNumFittedLines() ? mSpektrum->GetFittedLine(index) : nullptr);
+    mLine = (nullptr != mSpektrum && index >= 0 && index < mSpektrum->GetNumFittedLines() ?
+             mSpektrum->GetFittedLine(index) : nullptr);
     lineChanged();
 }
 
