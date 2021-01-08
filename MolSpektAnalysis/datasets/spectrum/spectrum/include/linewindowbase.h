@@ -42,6 +42,10 @@ protected:
     MainWindow *MW;
     Spektrum *mSpektrum;
     Gaussian* mLine;
+
+private:
+    void ConnectSpectrum();
+    void DisconnectSpectrum();
 };
 
 #endif // LINEWINDOWBASE_H
