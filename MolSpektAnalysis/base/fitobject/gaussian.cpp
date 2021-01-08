@@ -2,7 +2,7 @@
 // C++ Implementation: Gaussian
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -25,7 +25,7 @@
 using std::isnan;
 
 
-Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y, Sig, N)
+Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y, Sig, N), isSubtracted(false)
 {
     Offset = y[0];
     double min = Offset, max = Offset, mx = 0.0, Mx = 0.0;
@@ -193,6 +193,6 @@ void Gaussian::updatePar(double *C)
 
 void Gaussian::Serialize(QTextStream &stream) const
 {
-    stream << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 8) << '\t' << QString::number(G, 'g', 8) << '\t' << QString::number(Offset, 'g', 8)
-           << '\t' << QString::number(m_Estart, 'g', 8) << '\t' << QString::number(m_Eend, 'g', 8) << '\t' << (isSubtracted ? "true" : "false") << '\n';
+    stream << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 13) << '\t' << QString::number(G, 'g', 8) << '\t' << QString::number(Offset, 'g', 8)
+           << '\t' << QString::number(m_Estart, 'g', 13) << '\t' << QString::number(m_Eend, 'g', 13) << '\t' << (isSubtracted ? "true" : "false") << '\n';
 }
