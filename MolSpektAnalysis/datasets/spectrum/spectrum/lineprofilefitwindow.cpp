@@ -75,7 +75,7 @@ void LineProfileFitWindow::connectSpectrum()
     if (nullptr != mSpektrum)
     {
         LineBox->addItem("new");
-        connect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+        connect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
         connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(UpdateSigma()));
     }
 }
@@ -84,7 +84,7 @@ void LineProfileFitWindow::disconnectSpectrum()
 {
     if (nullptr != mSpektrum)
     {
-        disconnect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+        disconnect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
         disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(UpdateSigma()));
     }
 }

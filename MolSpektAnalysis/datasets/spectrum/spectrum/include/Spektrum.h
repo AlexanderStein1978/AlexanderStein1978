@@ -156,7 +156,7 @@ public:
 
 signals:
 	void SpectrumChanged(Spektrum *This);
-    void FittedLineRemoved();
+    void NumberOfFittedLinesChanged();
 
 protected:
     virtual void PSpektrum(QPainter &P, const QRect &A, bool PrintFN );

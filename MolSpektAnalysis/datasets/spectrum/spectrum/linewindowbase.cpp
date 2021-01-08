@@ -47,7 +47,7 @@ void LineWindowBase::focusInEvent(QFocusEvent *event)
 
 void LineWindowBase::SpektrumChanged(const QString &Name)
 {
-    DisconnectSpectrum();
+    disconnectSpectrum();
     LineBox->blockSignals(true);
     int curIndex = LineBox->currentIndex();
     LineBox->clear();
@@ -78,11 +78,11 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
         }
     }
     LineBox->blockSignals(false);
-    ConnectSpectrum();
+    connectSpectrum();
     LineChanged(curIndex);
 }
 
-void LineWindowBase::LineRemoved()
+void LineWindowBase::NumberOfLinesChanged()
 {
     SpektrumChanged(mSpektrum->getFName());
 }
@@ -93,16 +93,4 @@ void LineWindowBase::LineChanged(const int index)
     mLine = (nullptr != mSpektrum && index >= 0 && index < mSpektrum->GetNumFittedLines() ?
              mSpektrum->GetFittedLine(index) : nullptr);
     lineChanged();
-}
-
-void LineWindowBase::ConnectSpectrum()
-{
-    connectSpectrum();
-
-}
-
-void LineWindowBase::DisconnectSpectrum()
-{
-    disconnectSpectrum();
-
 }

@@ -807,6 +807,7 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations,
     {
         lineIndex = static_cast<int>(m_fittedLineVector.size());
         m_fittedLineVector.push_back(line);
+        emit NumberOfFittedLinesChanged();
     }
     Paint();
     Changed();
@@ -819,7 +820,7 @@ void Spektrum::RemoveFittedLine(const int i_index)
     delete m_fittedLineVector[i_index];
     m_fittedLineVector.erase(m_fittedLineVector.begin() + i_index);
     Paint();
-    emit FittedLineRemoved();
+    emit NumberOfFittedLinesChanged();
     Changed();
 }
 

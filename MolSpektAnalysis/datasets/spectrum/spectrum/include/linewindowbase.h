@@ -31,7 +31,7 @@ public:
 protected slots:
     void SpektrumChanged(const QString& SpectName);
     void LineChanged(const int index);
-    void LineRemoved();
+    void NumberOfLinesChanged();
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
@@ -43,10 +43,6 @@ protected:
     MainWindow *MW;
     Spektrum *mSpektrum;
     Gaussian* mLine;
-
-private:
-    void ConnectSpectrum();
-    void DisconnectSpectrum();
 };
 
 #endif // LINEWINDOWBASE_H

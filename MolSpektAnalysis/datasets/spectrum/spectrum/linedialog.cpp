@@ -63,7 +63,7 @@ void LineDialog::connectSpectrum()
     if (nullptr != mSpektrum)
     {
         connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
-        connect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+        connect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
     }
 }
 
@@ -72,7 +72,7 @@ void LineDialog::disconnectSpectrum()
     if (nullptr != mSpektrum)
     {
         disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
-        disconnect(mSpektrum, SIGNAL(FittedLineRemoved()), this, SLOT(LineRemoved()));
+        disconnect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
     }
 }
 
