@@ -41,8 +41,9 @@ LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaus
     L->addWidget(MinFreqEdit, 3, 1);
     L->addWidget(new QLabel("Max frequency:", this), 3, 2);
     L->addWidget(MaxFreqEdit, 3, 3);
-    L->addWidget(PerformFitButton, 4, 0, 1, 2);
-    L->addWidget(ResultSigmaLabel, 4, 2, 1, 2);
+    L->setRowMinimumHeight(4, 20);
+    L->addWidget(PerformFitButton, 5, 0, 1, 2);
+    L->addWidget(ResultSigmaLabel, 5, 2, 1, 2);
     MaxIterationEdit->setValidator(new QIntValidator(1, 1000000, MaxIterationEdit));
     MinImprovementEdit->setValidator(new QDoubleValidator(1e-10, 1e10, 0, MinImprovementEdit));
     MinFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, 0, MinFreqEdit));
