@@ -75,6 +75,7 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
                 while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
                 if (curLine == mLine) LineBox->setCurrentIndex(curIndex);
             }
+            if (nullptr == mLine) curIndex = 0;
         }
     }
     LineBox->blockSignals(false);

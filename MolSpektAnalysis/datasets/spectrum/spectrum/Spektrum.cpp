@@ -783,24 +783,16 @@ void Spektrum::markRegion(QRect *i_regionToMark)
 double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
 {
     if (Rauschen == -1.0) editFind();
-    double sig = 1.0 / (Rauschen * Rauschen), minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
-    double cx = minFrequency;
-    int nStart, N = 0;
-    for (int n=0; n < Daten->GetDSL() && cx < maxFrequency; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
+    double minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
+    double *X, *Y, *Sig;
+    int N = GetLineFitData(X, Y, Sig, minFrequency, maxFrequency);
+    Gaussian* line;
+    if (lineIndex >= 0 && lineIndex < m_fittedLineVector.size())
     {
-        if (N==0) nStart = n;
-        if (cx <= maxFrequency) ++N;
+        line = m_fittedLineVector[lineIndex];
+        line->setData(X, Y, Sig, N);
     }
-    if (N==0) return -1.0;
-    double *X = new double[N], *Y = new double[N], *Sig = new double[N];
-    int n, m;
-    for (n = nStart, m=0; m < N; ++n, ++m)
-    {
-        X[m] = Daten->GetValue(n, 0);
-        Y[m] = Daten->GetValue(n, 1);
-        Sig[m] = sig;
-    }
-    Gaussian* line(lineIndex >= 0 && lineIndex < m_fittedLineVector.size() ? m_fittedLineVector[lineIndex] : new Gaussian(X, Y, Sig, N));
+    else line = new Gaussian(X, Y, Sig, N);
     double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
     double o_sigma = sqrt(chiSq / (N-1));
     if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size())
@@ -812,6 +804,29 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations,
     Paint();
     Changed();
     return o_sigma;
+}
+
+int Spektrum::GetLineFitData(double *&X, double *&Y, double *&Sig, const double MinFreq, const double MaxFreq) const
+{
+    double sig = 1.0 / (Rauschen * Rauschen), cx = MinFreq;
+    int nStart, N = 0;
+    for (int n=0; n < Daten->GetDSL() && cx < MaxFreq; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
+    {
+        if (N==0) nStart = n;
+        if (cx <= MaxFreq) ++N;
+    }
+    if (N==0) return -1;
+    X = new double[N];
+    Y = new double[N];
+    Sig = new double[N];
+    int n, m;
+    for (n = nStart, m=0; m < N; ++n, ++m)
+    {
+        X[m] = Daten->GetValue(n, 0);
+        Y[m] = Daten->GetValue(n, 1);
+        Sig[m] = sig;
+    }
+    return N;
 }
 
 void Spektrum::RemoveFittedLine(const int i_index)
