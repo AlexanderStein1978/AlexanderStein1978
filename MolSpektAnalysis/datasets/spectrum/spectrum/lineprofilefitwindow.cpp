@@ -92,5 +92,19 @@ void LineProfileFitWindow::disconnectSpectrum()
 
 void LineProfileFitWindow::UpdateSigma()
 {
-    if (nullptr != mLine) ResultSigmaLabel->setText("Sigma: " + QString::number(mLine->GetSigma()));
+    if (nullptr != mLine)
+    {
+        int N = mLine->GetNData();
+        double EStart, EEnd;
+        mLine->GetDataRange(EStart, EEnd);
+        if (N == -1)
+        {
+            double *x, *y, *sig;
+            N = mSpektrum->GetLineFitData(x, y, sig, EStart, EEnd);
+            mLine->setData(x, y, sig, N);
+        }
+        MinFreqEdit->setText(QString::number(EStart, 'f', 6));
+        MaxFreqEdit->setText(QString::number(EEnd, 'f', 6));
+        ResultSigmaLabel->setText("Sigma: " + QString::number(mLine->GetSigma()));
+    }
 }
