@@ -138,7 +138,7 @@ public:
     void RemoveFittedLine(const int i_index);
     void SubtractFittedLine(const int i_index, const bool subtract);
     void SimulateAbsorption(const std::vector<SimulationStateProperty>& i_parametersVector);
-    int GetLineFitData(double *&x, double *&y, double *&Sig, const double MinFreq, const double MaxFreq) const;
+    int GetLineFitData(double *&x, double *&y, double *&Sig, const double MinFreq, const double MaxFreq);
 	    
 	inline double getMinH()
 	{

@@ -782,7 +782,6 @@ void Spektrum::markRegion(QRect *i_regionToMark)
 
 double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
 {
-    if (Rauschen == -1.0) editFind();
     double minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
     double *X, *Y, *Sig;
     int N = GetLineFitData(X, Y, Sig, minFrequency, maxFrequency);
@@ -806,11 +805,12 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations,
     return o_sigma;
 }
 
-int Spektrum::GetLineFitData(double *&X, double *&Y, double *&Sig, const double MinFreq, const double MaxFreq) const
+int Spektrum::GetLineFitData(double *&X, double *&Y, double *&Sig, const double MinFreq, const double MaxFreq)
 {
+    if (Rauschen == -1.0) editFind();
     double sig = 1.0 / (Rauschen * Rauschen), cx = MinFreq;
     int nStart, N = 0;
-    for (int n=0; n < Daten->GetDSL() && cx < MaxFreq; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
+    for (int n=0; n < Daten->GetDSL() && cx < MaxFreq; ++n) if ((cx = Daten->GetValue(n, 0)) >= MinFreq)
     {
         if (N==0) nStart = n;
         if (cx <= MaxFreq) ++N;

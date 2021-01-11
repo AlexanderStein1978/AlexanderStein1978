@@ -97,7 +97,7 @@ void LineProfileFitWindow::UpdateSigma()
         int N = mLine->GetNData();
         double EStart, EEnd;
         mLine->GetDataRange(EStart, EEnd);
-        if (N == -1)
+        if (N == 0)
         {
             double *x, *y, *sig;
             N = mSpektrum->GetLineFitData(x, y, sig, EStart, EEnd);
