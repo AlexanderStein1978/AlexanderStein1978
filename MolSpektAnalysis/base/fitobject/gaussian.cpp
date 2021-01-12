@@ -116,6 +116,18 @@ void Gaussian::GetDataRange(double &o_Estart, double &o_Eend) const
     o_Eend = m_Eend;
 }
 
+void Gaussian::GetDataRange(double &Emin, double &Imin, double &Emax, double &Imax) const
+{
+    GetDataRange(Emin, Emax);
+    Imin = 1e99;
+    Imax = -1e99;
+    for (int n=0; n < nData; ++n)
+    {
+        if (Y[n] < Imin) Imin = Y[n];
+        else if (Y[n] > Imax) Imax = Y[n];
+    }
+}
+
 bool Gaussian::getCalcYAndDerivatives(double *Ycalc, double **deriv)
 {
     int n;

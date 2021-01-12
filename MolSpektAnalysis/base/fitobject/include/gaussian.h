@@ -27,6 +27,7 @@ public:
     void GetValues(double& o_Intensity, double& o_CenterFreq, double& o_Width, double& o_Offset) const;
     void SetValues(const double Intensity, const double CenterFreq, const double Width, const double Offset);
     void GetDataRange(double& o_Estart, double& o_Eend) const;
+    void GetDataRange(double& Emin, double&Imin, double &Emax, double& Imax) const;
     double GetPoint(double i_E) const;
     double GetProfilePoint(double i_relE) const;
     void Serialize(QTextStream& stream) const;
