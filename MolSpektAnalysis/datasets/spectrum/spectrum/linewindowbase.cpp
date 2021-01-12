@@ -2,7 +2,7 @@
 // C++ Implementation: LineWindowBase
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2020 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2020 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -12,6 +12,7 @@
 #include "linewindowbase.h"
 #include "MainWindow.h"
 #include "Spektrum.h"
+#include "gaussian.h"
 
 #include <QComboBox>
 
@@ -91,7 +92,19 @@ void LineWindowBase::NumberOfLinesChanged()
 
 void LineWindowBase::LineChanged(const int index)
 {
+    double Emin, Imin, Emax, Imax;
     mLine = (nullptr != mSpektrum && index >= 0 && index < mSpektrum->GetNumFittedLines() ?
              mSpektrum->GetFittedLine(index) : nullptr);
+    int N = mLine->GetNData();
+    if (N == 0)
+    {
+        double *x, *y, *sig;
+        mLine->GetDataRange(Emin, Emax);
+        N = mSpektrum->GetLineFitData(x, y, sig, Emin, Emax);
+        mLine->setData(x, y, sig, N);
+    }
+    mLine->GetDataRange(Emin, Imin, Emax, Imax);
+    const double EBorder = 0.25 * (Emax - Emin), IBorder = 0.25 * (Imax - Imin);
+    mSpektrum->setRanges(Emin - EBorder, Emax + EBorder, Imin - IBorder, Imax + IBorder);
     lineChanged();
 }
