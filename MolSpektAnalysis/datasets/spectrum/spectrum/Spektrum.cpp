@@ -40,6 +40,7 @@
 #include "fitobject.h"
 #include "intprog.h"
 #include "gaussian.h"
+#include "gaussianwithsaturation.h"
 #include "datensatz.h"
 #include "isotab.h"
 #include "band.h"
@@ -792,7 +793,7 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const bool considerSatur
         line = m_fittedLineVector[lineIndex];
         line->setData(X, Y, Sig, N);
     }
-    else line = new Gaussian(X, Y, Sig, N);
+    else line = (considerSaturation ? new GaussianWithSaturation(X, Y, Sig, N) :  new Gaussian(X, Y, Sig, N));
     double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
     double o_sigma = sqrt(chiSq / (N-1));
     if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size())
