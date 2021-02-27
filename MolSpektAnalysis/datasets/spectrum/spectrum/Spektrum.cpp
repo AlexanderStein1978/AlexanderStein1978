@@ -776,11 +776,12 @@ void Spektrum::markRegion(QRect *i_regionToMark)
         double dXSF = 1.0 / XSF;
         m_minSelectedFrequency = dXSF * (static_cast<double>(i_regionToMark->left()) - XO);
         m_maxSelectedFrequency = dXSF * (static_cast<double>(i_regionToMark->right()) - XO);
+        emit SelectedRangeChanged(m_minSelectedFrequency, m_maxSelectedFrequency);
         Paint();
     }
 }
 
-double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
+double Spektrum::FitGaussianLineProfile(int &lineIndex, const bool considerSaturation, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
 {
     double minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
     double *X, *Y, *Sig;

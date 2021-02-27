@@ -18,10 +18,12 @@ class QComboBox;
 class QLineEdit;
 class QPushButton;
 class QLabel;
+class QCheckBox;
 
 class MainWindow;
 class Spektrum;
 class Gaussian;
+class LineDialog;
 
 
 class LineProfileFitWindow : public LineWindowBase
@@ -30,9 +32,16 @@ class LineProfileFitWindow : public LineWindowBase
 public:
     LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
 
+    inline void setLineDialog(LineDialog* const Dialog)
+    {
+        mLineDialog = Dialog;
+    }
+
 private slots:
     void RunFit();
     void UpdateSigma();
+    void RangeEdited();
+    void RangeChanged(const double newMinE, const double newMaxE);
 
 private:
     void disconnectSpectrum() override;
@@ -42,6 +51,8 @@ private:
     QLineEdit *MaxIterationEdit, *MinImprovementEdit, *MinFreqEdit, *MaxFreqEdit;
     QPushButton *PerformFitButton;
     QLabel *ResultSigmaLabel;
+    LineDialog* mLineDialog;
+    QCheckBox* mWithSaturationBox;
 };
 
 #endif // LINEPROFILEFITWINDOW_H

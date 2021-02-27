@@ -25,6 +25,10 @@
 using std::isnan;
 
 
+Gaussian::Gaussian() : FitObject(4), B(0.0), E(0.0), G(0.0), Offset(0.0), m_Estart(0.0), m_Eend(0.0), isSubtracted(false)
+{
+}
+
 Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y, Sig, N), isSubtracted(false)
 {
     Offset = y[0];
@@ -78,20 +82,25 @@ Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y
 Gaussian::Gaussian(const QString &data) : FitObject(4), B(0.0), E(0.0), G(0.0), Offset(0.0), m_Estart(0.0), m_Eend(0.0), isSubtracted(false)
 {
     QStringList L = data.split('\t', QString::SkipEmptyParts);
-    if (L.size() >= 7)
-    {
-        B = L[0].toDouble();
-        E = L[1].toDouble();
-        G = L[2].toDouble();
-        Offset = L[3].toDouble();
-        m_Estart = L[4].toDouble();
-        m_Eend = L[5].toDouble();
-        isSubtracted = (L[6] == "true");
-    }
+    initialize(L);
 }
 
 Gaussian::~Gaussian()
 {
+}
+
+void Gaussian::initialize(const QStringList &data)
+{
+    if (data.size() >= 7)
+    {
+        B = data[0].toDouble();
+        E = data[1].toDouble();
+        G = data[2].toDouble();
+        Offset = data[3].toDouble();
+        m_Estart = data[4].toDouble();
+        m_Eend = data[5].toDouble();
+        isSubtracted = (data[6] == "true");
+    }
 }
 
 void Gaussian::GetValues(double &o_B, double &o_E, double &o_Width, double &o_Offset) const
@@ -203,8 +212,9 @@ void Gaussian::updatePar(double *C)
     Offset += C[3];
 }
 
-void Gaussian::Serialize(QTextStream &stream) const
+void Gaussian::Serialize(QTextStream &stream, const bool finish) const
 {
     stream << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 13) << '\t' << QString::number(G, 'g', 8) << '\t' << QString::number(Offset, 'g', 8)
-           << '\t' << QString::number(m_Estart, 'g', 13) << '\t' << QString::number(m_Eend, 'g', 13) << '\t' << (isSubtracted ? "true" : "false") << '\n';
+           << '\t' << QString::number(m_Estart, 'g', 13) << '\t' << QString::number(m_Eend, 'g', 13) << '\t' << (isSubtracted ? "true" : "false");
+    if (finish) stream << '\n';
 }
