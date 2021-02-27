@@ -55,6 +55,7 @@ public:
 	void setUnits(QString XUnit, QString YUnit);
 	void setImage(QImage *Image);
 	void setRanges(double xmin, double xmax, double ymin, double ymax);
+    void setCurrentZoomRange(const double xmin, const double xmax, const double ymin, const double ymax);
 	void setShowMarkerLabels(bool Show);
 	bool getShowMarkerLabels();
 	void exportPicture();

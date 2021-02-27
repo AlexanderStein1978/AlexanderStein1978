@@ -2,7 +2,7 @@
 // C++ Interface: Gaussian line profile with saturation
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -12,7 +12,7 @@
 #define GAUSSIANWITHSATURATION_H
 
 
-#include "Gaussian.h"
+#include "gaussian.h"
 
 
 class GaussianWithSaturation : public Gaussian
