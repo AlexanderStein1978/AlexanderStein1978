@@ -140,3 +140,8 @@ void LineDialog::DeleteLine()
 {
     if (nullptr != mSpektrum && nullptr != mLine) mSpektrum->RemoveFittedLine(LineBox->currentIndex());
 }
+
+void LineDialog::selectLine(const int index)
+{
+    LineBox->setCurrentIndex(index);
+}

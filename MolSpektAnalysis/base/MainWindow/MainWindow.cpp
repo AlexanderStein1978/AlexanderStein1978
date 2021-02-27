@@ -7684,6 +7684,7 @@ void MainWindow::SpectrumFitGaussianLineProfile()
         Gaussian* line = S->GetFittedLine(index);
         LineDialog* lineD = new LineDialog(this, S, line);
         LineProfileFitWindow* fitWindow = new LineProfileFitWindow(this, S, line);
+        fitWindow->setLineDialog(lineD);
         workspace->addSubWindow(lineD);
         workspace->addSubWindow(fitWindow);
         lineD->show();

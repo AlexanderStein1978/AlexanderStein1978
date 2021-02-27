@@ -23,7 +23,9 @@ class LineDialog : public LineWindowBase
 {
     Q_OBJECT
 public:
-    explicit LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, Gaussian* line = nullptr);
+    LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, Gaussian* line = nullptr);
+
+    void selectLine(const int index);
 
 private slots:
     void UpdateLine();

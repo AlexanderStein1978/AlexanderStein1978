@@ -29,7 +29,7 @@ public:
 	~FitObject();
     FitObject& operator=(const FitObject& i_right);
 	void addDataPoint(double x, double y, double Sig);
-	double LevenbergMarquardt(int MaxIt, double MinImp);
+	virtual double LevenbergMarquardt(int MaxIt, double MinImp);
 	virtual void setData(double *x, double *y, double *Sig, int N);
     void InitDebugLogging(QString FileName);
     void EndDebugLogging();

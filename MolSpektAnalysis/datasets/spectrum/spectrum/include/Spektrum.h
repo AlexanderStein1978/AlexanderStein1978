@@ -134,7 +134,8 @@ public:
 	int getType();
 	void setType(int newType);
 	void setData(double **Data, int numRows);
-    double FitGaussianLineProfile(int &lineIndex, const int MaxIterations = 100, const double MinImprovements = 0.01, const double MinFreq = -1.0, const double MaxFreq = -1.0);
+    double FitGaussianLineProfile(int &lineIndex, const bool considerSaturation = false, const int MaxIterations = 100, const double MinImprovements = 0.01, const double MinFreq = -1.0,
+                                  const double MaxFreq = -1.0);
     void RemoveFittedLine(const int i_index);
     void SubtractFittedLine(const int i_index, const bool subtract);
     void SimulateAbsorption(const std::vector<SimulationStateProperty>& i_parametersVector);
@@ -158,6 +159,7 @@ public:
 signals:
 	void SpectrumChanged(Spektrum *This);
     void NumberOfFittedLinesChanged();
+    void SelectedRangeChanged(const double newMinE, const double newMaxE);
 
 protected:
     virtual void PSpektrum(QPainter &P, const QRect &A, bool PrintFN );

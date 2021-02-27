@@ -10,17 +10,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitObject STATIC
-	include/fitobject.h
-	include/gaussian.h
-	include/lorentzian.h
+    include/fitobject.h
+    include/gaussian.h
+    include/gaussianwithsaturation.h
+    include/lorentzian.h
     fitobject.cpp
-	gaussian.cpp
-	lorentzian.cpp
+    gaussian.cpp
+    gaussianwithsaturation.cpp
+    lorentzian.cpp
 )
 
 target_include_directories(FitObject PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(FitObject
-	Tools
-	Qt5::Widgets
+    Tools
+    Qt5::Widgets
 )
