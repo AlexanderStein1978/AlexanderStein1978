@@ -2,7 +2,7 @@
 // C++ Implementation: Gaussian line profile with saturation
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2020 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,6 +13,8 @@
 
 #include <QStringList>
 #include <QTextStream>
+
+#include <cmath>
 
 
 GaussianWithSaturation::GaussianWithSaturation(double *x, double *y, double *Sig, int N) : Gaussian(x, y, Sig, N), SB(B)
