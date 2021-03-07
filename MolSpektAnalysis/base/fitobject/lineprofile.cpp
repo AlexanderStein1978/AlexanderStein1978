@@ -29,6 +29,27 @@ LineProfile::LineProfile(int NPar, double *x, double *y, double *Sig, int N) : F
     }
 }
 
+void LineProfile::applySaturationOnLineProfile(double *Ycalc) const
+{
+    for (int n=0; n < nData; ++n) Ycalc[n] = -applySaturation(-Ycalc[n]);
+}
+
+void LineProfile::applySaturationOnCalcYAndDerivatives(double *Ycalc, double **deriv) const
+{
+    double OSq = Offset * Offset;
+    for (int n=0; n < nData; n++)
+    {
+        double I(Offset - Ycalc[n]), sum(Offset + I), sf = OSq / (sum * sum);
+        Ycalc[n] = Offset - applySaturation(I);
+        for (int i=0; i < nPar; ++i) deriv[n][i] *= sf;
+    }
+}
+
+void LineProfile::applySaturationOnCalcY(double *Ycalc) const
+{
+    for (int n=0; n < nData; ++n) Ycalc[n] = Offset - applySaturation(Offset - Ycalc[n]);
+}
+
 void LineProfile::GetDataRange(double &o_Estart, double &o_Eend) const
 {
     o_Estart = m_Estart;
