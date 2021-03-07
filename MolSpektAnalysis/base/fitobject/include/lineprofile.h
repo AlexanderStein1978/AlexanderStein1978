@@ -59,6 +59,9 @@ protected:
     double Offset;
 
     void setDataRange(const double E_start, const double E_end);
+    void applySaturationOnLineProfile(double *Ycalc) const;
+    void applySaturationOnCalcYAndDerivatives(double *Ycalc, double **deriv) const;
+    void applySaturationOnCalcY(double *Ycalc) const;
 
     inline double applySaturation(const double I) const
     {

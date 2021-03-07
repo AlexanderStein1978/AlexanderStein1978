@@ -15,11 +15,13 @@ add_library(FitObject STATIC
     include/gaussianwithsaturation.h
     include/lineprofile.h
     include/lorentzian.h
+    include/lorentzianwithsaturation.h
     fitobject.cpp
     gaussian.cpp
     gaussianwithsaturation.cpp
 	lineprofile.cpp
     lorentzian.cpp
+    lorentzianwithsaturation.cpp
 )
 
 target_include_directories(FitObject PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
