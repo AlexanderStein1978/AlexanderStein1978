@@ -2,7 +2,7 @@
 // C++ Interface: LocalPerturbation
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2011 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2011 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -208,11 +208,11 @@ public:
     }
 
 protected:
-    virtual bool getCalcYAndDerivatives(double *o_ycalc, double **deriv);
-    virtual void getPar(double *Par);
-    virtual void setPar(double *Par);
-    virtual void setNPar();
-    virtual void updatePar(double *C);
+    virtual bool getCalcYAndDerivatives(double *o_ycalc, double **deriv) override;
+    virtual void getPar(double *Par) const override;
+    virtual void setPar(double *Par) override;
+    virtual void setNPar() override;
+    virtual void updatePar(double *C) override;
 
 signals:
     void Changed();

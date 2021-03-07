@@ -2,7 +2,7 @@
 // C++ Implementation: LocalPerturbation
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2011 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2011 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -195,7 +195,7 @@ bool LocalPerturbation::getCalcYAndDerivatives(double *o_ycalc, double **o_deriv
     return (RetVal && m_firstUp == (m_bandConstants[1].value > m_BeCurState));
 }
 
-void LocalPerturbation::getPar(double *o_par)
+void LocalPerturbation::getPar(double *o_par) const
 {
     o_par[0] = m_H12.value;
     if (m_BeFixed)
