@@ -13,10 +13,12 @@ add_library(FitObject STATIC
     include/fitobject.h
     include/gaussian.h
     include/gaussianwithsaturation.h
+    include/lineprofile.h
     include/lorentzian.h
     fitobject.cpp
     gaussian.cpp
     gaussianwithsaturation.cpp
+	lineprofile.cpp
     lorentzian.cpp
 )
 

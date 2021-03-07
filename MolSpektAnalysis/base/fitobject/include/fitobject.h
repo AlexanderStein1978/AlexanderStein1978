@@ -44,7 +44,7 @@ protected:
     virtual bool getCalcYAndDerivatives(double *Ycalc, double **deriv);
 	virtual void getDerivatives(double **deriv);
     virtual bool getCalcY(double *Ycalc) const;
-    virtual void getPar(double *Par) = 0;
+    virtual void getPar(double *Par) const = 0;
     virtual void setPar(double *Par) = 0;
     virtual void updatePar(double *C) = 0;
     virtual void setNPar() = 0;

@@ -9,16 +9,16 @@
 //
 
 
-#ifndef LORENTZIAN_H
-#define LORENTZIAN_H
+#ifndef GAUSSIAN_H
+#define GAUSSIAN_H
 
 
-#include "fitobject.h"
+#include "lineprofile.h"
 
 class QString;
 
 
-class Gaussian : public FitObject
+class Gaussian : public LineProfile
 {
 public:
     Gaussian();
@@ -27,8 +27,6 @@ public:
     virtual ~Gaussian();
     void GetValues(double& o_Intensity, double& o_CenterFreq, double& o_Width, double& o_Offset) const;
     void SetValues(const double Intensity, const double CenterFreq, const double Width, const double Offset);
-    virtual void GetDataRange(double& o_Estart, double& o_Eend) const;
-    virtual void GetDataRange(double& Emin, double&Imin, double &Emax, double& Imax) const;
     virtual double GetPoint(double i_E) const;
     virtual double GetProfilePoint(double i_relE) const;
     virtual void Serialize(QTextStream& stream, const bool finish = true) const;
@@ -44,16 +42,6 @@ public:
         return B != 0.0;
     }
 
-    inline void setSubtracted(const bool newValue)
-    {
-        isSubtracted = newValue;
-    }
-
-    inline bool isLineSubtracted() const
-    {
-        return isSubtracted;
-    }
-
     virtual inline bool isWithSaturation() const
     {
         return false;
@@ -62,7 +50,7 @@ public:
 protected:
     bool getCalcYAndDerivatives(double *Ycalc, double **deriv) override;
     bool getCalcY(double *Ycalc) const override;
-    void getPar(double *Par) override;
+    void getPar(double *Par) const override;
     void setPar(double *Par) override;
     void updatePar(double *C) override;
     void initialize(const QStringList& data);
@@ -72,10 +60,7 @@ protected:
         nPar = 4;
     }
 
-    double B, E, G, Offset, m_Estart, m_Eend;
-
-private:
-    bool isSubtracted;
+    double B, E, G;
 };
 
 #endif
