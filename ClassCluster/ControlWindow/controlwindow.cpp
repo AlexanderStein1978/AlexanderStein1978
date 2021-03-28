@@ -33,6 +33,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
             speed = settings[0];
             stepSize = settings[1];
             kineticEnergy = settings[2];
+            if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
             TEdit->setText(kineticEnergy);
             rangeScale = settings[3];
             for (int n=0; n < Calculation::NumPot && !S.atEnd(); ++n)
@@ -240,7 +241,12 @@ void ControlWindow::saveSettings()
 void ControlWindow::EChanged()
 {
     bool wasWindowRunning(stopIfItsRunning());
-    double T(EnE->text().toDouble() - window->getPotentialEnergy());
+    double V = window->getPotentialEnergy(), T(EnE->text().toDouble() - V);
+    if (T < 0.0)
+    {
+        T = 0.0;
+        EnE->setText(QString::number(T));
+    }
     TEdit->setText(QString::number(T));
     if (wasWindowRunning) start();
 }
