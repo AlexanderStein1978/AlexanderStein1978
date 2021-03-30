@@ -24,8 +24,21 @@ LorentzianWithSaturation::LorentzianWithSaturation(const QString& data) : Lorent
 {
 }
 
+LorentzianWithSaturation::LorentzianWithSaturation(const Lorentzian &other) : Lorentzian(other)
+{
+}
+
+LorentzianWithSaturation::LorentzianWithSaturation(const Gaussian &other) : Lorentzian(other)
+{
+}
+
+LorentzianWithSaturation::LorentzianWithSaturation(const LineProfile &other) : Lorentzian(other)
+{
+}
+
 double LorentzianWithSaturation::GetPoint(double i_E) const
 {
+    if (hideSaturation) return Lorentzian::GetPoint(i_E);
     return Offset - applySaturation(Offset - Lorentzian::GetPoint(i_E));
 }
 
@@ -33,6 +46,7 @@ double LorentzianWithSaturation::GetPoint(double i_E) const
 void LorentzianWithSaturation::getLineY(double *Ycalc) const
 {
     Lorentzian::getLineY(Ycalc);
+    if (hideSaturation) return;
     applySaturationOnLineProfile(Ycalc);
 }
 
@@ -40,7 +54,7 @@ bool LorentzianWithSaturation::getCalcYAndDerivatives(double *Ycalc, double **de
 {
     Lorentzian::getCalcY(Ycalc);
     Lorentzian::getDerivatives(deriv);
-    applySaturationOnCalcYAndDerivatives(Ycalc, deriv);
+    if (!hideSaturation) applySaturationOnCalcYAndDerivatives(Ycalc, deriv);
     return true;
 }
 
@@ -54,7 +68,6 @@ void LorentzianWithSaturation::getDerivatives(double **deriv)
 bool LorentzianWithSaturation::getCalcY(double *Ycalc) const
 {
     Lorentzian::getCalcY(Ycalc);
-    applySaturationOnCalcY(Ycalc);
+    if (!hideSaturation) applySaturationOnCalcY(Ycalc);
     return true;
 }
-

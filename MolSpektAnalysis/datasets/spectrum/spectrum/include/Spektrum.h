@@ -26,6 +26,7 @@
 #include "marker.h"
 #include "progressions.h"
 #include "pointwiselineprofile.h"
+#include "lineprofile.h"
 
 #include <qvarlengtharray.h>
 
@@ -55,6 +56,7 @@ class Spektrum : public DiagWindow
 	Q_OBJECT
 			
 public:
+
     Spektrum(MainWindow *MW = 0);
     ~Spektrum();
 	
@@ -134,12 +136,13 @@ public:
 	int getType();
 	void setType(int newType);
 	void setData(double **Data, int numRows);
-    double FitGaussianLineProfile(int &lineIndex, const bool considerSaturation = false, const int MaxIterations = 100, const double MinImprovements = 0.01, const double MinFreq = -1.0,
+    double FitLineProfile(int &lineIndex, const LineProfile::LineProfileType type, const bool considerSaturation = false, const int MaxIterations = 100, const double MinImprovements = 0.01, const double MinFreq = -1.0,
                                   const double MaxFreq = -1.0);
     void RemoveFittedLine(const int i_index);
     void SubtractFittedLine(const int i_index, const bool subtract);
     void SimulateAbsorption(const std::vector<SimulationStateProperty>& i_parametersVector);
     int GetLineFitData(double *&x, double *&y, double *&Sig, const double MinFreq, const double MaxFreq);
+    void Paint() override;
 	    
 	inline double getMinH()
 	{
@@ -151,7 +154,7 @@ public:
         return m_fittedLineVector.size();
     }
 
-    Gaussian* GetFittedLine(const int i_index)
+    LineProfile* GetFittedLine(const int i_index)
     {
         return m_fittedLineVector[i_index];
     }
@@ -187,7 +190,6 @@ private:
 	void rSortP(IntProg &P);
 	void ASLP(QString Filename);
 	void continueBand();
-	void Paint();
     int PQC();
     bool addSimulation(const double i_TUpLevel, const double *const i_OffSet, const double *const i_ScaleFakt, const int i_N, const double i_Ri,
                        const double i_Ra, const double i_Resolution, double **const io_Result) const;
@@ -201,7 +203,7 @@ private:
 	AProg *Assigned;
 	Band *band;
 	LineTable **LineTablesAT;
-    std::vector<Gaussian*> m_fittedLineVector;
+    std::vector<LineProfile*> m_fittedLineVector;
     PointwiseLineProfile m_simulationProfile;
 };
 

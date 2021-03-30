@@ -12,21 +12,27 @@
 #include "lineprofile.h"
 
 
-LineProfile::LineProfile() : Offset(0.0), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
+LineProfile::LineProfile() : Offset(0.0), hideSaturation(false), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
 {
 }
 
-LineProfile::LineProfile(int nPar) : FitObject(nPar), Offset(0.0), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
+LineProfile::LineProfile(int nPar) : FitObject(nPar), Offset(0.0), hideSaturation(false), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
 {
 }
 
-LineProfile::LineProfile(int NPar, double *x, double *y, double *Sig, int N) : FitObject(NPar, x, y, Sig, N), Offset(0.0), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
+LineProfile::LineProfile(int NPar, double *x, double *y, double *Sig, int N) : FitObject(NPar, x, y, Sig, N), Offset(0.0),
+    hideSaturation(false), isSubtracted(false), m_Estart(0.0), m_Eend(0.0)
 {
     if (N>0)
     {
         m_Estart = x[0];
         m_Eend = x[N-1];
     }
+}
+
+LineProfile::LineProfile(const LineProfile &other) : FitObject(other), Offset(other.Offset), hideSaturation(false),
+    isSubtracted(other.isSubtracted), m_Estart(other.m_Estart), m_Eend(other.m_Eend)
+{
 }
 
 void LineProfile::applySaturationOnLineProfile(double *Ycalc) const

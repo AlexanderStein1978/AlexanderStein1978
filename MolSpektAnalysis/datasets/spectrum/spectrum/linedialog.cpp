@@ -22,9 +22,10 @@
 
 
 
-LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this)),
-    CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), SubtractButton(new QPushButton(this)),
-    DeleteButton(new QPushButton("Remove line", this)), DataRangeLabel(new QLabel(this))
+LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, LineProfile *line)
+    : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this))
+    , CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this))
+    , SubtractButton(new QPushButton(this)), DeleteButton(new QPushButton("Remove line", this)), DataRangeLabel(new QLabel(this))
 {
     IntensityEdit->setValidator(new QDoubleValidator(IntensityEdit));
     CenterFreqEdit->setValidator(new QDoubleValidator(CenterFreqEdit));
@@ -114,6 +115,7 @@ void LineDialog::UpdateLine()
     if (nullptr != mLine)
     {
         mLine->SetValues(IntensityEdit->text().toDouble(), CenterFreqEdit->text().toDouble(), WidthEdit->text().toDouble(), OffsetEdit->text().toDouble());
+        mSpektrum->Paint();
         mSpektrum->Changed();
     }
 }

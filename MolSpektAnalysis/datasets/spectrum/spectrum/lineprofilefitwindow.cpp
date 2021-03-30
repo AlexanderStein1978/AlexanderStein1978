@@ -25,7 +25,7 @@
 #include <QCheckBox>
 
 
-LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Gaussian *line) : LineWindowBase(mw, spect, line),
+LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, LineProfile *line) : LineWindowBase(mw, spect, line),
     MaxIterationEdit(new QLineEdit("100", this)), MinImprovementEdit(new QLineEdit("0.01", this)), MinFreqEdit(new QLineEdit(this)), MaxFreqEdit(new QLineEdit(this)),
     PerformFitButton(new QPushButton("Run fit", this)), ResultSigmaLabel(new QLabel(this)), mLineDialog(nullptr), mWithSaturationBox(new QCheckBox("Consider saturation", this))
 {
@@ -70,8 +70,9 @@ void LineProfileFitWindow::RunFit()
     {
         int lineIndex = LineBox->currentIndex();
         ResultSigmaLabel->setText("Sigma: " + QString::number(
-            mSpektrum->FitGaussianLineProfile(lineIndex, mWithSaturationBox->isChecked(), MaxIterationEdit->text().toDouble(), MinImprovementEdit->text().toDouble(),
-                                              MinFreqEdit->text().toDouble(), MaxFreqEdit->text().toDouble())));
+            mSpektrum->FitLineProfile(lineIndex, LineProfile::GaussianType, mWithSaturationBox->isChecked(),
+                                      MaxIterationEdit->text().toDouble(), MinImprovementEdit->text().toDouble(),
+                                      MinFreqEdit->text().toDouble(), MaxFreqEdit->text().toDouble())));
         if (nullptr == mLineDialog)
         {
             mLineDialog = new LineDialog(MW, mSpektrum, mSpektrum->GetFittedLine(lineIndex));

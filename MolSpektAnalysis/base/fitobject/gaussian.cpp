@@ -10,6 +10,7 @@
 
 
 #include "gaussian.h"
+#include "lorentzian.h"
 #include "utils.h"
 #include "tools.h"
 
@@ -77,6 +78,22 @@ Gaussian::Gaussian(const QString &data) : LineProfile(4), B(0.0), E(0.0), G(0.0)
 {
     QStringList L = data.split('\t', QString::SkipEmptyParts);
     initialize(L);
+}
+
+Gaussian::Gaussian(const Gaussian &other) : LineProfile(other), B(other.B), E(other.E), G(other.G)
+{
+}
+
+Gaussian::Gaussian(const Lorentzian &other) : LineProfile(other), B(other.GetAmplitude()), E(other.GetECenter()),
+    G(0.6005 * other.GetWidth())
+{
+}
+
+Gaussian::Gaussian(const LineProfile &other) : LineProfile(other)
+{
+    double width;
+    other.GetValues(B, E, width, Offset);
+    G = 0.6005 * width;
 }
 
 Gaussian::~Gaussian()
