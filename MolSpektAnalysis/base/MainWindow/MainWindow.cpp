@@ -7678,10 +7678,10 @@ void MainWindow::SpectrumFitGaussianLineProfile()
 {
     Spektrum *S = activeSpectrum();
     int index = -1;
-    double Sigma = S->FitGaussianLineProfile(index);
+    double Sigma = S->FitLineProfile(index, LineProfile::GaussianType);
     if (Sigma > 0.0 && index >= 0)
     {
-        Gaussian* line = S->GetFittedLine(index);
+        LineProfile* line = S->GetFittedLine(index);
         LineDialog* lineD = new LineDialog(this, S, line);
         LineProfileFitWindow* fitWindow = new LineProfileFitWindow(this, S, line);
         fitWindow->setLineDialog(lineD);

@@ -30,7 +30,7 @@ class LineProfileFitWindow : public LineWindowBase
 {
     Q_OBJECT
 public:
-    LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
+    LineProfileFitWindow(MainWindow *mw, Spektrum* spect = nullptr, LineProfile* line = nullptr);
 
     inline void setLineDialog(LineDialog* const Dialog)
     {

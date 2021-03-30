@@ -17,7 +17,7 @@
 #include <QComboBox>
 
 
-LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, Gaussian *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
+LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, LineProfile *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
     MW(mw), mSpektrum(spect), mLine(line)
 {
     SpektrumBox->setEditable(false);
@@ -72,7 +72,7 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
             {
                 if (curIndex < 0 || curIndex > nLines) curIndex = nLines;
                 else ++curIndex;
-                const Gaussian* curLine = nullptr;
+                const LineProfile* curLine = nullptr;
                 while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
                 if (curLine == mLine) LineBox->setCurrentIndex(curIndex);
             }

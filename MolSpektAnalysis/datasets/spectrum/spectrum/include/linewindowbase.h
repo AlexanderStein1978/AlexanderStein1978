@@ -19,14 +19,14 @@ class QFocusEvent;
 
 class MainWindow;
 class Spektrum;
-class Gaussian;
+class LineProfile;
 
 
 class LineWindowBase : public QWidget
 {
     Q_OBJECT
 public:
-    LineWindowBase(MainWindow *mw, Spektrum* spect = nullptr, Gaussian* line = nullptr);
+    LineWindowBase(MainWindow *mw, Spektrum* spect = nullptr, LineProfile *line = nullptr);
 
 protected slots:
     void SpektrumChanged(const QString& SpectName);
@@ -42,7 +42,7 @@ protected:
     QComboBox *SpektrumBox, *LineBox;
     MainWindow *MW;
     Spektrum *mSpektrum;
-    Gaussian* mLine;
+    LineProfile* mLine;
 };
 
 #endif // LINEWINDOWBASE_H

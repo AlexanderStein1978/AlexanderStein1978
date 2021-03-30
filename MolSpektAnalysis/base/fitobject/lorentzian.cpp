@@ -10,6 +10,7 @@
 
 
 #include "lorentzian.h"
+#include "gaussian.h"
 #include "utils.h"
 #include "tools.h"
 
@@ -45,6 +46,21 @@ Lorentzian::Lorentzian(const QString &data) : LineProfile(4), A(0.0), E(0.0), Ga
         setDataRange(L[4].toDouble(), L[5].toDouble());
         setSubtracted(L[6] == "true");
     }
+}
+
+Lorentzian::Lorentzian(const Lorentzian &other) : LineProfile(other), A(other.A), E(other.E), Gamma(other.Gamma), AWF(other.AWF),
+    EWF(other.EWF), GWF(other.GWF)
+{
+}
+
+Lorentzian::Lorentzian(const Gaussian &other) : LineProfile(other), AWF(1.0), EWF(1.0), GWF(1.0)
+{
+    InitializeFromLineProfile(other);
+}
+
+Lorentzian::Lorentzian(const LineProfile &other) : LineProfile(other), AWF(1.0), EWF(1.0), GWF(1.0)
+{
+    InitializeFromLineProfile(other);
 }
 
 bool Lorentzian::getCalcY(double* YCalc) const
@@ -107,6 +123,26 @@ void Lorentzian::getPar(double* Par) const
     Par[3] = Offset;
 }
 
+void Lorentzian::GetValues(double &o_Intensity, double &o_CenterFreq, double &o_Width, double &o_Offset) const
+{
+    o_Intensity = A;
+    o_CenterFreq = E;
+    o_Width = 2.0 * sqrt(Gamma);
+    o_Offset = Offset;
+}
+
+double Lorentzian::GetWidth() const
+{
+    return 2.0 * sqrt(Gamma);
+}
+
+void Lorentzian::InitializeFromLineProfile(const LineProfile &other)
+{
+    double width;
+    other.GetValues(A, E, width, Offset);
+    Gamma = sqr(0.5 * width);
+}
+
 void Lorentzian::Serialize(QTextStream &stream, const bool finish) const
 {
     double Estart, Eend;
@@ -143,6 +179,14 @@ void Lorentzian::setPar(double* Par)
 	E = Par[1];
 	Gamma = Par[2];
     Offset = Par[3];
+}
+
+void Lorentzian::SetValues(const double Intensity, const double CenterFreq, const double Width, const double iOffset)
+{
+    A = Intensity;
+    E = CenterFreq;
+    Gamma = sqr(0.5 * Width);
+    Offset = iOffset;
 }
 
 void Lorentzian::updatePar(double* C)

@@ -14,12 +14,17 @@
 
 #include "gaussian.h"
 
+class Lorentzian;
+
 
 class GaussianWithSaturation : public Gaussian
 {
 public:
     GaussianWithSaturation(double *x, double *y, double *Sig, int N);
     GaussianWithSaturation(const QString& data);
+    GaussianWithSaturation(const Gaussian& other);
+    GaussianWithSaturation(const Lorentzian& other);
+    GaussianWithSaturation(const LineProfile& other);
     virtual ~GaussianWithSaturation();
     double GetPoint(double i_E) const override;
     void getLineY(double *Ycalc) const override;

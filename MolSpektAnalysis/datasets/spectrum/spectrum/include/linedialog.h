@@ -18,12 +18,14 @@ class QLineEdit;
 class QLabel;
 class QPushButton;
 
+class LineProfile;
+
 
 class LineDialog : public LineWindowBase
 {
     Q_OBJECT
 public:
-    LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, Gaussian* line = nullptr);
+    LineDialog(MainWindow *parent = nullptr, Spektrum* spect = nullptr, LineProfile* line = nullptr);
 
     void selectLine(const int index);
 

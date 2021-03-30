@@ -14,6 +14,8 @@
 
 #include "lorentzian.h"
 
+class Gaussian;
+
 
 class LorentzianWithSaturation : public Lorentzian
 {
@@ -21,6 +23,9 @@ public:
     LorentzianWithSaturation();
     LorentzianWithSaturation(double *x, double *y, double *Sig, int N);
     LorentzianWithSaturation(const QString& data);
+    LorentzianWithSaturation(const Gaussian& other);
+    LorentzianWithSaturation(const Lorentzian& other);
+    LorentzianWithSaturation(const LineProfile& other);
 
     double GetPoint(double i_E) const override;
     void getLineY(double *Ycalc) const override;

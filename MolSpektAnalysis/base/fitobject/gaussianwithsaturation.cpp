@@ -25,31 +25,45 @@ GaussianWithSaturation::GaussianWithSaturation(const QString &data) : Gaussian(d
 {
 }
 
+GaussianWithSaturation::GaussianWithSaturation(const Gaussian& other) : Gaussian(other)
+{
+}
+
+GaussianWithSaturation::GaussianWithSaturation(const Lorentzian& other) : Gaussian(other)
+{
+}
+
+GaussianWithSaturation::GaussianWithSaturation(const LineProfile& other) : Gaussian(other)
+{
+}
+
 GaussianWithSaturation::~GaussianWithSaturation()
 {
 }
 
 double GaussianWithSaturation::GetPoint(double i_E) const
 {
+    if (hideSaturation) return Gaussian::GetPoint(i_E);
     return Offset - applySaturation(Offset - Gaussian::GetPoint(i_E));
 }
 
 void GaussianWithSaturation::getLineY(double *Ycalc) const
 {
     Gaussian::getLineY(Ycalc);
+    if (hideSaturation) return;
     applySaturationOnLineProfile(Ycalc);
 }
 
 bool GaussianWithSaturation::getCalcYAndDerivatives(double *Ycalc, double **deriv)
 {
     Gaussian::getCalcYAndDerivatives(Ycalc, deriv);
-    applySaturationOnCalcYAndDerivatives(Ycalc, deriv);
+    if (!hideSaturation) applySaturationOnCalcYAndDerivatives(Ycalc, deriv);
     return true;
 }
 
 bool GaussianWithSaturation::getCalcY(double *Ycalc) const
 {
     Gaussian::getLineY(Ycalc);
-    applySaturationOnCalcY(Ycalc);
+    if (!hideSaturation) applySaturationOnCalcY(Ycalc);
     return true;
 }
