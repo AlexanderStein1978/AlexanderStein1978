@@ -102,6 +102,7 @@ Gaussian::~Gaussian()
 
 void Gaussian::initialize(const QStringList &data)
 {
+    if (isSubtracted) return;
     if (data.size() >= 7)
     {
         B = data[0].toDouble();
@@ -123,6 +124,7 @@ void Gaussian::GetValues(double &o_B, double &o_E, double &o_Width, double &o_Of
 
 void Gaussian::SetValues(const double Intensity, const double CenterFreq, const double Width, const double iOffset)
 {
+    if (isSubtracted) return;
     B = Intensity;
     E = CenterFreq;
     G = 0.6006 * Width;
@@ -190,6 +192,7 @@ void Gaussian::getPar(double *Par) const
 
 void Gaussian::setPar(double *Par)
 {
+    if (isSubtracted) return;
     B = Par[0];
     E = Par[1];
     G = Par[2];
@@ -198,6 +201,7 @@ void Gaussian::setPar(double *Par)
 
 void Gaussian::updatePar(double *C)
 {
+    if (isSubtracted) return;
     B += C[0];
     E += C[1];
     G += C[2];

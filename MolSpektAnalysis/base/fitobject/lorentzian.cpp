@@ -155,6 +155,7 @@ void Lorentzian::Serialize(QTextStream &stream, const bool finish) const
 
 void Lorentzian::setData(double* x, double* y, double* Sig, int N)
 {
+    if (isSubtracted) return;
     int n, m=0;
 	AWF = EWF = GWF = 0.0;
 	for (n=0, A=0.0; n<N; n++) if (y[n] > A)
@@ -175,6 +176,7 @@ void Lorentzian::setData(double* x, double* y, double* Sig, int N)
 
 void Lorentzian::setPar(double* Par)
 {
+    if (isSubtracted) return;
     A = Par[0];
 	E = Par[1];
 	Gamma = Par[2];
@@ -183,6 +185,7 @@ void Lorentzian::setPar(double* Par)
 
 void Lorentzian::SetValues(const double Intensity, const double CenterFreq, const double Width, const double iOffset)
 {
+    if (isSubtracted) return;
     A = Intensity;
     E = CenterFreq;
     Gamma = sqr(0.5 * Width);
@@ -191,6 +194,7 @@ void Lorentzian::SetValues(const double Intensity, const double CenterFreq, cons
 
 void Lorentzian::updatePar(double* C)
 {
+    if (isSubtracted) return;
     A += AWF * C[0];
 	E += EWF * C[1];
 	Gamma += GWF * C[2];
