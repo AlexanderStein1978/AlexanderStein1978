@@ -72,7 +72,7 @@ public:
 
 protected:
     double Offset;
-    bool hideSaturation;
+    bool hideSaturation, isSubtracted;
 
     void setDataRange(const double E_start, const double E_end);
     void applySaturationOnLineProfile(double *Ycalc) const;
@@ -85,7 +85,6 @@ protected:
     }
 
 private:
-    bool isSubtracted;
     double m_Estart, m_Eend;
 };
 
