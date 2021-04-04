@@ -14,6 +14,8 @@
 
 #include <QWidget>
 
+#include <functional>
+
 class QComboBox;
 class QFocusEvent;
 
@@ -38,6 +40,7 @@ protected:
     virtual void disconnectSpectrum() = 0;
     virtual void connectSpectrum() = 0;
     virtual void lineChanged() = 0;
+    void modifyLine(const std::function<void()>& func);
 
     QComboBox *SpektrumBox, *LineBox;
     MainWindow *MW;

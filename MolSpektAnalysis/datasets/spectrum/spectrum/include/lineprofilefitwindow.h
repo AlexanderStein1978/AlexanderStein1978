@@ -49,6 +49,7 @@ private:
     void lineChanged() override;
     
     QLineEdit *MaxIterationEdit, *MinImprovementEdit, *MinFreqEdit, *MaxFreqEdit;
+    QComboBox *LineTypeBox;
     QPushButton *PerformFitButton;
     QLabel *ResultSigmaLabel;
     LineDialog* mLineDialog;

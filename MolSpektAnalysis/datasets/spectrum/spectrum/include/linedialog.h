@@ -33,15 +33,17 @@ private slots:
     void UpdateLine();
     void SubtractLine();
     void DeleteLine();
+    void HideSaturation();
     void lineChanged() override;
 
 private:
     void disconnectSpectrum() override;
     void connectSpectrum() override;
     void updateSubtractButton();
+    void updateHideSaturationButton();
     
     QLineEdit *IntensityEdit, *CenterFreqEdit, *WidthEdit, *OffsetEdit;
-    QPushButton *SubtractButton, *DeleteButton;
+    QPushButton *SubtractButton, *DeleteButton, *HideSaturationButton;
     QLabel *DataRangeLabel;
 };
 

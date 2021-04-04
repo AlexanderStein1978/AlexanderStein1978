@@ -37,7 +37,7 @@ Lorentzian::Lorentzian(double* x, double* y, double* Sig, int N) : LineProfile(4
 Lorentzian::Lorentzian(const QString &data) : LineProfile(4), A(0.0), E(0.0), Gamma(0.0), AWF(1.0), EWF(1.0), GWF(1.0)
 {
     QStringList L = data.split('\t', QString::SkipEmptyParts);
-    if (L.size() >= 7)
+    if (L.size() >= 8)
     {
         A = L[0].toDouble();
         E = L[1].toDouble();
@@ -45,6 +45,7 @@ Lorentzian::Lorentzian(const QString &data) : LineProfile(4), A(0.0), E(0.0), Ga
         setOffset(L[3].toDouble());
         setDataRange(L[4].toDouble(), L[5].toDouble());
         setSubtracted(L[6] == "true");
+        setHideSaturation(L[7] == "true");
     }
 }
 
@@ -149,7 +150,7 @@ void Lorentzian::Serialize(QTextStream &stream, const bool finish) const
     GetDataRange(Estart, Eend);
     stream << "Lorentzian" << (isWithSaturation() ? "withSaturation\t" : "\t") << QString::number(A, 'g', 8) << '\t' << QString::number(E, 'g', 13) << '\t'
            << QString::number(Gamma, 'g', 8) << '\t' << QString::number(Offset, 'g', 8) << '\t' << QString::number(Estart, 'g', 13) << '\t' << QString::number(Eend, 'g', 13) << '\t'
-           << (isLineSubtracted() ? "true" : "false");
+           << (isLineSubtracted() ? "true" : "false") << (isSaturationHidden() ? "true" : "false");
     if (finish) stream << '\n';
 }
 
