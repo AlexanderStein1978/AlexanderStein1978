@@ -111,3 +111,21 @@ void LineWindowBase::LineChanged(const int index)
     }
     lineChanged();
 }
+
+void LineWindowBase::modifyLine(const std::function<void ()> &func)
+{
+    if (nullptr != mLine)
+    {
+        bool wasSubtracted(false);
+        int lineIndex(LineBox->currentIndex());
+        if (mLine->isLineSubtracted())
+        {
+            wasSubtracted = true;
+            mSpektrum->SubtractFittedLine(lineIndex, false);
+        }
+        func();
+        if (wasSubtracted) mSpektrum->SubtractFittedLine(lineIndex, true);
+        mSpektrum->Paint();
+        mSpektrum->Changed();
+    }
+}

@@ -103,7 +103,7 @@ Gaussian::~Gaussian()
 void Gaussian::initialize(const QStringList &data)
 {
     if (isSubtracted) return;
-    if (data.size() >= 7)
+    if (data.size() >= 8)
     {
         B = data[0].toDouble();
         E = data[1].toDouble();
@@ -111,6 +111,7 @@ void Gaussian::initialize(const QStringList &data)
         setOffset(data[3].toDouble());
         setDataRange(data[4].toDouble(), data[5].toDouble());
         setSubtracted(data[6] == "true");
+        setHideSaturation(data[7] == "true");
     }
 }
 
@@ -214,6 +215,6 @@ void Gaussian::Serialize(QTextStream &stream, const bool finish) const
     GetDataRange(Estart, Eend);
     stream << "Gaussian" << (isWithSaturation() ? "withSaturation\t" : "\t") << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 13) << '\t' << QString::number(G, 'g', 8)
            << '\t' << QString::number(Offset, 'g', 8) << "\t" << QString::number(Estart, 'g', 13) << '\t' << QString::number(Eend, 'g', 13) << '\t'
-           << (isLineSubtracted() ? "true" : "false");
+           << (isLineSubtracted() ? "true" : "false") << (isSaturationHidden() ? "true" : "false");
     if (finish) stream << '\n';
 }

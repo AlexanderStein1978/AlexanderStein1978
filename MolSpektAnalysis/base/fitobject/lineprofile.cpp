@@ -74,6 +74,12 @@ void LineProfile::GetDataRange(double &Emin, double &Imin, double &Emax, double 
     }
 }
 
+QString LineProfile::getProfileTypeName(const LineProfileType type)
+{
+    if (type == GaussianType) return "Gaussian";
+    return "Lorentzian";
+}
+
 void LineProfile::setDataRange(const double E_start, const double E_end)
 {
     m_Estart = E_start;

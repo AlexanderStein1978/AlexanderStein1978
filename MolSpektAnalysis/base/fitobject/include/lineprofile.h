@@ -44,6 +44,7 @@ public:
     virtual LineProfileType getType() const = 0;
     virtual void GetValues(double& o_Intensity, double& o_CenterFreq, double& o_Width, double& o_Offset) const = 0;
     virtual void SetValues(const double Intensity, const double CenterFreq, const double Width, const double Offset) = 0;
+    static QString getProfileTypeName(const LineProfileType type);
 
     inline void setSubtracted(const bool newValue)
     {
@@ -68,6 +69,11 @@ public:
     inline void setHideSaturation(const bool hide)
     {
         hideSaturation = hide;
+    }
+
+    inline bool isSaturationHidden() const
+    {
+        return hideSaturation;
     }
 
 protected:

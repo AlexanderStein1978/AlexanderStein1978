@@ -26,8 +26,9 @@
 
 
 LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, LineProfile *line) : LineWindowBase(mw, spect, line),
-    MaxIterationEdit(new QLineEdit("100", this)), MinImprovementEdit(new QLineEdit("0.01", this)), MinFreqEdit(new QLineEdit(this)), MaxFreqEdit(new QLineEdit(this)),
-    PerformFitButton(new QPushButton("Run fit", this)), ResultSigmaLabel(new QLabel(this)), mLineDialog(nullptr), mWithSaturationBox(new QCheckBox("Consider saturation", this))
+    MaxIterationEdit(new QLineEdit("100", this)), MinImprovementEdit(new QLineEdit("0.01", this)), MinFreqEdit(new QLineEdit(this)),
+    MaxFreqEdit(new QLineEdit(this)), LineTypeBox(new QComboBox(this)), PerformFitButton(new QPushButton("Run fit", this)),
+    ResultSigmaLabel(new QLabel(this)), mLineDialog(nullptr), mWithSaturationBox(new QCheckBox("Consider saturation", this))
 {
     QGridLayout *L = new QGridLayout(this);
     L->addWidget(new QLabel("Spectrum:", this), 0, 0);
@@ -35,18 +36,23 @@ LineProfileFitWindow::LineProfileFitWindow(MainWindow* mw, Spektrum *spect, Line
     L->addWidget(new QLabel("Line:", this), 0, 2);
     L->addWidget(LineBox, 0, 3);
     L->setRowMinimumHeight(1, 20);
-    L->addWidget(new QLabel("Max iterations:", this), 2, 0);
-    L->addWidget(MaxIterationEdit, 2, 1);
-    L->addWidget(new QLabel("Min improvement:", this), 2, 2);
-    L->addWidget(MinImprovementEdit, 2, 3);
-    L->addWidget(new QLabel("Min frequency:", this), 3, 0);
-    L->addWidget(MinFreqEdit, 3, 1);
-    L->addWidget(new QLabel("Max frequency:", this), 3, 2);
-    L->addWidget(MaxFreqEdit, 3, 3);
-    L->setRowMinimumHeight(4, 20);
-    L->addWidget(mWithSaturationBox, 5, 0, 1, 2);
-    L->addWidget(PerformFitButton, 5, 2, 1, 2);
-    L->addWidget(ResultSigmaLabel, 6, 0, 1, 4);
+    L->addWidget(new QLabel("Profile type:", this), 2, 0);
+    L->addWidget(LineTypeBox, 2, 1);
+    for (int t = LineProfile::GaussianType; t <= LineProfile::LorentzianType; ++t)
+        LineTypeBox->addItem(LineProfile::getProfileTypeName(static_cast<LineProfile::LineProfileType>(t)));
+    LineTypeBox->setEditable(false);
+    L->addWidget(mWithSaturationBox, 2, 2, 1, 2);
+    L->addWidget(new QLabel("Max iterations:", this), 3, 0);
+    L->addWidget(MaxIterationEdit, 3, 1);
+    L->addWidget(new QLabel("Min improvement:", this), 3, 2);
+    L->addWidget(MinImprovementEdit, 3, 3);
+    L->addWidget(new QLabel("Min frequency:", this), 4, 0);
+    L->addWidget(MinFreqEdit, 4, 1);
+    L->addWidget(new QLabel("Max frequency:", this), 4, 2);
+    L->addWidget(MaxFreqEdit, 4, 3);
+    L->setRowMinimumHeight(5, 20);
+    L->addWidget(PerformFitButton, 6, 0, 1, 2);
+    L->addWidget(ResultSigmaLabel, 6, 2, 1, 2);
     MaxIterationEdit->setValidator(new QIntValidator(1, 1000000, MaxIterationEdit));
     MinImprovementEdit->setValidator(new QDoubleValidator(1e-10, 1e10, 0, MinImprovementEdit));
     MinFreqEdit->setValidator(new QDoubleValidator(0.001, 1e10, 0, MinFreqEdit));
@@ -69,10 +75,14 @@ void LineProfileFitWindow::RunFit()
     if (nullptr != mSpektrum)
     {
         int lineIndex = LineBox->currentIndex();
-        ResultSigmaLabel->setText("Sigma: " + QString::number(
-            mSpektrum->FitLineProfile(lineIndex, LineProfile::GaussianType, mWithSaturationBox->isChecked(),
-                                      MaxIterationEdit->text().toDouble(), MinImprovementEdit->text().toDouble(),
-                                      MinFreqEdit->text().toDouble(), MaxFreqEdit->text().toDouble())));
+        modifyLine([&lineIndex,this]()
+        {
+            ResultSigmaLabel->setText("Sigma: " + QString::number(
+                mSpektrum->FitLineProfile(lineIndex, static_cast<LineProfile::LineProfileType>(LineTypeBox->currentIndex()),
+                                          mWithSaturationBox->isChecked(), MaxIterationEdit->text().toDouble(),
+                                          MinImprovementEdit->text().toDouble(), MinFreqEdit->text().toDouble(),
+                                          MaxFreqEdit->text().toDouble())));
+        });
         if (nullptr == mLineDialog)
         {
             mLineDialog = new LineDialog(MW, mSpektrum, mSpektrum->GetFittedLine(lineIndex));
@@ -113,9 +123,7 @@ void LineProfileFitWindow::UpdateSigma()
         MaxFreqEdit->setText(QString::number(EEnd, 'f', 6));
         ResultSigmaLabel->setText("Sigma: " + QString::number(mLine->GetSigma()));
         mWithSaturationBox->setChecked(mLine->isWithSaturation());
-        mWithSaturationBox->setEnabled(false);
     }
-    else mWithSaturationBox->setEnabled(true);
 }
 
 void LineProfileFitWindow::RangeEdited()
