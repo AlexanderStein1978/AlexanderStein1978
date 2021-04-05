@@ -25,6 +25,7 @@ Window::Window(PotStruct *PotSs)
     connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
     connect(Calc, SIGNAL(PictureChanged(double*, double*, double*, int)),
             this, SLOT(draw(double*, double*, double*, int)));
+    connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SIGNAL(EnergiesChanged(double,double)));
 }
 
 Window::~Window()
@@ -270,4 +271,9 @@ void Window::restoreSnapShot(bool &isMoving)
         if (isMoving != Calc->getMove()) Calc->move();
         Calc->start();
     }
+}
+
+void Window::setLayerDistance(const double newDistance)
+{
+    Calc->setLayerDistance(newDistance);
 }

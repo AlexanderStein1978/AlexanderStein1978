@@ -295,7 +295,7 @@ void Calculation::correctLocalE()
 {
     int mx, my, mz, n;
     Particle *PP1;
-    double currSumE = 0.0, EStart[N], TStart[N];
+    double currSumE = 0.0, currT(0.0), EStart[N], TStart[N];
     int M[N];
     for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
     {
@@ -304,6 +304,7 @@ void Calculation::correctLocalE()
             updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ));
             updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
             updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
+            currT += PP1->T;
             currSumE += PP1->E;
             /*if (isnan(currSumE))
 			{
@@ -312,6 +313,7 @@ void Calculation::correctLocalE()
             }*/
         }
     }
+    emit EnergiesChanged(currT, currSumE);
     for (n=0; n<N; ++n)
     {
         EStart[n] = P[n].E;
@@ -537,6 +539,16 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 		P[x].vZ = dZ * R;
 	}
 	else Fixed[n] = false;
+}
+
+void Calculation::setLayerDistance(double newDistance)
+{
+    const double cDist(P[1].Y - P[0].Y), diff(0.5 * (newDistance - cDist));
+    for (int n=0; n<N; n+=2)
+    {
+        P[n].Y -= diff;
+        P[n].Y += diff;
+    }
 }
 
 void Calculation::move()
