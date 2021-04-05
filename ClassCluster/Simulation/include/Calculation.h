@@ -44,6 +44,7 @@ class Calculation : public QThread
         void triggerSnapShot();
         Particle* getParticles(int &N);
         void setPotential(const PotRole role, PotStruct &Pot);
+        void setLayerDistance(double newDistance);
         
         void setParticleWatchPoint(WatchPoint* point)
         {
@@ -94,6 +95,7 @@ class Calculation : public QThread
 		
 	signals:
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);
+        void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void WriteSnapShot(Particle* P, int N);
 		
 	private:

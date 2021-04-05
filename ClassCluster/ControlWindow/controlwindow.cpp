@@ -21,14 +21,14 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     MW(mw), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
-    QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), kineticEnergy("-1.0"), rangeScale(QString::number(1.0, 'f', 3));
+    QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), kineticEnergy("-1.0"), rangeScale(QString::number(1.0, 'f', 3)), layerDistance("5.657");
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
     if (settingsFile.exists())
     {
         settingsFile.open(QIODevice::ReadOnly);
         QTextStream S(&settingsFile);
         QStringList settings = S.readLine().split('\t');
-        if (settings.size() == 4u)
+        if (settings.size() >= 4u)
         {
             speed = settings[0];
             stepSize = settings[1];
@@ -36,6 +36,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
             if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
             TEdit->setText(kineticEnergy);
             rangeScale = settings[3];
+            if (settings.size() >= 5u) layerDistance = settings[4];
             for (int n=0; n < Calculation::NumPot && !S.atEnd(); ++n)
             {
                 const QString data = S.readLine();
@@ -57,20 +58,25 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     L->addWidget(WriteSnapShot = new QPushButton("Write snapshot", this), 1, 0);
     L->addWidget(RestoreSnapShot = new QPushButton("Restore snapshot", this), 1, 1);
     L->addWidget(ShowParticleWatchWindow = new QPushButton("Show particle amplification watch window", this), 1, 2, 1, 2);
+    L->addLayout(SettingsLayout, 2, 0, 1, 4);
     SettingsLayout->addWidget(new QLabel("Speed:", this), 0, 0);
     SettingsLayout->addWidget(Speed = new QLineEdit(speed, this), 0, 1);
     SettingsLayout->addWidget(new QLabel("Step size:", this), 0, 2);
     SettingsLayout->addWidget(StepE = new QLineEdit(stepSize, this), 0, 3);
     SettingsLayout->addWidget(new QLabel("Potential range:"), 0, 4);
     SettingsLayout->addWidget(PotRangeScaleEdit = new QLineEdit(rangeScale, this), 0, 5);
-    L->addLayout(SettingsLayout, 2, 0, 1, 4);
-    L->addWidget(new QLabel("Total energy:", this), 3, 0);
-    L->addWidget(EnE = new QLineEdit(QString::number(cEnergy, 'g', 6), this), 3, 1);
-    L->addWidget(new QLabel("Kintetic energy:", this), 3, 2);
-    L->addWidget(TEdit, 3, 3);
-    L->setRowMinimumHeight(4, 20);
-    L->addWidget(new QLabel("Interaction potentials:", this), 5, 0, 1, 4);
-    L->addLayout(PotLayout, 6, 0, 1, 4);
+    SettingsLayout->addWidget(new QLabel("Layer distance:", this), 1, 0);
+    SettingsLayout->addWidget(LayerDistanceEdit = new QLineEdit(layerDistance, this), 1, 1);
+    SettingsLayout->addWidget(new QLabel("Kintetic energy:", this), 1, 2);
+    SettingsLayout->addWidget(TEdit, 1, 3);
+    SettingsLayout->addWidget(new QLabel("Total energy:", this), 1, 4);
+    SettingsLayout->addWidget(EnE = new QLineEdit(QString::number(cEnergy, 'g', 6), this), 1, 5);
+    SettingsLayout->addWidget(PotentialEnergyLabel = new QLabel("Potential energy: ", this), 2, 0, 1, 2);
+    SettingsLayout->addWidget(KineticEnergyLabel = new QLabel("Kinetic energy: ", this), 2, 2, 1, 2);
+    SettingsLayout->addWidget(TotalEnergyLabel = new QLabel("Total energy: ", this), 2, 4, 1, 2);
+    L->setRowMinimumHeight(3, 20);
+    L->addWidget(new QLabel("Interaction potentials:", this), 4, 0, 1, 4);
+    L->addLayout(PotLayout, 5, 0, 1, 4);
     PotLayout->setColumnMinimumWidth(0, 60);
     PotLayout->setColumnStretch(1, 1);
     PotLayout->setColumnStretch(2, 10);
@@ -96,7 +102,9 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     connect(EnE, SIGNAL(editingFinished()), this, SLOT(EChanged()));
     connect(TEdit, SIGNAL(editingFinished()), this, SLOT(TChanged()));
     connect(PotRangeScaleEdit, SIGNAL(editingFinished()), this, SLOT(EnergyRelevantValueChanged()));
+    connect(LayerDistanceEdit, SIGNAL(editingFinished()), this, SLOT(EnergyRelevantValueChanged()));
     connect(MW, SIGNAL(MainWindowCloses()), this, SLOT(saveSettings()));
+    connect(window, SIGNAL(EnergiesChanged(double,double)), this, SLOT(UpdateEnergies(double,double)));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -105,6 +113,13 @@ ControlWindow::~ControlWindow()
 {
     for (int n=0; n < Calculation::NumPot; ++n) delete PotControls[n];
     delete[] PotControls;
+}
+
+void ControlWindow::UpdateEnergies(double kineticEnergy, double totalEnergy)
+{
+    PotentialEnergyLabel->setText("Potential energy: " + QString::number(totalEnergy - kineticEnergy, 'g', 3));
+    KineticEnergyLabel->setText("Kinetic energy: " + QString::number(kineticEnergy, 'g', 3));
+    TotalEnergyLabel->setText("Total energy: " + QString::number(totalEnergy, 'g', 3));
 }
 
 void ControlWindow::focusInEvent(QFocusEvent *event)
@@ -145,6 +160,7 @@ void ControlWindow::run()
 void ControlWindow::start()
 {
     window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
+    window->setLayerDistance(LayerDistanceEdit->text().toDouble());
     for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
     {
         PotStruct Pots;
@@ -234,7 +250,7 @@ void ControlWindow::saveSettings()
     QFile file(SettingsFileName);
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
-    S << Speed->text() << '\t' << StepE->text() << '\t' << TEdit->text() << '\t' << PotRangeScaleEdit->text() << '\n';
+    S << Speed->text() << '\t' << StepE->text() << '\t' << TEdit->text() << '\t' << PotRangeScaleEdit->text() << '\t' << LayerDistanceEdit->text() << '\n';
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(S, ProgramPath);
 }
 

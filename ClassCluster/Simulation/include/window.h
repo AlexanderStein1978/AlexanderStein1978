@@ -42,6 +42,10 @@ class Window : public QWidget
         int getXDim() const;
         int getNumParticles() const;
         static int getNumSteps();
+        void setLayerDistance(const double newDistance);
+
+    signals:
+        void EnergiesChanged(double kineticEnergy, double totalEnergy);
 
     private slots:
         void draw(double *XP, double *YP, double *ZP, int N);
