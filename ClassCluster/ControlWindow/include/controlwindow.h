@@ -6,6 +6,7 @@
 #include <QString>
 
 class QLineEdit;
+class QLabel;
 class QCloseEvent;
 class QPushButton;
 
@@ -42,15 +43,23 @@ private slots:
     void showParticleWatchWindow();
     void saveSettings();
     void plotClosing();
+    void EChanged();
+    void TChanged();
+    void ValueChanged();
+    void EnergyRelevantValueChanged();
+    void UpdateEnergies(double kinteticEnergy, double totalEnergy);
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
 
 private:
     void prepareWindow();
+    void start();
+    bool stopIfItsRunning();
 
     Window* window;
-    QLineEdit *StepE, *EnE, *Speed, *PotRangeScaleEdit;
+    QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit;
+    QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move;
     PotControl** PotControls;
     PotentialPlot* Plot;

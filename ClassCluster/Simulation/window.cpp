@@ -25,6 +25,7 @@ Window::Window(PotStruct *PotSs)
     connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
     connect(Calc, SIGNAL(PictureChanged(double*, double*, double*, int)),
             this, SLOT(draw(double*, double*, double*, int)));
+    connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SIGNAL(EnergiesChanged(double,double)));
 }
 
 Window::~Window()
@@ -136,14 +137,19 @@ void Window::setSpeed(const double newSpeed)
     Calc->setSpeed(newSpeed);
 }
 
-double Window::getEnergy() const
+double Window::getPotentialEnergy() const
 {
-    return Calc->getEnergy();
+    return Calc->getPotentialEnergy();
 }
 
-double Window::setEnergy(const double E)
+double Window::getKineticEnergy() const
 {
-    return Calc->setEnergy(E);
+    return Calc->getKineticEnergy();
+}
+
+double Window::setKineticEnergy(const double T)
+{
+    return Calc->setKineticEnergy(T);
 }
 
 void Window::setParticleWatchPoint(WatchPoint *point)
@@ -265,4 +271,9 @@ void Window::restoreSnapShot(bool &isMoving)
         if (isMoving != Calc->getMove()) Calc->move();
         Calc->start();
     }
+}
+
+void Window::setLayerDistance(const double newDistance)
+{
+    Calc->setLayerDistance(newDistance);
 }

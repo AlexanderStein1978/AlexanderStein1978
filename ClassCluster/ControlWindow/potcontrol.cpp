@@ -64,7 +64,7 @@ bool PotControl::isChangedSinceLastRun()
 
 void PotControl::Serialize(QTextStream& stream, const QString &programPath) const
 {
-    stream << (pot != nullptr ? pot->getRelativePath(programPath) : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
+    stream << (pot != nullptr ? pot->getRelativePath(programPath + "/DummyString.dat") : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
 }
 
 void PotControl::FillLayout(QGridLayout* layout, const int row) const
