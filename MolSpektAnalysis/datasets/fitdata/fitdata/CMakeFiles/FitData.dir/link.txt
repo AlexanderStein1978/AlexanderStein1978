@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libFitData.a  CMakeFiles/FitData.dir/FitData_autogen/mocs_compilation.cpp.obj CMakeFiles/FitData.dir/fitdata.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libFitData.a

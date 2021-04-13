@@ -40,6 +40,8 @@
 #include "fitobject.h"
 #include "intprog.h"
 #include "gaussian.h"
+#include "gaussianwithsaturation.h"
+#include "lorentzianwithsaturation.h"
 #include "datensatz.h"
 #include "isotab.h"
 #include "band.h"
@@ -370,7 +372,22 @@ bool Spektrum::readData(QString DateiName)
 			TextDaten = "";
 		else TextDaten += "\n";
 	}
-    TextDaten +=  stream.readAll();
+    TextDaten = stream.readLine();
+    if (TextDaten == "Fitted Gaussian line profiles:")
+    {
+        stream.readLine();
+        while (true)
+        {
+            TextDaten = stream.readLine();
+            if (TextDaten == "Spectrum:") break;
+            Gaussian* lineProfile = new Gaussian(TextDaten);
+            if (lineProfile->isValid()) m_fittedLineVector.push_back(lineProfile);
+            else delete lineProfile;
+        }
+        TextDaten.clear();
+    }
+    else TextDaten += '\n';
+    TextDaten += stream.readAll();
     Datei.close();
     l = TextDaten.length();
     printf("Daten eingelesen. Dateigröße=%d Bytes\n", l);
@@ -566,7 +583,14 @@ bool Spektrum::writeData(QString FileName)
 		default:
 			S << "type=" << QString::number(Type) << "\n";
 			break;
-	} 
+    }
+    if (m_fittedLineVector.size() > 0)
+    {
+        S << "Fitted Gaussian line profiles:\n"
+          << "B\tE\tG\tOffset\tE start\tE end\tis subtracted\n";
+        for (std::vector<LineProfile*>::const_iterator it = m_fittedLineVector.begin(); it != m_fittedLineVector.end(); ++it) (*it)->Serialize(S);
+        S << "Spectrum:\n";
+    }
 	for (r=0; r<N; r++) 
 		S << QString::number(Daten->GetValue(r, 0), 'f', 6) << "\t" 
 				<< QString::number(Daten->GetValue(r, 1), 'f', 6) 
@@ -754,23 +778,69 @@ void Spektrum::markRegion(QRect *i_regionToMark)
         double dXSF = 1.0 / XSF;
         m_minSelectedFrequency = dXSF * (static_cast<double>(i_regionToMark->left()) - XO);
         m_maxSelectedFrequency = dXSF * (static_cast<double>(i_regionToMark->right()) - XO);
+        emit SelectedRangeChanged(m_minSelectedFrequency, m_maxSelectedFrequency);
         Paint();
     }
 }
 
-double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations, const double MinImprovements, const double MinFreq, const double MaxFreq)
+double Spektrum::FitLineProfile(int &lineIndex, const LineProfile::LineProfileType type, const bool considerSaturation, const int MaxIterations,
+                                const double MinImprovements, const double MinFreq, const double MaxFreq)
+{
+    double minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
+    double *X, *Y, *Sig;
+    bool wasSubtracted = false;
+    int N = GetLineFitData(X, Y, Sig, minFrequency, maxFrequency);
+    LineProfile* line;
+    if (lineIndex >= 0 && lineIndex < m_fittedLineVector.size())
+    {
+        line = m_fittedLineVector[lineIndex];
+        if (line->isLineSubtracted())
+        {
+            wasSubtracted = true;
+            SubtractFittedLine(lineIndex, false);
+        }
+        if (line->getType() != type || line->isWithSaturation() != considerSaturation)
+        {
+            LineProfile* newLine;
+            if (type == LineProfile::GaussianType)
+                newLine = (considerSaturation ? new GaussianWithSaturation(*line) : new Gaussian(*line));
+            else newLine = (considerSaturation ? new LorentzianWithSaturation(*line) : new Lorentzian(*line));
+            delete line;
+            m_fittedLineVector[lineIndex] = line = newLine;
+        }
+        line->setData(X, Y, Sig, N);
+    }
+    else if (type == LineProfile::GaussianType)
+        line = (considerSaturation ? new GaussianWithSaturation(X, Y, Sig, N) : new Gaussian(X, Y, Sig, N));
+    else line = (considerSaturation ? new LorentzianWithSaturation(X, Y, Sig, N) : new Lorentzian(X, Y, Sig, N));
+    double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
+    double o_sigma = sqrt(chiSq / (N-1));
+    if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size())
+    {
+        lineIndex = static_cast<int>(m_fittedLineVector.size());
+        m_fittedLineVector.push_back(line);
+        emit NumberOfFittedLinesChanged();
+    }
+    if (wasSubtracted) SubtractFittedLine(lineIndex, true);
+    Paint();
+    Changed();
+    return o_sigma;
+}
+
+int Spektrum::GetLineFitData(double *&X, double *&Y, double *&Sig, const double MinFreq, const double MaxFreq)
 {
     if (Rauschen == -1.0) editFind();
-    double sig = 1.0 / (Rauschen * Rauschen), minFrequency(MinFreq > 0.0 ? MinFreq : m_minSelectedFrequency), maxFrequency(MaxFreq > 0.0 ? MaxFreq : m_maxSelectedFrequency);
-    double cx = minFrequency;
+    double sig = 1.0 / (Rauschen * Rauschen), cx = MinFreq;
     int nStart, N = 0;
-    for (int n=0; n < Daten->GetDSL() && cx < maxFrequency; ++n) if ((cx = Daten->GetValue(n, 0)) >= m_minSelectedFrequency)
+    for (int n=0; n < Daten->GetDSL() && cx < MaxFreq; ++n) if ((cx = Daten->GetValue(n, 0)) >= MinFreq)
     {
         if (N==0) nStart = n;
-        if (cx <= maxFrequency) ++N;
+        if (cx <= MaxFreq) ++N;
     }
-    if (N==0) return -1.0;
-    double *X = new double[N], *Y = new double[N], *Sig = new double[N];
+    if (N==0) return -1;
+    X = new double[N];
+    Y = new double[N];
+    Sig = new double[N];
     int n, m;
     for (n = nStart, m=0; m < N; ++n, ++m)
     {
@@ -778,16 +848,30 @@ double Spektrum::FitGaussianLineProfile(int &lineIndex, const int MaxIterations,
         Y[m] = Daten->GetValue(n, 1);
         Sig[m] = sig;
     }
-    Gaussian* line(lineIndex >= 0 && lineIndex < m_fittedLineVector.size() ? m_fittedLineVector[lineIndex] : new Gaussian(X, Y, Sig, N));
-    double chiSq = line->LevenbergMarquardt(MaxIterations, MinImprovements);
-    double o_sigma = sqrt(chiSq / (N-1));
-    if (lineIndex < 0 || lineIndex >= m_fittedLineVector.size())
-    {
-        lineIndex = static_cast<int>(m_fittedLineVector.size());
-        m_fittedLineVector.push_back(line);
-    }
+    return N;
+}
+
+void Spektrum::RemoveFittedLine(const int i_index)
+{
+    if (m_fittedLineVector[i_index]->isLineSubtracted()) SubtractFittedLine(i_index, false);
+    delete m_fittedLineVector[i_index];
+    m_fittedLineVector.erase(m_fittedLineVector.begin() + i_index);
     Paint();
-    return o_sigma;
+    emit NumberOfFittedLinesChanged();
+    Changed();
+}
+
+void Spektrum::SubtractFittedLine(const int i_index, const bool subtract)
+{
+    if (m_fittedLineVector[i_index]->isLineSubtracted() == subtract) return;
+    int N(m_fittedLineVector[i_index]->GetNData());
+    double start, end, data[N];
+    m_fittedLineVector[i_index]->GetDataRange(start, end);
+    m_fittedLineVector[i_index]->getLineY(data);
+    Daten->SubtractLine(start, end, N, data, subtract);
+    m_fittedLineVector[i_index]->setSubtracted(subtract);
+    Paint();
+    Changed();
 }
 
 void Spektrum::PictureClicked(QPoint *P)
@@ -1223,7 +1307,7 @@ void Spektrum::PSpektrum(QPainter &P, const QRect &A, bool PrintFN)
     double Estart, Eend, dXSF = 1.0 / XSF;
     for (size_t n = 0; n < m_fittedLineVector.size(); ++n)
     {
-        Gaussian* line = m_fittedLineVector[n];
+        LineProfile* line = m_fittedLineVector[n];
         line->GetDataRange(Estart, Eend);
         int xStart = ((x = int(XO + XSF * Estart)) > xm ? x : xm);
         int xEnd = ((x = int (XO + XSF * Eend)) < xM ? x : xM);

@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libAddSpektrum.a  CMakeFiles/AddSpektrum.dir/AddSpektrum_autogen/mocs_compilation.cpp.obj CMakeFiles/AddSpektrum.dir/adddialog.cpp.obj CMakeFiles/AddSpektrum.dir/addspektrum.cpp.obj CMakeFiles/AddSpektrum.dir/cutdialog.cpp.obj CMakeFiles/AddSpektrum.dir/doubleaddspektrum.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libAddSpektrum.a

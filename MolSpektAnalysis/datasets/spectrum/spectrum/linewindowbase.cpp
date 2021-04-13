@@ -2,7 +2,7 @@
 // C++ Implementation: LineWindowBase
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2020 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2020 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -12,14 +12,16 @@
 #include "linewindowbase.h"
 #include "MainWindow.h"
 #include "Spektrum.h"
+#include "gaussian.h"
 
 #include <QComboBox>
 
 
-LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, Gaussian *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
+LineWindowBase::LineWindowBase(MainWindow *mw, Spektrum *spect, LineProfile *line) : QWidget(mw), SpektrumBox(new QComboBox(this)), LineBox(new QComboBox(this)),
     MW(mw), mSpektrum(spect), mLine(line)
 {
-    focusInEvent(nullptr);
+    SpektrumBox->setEditable(false);
+    LineBox->setEditable(false);
 }
 
 void LineWindowBase::focusInEvent(QFocusEvent *event)
@@ -68,12 +70,13 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
             for (int n=0; n < nLines; ++n) LineBox->addItem(QString::number(n));
             if (nullptr != mLine)
             {
-                if (curIndex > nLines) curIndex = nLines;
+                if (curIndex < 0 || curIndex > nLines) curIndex = nLines;
                 else ++curIndex;
-                const Gaussian* curLine = nullptr;
+                const LineProfile* curLine = nullptr;
                 while (curIndex > 0 && curLine != mLine) curLine = mSpektrum->GetFittedLine(--curIndex);
                 if (curLine == mLine) LineBox->setCurrentIndex(curIndex);
             }
+            if (nullptr == mLine) curIndex = 0;
         }
     }
     LineBox->blockSignals(false);
@@ -81,8 +84,48 @@ void LineWindowBase::SpektrumChanged(const QString &Name)
     LineChanged(curIndex);
 }
 
+void LineWindowBase::NumberOfLinesChanged()
+{
+    SpektrumChanged(mSpektrum->getFName());
+}
+
+
 void LineWindowBase::LineChanged(const int index)
 {
-    mLine = (nullptr != mSpektrum && index < mSpektrum->GetNumFittedLines() ? mSpektrum->GetFittedLine(index) : nullptr);
+    double Emin, Imin, Emax, Imax;
+    mLine = (nullptr != mSpektrum && index >= 0 && index < mSpektrum->GetNumFittedLines() ?
+             mSpektrum->GetFittedLine(index) : nullptr);
+    if (nullptr != mLine)
+    {
+        int N = mLine->GetNData();
+        if (N == 0)
+        {
+            double *x, *y, *sig;
+            mLine->GetDataRange(Emin, Emax);
+            N = mSpektrum->GetLineFitData(x, y, sig, Emin, Emax);
+            mLine->setData(x, y, sig, N);
+        }
+        mLine->GetDataRange(Emin, Imin, Emax, Imax);
+        const double EBorder = 0.25 * (Emax - Emin), IBorder = 0.25 * (Imax - Imin);
+        mSpektrum->setCurrentZoomRange(Emin - EBorder, Emax + EBorder, Imin - IBorder, Imax + IBorder);
+    }
     lineChanged();
+}
+
+void LineWindowBase::modifyLine(const std::function<void ()> &func)
+{
+    if (nullptr != mLine)
+    {
+        bool wasSubtracted(false);
+        int lineIndex(LineBox->currentIndex());
+        if (mLine->isLineSubtracted())
+        {
+            wasSubtracted = true;
+            mSpektrum->SubtractFittedLine(lineIndex, false);
+        }
+        func();
+        if (wasSubtracted) mSpektrum->SubtractFittedLine(lineIndex, true);
+        mSpektrum->Paint();
+        mSpektrum->Changed();
+    }
 }

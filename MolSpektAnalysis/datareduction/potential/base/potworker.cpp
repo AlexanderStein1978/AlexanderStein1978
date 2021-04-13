@@ -2,13 +2,14 @@
 // C++ Implementation: PotWorker
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
 
+#include "PotFit.h"
 #include "potworker.h"
 #include "SplinePoint.h"
 #include "tableline.h"
@@ -19,7 +20,6 @@
 #include "TangToenniesPot.h"
 #include "MTTPot.h"
 #include "MLRPot.h"
-#include "PotFit.h"
 #include "tools.h"
 #include "potentialdata.h"
 

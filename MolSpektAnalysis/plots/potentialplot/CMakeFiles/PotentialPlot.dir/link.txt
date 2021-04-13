@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libPotentialPlot.a  CMakeFiles/PotentialPlot.dir/PotentialPlot_autogen/mocs_compilation.cpp.obj CMakeFiles/PotentialPlot.dir/potentialplot.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libPotentialPlot.a

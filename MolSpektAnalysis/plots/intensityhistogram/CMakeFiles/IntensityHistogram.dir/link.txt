@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libIntensityHistogram.a  CMakeFiles/IntensityHistogram.dir/IntensityHistogram_autogen/mocs_compilation.cpp.obj CMakeFiles/IntensityHistogram.dir/intensityhistogram.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libIntensityHistogram.a

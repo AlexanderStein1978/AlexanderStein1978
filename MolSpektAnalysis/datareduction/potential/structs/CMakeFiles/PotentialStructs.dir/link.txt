@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libPotentialStructs.a  CMakeFiles/PotentialStructs.dir/PotentialStructs_autogen/mocs_compilation.cpp.obj CMakeFiles/PotentialStructs.dir/elevel.cpp.obj CMakeFiles/PotentialStructs.dir/potentialdata.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libPotentialStructs.a

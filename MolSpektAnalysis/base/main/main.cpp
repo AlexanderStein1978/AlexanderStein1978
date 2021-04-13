@@ -2,7 +2,7 @@
 // C++ Implementation: main
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -27,7 +27,6 @@ int main( int argc, char ** argv)
 	}*/
 	w->show();
     a.connect( &a, SIGNAL( lastWindowClosed() ), &a, SLOT( quit() ) );
-    a.connect( w, SIGNAL(quitApp()), &a, SLOT(quit()));
     int res = a.exec();
 	delete w;
 	return res;

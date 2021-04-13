@@ -1,0 +1,83 @@
+{
+	"BUILD_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/MolSpektAnalysisStructs_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/Alexa/Physics",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_SOURCE_DIR" : "C:/Users/Alexa/Physics",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include/band.h",
+			"Mu",
+			"6YEA5652QU/moc_band.cpp"
+		],
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include/fittetline.h",
+			"Mu",
+			"6YEA5652QU/moc_fittetline.cpp"
+		],
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include/fli.h",
+			"Mu",
+			"6YEA5652QU/moc_fli.cpp"
+		],
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include/line.h",
+			"Mu",
+			"6YEA5652QU/moc_line.cpp"
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/MolSpektAnalysisStructs_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/MolSpektAnalysisStructs_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : [ "QT_CORE_LIB", "QT_GUI_LIB", "QT_NO_DEBUG", "QT_WIDGETS_LIB", "WIN32" ],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fitdata/structs",
+		"C:/Qt/5.6/mingw49_32/include",
+		"C:/Qt/5.6/mingw49_32/include/QtWidgets",
+		"C:/Qt/5.6/mingw49_32/include/QtGui",
+		"C:/Qt/5.6/mingw49_32/include/QtCore",
+		"C:/Qt/5.6/mingw49_32/mkspecs/win32-g++",
+		"C:/Qt/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include",
+		"C:/Qt/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include-fixed",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++/i686-w64-mingw32",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++/backward"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : true,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 4,
+	"PARSE_CACHE_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/CMakeFiles/MolSpektAnalysisStructs_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Qt/5.6/mingw49_32/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 6,
+	"SETTINGS_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/CMakeFiles/MolSpektAnalysisStructs_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/fli.cpp",
+			"Mu"
+		]
+	],
+	"VERBOSITY" : 0
+}

@@ -2,7 +2,7 @@
 // C++ Implementation: Datensatz
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -12,6 +12,8 @@
 #include "datensatz.h"
 #include "element.h"
 #include "marker.h"
+
+#include <cassert>
 
 
 Datensatz::Datensatz()
@@ -267,6 +269,33 @@ double *Datensatz::GetPoint(int i)
 	while (AE->maxIndex < i) AE = AE->Next;
 	i -= AE->minIndex;
 	return AE->Daten[i];
+}
+
+void Datensatz::SubtractLine(const double Xstart, const double Xend, const int Ndata, const double * const Ydiff, const bool subtract)
+{
+    while (AE->Daten[0][0] > Xstart + 1e-6) AE = AE->First;
+    while (AE->Daten[999][0] < Xstart - 1e-6) AE = AE->Next;
+    if (abs(AE->First->Daten[999][0] - Xstart) < abs(AE->Daten[0][0] - Xstart)) AE = AE->First;
+    double min = abs(AE->Daten[0][0] - Xstart), d;
+    int i=1;
+    while (i <= 999 && (d = abs(AE->Daten[i][0] - Xstart)) < min)
+    {
+        min = d;
+        ++i;
+    }
+    --i;
+    assert(min < 1e-6);
+    for (int n=0; n < Ndata; ++n, ++i)
+    {
+        if (i==1000)
+        {
+            AE = AE->Next;
+            i=0;
+        }
+        if (subtract) AE->Daten[i][1] -= Ydiff[n];
+        else AE->Daten[i][1] += Ydiff[n];
+    }
+    assert(abs(AE->Daten[i-1][0] - Xend) < 1e-6);
 }
 
 bool Datensatz::GetMarked(int i)

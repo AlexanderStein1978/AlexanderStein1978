@@ -2,7 +2,7 @@
 // C++ Interface: Datensatz
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -24,6 +24,7 @@ public:
     void reinit();
     int GetDSL() const;
     void AddValue(const double &x, const double &y, const bool marked);
+    void SubtractLine(const double Xstart, const double Xend, const int Ndata, const double *const Ydiff, const bool subtract);
     void InsertML(Datensatz &ML);
     void ReverseOrder();
     void SetMarker(int i, Marker *nmarker);

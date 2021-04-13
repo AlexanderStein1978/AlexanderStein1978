@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libFitDataSortFuncs.a  CMakeFiles/FitDataSortFuncs.dir/FitDataSortFuncs_autogen/mocs_compilation.cpp.obj CMakeFiles/FitDataSortFuncs.dir/sortbyltabandprogfunctor.cpp.obj CMakeFiles/FitDataSortFuncs.dir/sortforextractneworchangedwithoutsourcefunctor.cpp.obj CMakeFiles/FitDataSortFuncs.dir/fitdatasortfunctions.cpp.obj CMakeFiles/FitDataSortFuncs.dir/tablelinesortfunctor.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libFitDataSortFuncs.a

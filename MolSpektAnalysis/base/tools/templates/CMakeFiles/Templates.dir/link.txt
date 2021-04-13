@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libTemplates.a  CMakeFiles/Templates.dir/Templates_autogen/mocs_compilation.cpp.obj CMakeFiles/Templates.dir/doublevector.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libTemplates.a

@@ -1045,6 +1045,14 @@ MainWindow::MainWindow()
     SpectrumFitGaussianLineProfileAct = new QAction("Fit Gaussian line profile", this);
     SpectrumFitGaussianLineProfileAct->setStatusTip("Fit a Gaussian line profile to the marked, red colored region of the spectrum.");
     connect(SpectrumFitGaussianLineProfileAct, SIGNAL(triggered()), this, SLOT(SpectrumFitGaussianLineProfile()));
+
+    SpectrumShowLineFitDialogAct = new QAction("Show line profile fit dialog", this);
+    SpectrumShowLineFitDialogAct->setStatusTip("Show a dialog to fit line profiles.");
+    connect(SpectrumShowLineFitDialogAct, SIGNAL(triggered()), this, SLOT(SpectrumShowLineFitDialog()));
+
+    SpectrumShowLineViewDialogAct = new QAction("Show line view dialog", this);
+    SpectrumShowLineViewDialogAct->setStatusTip("Show a dialog to view the data of a fitted line.");
+    connect(SpectrumShowLineViewDialogAct, SIGNAL(triggered()), this, SLOT(SpectrumShowLineViewDialog()));
 	
 	SpectrumCutAct = new QAction("Cu&t...", this);
 	SpectrumCutAct->setStatusTip("Cut the spectrum");
@@ -1225,6 +1233,8 @@ MainWindow::MainWindow()
 	SpectrumMenu->addAction(SpectrumAutoSLPAct);
 	SpectrumMenu->addSeparator();
     SpectrumMenu->addAction(SpectrumFitGaussianLineProfileAct);
+    SpectrumMenu->addAction(SpectrumShowLineFitDialogAct);
+    SpectrumMenu->addAction(SpectrumShowLineViewDialogAct);
     SpectrumMenu->addSeparator();
 	SpectrumMenu->addAction(SpectrumNormalizeAct);
 	SpectrumMenu->addAction(SpectrumCutAct);
@@ -2984,10 +2994,17 @@ void MainWindow::WindowActivated(QMdiSubWindow *SubW)
 		SpectrumCutStrongAct->setEnabled(true);
 		SpectrumCutAssignedAct->setEnabled(true);
 		SpectrumAddAct->setEnabled(true);
+        SpectrumFitGaussianLineProfileAct->setEnabled(true);
+        SpectrumShowLineFitDialogAct->setEnabled(true);
 		if ((spectra[i]->getType() == NormalizedAbsorption || spectra[i]->getType() == ThermalEmission) && FELDialog::DataA(this))
 			SpectrumFindEmissionLinesAct->setEnabled(true);
 		else SpectrumFindEmissionLinesAct->setEnabled(false);
-        if (spectra[i]->GetNumFittedLines() > 0) exportLineProfile = true;
+        if (spectra[i]->GetNumFittedLines() > 0)
+        {
+            exportLineProfile = true;
+            SpectrumShowLineViewDialogAct->setEnabled(true);
+        }
+        else SpectrumShowLineViewDialogAct->setEnabled(false);
 	}
 	if (dynamic_cast<SpectList*>(W) != 0)
 	{
@@ -3015,6 +3032,9 @@ void MainWindow::WindowActivated(QMdiSubWindow *SubW)
 		SpectrumCutAssignedAct->setEnabled(false);
 		SpectrumAddAct->setEnabled(false);
 		SpectrumFindEmissionLinesAct->setEnabled(false);
+        SpectrumFitGaussianLineProfileAct->setEnabled(false);
+        SpectrumShowLineFitDialogAct->setEnabled(false);
+        SpectrumShowLineViewDialogAct->setEnabled(false);
 	}
 	for (i = 0; i < numMolecules; i++) if (W == molecules[i]) 
 	{
@@ -7658,17 +7678,32 @@ void MainWindow::SpectrumFitGaussianLineProfile()
 {
     Spektrum *S = activeSpectrum();
     int index = -1;
-    double Sigma = S->FitGaussianLineProfile(index);
+    double Sigma = S->FitLineProfile(index, LineProfile::GaussianType);
     if (Sigma > 0.0 && index >= 0)
     {
-        Gaussian* line = S->GetFittedLine(index);
+        LineProfile* line = S->GetFittedLine(index);
         LineDialog* lineD = new LineDialog(this, S, line);
         LineProfileFitWindow* fitWindow = new LineProfileFitWindow(this, S, line);
+        fitWindow->setLineDialog(lineD);
         workspace->addSubWindow(lineD);
         workspace->addSubWindow(fitWindow);
         lineD->show();
         fitWindow->show();
     }
+}
+
+void MainWindow::SpectrumShowLineFitDialog()
+{
+    LineProfileFitWindow* W = new LineProfileFitWindow(this, activeSpectrum(), nullptr);
+    workspace->addSubWindow(W);
+    W->show();
+}
+
+void MainWindow::SpectrumShowLineViewDialog()
+{
+    LineDialog *D = new LineDialog(this, activeSpectrum(), nullptr);
+    workspace->addSubWindow(D);
+    D->show();
 }
 
 void MainWindow::SpectrumCut()

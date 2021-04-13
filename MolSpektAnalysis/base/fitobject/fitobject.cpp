@@ -2,7 +2,7 @@
 // C++ Implementation: FitObject
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2016
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2020
 //
 // Copyright: See README file that comes with this source code
 //
@@ -141,16 +141,6 @@ void FitObject::getDerivatives(double** deriv)
 	for (n=0; n < nData; n++) for (m=0; m < nPar; m++) deriv[n][m] = 0.0;
 }
 
-void FitObject::getPar(double* Par)
-{
-	int n;
-	for (n=0; n < nPar; n++) Par[n] = 0;
-}
-
-void FitObject::setNPar()
-{
-}
-
 double FitObject::GetSigma() const
 {
     if (nData <= 0) return -1.0;
@@ -259,16 +249,6 @@ void FitObject::setData(double* x, double* y, double* Sig, int N)
 	Y = y;
 	nData = N;
 	sig = Sig;
-}
-
-void FitObject::setPar(double* /*Par*/)
-{
-
-}
-
-void FitObject::updatePar(double* /*C*/)
-{
-
 }
 
 void FitObject::InitDebugLogging(QString i_FileName)
