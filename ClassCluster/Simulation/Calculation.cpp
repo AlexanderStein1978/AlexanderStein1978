@@ -3,6 +3,7 @@
 #include "Calculation.h"
 #include "heapsort.h"
 #include "deltaesortfunctor.h"
+#include "vsortfunctor.h"
 #include "utils.h"
 #include "potstruct.h"
 #include "potential.h"
@@ -266,8 +267,22 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     }
     else
     {
-        if (calcA) a = dPdR[Remaining][p] / r;
-        U += Pot[Remaining][p];
+        bool SecondOrderBound(false);
+        for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (P1->bound[n] == P2->bound[m])
+        {
+            SecondOrderBound = true;
+            break;
+        }
+        if (SecondOrderBound)
+        {
+            if (calcA) a = dPdR[SecondOrder][p] / r;
+            U += Pot[SecondOrder][p];
+        }
+        else
+        {
+            if (calcA) a = dPdR[Remaining][p] / r;
+            U += Pot[Remaining][p];
+        }
     }
     if (abs(a) > UaMax)
     {
@@ -294,7 +309,7 @@ void Calculation::correctLocalE()
 {
     int mx, my, mz, n;
     Particle *PP1;
-    double currSumE = 0.0, EStart[N], TStart[N];
+    double currSumE = 0.0, currT(0.0), EStart[N], TStart[N];
     int M[N];
     for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
     {
@@ -303,6 +318,7 @@ void Calculation::correctLocalE()
             updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->vX * PP1->vX + PP1->vY * PP1->vY + PP1->vZ * PP1->vZ));
             updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->X, PP1->Y, PP1->Z, false));
             updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
+            currT += PP1->T;
             currSumE += PP1->E;
             /*if (isnan(currSumE))
 			{
@@ -311,6 +327,7 @@ void Calculation::correctLocalE()
             }*/
         }
     }
+    emit EnergiesChanged(currT, currSumE);
     for (n=0; n<N; ++n)
     {
         EStart[n] = P[n].E;
@@ -330,21 +347,42 @@ void Calculation::correctLocalE()
             const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
             if (EDelta >= curPar->T)
             {
-                curPar->vX = curPar->vY = curPar->vZ = 0.0;
-                currSumE -= curPar->T;
-                if (EDelta > curPar->T)
+                if (curPar->U > 0.0)
                 {
+                    const double TMin = 25e4;
+                    if (curPar->T > TMin)
+                    {
+                        const double vF = sqrt(TMin / curPar->T);
+                        curPar->vX *= vF;
+                        curPar->vY *= vF;
+                        curPar->vZ *= vF;
+                        currSumE -= curPar->T + TMin;
+                        M[EOrder[n]] = 4;
+                    }
+                    else M[EOrder[n]] = 5;
                     curPar->E -= curPar->deltaE;
                     curPar->U -= curPar->deltaU;
                     curPar->T -= curPar->deltaT;
-                    M[EOrder[n]] = 1;
                 }
                 else
                 {
-                    curPar->E -= curPar->T;
-                    curPar->T = 0.0;
-                    M[EOrder[n]] = 2;
+                    curPar->vX = curPar->vY = curPar->vZ = 0.0;
+                    currSumE -= curPar->T;
+                    if (EDelta > curPar->T)
+                    {
+                        curPar->E -= curPar->deltaE;
+                        curPar->U -= curPar->deltaU;
+                        curPar->T -= curPar->deltaT;
+                        M[EOrder[n]] = 1;
+                    }
+                    else
+                    {
+                        curPar->E -= curPar->T;
+                        curPar->T = 0.0;
+                        M[EOrder[n]] = 2;
+                    }
                 }
+
             }
             else
             {
@@ -388,32 +426,39 @@ double Calculation::getE(const Particle * const cP, const double X, const double
     return 0.5 * E;
 }
 
-double Calculation::getEnergy()
+double Calculation::getKineticEnergy() const
+{
+    int n;
+    double T;
+    for (n = 0, T = 0.0; n < N; n++)
+        T += P[n].vX * P[n].vX + P[n].vY * P[n].vY + P[n].vZ * P[n].vZ;
+    return 0.5 * T;
+}
+
+double Calculation::getPotentialEnergy() const
 {
     int mx, my, mz, lx, ly, lz, n;
-    double T, U;
-	Particle *PP1, *PP2;
+    double U = 0.0;
+    Particle *PP1, *PP2;
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
-	for (mx = 0, T = U = 0.0; mx < N; mx++) 
-		T += P[mx].vX * P[mx].vX + P[mx].vY * P[mx].vY + P[mx].vZ * P[mx].vZ;
-	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
-	{
-		if (G[mx][my][mz] != 0)
-		{
-			//printf("l0\n");
-			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
+    for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+    {
+        if (G[mx][my][mz] != 0)
+        {
+            //printf("l0\n");
+            for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
                 for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) getU(PP1, PP2, U, NULL, NULL, NULL, particles);
-			//printf("l1\n");
-			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
-				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
-						ly < YS && ly <= my + GridSizeDiv; ly++)
-					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
-							lx < XS && lx <= mx + GridSizeDiv; lx++)
-						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
+            //printf("l1\n");
+            for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
+                for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
+                        ly < YS && ly <= my + GridSizeDiv; ly++)
+                    for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
+                            lx < XS && lx <= mx + GridSizeDiv; lx++)
+                        for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
                             for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, NULL, NULL, NULL, particles);
-		}
-	}
-	return Energy = 0.5*T+U;
+        }
+    }
+    return U;
 }
 
 void Calculation::getScales(double& rScF, int& rMaxZ)
@@ -508,6 +553,16 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 		P[x].vZ = dZ * R;
 	}
 	else Fixed[n] = false;
+}
+
+void Calculation::setLayerDistance(double newDistance)
+{
+    const double cDist(P[1].Y - P[0].Y), diff(0.5 * (newDistance - cDist));
+    for (int n=0; n<N; n+=2)
+    {
+        P[n].Y -= diff;
+        P[n].Y += diff;
+    }
 }
 
 void Calculation::move()
@@ -794,10 +849,10 @@ void Calculation::rotate()
 	else rotated = true;
 }
 
-double Calculation::setEnergy(double newE)
+double Calculation::setKineticEnergy(const double newT)
 {
 	int n;
-	double nE = newE, ParE, ParV, ERem = 0.0;
+    double nE = getPotentialEnergy() + newT, ParE, ParV;
 	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (nE - Energy) / double(N);
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
 	if (nE > Energy)
@@ -826,43 +881,27 @@ double Calculation::setEnergy(double newE)
 	}
 	else
 	{
-		double *E = new double[N], *EA = new double[N];
-		int S;
-		for (n=0, ERem = Energy - nE; n<N; n++) 
-			ERem -= (EA[n] = E[n] = P[n].vX * P[n].vX + P[n].vY * P[n].vY + P[n].vZ * P[n].vZ);
-		if (ERem >= 0.0) for (n=0; n<N; n++) P[n].vX = P[n].vY = P[n].vZ = 0.0; 
-		else
-		{
-			for (S=0; ERem != 0.0; ) 
-			{
-				for (n=0, ERem = 0.0; n<N; n++)
-				{
-					if (E[n] >= EnDiff) E[n] -= EnDiff;
-					else 
-					{
-						ERem += EnDiff - E[n];
-						E[n] = 0.0;
-						S++;
-					}
-				}
-				EnDiff = ERem / double(N-S);
-			}
-			for (n=0; n<N; n++) 
-			{
-				if (E[n] == 0.0) P[n].vX = P[n].vY = P[n].vZ = 0.0;
-				else
-				{
-					ParV = sqrt(E[n] / EA[n]);
-					P[n].vX *= ParV;
-					P[n].vY *= ParV;
-					P[n].vZ *= ParV;
-				}
-			}
-		}
-		delete[] E;
-		delete[] EA;
-		if (ERem > 0.0) Energy = nE + ERem / double(2);
-		else Energy = nE;
+        int *Sort = utils::heapSort(VSortFunctor(P), N), EOrder[N];
+        for (n=0; n<N; ++n) EOrder[Sort[n]] = n;
+        delete[] Sort;
+        for (n=0; Energy > nE && n<N; ++n)
+        {
+            double T = 0.5 * (P[EOrder[n]].vX * P[EOrder[n]].vX + P[EOrder[n]].vY * P[EOrder[n]].vY + P[EOrder[n]].vZ * P[EOrder[n]].vZ);
+            if (T <= Energy - nE)
+            {
+                P[EOrder[n]].vX = P[EOrder[n]].vY = P[EOrder[n]].vZ = 0.0;
+                Energy -= T;
+            }
+            else
+            {
+                const double vF = sqrt((T - Energy + nE) / T);
+                P[EOrder[n]].vX *= vF;
+                P[EOrder[n]].vY *= vF;
+                P[EOrder[n]].vZ *= vF;
+                Energy = nE;
+            }
+        }
+        Energy = nE;
 	}
 	E = Energy;
 	return Energy;

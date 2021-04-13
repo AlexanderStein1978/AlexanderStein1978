@@ -18,7 +18,7 @@ class QTextStream;
 class QComboBox;
 
 
-class PotControl : QObject
+class PotControl : public QObject
 {
     Q_OBJECT
 
@@ -43,7 +43,11 @@ private slots:
     void Changed()
     {
         changed = true;
+        emit Change();
     }
+
+signals:
+    void Change();
 
 private:
     void exchangePotential(Potential *const newPot);

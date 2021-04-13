@@ -11,17 +11,17 @@ include(GoogleTest)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster_test
-	test_Calculation.cpp
-	main.cpp
+    test_Calculation.cpp
+    main.cpp
 )
 
 target_link_libraries(ClassCluster_test
-        Simulation
-	Potential
-	Templates
-	Tools
-	gtest
-	Qt5::Widgets
+    Simulation
+    Potential
+    Templates
+    Tools
+    gtest
+    Qt5::Widgets
 )
 
 gtest_add_tests(TARGET ClassCluster_test)

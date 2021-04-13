@@ -12,6 +12,7 @@ add_library(Simulation STATIC
     include/particle.h
     Calculation.cpp
     deltaesortfunctor.h
+    vsortfunctor.h
     window.cpp
 )
 

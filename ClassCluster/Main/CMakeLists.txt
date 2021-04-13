@@ -12,6 +12,7 @@ add_executable(ClassCluster
 
 target_link_libraries(ClassCluster
     ControlWindow
+    FitObject
     MolSpektAnalysisMainWindow
     ParticleWatch
     Simulation

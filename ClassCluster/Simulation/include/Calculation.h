@@ -23,7 +23,7 @@ class Calculation : public QThread
 	Q_OBJECT
 	
 	public:
-        enum PotRole{ClosestTwo, NextTwo, Remaining, NumPot};
+        enum PotRole{ClosestTwo, NextTwo, SecondOrder, Remaining, NumPot};
 
         Calculation(PotStruct* PotSs = nullptr, QObject* parent = 0);
 		~Calculation();
@@ -31,8 +31,9 @@ class Calculation : public QThread
 		void run();
 		void setStepSize(double h);
 		double getStepSize();
-		double getEnergy();
-		double setEnergy(double E);
+        double getPotentialEnergy() const;
+        double getKineticEnergy() const;
+        double setKineticEnergy(const double newT);
 		void getSize(int &width, int &height);
 		void getScales(double &ScF, int &MaxZ);
 		void move();
@@ -43,6 +44,7 @@ class Calculation : public QThread
         void triggerSnapShot();
         Particle* getParticles(int &N);
         void setPotential(const PotRole role, PotStruct &Pot);
+        void setLayerDistance(double newDistance);
         
         void setParticleWatchPoint(WatchPoint* point)
         {
@@ -93,6 +95,7 @@ class Calculation : public QThread
 		
 	signals:
 		void PictureChanged(double *XP, double *YP, double *ZP, int N);
+        void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void WriteSnapShot(Particle* P, int N);
 		
 	private:
