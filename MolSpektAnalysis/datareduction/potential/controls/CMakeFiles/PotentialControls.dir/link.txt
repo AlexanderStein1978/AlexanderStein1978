@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libPotentialControls.a  CMakeFiles/PotentialControls.dir/PotentialControls_autogen/mocs_compilation.cpp.obj CMakeFiles/PotentialControls.dir/CreateAnaPotSeriesControl.cpp.obj CMakeFiles/PotentialControls.dir/ImprovePotSeriesControl.cpp.obj CMakeFiles/PotentialControls.dir/MonteCarloSimControl.cpp.obj CMakeFiles/PotentialControls.dir/SFQSCalcControl.cpp.obj CMakeFiles/PotentialControls.dir/ThreadControl.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libPotentialControls.a

@@ -357,6 +357,8 @@ class MainWindow : public QMainWindow
 		void SpectrumNext_Progression();
     	void SpectrumFindPeaks();
         void SpectrumFitGaussianLineProfile();
+        void SpectrumShowLineFitDialog();
+        void SpectrumShowLineViewDialog();
 		void SpectrumCut();
 		void SpectrumCutAssigned();
 		void SpectrumCutStrong();
@@ -518,7 +520,9 @@ class MainWindow : public QMainWindow
 		QAction *SpectrumSingleSLPAct;
 		QAction *SpectrumTestProgressionAct;
         QAction *SpectrumFitGaussianLineProfileAct;
-		QAction *SpectrumCutAct;
+        QAction *SpectrumShowLineFitDialogAct;
+        QAction *SpectrumShowLineViewDialogAct;
+        QAction *SpectrumCutAct;
 		QAction *SpectrumAddAct;
 		QAction *SpectrumCutAssignedAct;
 		QAction *SpectrumCutStrongAct;

@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libMonteCarloSim.a  CMakeFiles/MonteCarloSim.dir/MonteCarloSim_autogen/mocs_compilation.cpp.obj CMakeFiles/MonteCarloSim.dir/fieldwindow.cpp.obj CMakeFiles/MonteCarloSim.dir/fitresult.cpp.obj CMakeFiles/MonteCarloSim.dir/mcfsettingsdialog.cpp.obj CMakeFiles/MonteCarloSim.dir/montecarlosim.cpp.obj CMakeFiles/MonteCarloSim.dir/MonteCarloSimDialog.cpp.obj CMakeFiles/MonteCarloSim.dir/processview.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libMonteCarloSim.a

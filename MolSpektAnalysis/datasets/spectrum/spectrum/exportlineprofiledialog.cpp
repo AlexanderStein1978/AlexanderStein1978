@@ -45,7 +45,7 @@ ExportLineProfileDialog::ExportLineProfileDialog(Spektrum * const i_spectrum, Ma
     L->addWidget(m_CancelButton = new QPushButton("Cancel", this), 6, 1, 1, 2);
 
     int N = m_spectrum->GetNumFittedLines();
-    for (int n = 0; n < N; ++n) m_lineSelectBox->addItem(QString::number(m_spectrum->GetFittedLine(n)->GetEcenter(), 'f', 4));
+    for (int n = 0; n < N; ++n) m_lineSelectBox->addItem(QString::number(m_spectrum->GetFittedLine(n)->GetECenter(), 'f', 4));
     m_lineSelectBox->setEditable(false);
     m_eStartEdit->setValidator(new QDoubleValidator);
     m_eEndEdit->setValidator(new QDoubleValidator);
@@ -66,7 +66,7 @@ void ExportLineProfileDialog::SelectFileName()
 void ExportLineProfileDialog::LineChanged(int i_index)
 {
     if (i_index < 0) return;
-    const Gaussian* currentLine = m_spectrum->GetFittedLine(i_index);
+    const LineProfile* currentLine = m_spectrum->GetFittedLine(i_index);
     double Estart, Eend, B, E, Width, Offset, Istart, Iend;
     currentLine->GetValues(B, E, Width, Offset);
     currentLine->GetDataRange(Estart, Eend);
@@ -115,7 +115,7 @@ void ExportLineProfileDialog::Write()
     if (Estep < 0.0) Estep *= -1.0;
     int nEDig = static_cast<int>(-log10(Estep)) + 1;
     if (nEDig < 4) nEDig = 4;
-    const Gaussian* L = m_spectrum->GetFittedLine(index);
+    const LineProfile* L = m_spectrum->GetFittedLine(index);
     S << "E [cm^-1]\tI [a.u.]\n";
     if (backward) for (E = Eend; E >= Estart; E -= Estep) S << QString("%1\t%2\n").arg(E, 0, 'f', nEDig).arg(L->GetProfilePoint(E), 0, 'f', 4);
     else for (E = Estart; E <= Eend; E+= Estep) S << QString("%1\t%2\n").arg(E, 0, 'f', nEDig).arg(L->GetProfilePoint(E), 0, 'f', 4);

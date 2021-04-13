@@ -1,0 +1,39 @@
+Atom 1: Lithium.atom
+Atom 2: Calcium.atom
+Reference isotopologue: 7Li40Ca
+name of molecule: LiCa
+
+List of term energy tables:
+State: | name: | file name: | source:
+
+List of Dunham coefficient sets:
+State: | name: | file name: | source:
+2^2\Sigma^+ | DunhamCoefficients_LiCa_2DoublSigma | ../../Analysis/LiCa/DunhamCoefficients_LiCa_2DoublSigma.dun | 
+
+List of potentials:
+State: | name: | file name: | source:
+2^2\Sigma^+ | AnalyticalPotential_LiCa_2DoublSigma | ../../Analysis/LiCa/AnalyticalPotential_LiCa_2DoublSigma.pot | Alexander Stein (Phd thesis, also used for J. Chem. Phys. 138, 114306 (2013), online material)
+X^2\Sigma^+ | IPA_SplinePotential_LiCa_XDoublSigma | ../../Analysis/LiCa/IPA_SplinePotential_LiCa_XDoublSigma.pot | J. Chem. Phys. 135, 174303 (2011)
+
+List of fit datasets:
+State: | name: | file name: | source:
+2^2\Sigma^+ | FitData_LiCa_2DoublSigma | ../../Analysis/LiCa/FitData_LiCa_2DoublSigma.fdat | 
+
+List of line tables:
+Upper state: | lower state: | name: | file name: | source:
+2^2\Sigma^+ | X^2\Sigma^+ | Lines_LiCa_2DoublSigma_XDoublSigma | ../../Analysis/LiCa/Lines_LiCa_2DoublSigma_XDoublSigma.lines | Alexander Stein (Phd thesis)
+4^2\Sigma^+ | X^2\Sigma^+ | Lines_LiCa_4DoublSigma_XDoublSigma | ../../Analysis/LiCa/Lines_LiCa_4DoublSigma_XDoublSigma.lines | Alexander Stein (Phd thesis), contains contributions from Asen Pashov and Milena Ivanova
+
+List of FCF tables:
+Upper state: | lower state: | name: | file name: | source:
+
+Table of states:
+Name: | lambda: | S: | +/- - symmetry: | g/u - symmetry: | Omega: | term energies: | dunham coeff.: | potential: | fit data:
+2^2\Sigma^+ | 0 | 0.5 |   | + | 0 |   | ../../Analysis/LiCa/DunhamCoefficients_LiCa_2DoublSigma.dun | ../../Analysis/LiCa/AnalyticalPotential_LiCa_2DoublSigma.pot | ../../Analysis/LiCa/FitData_LiCa_2DoublSigma.fdat
+X^2\Sigma^+ | 0 | 0.5 |   | + | 0 |   |   | ../../Analysis/LiCa/IPA_SplinePotential_LiCa_XDoublSigma.pot |  
+4^2\Sigma^+ | 0 | 0.5 |   | + | 0 |   |   |   |  
+
+Table of transitions:
+State 1: | State 2: | table of lines: | FCF: | Strength:
+X^2\Sigma^+ | 2^2\Sigma^+ | ../../Analysis/LiCa/Lines_LiCa_2DoublSigma_XDoublSigma.lines |  | 0 
+X^2\Sigma^+ | 4^2\Sigma^+ | ../../Analysis/LiCa/Lines_LiCa_4DoublSigma_XDoublSigma.lines |  | 0 

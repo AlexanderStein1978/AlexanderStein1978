@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libDataPlot.a  CMakeFiles/DataPlot.dir/DataPlot_autogen/mocs_compilation.cpp.obj CMakeFiles/DataPlot.dir/dataplot.cpp.obj CMakeFiles/DataPlot.dir/sortfuncs.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libDataPlot.a

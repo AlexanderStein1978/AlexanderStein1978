@@ -758,6 +758,24 @@ void Potential::getLRCoeffForWriting(int& N, int*& pLRC, double*& RLRC, bool **L
     
 }
 
+void Potential::getSplinePotForWriting(int &NSplinePoints, SplinePoint *&points, int &NLRC, int *&pLRC, double *&LRC, double &iA,
+    double &iO, double &Exp)
+{
+    if (Fit->isRunning())
+    {
+        QMessageBox::information(this, "MolSpektAnalysis", 
+            "The potential cannot be modified because there is currently a fit of the potential running!");
+        NSplinePoints = 0;
+        points = nullptr;
+        NLRC = 0;
+        pLRC = nullptr;
+        LRC = nullptr;
+        iA = iO = Exp = 0;
+        return;
+    }
+    Worker->getSplinePotForWriting(NSplinePoints, points, NLRC, pLRC, LRC, iA, iO, Exp);
+}
+
 void Potential::getFastWaveFunc(int I, int J, int C, double E, double M, double h, int NP, double *WF, 
                                 double &Ri, double &Ra, double &ISq, double &F, int &i, int &c, int &a)
 {

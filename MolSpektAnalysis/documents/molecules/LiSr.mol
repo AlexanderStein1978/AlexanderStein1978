@@ -1,0 +1,36 @@
+Atom 1: Lithium.atom
+Atom 2: Strontium.atom
+Reference isotopologue: 7Li88Sr
+name of molecule: LiSr
+
+List of term energy tables:
+State: | name: | file name: | source:
+
+List of Dunham coefficient sets:
+State: | name: | file name: | source:
+X^2\Sigma^+ | DunhamCoefficients_LiSr_XDoublSigma | ../../Analysis/LiSr/DunhamCoefficients_LiSr_XDoublSigma.dun | 
+2^2\Sigma^+ | DunhamCoefficients_LiSr_2DoublSigma | ../../Analysis/LiSr/DunhamCoefficients_LiSr_2DoublSigma.dun | 
+
+List of potentials:
+State: | name: | file name: | source:
+
+List of fit datasets:
+State: | name: | file name: | source:
+X^2\Sigma^+ | FitData_LiSr_XDoublSigma | ../../Analysis/LiSr/FitData_LiSr_XDoublSigma.fdat | 
+2^2\Sigma^+ | FitData_LiSr_2DoublSigma | ../../Analysis/LiSr/FitData_LiSr_2DoublSigma.fdat | 
+
+List of line tables:
+Upper state: | lower state: | name: | file name: | source:
+2^2\Sigma^+ | X^2\Sigma^+ | Lines_LiSr_2DoublSigma_XDoublSigma | ../../Analysis/LiSr/Lines_LiSr_2DoublSigma_XDoublSigma.lines | Alexander Stein (Phd thesis)
+
+List of FCF tables:
+Upper state: | lower state: | name: | file name: | source:
+
+Table of states:
+Name: | lambda: | S: | +/- - symmetry: | g/u - symmetry: | Omega: | term energies: | dunham coeff.: | potential: | fit data:
+X^2\Sigma^+ | 0 | 0.5 |   | + | 0 |   | ../../Analysis/LiSr/DunhamCoefficients_LiSr_XDoublSigma.dun |   | ../../Analysis/LiSr/FitData_LiSr_XDoublSigma.fdat
+2^2\Sigma^+ | 0 | 0.5 |   | + | 0 |   | ../../Analysis/LiSr/DunhamCoefficients_LiSr_2DoublSigma.dun |   | ../../Analysis/LiSr/FitData_LiSr_2DoublSigma.fdat
+
+Table of transitions:
+State 1: | State 2: | table of lines: | FCF: | Strength:
+X^2\Sigma^+ | 2^2\Sigma^+ | ../../Analysis/LiSr/Lines_LiSr_2DoublSigma_XDoublSigma.lines |  | 0 

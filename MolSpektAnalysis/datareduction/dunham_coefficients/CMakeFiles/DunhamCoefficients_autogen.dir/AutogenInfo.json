@@ -1,0 +1,114 @@
+{
+	"BUILD_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/DunhamCoefficients_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/Alexa/Physics",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_SOURCE_DIR" : "C:/Users/Alexa/Physics",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/include/duntable.h",
+			"Mu",
+			"6YEA5652QU/moc_duntable.cpp"
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/DunhamCoefficients_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/DunhamCoefficients_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_PRINTSUPPORT_LIB",
+		"QT_WIDGETS_LIB",
+		"WIN32"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/calc/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/tools/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/datensatz/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/progressions/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/molecule/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/mdichild/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/MainWindow/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/about/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/spectrum/addspectrum/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/diag_window/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/dataplot/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/linetable/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/potentialplot/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/residualfit/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/fitobject/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/spectrum/spectrum/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fcf/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tablewindow/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/wavefunc/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/spectrum/spectsimulation/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/base/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/montecarlosim/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/dialogs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/structs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/potentialtypes/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/templates/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/term_plot/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fitdata/fitdata/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fitdata/dialogs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fitdata/sortfuncs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/intensityhistogram/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/potential/controls/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/residualplot/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/termtable/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/termview/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/plots/wavefuncplot/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/base/tools/structs/include",
+		"C:/Users/Alexa/Physics/MolSpektAnalysis/datasets/fitdata/structs",
+		"C:/Qt/5.6/mingw49_32/include",
+		"C:/Qt/5.6/mingw49_32/include/QtWidgets",
+		"C:/Qt/5.6/mingw49_32/include/QtGui",
+		"C:/Qt/5.6/mingw49_32/include/QtCore",
+		"C:/Qt/5.6/mingw49_32/mkspecs/win32-g++",
+		"C:/Qt/5.6/mingw49_32/include/QtPrintSupport",
+		"C:/Qt/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include",
+		"C:/Qt/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include-fixed",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++/i686-w64-mingw32",
+		"C:/Qt/Tools/mingw492_32/i686-w64-mingw32/include/c++/backward"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : true,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 4,
+	"PARSE_CACHE_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/CMakeFiles/DunhamCoefficients_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Qt/5.6/mingw49_32/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 6,
+	"SETTINGS_FILE" : "C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/CMakeFiles/DunhamCoefficients_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/Alexa/Physics/MolSpektAnalysis/datareduction/dunham_coefficients/duntable.cpp",
+			"Mu"
+		]
+	],
+	"VERBOSITY" : 0
+}

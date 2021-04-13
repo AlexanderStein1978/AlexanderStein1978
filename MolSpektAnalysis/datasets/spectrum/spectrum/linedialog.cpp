@@ -21,12 +21,12 @@
 #include <QDoubleValidator>
 
 
-
-LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this)),
-    CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this)), DataRangeLabel(new QLabel(this))
+LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, LineProfile *line)
+    : LineWindowBase(parent, spect, line), IntensityEdit(new QLineEdit(this))
+    , CenterFreqEdit(new QLineEdit(this)), WidthEdit(new QLineEdit(this)), OffsetEdit(new QLineEdit(this))
+    , SubtractButton(new QPushButton(this)), DeleteButton(new QPushButton("Remove line", this))
+    , HideSaturationButton(new QPushButton("Hide saturation", this)), DataRangeLabel(new QLabel(this))
 {
-    SpektrumBox->setEditable(false);
-    LineBox->setEditable(false);
     IntensityEdit->setValidator(new QDoubleValidator(IntensityEdit));
     CenterFreqEdit->setValidator(new QDoubleValidator(CenterFreqEdit));
     WidthEdit->setValidator(new QDoubleValidator(WidthEdit));
@@ -46,22 +46,40 @@ LineDialog::LineDialog(MainWindow *parent, Spektrum *spect, Gaussian *line) : Li
     L->addWidget(new QLabel("Offset:", this), 3, 2);
     L->addWidget(OffsetEdit, 3, 3);
     L->addWidget(DataRangeLabel, 4, 0, 1, 4);
+    L->setRowMinimumHeight(5, 20);
+    QGridLayout *ButtonLayout = new QGridLayout;
+    ButtonLayout->addWidget(SubtractButton, 0, 0);
+    ButtonLayout->addWidget(DeleteButton, 0, 1);
+    ButtonLayout->addWidget(HideSaturationButton, 0, 2);
+    L->addLayout(ButtonLayout, 6, 0, 1, 4);
     connect(SpektrumBox, SIGNAL(currentTextChanged(QString)), this, SLOT(SpektrumChanged(QString)));
     connect(LineBox, SIGNAL(currentIndexChanged(int)), this, SLOT(LineChanged(int)));
+    connect(SubtractButton, SIGNAL(clicked()), this, SLOT(SubtractLine()));
+    connect(DeleteButton, SIGNAL(clicked()), this, SLOT(DeleteLine()));
+    connect(HideSaturationButton, SIGNAL(clicked()), this, SLOT(HideSaturation()));
     connect(IntensityEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(CenterFreqEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(WidthEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
     connect(OffsetEdit, SIGNAL(editingFinished()), this, SLOT(UpdateLine()));
+    focusInEvent(nullptr);
 }
 
 void LineDialog::connectSpectrum()
 {
-    if (nullptr != mSpektrum) connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+    if (nullptr != mSpektrum)
+    {
+        connect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+        connect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
+    }
 }
 
 void LineDialog::disconnectSpectrum()
 {
-    if (nullptr != mSpektrum) disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+    if (nullptr != mSpektrum)
+    {
+        disconnect(mSpektrum, SIGNAL(propertiesChanged()), this, SLOT(lineChanged()));
+        disconnect(mSpektrum, SIGNAL(NumberOfFittedLinesChanged()), this, SLOT(NumberOfLinesChanged()));
+    }
 }
 
 void LineDialog::lineChanged()
@@ -80,6 +98,9 @@ void LineDialog::lineChanged()
         OffsetEdit->setText(QString::number(Offset, 'f'));
         WidthEdit->setText(QString::number(Width, 'f'));
         DataRangeLabel->setText(QString("Data range: %1 cm-1 to %2 cm-1").arg(FStart, 0, 'f', 6).arg(FEnd, 0, 'f', 6));
+        DeleteButton->setEnabled(true);
+        SubtractButton->setEnabled(true);
+        HideSaturationButton->setEnabled(mLine->isWithSaturation());
     }
     else
     {
@@ -88,18 +109,57 @@ void LineDialog::lineChanged()
         OffsetEdit->clear();
         WidthEdit->clear();
         DataRangeLabel->clear();
+        DeleteButton->setEnabled(false);
+        SubtractButton->setEnabled(false);
+        HideSaturationButton->setEnabled(false);
     }
     CenterFreqEdit->blockSignals(false);
     IntensityEdit->blockSignals(false);
     OffsetEdit->blockSignals(false);
     WidthEdit->blockSignals(false);
+    updateSubtractButton();
 }
 
 void LineDialog::UpdateLine()
 {
-    if (nullptr != mLine)
+    modifyLine([this]()
     {
         mLine->SetValues(IntensityEdit->text().toDouble(), CenterFreqEdit->text().toDouble(), WidthEdit->text().toDouble(), OffsetEdit->text().toDouble());
-        mSpektrum->Changed();
+    });
+}
+
+void LineDialog::updateSubtractButton()
+{
+    if (nullptr != mLine)
+    {
+        if (mLine->isLineSubtracted()) SubtractButton->setText("Readd line");
+        else SubtractButton->setText("Subtract line");
     }
+}
+
+void LineDialog::SubtractLine()
+{
+    if (nullptr != mSpektrum && nullptr != mLine)
+    {
+        mSpektrum->SubtractFittedLine(LineBox->currentIndex(), !mLine->isLineSubtracted());
+        updateSubtractButton();
+    }
+}
+
+void LineDialog::DeleteLine()
+{
+    if (nullptr != mSpektrum && nullptr != mLine) mSpektrum->RemoveFittedLine(LineBox->currentIndex());
+}
+
+void LineDialog::selectLine(const int index)
+{
+    LineBox->setCurrentIndex(index);
+}
+
+void LineDialog::HideSaturation()
+{
+    modifyLine([this]()
+    {
+        mLine->setHideSaturation(!mLine->isSaturationHidden());
+    });
 }

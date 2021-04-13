@@ -1224,11 +1224,16 @@ void DiagWindow::setRanges(double xmin, double xmax, double ymin, double ymax)
 	XMax = xmax;
 	YMin = ymin;
 	YMax = ymax;
-	xStart->setText(QString::number(xmin, 'g', 6));
-	xStop->setText(QString::number(xmax, 'g', 6));
-	yStart->setText(QString::number(ymin, 'g', 6));
-	yStop->setText(QString::number(ymax, 'g', 6));
-	Paint();
+    setCurrentZoomRange(xmin, xmax, ymin, ymax);
+}
+
+void DiagWindow::setCurrentZoomRange(const double xmin, const double xmax, const double ymin, const double ymax)
+{
+    xStart->setText(QString::number(xmin, 'g', 6));
+    xStop->setText(QString::number(xmax, 'g', 6));
+    yStart->setText(QString::number(ymin, 'g', 6));
+    yStop->setText(QString::number(ymax, 'g', 6));
+    Paint();
 }
 
 bool DiagWindow::getShowMarkerLabels()

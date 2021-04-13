@@ -1,0 +1,277 @@
+Atom 1: Strontium.atom
+Atom 2: Strontium.atom
+Reference isotopologue: 88Sr2
+name of molecule: Sr2
+
+List of term energy tables:
+State: | name: | file name: | source:
+X1Sigma+g | TermSrX4 | ../../Documents/Strontium/TermSr2X4n.dat | eigene Arbeit
+X1Sigma+g | TermSr_X_33 | ../../Documents/Strontium/TermSr_X_33.dat | Calculated from Wed Sep  3 18:40:23 2008
+X1Sigma+g | TermSr_X_38Av | ../../Documents/Strontium/TermSr2XP38Av.dat | Calculated from Wed Jul  8 15:37:18 2009
+X1Sigma+g | TermSR2_MLR09 | ../../Documents/Strontium/TermSr2XMLR09.term | Calculated from Tue Dec 15 02:37:58 2009
+X1Sigma+g | TermSr2_MLR2334 | ../../Documents/Strontium/Sr2_MLR2334.term | Calculated from Tue Jan 22 23:34:06 2013
+X1Sigma+g | TermSr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1.term | Calculated from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | TermSr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot12C1 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana12C1.term | Calculated from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | TermSr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot15C1 | Z:/Dokumente/Strontium/TermSr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C2015_0.term | Calculated from Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | TermSr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.term | Calculated from Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | TermSr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot | Z:/Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.term | Calculated from Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+C1Sigma+u | TermSr2A Dunham | ../QT4MolSpektAn/Sr2CTerm | Calculated from Mit MolSpektAnalysis zugeordnete Sr2 Linien
+C1Sigma+u | TermPOTSr2Su50 | ../../Documents/Strontium/TermSr2Su5.dat | Calculated from Thu Oct 30 16:04:18 2008
+C1Sigma+u | 29Sr_Av0_8_cutTermEnergies | ../../Documents/Strontium/Term_add_29Sr_2.dat | own work, 29Sr_Av0_8_cut
+C1Sigma+u | 30Sr_Av2_11TermEnergies | ../../Documents/Strontium/Term_add_30Sr_1.dat | own work, 30Sr_Av2_11
+C1Sigma+u | 30Sr_Av2_11_cutTermEnergies | ../../Documents/Strontium/Term_add_30Sr_2.dat | own work, 30Sr_Av2_11_cut
+C1Sigma+u | TermPOTSr2Su9 | ../../Documents/Strontium/Term2Su9.term | Calculated from Fri Aug 27 18:25:37 2010
+C1Sigma+u | TermPOTSr2Su11n | ../../Documents/Strontium/TermSr2Su11n.term | Calculated from eigene Arbeit
+C1Sigma+u | CoupledC1Sigma+u | ../../Documents/Strontium/CoupledC1Sigma+u.term | /home/alexst/Documents/PotentialFits/Coupled1S1P/T5_E_Bv
+C1Sigma+u | Termener1su0 | ../../Dokumente/Strontium/TermSr2SuSpline.term | Calculated from Frecon
+C1Sigma+u | Termpot_si_pi_13h_m3LD0 | ../../Documents/Strontium/Termpot_si_pi_13h_m3LD0.term | Calculated from /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+C1Sigma+u | Termpot_si_pi_16h_m3LD2 | ../../Dokumente/Strontium/Termpot_si_pi_16h_m3LD_2Sigma.term | Calculated from /windows/E/Grieg/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat
+C1Sigma+u | Termener1su0 | ../../Documents/Strontium/Term2SuSpline.term | Calculated from own work
+C1Sigma+u | Termpot_si_pi_17h1_m3LD0 | ../../../Stein/Strontium/Termpot_si_pi_17h1_m3LD_2Sigma.term | Calculated from /home/Stein/Coupled1S1P/DFinalLambdaD/pot_si_pi_17h1_m3LD.dat
+C1Sigma+u | Termener1su_C3 | ../../Dokumente/Strontium/PotSr2SuSpline_C3.term | Calculated from own work
+C1Sigma+u | Mixed TermTable | Z:/Dokumente/Strontium/TermSr2_si_pi_17_41.term |         
+C1Sigma+u | Termener1su_C3_to_v12 | ../../Dokumente/Strontium/TermPotSr2SuSpline_C3_to_v12.term | Calculated from own work
+C1Sigma+u | TermPot17_43C1Sigma+u | ../../Documents/Strontium/Termpot_si_pi_17_43_C.term | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/T5_E_Bv
+C1Sigma+u | CoupledC1Sigma+u2017 | ../../Documents/Strontium/CoupledC1Sigma_u2017.term | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/T5_E_Bv
+B1Pi_u | TermB_Dunham | ../../Documents/Strontium/Term_B1Pu1.dat | Calculated from Mit MolSpektAnalysis zugeordnete Sr2 Linien
+B1Pi_u | TermPOTSr1Pu20 | ../../Documents/Strontium/TermSr1Pu2.dat | Calculated from Mon Sep  7 18:28:03 2009
+B1Pi_u | TermPOTSr1Pu20 | ../../Documents/Strontium/TermSr1Pu2.dat | Calculated from Mon Sep  7 18:28:03 2009
+B1Pi_u | TermPOTSr1Pu6 | ../../Documents/Strontium/Term1Pu_6.dat | Calculated from Thu May 20 22:36:05 2010
+B1Pi_u | TermPOTSr1Pu7 | ../../Documents/Strontium/Term1Pu_7.dat | Calculated from Mon May 24 20:33:03 2010
+B1Pi_u | TermPOTSr1Pu8 | ../../Documents/Strontium/Term1Pu_8.dat | Calculated from Sat Jun  5 11:38:25 2010
+B1Pi_u | TermPOTSr1Pu9 | ../../Documents/Strontium/TermPotSr1Pu9.term | Calculated from Thu May 12 17:49:09 2011
+B1Pi_u | CoupledB1Pi_u0 | ../../Documents/Strontium/CoupledB1Pi_u.term | /home/alexst/Documents/PotentialFits/Coupled1S1P/T5_E_Bv
+B1Pi_u | Termpot_si_pi_13h_m3LD1 | ../../Documents/Strontium/Termpot_si_pi_13h_m3LD_Pi.term | Calculated from /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+B1Pi_u | Termpot_si_pi_16h_m3LD1 | ../../Documents/Strontium/Termpot_si_pi_16h_m3LD_Pi.term | Calculated from /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat
+B1Pi_u | TermSrB1PiSpline | ../../Documents/Strontium/Term1PuSpline2.term | Calculated from eigene Arbeit
+B1Pi_u | Termpot_si_pi_17h1_m3LD1 | ../../../Stein/Strontium/Termpot_si_pi_17h1_m3LD_1Pi.term | Calculated from /home/Stein/Coupled1S1P/DFinalLambdaD/pot_si_pi_17h1_m3LD.dat
+B1Pi_u | TermSrB1PiSpline | ../../../Stein/Strontium/TermPotSrB1PSpline.term | Calculated from eigene Arbeit
+B1Pi_u | TermB_Dunham | ../../Documents/Strontium/TermB_Dunham.term | Calculated from Mit MolSpektAnalysis zugeordnete Sr2 Linien
+B1Pi_u | Termpot_si_pi_17_43B_f | ../../Dokumente/Strontium/TermSr2_si_pi_17_43_B_f.term | Calculated from Z:/Documents/Doktorarbeit/DVDs/DVD1/Analysis/Sr2/FitCoupledPot_Sr2_2SiSigma_1SiPi/pot_si_pi_17_43.dat
+B1Pi_u | TermPot17_43B1Pi_u | ../../Dokumente/Strontium/Termpot_si_pi_17_43_B.term | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/T5_E_Bv
+B1Pi_u | CoupledB1Pi_u2017 | ../../Documents/Strontium/CoupledB1Pi_u2017.term | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/T5_E_Bv
+A1Sigma+u | Termener1su | ../../Documents/Strontium/Term1Su_Frecon.dat | Calculated from
+A1Sigma+u | TermPOTSr1Su2 | ../../Documents/Strontium/Term1Su_1.dat | Calculated from Tue Sep 15 10:28:08 2009
+A1Sigma+u | TermPOTSr1Su40 | ../../Documents/Strontium/Term1Su_4.dat | Calculated from Mon Sep 21 18:04:01 2009
+A1Sigma+u | TermPOTSr1Su4 | ../../Documents/Strontium/TermSr2X4n2.dat | Calculated from Mon Sep 21 18:04:01 2009
+A1Sigma+u | TermIPA3 | ../../Documents/Strontium/Term1SuIPA3.dat | Calculated from eigene Arbeit
+A1Sigma+u | TermDunA1Sadia3 | ../../Documents/Strontium/TermDunA1Sadia2.term | Calculated from Sr2, term energies of the state A1Sigma+u, calculated from lines assigned with t
+A1Sigma+u | TermIPA7 | ../../Documents/Strontium/TermPotA1Sadia2IPA7.term | Calculated from Potential IPA7
+A1Sigma+u | TermIPA6 | ../../Documents/Strontium/TermIPA6.term | Calculated from eigene Arbeit
+A1Sigma+u | TermSr2_abi_04d_A1S | ../../../Stein/Strontium/TermpotA_c_abi_04d.term | Calculated from /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04d.dat
+A1Sigma+u | TermSr2_abi_04f_A1S | ../../../Stein/Strontium/TermpotA_c_abi_04f.term | Calculated from /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Calc_04/Sr2_abi_04f.dat
+A1Sigma+u | TermSr2_abi_05a_A1S | ../../Documents/Strontium/TermSr2_abi_05a.term | Calculated from /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_05a.dat
+A1Sigma+u | TermPOTSr1Su8 | ../../../Stein/Strontium/POTSr1Su8.term | Calculated from Wed Oct  3 14:47:20 2012
+A1Sigma+u | TermIPA6c | ../../Dokumente/Strontium/Sr2_A1SminIPA6c.term | Calculated from eigene Arbeit
+A1Sigma+u | TermIPA7c | ../../Documents/Strontium/Sr2_A1SminIPA7c.term | Calculated from eigene Arbeit
+A1Sigma+u | Sr2_A1S_abi05a3_Caomplete | ../../Documents/Strontium/Sr2_A1S_abi_05a3_Complete.term |                                              
+A1Sigma+u | Sr2_A1S_abi05a3_twoChannels | ../../../Stein/Strontium/Sr2_A1S_abi05a3_twoChannels.term |                                                                                           
+A1Sigma+u | TermPOTSr1Su9 | ../../Documents/Strontium/POTSr1Su9.term | Calculated from Wed Oct  3 14:47:20 2012
+A1Sigma+u | TermIPA6c_v20 | ../../Documents/Strontium/Sr2_A1SminIPA6c_v20.term | Calculated from eigene Arbeit
+A1Sigma+u | TermSr2_abi_05a5b320 | ../../Documents/Strontium/Sr2_abi_05a5b32_A.term | Calculated from /home/alexst/Documents/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/WFCalc/WFCalc/Sr2_abi_05a5b32.dat
+
+List of Dunham coefficient sets:
+State: | name: | file name: | source:
+X1Sigma+g | Sr2XDun | ../../Documents/Strontium/Sr2XDunham.dat | eigene Arbeit
+X1Sigma+g | Sr2_PubDX | ../../Documents/Strontium/PubDunX.dun | eigene Arbeit
+X1Sigma+g | Sr2_X_Dun_DT | ../../Documents/Strontium/Sr2_XDun_DT.dun |                                                      
+X1Sigma+g | Sr2_X_Dun_CalcLev | ../../Documents/Strontium/Sr2_XDun_CalcLev.dun | 
+C1Sigma+u | Sr2A Dunham | ../../Documents/Strontium/CDunham.txt |                                                                                                                                                                                                                                                              
+C1Sigma+u | Sr2_C1SPotDun | ../../Documents/Strontium/Sr2_C1SPotDun.dun | Mit MolSpektAnalysis zugeordnete Sr2 Linien
+C1Sigma+u | Sr2_ADun | ../../Documents/Strontium/Sr2_ADun.dun | 
+B1Pi_u | B_Dunham | ../../Documents/Strontium/Sr2_B_Dun.dun | 
+A1Sigma+u | Sr2_A1S | ../../Documents/Strontium/Sr2_A1Smin.DUN.dun | 
+A1Sigma+u | DunA1Sadia2 | ../../Documents/Strontium/Sr2A1Sadia2.dun | 
+
+List of potentials:
+State: | name: | file name: | source:
+X1Sigma+g | Sr_X_33 | ../../Documents/Strontium/Pot_Sr2X_33.dat | Wed Sep  3 18:40:23 2008
+X1Sigma+g | /home/alexst/Documents/PotentialFits/PotSrX/Fit2/Sr_X_38b | ../../Documents/Strontium/PotSr_X_38b.dat | Wed Jul  8 15:04:58 2009
+X1Sigma+g | ener1sg | ../../Documents/Strontium/ener1sg_1_Mod.dat |                                                                                                                                                                                                                                                                                    
+X1Sigma+g | SR2_MLR07.x1 | ../../Documents/Strontium/SR2_MLR07.dat | Mon Nov 23 18:04:00 2009
+X1Sigma+g | ener1sg0 | ../../Documents/Strontium/SrPaper/StrontiumFrecon/ener1sg_1.dat |                                                                                                                                                            
+X1Sigma+g | Sr_X_38Av | ../../Documents/Strontium/PotSr_X_38Av.dat | Wed Jul  8 15:37:18 2009
+X1Sigma+g | Sr2_X_MLR | ../../Documents/Strontium/PotSr2X_MLR.pot | Tiemann
+X1Sigma+g | SR2_MLR09 | ../../Documents/Strontium/SR2_MLR09.pot | Tue Dec 15 02:37:58 2009
+X1Sigma+g | PotSr2X_MLR_C8 | ../../Documents/Strontium/PotSr2X_MLR_C8.pot |                                                                                                                                                                                                                    
+X1Sigma+g | Sr2_XAnalytical | ../../Documents/Strontium/Sr2_XAnalytical.pot | Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline | ../../Documents/Strontium/Sr2MLRSpline_C12_12A.pot | Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C14 | ../../Documents/Strontium/Sr2MLRSplineAnaPot_C14.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C12 | ../../Documents/Strontium/Sr2MLRSplineAnaPot_C12.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C12_105 | ../../Documents/Strontium/Sr2MLRSplineAnaPot_C12_105.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C14_105 | ../../Documents/Strontium/Sr2MLRSplineAnaPot_C14_105.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C12_105spline | ../../Documents/Strontium/Sr2MLRSpline_C12_105.pot | Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A.pot | Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_105spline_C10 | ../../Documents/Strontium/Sr2MLRSpline_105_C10.pot | Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPot | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_Ana.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_105spline_C10AnaPot | ../../Dokumente/Strontium/Sr2MLRSpline_105_C10AnaPot.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPot_oADC | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_AnaC12oADC.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPot_oADC0 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_Ana_oADC.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPot_oADC105_0 | ../../Documents/Strontium/Sr2_MLR2334spline_C10AnaPot_oADC105_0.pot | Spline potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCnExcInt | ../../Dokumente/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt.pot | Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt2 | ../../Documents/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt2.pot | Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt5 | ../../Documents/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt5.pot | Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPot_oADCAnaPot | Z:/Programmieren/QT4MolSpektAn/potAnaPot.pot | Spline potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt3spline | ../../Documents/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt3Spline24.pot | Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_X_TEFImp | ../../Documents/Strontium/Sr2_X_TEFImp.pot | Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt3splineAnaPot0 | ../../Documents/Strontium/Sr2_X_Neu1.pot | Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt3splineAnaPot1 | ../../Documents/Strontium/Sr2_X_Neu0.pot | Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt3 | ../../Documents/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt3.pot | Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334splineAnaPot_C10oADCmExcInt6 | ../../Dokumente/Strontium/Sr2_MLR2334spline_AnaPot_C10oADCmExcInt6.pot | Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_X_b40 | ../../Dokumente/Strontium/Sr2_X_b40.pot | Spline potential from Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_X_b40fin | ../../Dokumente/Strontium/Sr2_X_b40fin.pot | Spline potential from Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_X_b40fin0 | ../../Dokumente/Strontium/Sr2_X_b40fin.temp.pot | Spline potential from Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_X_b40fin0AnaPotWFF | ../../Dokumente/Strontium/Sr2_X_b40fin3WFF.pot | Spline potential from Spline potential from Spline potential from Analytical potential from Spline potential from Fri Feb 14 03:32:48 2014
+X1Sigma+g | Sr2_MLR2334spline_C10_pCZ_only88 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_pCZ_only88.pot | Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2.pot | Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0.pot | Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot14C | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana14C.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot12C2 | ../../../Stein/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana12C1.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot14C1 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana14C1.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0Ana13C2 | ../../../Stein/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana13C1.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10AnaPotpcZt1 (1 BO) | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_AnapCZt1.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C_cC12 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1_cC12.pot | Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015oADC | ../../Documents/Doktorarbeit/Data/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015oADC.pot | Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot15C | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot14C | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana14C.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot15C0 | Z:/Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C2015_0.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot | ../../../Stein/Doktorarbeit/Data/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015_MinC8 | ../../Documents/Strontium/C6C8_2D_Scan2015/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015minC8.pot | Analytical potential from C6C8_2D_Scan2015
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015_MinC8AnaPot | ../../Documents/Strontium/C6C8_2D_Scan2015/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015minC8AnaPot.pot | Spline potential from Analytical potential from C6C8_2D_Scan2015
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015_MinC8AnaPot0 | ../../../Stein/Strontium/C6C8_2D_Scan2015/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015minC8AnaPot.pot | Spline potential from Analytical potential from C6C8_2D_Scan2015
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015_MinC8AnaPot1 | ../../Documents/Strontium/C6C8_2D_Scan2015/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015minC8AnaPot16C.pot | Spline potential from Analytical potential from C6C8_2D_Scan2015
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015 | ../../Documents/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015.pot | Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+X1Sigma+g | Sr2_MLR2334spline_C10_pZel_Ad2_wo0AnaPot15C1spline27P2015AnaPot0 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.pot | Spline potential from Analytical potential from Spline potential from Analytical potential from Tue Jan 22 23:34:06 2013
+C1Sigma+u | POTSr2Su50 | ../../Documents/Strontium/PotSr2SuNeu.dat | Thu Oct 30 16:04:18 2008
+C1Sigma+u | ener1su0 | ../../Documents/Strontium/PotSr2SuSplineT.pot | own work
+C1Sigma+u | POTSr2Su9 | ../../Documents/Strontium/POTSr2Su9.pot | Fri Aug 27 18:25:37 2010
+C1Sigma+u | POTSr2Su11 | ../../Documents/Strontium/POTSr2Su11.pot | Thu Sep  9 10:02:41 2010
+C1Sigma+u | POTSr2Su11n | ../../Documents/Strontium/POTSr2Su11n.pot | eigene Arbeit
+C1Sigma+u | pot_si_pi_13h_m3LD_2_1S | ../../Documents/Strontium/pot_si_pi_13h_m3LD_2_1S.pot | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+C1Sigma+u | pot_si_pi_13h_m3LD0 | ../../Documents/Strontium/pot_si_pi_13h_m3LD.pot | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+C1Sigma+u | pot_si_pi_16h_m3LD0 | ../../Documents/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat
+C1Sigma+u | pot_si_pi_16h_m3LD4 | ../../Dokumente/Strontium/pot_si_pi_16h_m3LD_2S.pot | /windows/E/Grieg/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat
+C1Sigma+u | pot_si_pi_17h1_m3LD1 | ../../Dokumente/Strontium/pot_si_pi_17h1_m3LD_Sigma.pot | /home/Stein/Coupled1S1P/DFinalLambdaD/pot_si_pi_17h1_m3LD.dat
+C1Sigma+u | pot_si_pi_17_10 | ../../../Stein/Coupled1S1P/DFinalCoupl/pot_si_pi_17_1.dat | /home/Stein/Coupled1S1P/DFinalCoupl/pot_si_pi_17_1.dat
+C1Sigma+u | ener1su_C3_to_v13 | ../../Dokumente/Strontium/PotSr2SuSpline_C3_to_v12.pot | own work
+C1Sigma+u | pot_si_pi_17_410 | ../../../Stein/Strontium/Sr2_si_pi_17_41_C.pot | /var/run/media/Stein/STORE N GO/Sr2_SiPi/pot_si_pi_17_41.dat
+C1Sigma+u | pot_si_pi_17_43_C | ../../Dokumente/Strontium/pot_si_pi_17_43_C.pot | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/pot_si_pi_17_43.dat
+B1Pi_u | ener1pu | ../../Documents/Strontium/SrPaper/StrontiumFrecon/ener1pu_1.dat | private com. M. Aubert-Frecon
+B1Pi_u | POTSr1Pu1 | ../../Documents/Strontium/POTSr1Pu1 | Sat Sep  5 21:27:30 2009
+B1Pi_u | POTSr1Pu2 | ../../Documents/Strontium/POTSr1Pu2 | Mon Sep  7 18:28:03 2009
+B1Pi_u | /home/alexst/Documents/PotentialFits/PotSr1Pu/POTSr1Pu3 | ../../Documents/PotentialFits/PotSr1Pu/POTSr1Pu3 | Tue Sep 22 17:28:46 2009
+B1Pi_u | POTSr1Pu6 | ../../Documents/Strontium/POTSr1Pu6.dat | Thu May 20 22:36:05 2010
+B1Pi_u | POTSr1Pu7 | ../../Documents/Strontium/POTSr1Pu7.dat | Mon May 24 20:33:03 2010
+B1Pi_u | POTSr1Pu7a | ../../Documents/Strontium/POTSr1Pu7a.dat | Fri May 28 02:36:37 2010
+B1Pi_u | /home/alexst/Documents/PotentialFits/PotSr1Pu/POTSr1Pu8.dat | ../../Documents/Strontium/POTSr1Pu8.dat | Sat Jun  5 11:38:25 2010
+B1Pi_u | POTSr1Pu8a | ../../Documents/Strontium/POTSr1Pu8a.dat | Thu Jun 10 17:06:25 2010
+B1Pi_u | POTSr1Pu8b | ../../Documents/Strontium/POTSr1Pu8b.pot | Sun Sep  5 11:39:17 2010
+B1Pi_u | POTSr1Pu9 | ../../Documents/Strontium/POTSr1Pu9.pot | Thu May 12 17:49:09 2011
+B1Pi_u | MLR_B | ../../Documents/Strontium/MLR_B_test.pot |                                                                                                                                                                                                                         
+B1Pi_u | pot_si_pi_13h_m3LD_1_1P | ../../Documents/Strontium/pot_si_pi_13h_m3LD_1_1P.pot | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+B1Pi_u | pot_si_pi_13h_m3LD1 | ../../Documents/Strontium/pot_si_pi_13h_m3LD1.pot | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_13h_m3LD.dat
+B1Pi_u | pot_si_pi_16h_m3LD1 | ../../Documents/Strontium/pot_si_pi_16h_m3LD1.pot | /home/alexst/Documents/PotentialFits/Coupled1S1P/pot_si_pi_16h_m3LD.dat
+B1Pi_u | SrB1PiSpline | ../../Documents/Strontium/ener1pu_1.pot | eigene Arbeit
+B1Pi_u | pot_si_pi_17_411 | ../../../Stein/Strontium/Sr2_si_pi_17_41_B.pot | /var/run/media/Stein/STORE N GO/Sr2_SiPi/pot_si_pi_17_41.dat
+B1Pi_u | pot_si_pi_17_43B_f | ../../Dokumente/Strontium/Sr2_si_pi_17_43_B_f.pot | Z:/Documents/Doktorarbeit/DVDs/DVD1/Analysis/Sr2/FitCoupledPot_Sr2_2SiSigma_1SiPi/pot_si_pi_17_43.dat
+B1Pi_u | pot_si_pi_17_43_B | ../../Dokumente/Strontium/pot_si_pi_17_43_B.pot | C:/Users/Alexa/Documents/FitCoupledPot_Sr2_2SiSigma_1SiPi/pot_si_pi_17_43.dat
+A1Sigma+u | ener1su | ../../Documents/Strontium/SrPaper/StrontiumFrecon/ener1su_1.dat |                                                                                                                                                                                                                                                                                
+A1Sigma+u | /home/alexst/Documents/PotentialFits/PotSr1Su/POTSr1Su | ../../Documents/PotentialFits/PotSr1Su/POTSr1Su | Tue Sep 15 00:30:48 2009
+A1Sigma+u | POTSr1Su2 | ../../Documents/Strontium/POTSr1Su2 | Tue Sep 15 10:28:08 2009
+A1Sigma+u | POTSr1Su2a | ../../Documents/Strontium/POTSr1Su2a | Tue Sep 15 23:43:10 2009
+A1Sigma+u | POTSr1Su2b | ../../Documents/Strontium/POTSr1Su2b | Wed Sep 16 16:04:46 2009
+A1Sigma+u | POTSr1Su2c | ../../Documents/Strontium/POTSr1Su2c | Wed Sep 16 17:12:50 2009
+A1Sigma+u | POTSr1Su4 | ../../Documents/Strontium/POTSr1Su4 | Mon Sep 21 18:04:01 2009
+A1Sigma+u | IPA1 | ../../Documents/Strontium/Sr2_A1SminIPA2.dat | eigene Arbeit
+A1Sigma+u | IPA6c | ../../Documents/Strontium/Sr2_A1SminIPA6c.pot | eigene Arbeit
+A1Sigma+u | IPA7c | ../../Documents/Strontium/Sr2_A1SminIPA7c.pot | eigene Arbeit
+A1Sigma+u | potA_c_307a0 | ../../../Stein/Strontium/potA_c_307a_1Sigma.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_307a.dat
+A1Sigma+u | potA_c_307a2 | ../../../Stein/Strontium/potA_c_307a_1Sigma.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_307a.dat
+A1Sigma+u | potA_c_309b_A1S | ../../../Stein/Strontium/potA_c_309b_A.pot | /home/Stein/CoupledSiTri/WFb/potA_c_309b.dat
+A1Sigma+u | Sr2_abi_04_A1S | ../../../Stein/Strontium/Sr2_abi_04.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04.dat
+A1Sigma+u | potA_c_310_20 | ../../../Stein/Strontium/potA_c_310_2_A.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_310_2.dat
+A1Sigma+u | potA_c_311b0 | ../../../Stein/Strontium/potA_c_311b_A.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri1/potA_c_311b.dat
+A1Sigma+u | potA_c_311b40 | ../../../Stein/Strontium/potA_c_311b4_A.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri1/potA_c_311b4.dat
+A1Sigma+u | POTSr1Su8 | ../../Documents/Strontium/POTSr1Su8.pot | Wed Oct  3 14:47:20 2012
+A1Sigma+u | Sr2_abi_04b_A | ../../../Stein/Strontium/potA_c_abi_04b_A.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04b.dat
+A1Sigma+u | Sr2_abi_04d_A1S | ../../../Stein/Strontium/Sr2_abi_04d_A.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04d.dat
+A1Sigma+u | Sr2_abi_04f_A1S | ../../../Stein/Strontium/Sr2_abi_04f_A.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Calc_04/Sr2_abi_04f.dat
+A1Sigma+u | Sr2_abi_05a_A1S | ../../../Stein/Strontium/Sr2_abi_05a_A1S.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_05a.dat
+A1Sigma+u | POTSr1Su9 | ../../Documents/Strontium/POTSr1Su9.pot | Wed Oct  3 14:47:20 2012
+A1Sigma+u | Sr2_abi_05a30 | ../../../Stein/Strontium/Sr2_abi_05a3.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_05a3.dat
+A1Sigma+u | Sr2_abi_05a5b320 | ../../Documents/Strontium/Sr2_abi_05a5b32_A.pot | /home/alexst/Documents/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/WFCalc/WFCalc/Sr2_abi_05a5b32.dat
+c3Pi_u | c3 Πu | ../../Documents/Strontium/Pot_c3P_Skomorowski.pot | Skomorowski et.al., arXiv:1203.4524v1
+c3Pi_u | potA_c_307a1 | ../../Documents/Strontium/potA_c_307a_3Pi.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_307a.dat
+c3Pi_u | potA_c_307a3 | ../../../Stein/Strontium/potA_c_307a_3Pi.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_307a.dat
+c3Pi_u | potA_c_309b_c3P | ../../../Stein/Strontium/potA_c_309b_c3P.pot | /home/Stein/CoupledSiTri/WFb/potA_c_309b.dat
+c3Pi_u | Sr2_abi_04_c3P | ../../../Stein/Strontium/Sr2_abi_04_c3P.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04.dat
+c3Pi_u | potA_c_310_21 | ../../../Stein/Strontium/potA_c_310_2_c.pot | /windows/E/PotentialFits/CoupledSiTri/WF/potA_c_310_2.dat
+c3Pi_u | potA_c_311b1 | ../../../Stein/Strontium/potA_c_311b_c.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri1/potA_c_311b.dat
+c3Pi_u | potA_c_311b41 | ../../../Stein/Strontium/potA_c_311b4_c.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri1/potA_c_311b4.dat
+c3Pi_u | Sr2_abi_04b_c | ../../../Stein/Strontium/potA_c_abi_04b_c.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04b.dat
+c3Pi_u | Sr2_abi_04d_c3P | ../../../Stein/Strontium/potA_c_abi_04d_c.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_04d.dat
+c3Pi_u | Sr2_abi_04f_c3P0 | ../../../Stein/Strontium/Sr2_abi_04f_c3P0.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Calc_04/Sr2_abi_04f.dat
+c3Pi_u | Sr2_abi_05a_c3P | ../../../Stein/Strontium/Sr2_abi_05a_c3P.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_05a.dat
+c3Pi_u | Sr2_abi_05a31 | ../../../Stein/Strontium/Sr2_abi_05a3c.pot | /windows/E/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/Sr2_abi_05a3.dat
+c3Pi_u | Sr2_abi_05a5b321 | ../../Documents/Strontium/Sr2_abi_05a5b32_c.pot | /home/alexst/Documents/PotentialFits/CoupledSiTri/CoupledSiTri_AbInitio/WFCalc/WFCalc/Sr2_abi_05a5b32.dat
+
+List of fit datasets:
+State: | name: | file name: | source:
+X1Sigma+g | FitDataSr2_X | ../../Documents/Strontium/FitDataSr2_X.fdat |                                                                      
+X1Sigma+g | FitDataSr2_Dunham | Z:/Programmieren/QT4MolSpektAn/PartFitDataSr2_X.fdat |                                                                      
+X1Sigma+g | FitDataSr2_X_WFF | ../../Dokumente/Strontium/Sr2_X_b40fin3WFF.fdat |                                                                     
+X1Sigma+g | FitDataSr2_X_2015 | ../../Documents/Strontium/FitDataSr2_X_2015.fdat | eigene Arbeit
+X1Sigma+g | FitDataSr2_X_ext_pCZelevinstky_test | ../../Dokumente/Strontium/FitDataSr2_X_extZ_test.fdat |                     
+X1Sigma+g | Sr2XCalc | ../../Documents/Strontium/Sr2XCalc.fdat |                     
+X1Sigma+g | partSr2XCalc | ../../Documents/Strontium/Sr2XCalcfDun.fdat |                     
+X1Sigma+g | Sr2XCalc | ../../../Stein/Doktorarbeit/Data/Sr2XCalc.fdat |                     
+X1Sigma+g | FitDataSr2_X_2015_2 | ../../Documents/Strontium/FitDataSr2_X_2015_2.fdat | 
+C1Sigma+u | Sr2DataCabs | ../../Documents/Strontium/Sr2DataCabs.fdat | Own work absorption 30Sr
+C1Sigma+u | Sr2DataBC_Combined_2017 | ../../Dokumente/Strontium/Sr2DataBC_Combined2017.fdat | 
+C1Sigma+u | Sr2DataCfull2 | ../../Documents/Strontium/Sr2DataCfull2.fdat | 
+C1Sigma+u | Sr2DataCfullpYasuda | ../../Dokumente/Strontium/Sr2DataCfull_pYasuda.fdat | 
+C1Sigma+u | Sr2DataBC_Combined | ../../Documents/Strontium/Sr2DataBC_Combined.fdat | 
+C1Sigma+u | Sr2DataBC_Combined0 | ../../Documents/Strontium/Sr2DataBC_Combined0.fdat | 
+C1Sigma+u | Sr2DataC2014 | ../../Dokumente/Strontium/Sr2DataC2014.fdat | 
+B1Pi_u | Sr2B1PiFitDataFull_nachD | ../../Documents/Strontium/Sr2DataBFull_nachD.fdat | Spektrum 30Sr_Av2_11
+B1Pi_u | BLIF | ../../Documents/Strontium/Sr2DataBLIF.fdat |                                                                                                      
+B1Pi_u | Sr2B1PiFitDataAbs | ../../Documents/Strontium/Sr2DataBabs.fdat |                                                                                                      
+B1Pi_u | Sr2B1PiFitDataFullLDRem | ../../Documents/Strontium/Sr2DataBFullLDRem.fdat |                                                                                                      
+B1Pi_u | Sr2B1PiFitData2014 | ../../Documents/Strontium/Sr2DataB2014.fdat | 
+A1Sigma+u | FitDataSr2A1SCoupled | ../../Documents/Strontium/FitDataSr2A1SCoupled_1.fdat | Spectrum 29Sr_Av0_8 and LinesA1s_Full
+A1Sigma+u | FitDataSr2A1SUnpert | ../../Documents/Strontium/FitDataSr2A1SUnpert.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled3_1ad | ../../Documents/Strontium/Sr2_A1SminIPA6b.fdat |              
+A1Sigma+u | FitDataSr2A1S_1ad | Z:/Programmieren/QT4MolSpektAn/PartFitDataSr2A1SCoupled.fdat |              
+A1Sigma+u | FitDataSr2A1S_2ad | ../../Documents/Strontium/FitDataSr2A1S_2ad.fdat |              
+A1Sigma+u | FitDataSr2A1S_1ad | ../../Documents/Strontium/Sr2_A1SminIPA6b.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled3_1ad0 | ../../Documents/Strontium/Sr2_A1SminIPA6b.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled3_2ad | ../../Documents/Strontium/Sr2_A1SminIPA7a.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled_1ad | Z:/Programmieren/QT4MolSpektAn/PartFitDataSr2A1SCoupled.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled_1ad | ../../../Stein/Strontium/PartFitDataSr2A1SCoupled_1ad.fdat |              
+A1Sigma+u | partFitDataSr2A1SCoupled_2ad | ../../../Stein/Strontium/PartFitDataSr2A1SCoupled_2ad.fdat |              
+A1Sigma+u | FitDataSr2A1SMin | ../../Documents/Strontium/FitDataSr2A1SMin.fdat | 
+
+List of line tables:
+Upper state: | lower state: | name: | file name: | source:
+C1Sigma+u | X1Sigma+g | LinesA3PNIII | ../../Dokumente/Strontium/Lines_A3pN.lines | own work
+B1Pi_u | X1Sigma+g | BLines3 | ../../Documents/Strontium/Lines_B1P3.lines | own work
+A1Sigma+u | X1Sigma+g | LinesA1S_Full | ../../Documents/Strontium/LinesA1S_Full.lines | own work
+
+List of FCF tables:
+Upper state: | lower state: | name: | file name: | source:
+
+Table of states:
+Name: | lambda: | S: | +/- - symmetry: | g/u - symmetry: | Omega: | term energies: | dunham coeff.: | potential: | fit data:
+X1Sigma+g | 0 | 0.0 | g | + | 0 | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.term | ../../Documents/Strontium/Sr2_XDun_CalcLev.dun | ../../Dokumente/Strontium/Sr2MLRSpline_C10_12A_pZel_AD2_wo0_Ana15C1Spline27Pwo0_2015Ana15C_2.pot | ../../Documents/Strontium/FitDataSr2_X_2015_2.fdat
+C1Sigma+u | 0 | 0.0 | u | + | 0 | ../../Documents/Strontium/CoupledC1Sigma_u2017.term | ../../Documents/Strontium/Sr2_ADun.dun | ../../Dokumente/Strontium/pot_si_pi_17_43_C.pot | ../../Dokumente/Strontium/Sr2DataBC_Combined2017.fdat
+B1Pi_u | 1 | 0.0 | u |   | 1 | ../../Documents/Strontium/CoupledB1Pi_u2017.term | ../../Documents/Strontium/Sr2_B_Dun.dun | ../../Dokumente/Strontium/pot_si_pi_17_43_B.pot | ../../Documents/Strontium/Sr2DataB2014.fdat
+A1Sigma+u | 0 | 0.0 | u | + | 0 | ../../Documents/Strontium/Sr2_abi_05a5b32_A.term | ../../Documents/Strontium/Sr2_A1Smin.DUN.dun | ../../Documents/Strontium/POTSr1Su9.pot | ../../Documents/Strontium/FitDataSr2A1SMin.fdat
+c3Pi_u | 1 | 1.0 | u |   | 0 |   |   | ../../Documents/Strontium/Sr2_abi_05a5b32_c.pot |  
+
+Table of transitions:
+State 1: | State 2: | table of lines: | FCF: | Strength:
+X1Sigma+g | C1Sigma+u | ../../Dokumente/Strontium/Lines_A3pN.lines |  | 7 
+X1Sigma+g | B1Pi_u | ../../Documents/Strontium/Lines_B1P3.lines |  | 1 
+X1Sigma+g | A1Sigma+u | ../../Documents/Strontium/LinesA1S_Full.lines |  | 7 
+X1Sigma+g |   |   |  | 0 

@@ -2,7 +2,7 @@
 // C++ Implementation: Gaussian
 //
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2019
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2014 - 2021
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,6 +10,7 @@
 
 
 #include "gaussian.h"
+#include "lorentzian.h"
 #include "utils.h"
 #include "tools.h"
 
@@ -25,7 +26,11 @@
 using std::isnan;
 
 
-Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y, Sig, N)
+Gaussian::Gaussian() : LineProfile(4), B(0.0), E(0.0), G(0.0)
+{
+}
+
+Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : LineProfile(4, x, y, Sig, N)
 {
     Offset = y[0];
     double min = Offset, max = Offset, mx = 0.0, Mx = 0.0;
@@ -67,16 +72,47 @@ Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : FitObject(4, x, y
     for (n = cn; n>0 && (B > 0.0 ? y[n] > HI : y[n] < HI); --n) ;
     FWHM -= (abs(y[n] - HI) < abs(y[n+1] - HI) ? x[n] : x[n+1]);
     G = 0.6005 * FWHM;
-    if (N>0)
-    {
-        m_Estart = x[0];
-        m_Eend = x[N-1];
-    }
-    else m_Estart = m_Eend = -1.0;
+}
+
+Gaussian::Gaussian(const QString &data) : LineProfile(4), B(0.0), E(0.0), G(0.0)
+{
+    QStringList L = data.split('\t', QString::SkipEmptyParts);
+    initialize(L);
+}
+
+Gaussian::Gaussian(const Gaussian &other) : LineProfile(other), B(other.B), E(other.E), G(other.G)
+{
+}
+
+Gaussian::Gaussian(const Lorentzian &other) : LineProfile(other), B(other.GetAmplitude()), E(other.GetECenter()),
+    G(0.6005 * other.GetWidth())
+{
+}
+
+Gaussian::Gaussian(const LineProfile &other) : LineProfile(other)
+{
+    double width;
+    other.GetValues(B, E, width, Offset);
+    G = 0.6005 * width;
 }
 
 Gaussian::~Gaussian()
 {
+}
+
+void Gaussian::initialize(const QStringList &data)
+{
+    if (isSubtracted) return;
+    if (data.size() >= 8)
+    {
+        B = data[0].toDouble();
+        E = data[1].toDouble();
+        G = data[2].toDouble();
+        setOffset(data[3].toDouble());
+        setDataRange(data[4].toDouble(), data[5].toDouble());
+        setSubtracted(data[6] == "true");
+        setHideSaturation(data[7] == "true");
+    }
 }
 
 void Gaussian::GetValues(double &o_B, double &o_E, double &o_Width, double &o_Offset) const
@@ -84,21 +120,16 @@ void Gaussian::GetValues(double &o_B, double &o_E, double &o_Width, double &o_Of
     o_B = B;
     o_E = E;
     o_Width = 1.665 * G;
-    o_Offset = Offset;
+    o_Offset = getOffset();
 }
 
 void Gaussian::SetValues(const double Intensity, const double CenterFreq, const double Width, const double iOffset)
 {
+    if (isSubtracted) return;
     B = Intensity;
     E = CenterFreq;
     G = 0.6006 * Width;
     Offset = iOffset;
-}
-
-void Gaussian::GetDataRange(double &o_Estart, double &o_Eend) const
-{
-    o_Estart = m_Estart;
-    o_Eend = m_Eend;
 }
 
 bool Gaussian::getCalcYAndDerivatives(double *Ycalc, double **deriv)
@@ -114,7 +145,7 @@ bool Gaussian::getCalcYAndDerivatives(double *Ycalc, double **deriv)
         deriv[n][0] = ex;
         deriv[n][1] = dG * fac;
         deriv[n][2] = arg * deriv[n][1];
-        deriv[2][3] = 1.0;
+        deriv[n][3] = 1.0;
     }
     return true;
 }
@@ -126,6 +157,17 @@ bool Gaussian::getCalcY(double *Ycalc) const
     {
         double arg = (X[n] - E) * dG;
         Ycalc[n] = Offset + B * exp(-arg * arg);
+    }
+    return true;
+}
+
+void Gaussian::getLineY(double *Ycalc) const
+{
+    double dG = 1.0 / G;
+    for (int n=0; n < nData; ++n)
+    {
+        double arg = (X[n] - E) * dG;
+        Ycalc[n] = B * exp(-arg * arg);
     }
 }
 
@@ -141,7 +183,7 @@ double Gaussian::GetProfilePoint(double i_relE) const
     return exp(-arg * arg);
 }
 
-void Gaussian::getPar(double *Par)
+void Gaussian::getPar(double *Par) const
 {
     Par[0] = B;
     Par[1] = E;
@@ -151,6 +193,7 @@ void Gaussian::getPar(double *Par)
 
 void Gaussian::setPar(double *Par)
 {
+    if (isSubtracted) return;
     B = Par[0];
     E = Par[1];
     G = Par[2];
@@ -159,8 +202,19 @@ void Gaussian::setPar(double *Par)
 
 void Gaussian::updatePar(double *C)
 {
+    if (isSubtracted) return;
     B += C[0];
     E += C[1];
     G += C[2];
     Offset += C[3];
+}
+
+void Gaussian::Serialize(QTextStream &stream, const bool finish) const
+{
+    double Estart, Eend;
+    GetDataRange(Estart, Eend);
+    stream << "Gaussian" << (isWithSaturation() ? "withSaturation\t" : "\t") << QString::number(B, 'g', 8) << '\t' << QString::number(E, 'g', 13) << '\t' << QString::number(G, 'g', 8)
+           << '\t' << QString::number(Offset, 'g', 8) << "\t" << QString::number(Estart, 'g', 13) << '\t' << QString::number(Eend, 'g', 13) << '\t'
+           << (isLineSubtracted() ? "true" : "false") << (isSaturationHidden() ? "true" : "false");
+    if (finish) stream << '\n';
 }

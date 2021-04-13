@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw492_32\bin\ar.exe qc libLineTable.a  CMakeFiles/LineTable.dir/LineTable_autogen/mocs_compilation.cpp.obj CMakeFiles/LineTable.dir/fspdiag.cpp.obj CMakeFiles/LineTable.dir/linetable.cpp.obj CMakeFiles/LineTable.dir/questionbox.cpp.obj CMakeFiles/LineTable.dir/linetablesortfunctions.cpp.obj
+C:\Qt\Tools\mingw492_32\bin\ranlib.exe libLineTable.a
