@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libFitDataDialogs.a  CMakeFiles/FitDataDialogs.dir/FitDataDialogs_autogen/mocs_compilation.cpp.obj CMakeFiles/FitDataDialogs.dir/coupledpotfitimportdialog.cpp.obj CMakeFiles/FitDataDialogs.dir/espotfitinputelstateassigndialog.cpp.obj CMakeFiles/FitDataDialogs.dir/sourceoffsetdialog.cpp.obj CMakeFiles/FitDataDialogs.dir/tsdialog.cpp.obj CMakeFiles/FitDataDialogs.dir/vassigndialog.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libFitDataDialogs.a

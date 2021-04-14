@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libWavefuncs.a  CMakeFiles/Wavefuncs.dir/Wavefuncs_autogen/mocs_compilation.cpp.obj CMakeFiles/Wavefuncs.dir/CoupledSineWaveFunc.cpp.obj CMakeFiles/Wavefuncs.dir/CouplingFuncs.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libWavefuncs.a

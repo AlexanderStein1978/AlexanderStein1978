@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libDunhamCoefficients.a  CMakeFiles/DunhamCoefficients.dir/DunhamCoefficients_autogen/mocs_compilation.cpp.obj CMakeFiles/DunhamCoefficients.dir/duntable.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libDunhamCoefficients.a

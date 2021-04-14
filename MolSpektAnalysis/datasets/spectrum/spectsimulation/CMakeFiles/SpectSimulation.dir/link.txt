@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libSpectSimulation.a  CMakeFiles/SpectSimulation.dir/SpectSimulation_autogen/mocs_compilation.cpp.obj CMakeFiles/SpectSimulation.dir/lineprofilepoint.cpp.obj CMakeFiles/SpectSimulation.dir/pointwiselineprofile.cpp.obj CMakeFiles/SpectSimulation.dir/spectsimulation.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libSpectSimulation.a
