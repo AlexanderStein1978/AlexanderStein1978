@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libResidualPlot.a  CMakeFiles/ResidualPlot.dir/ResidualPlot_autogen/mocs_compilation.cpp.obj CMakeFiles/ResidualPlot.dir/PerturbationInfoTab.cpp.obj CMakeFiles/ResidualPlot.dir/PerturbationInfoTable.cpp.obj CMakeFiles/ResidualPlot.dir/residualplot.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libResidualPlot.a

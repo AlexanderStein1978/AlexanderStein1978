@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libAboutMolSpektAnalysis.a  CMakeFiles/AboutMolSpektAnalysis.dir/AboutMolSpektAnalysis_autogen/mocs_compilation.cpp.obj CMakeFiles/AboutMolSpektAnalysis.dir/about.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libAboutMolSpektAnalysis.a

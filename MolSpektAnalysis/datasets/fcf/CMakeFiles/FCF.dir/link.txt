@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libFCF.a  CMakeFiles/FCF.dir/FCF_autogen/mocs_compilation.cpp.obj CMakeFiles/FCF.dir/fcfjdep.cpp.obj CMakeFiles/FCF.dir/fcftab.cpp.obj CMakeFiles/FCF.dir/fcftable.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libFCF.a

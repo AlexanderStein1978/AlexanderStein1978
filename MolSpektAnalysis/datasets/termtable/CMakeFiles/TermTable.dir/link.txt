@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libTermTable.a  CMakeFiles/TermTable.dir/TermTable_autogen/mocs_compilation.cpp.obj CMakeFiles/TermTable.dir/cttidialog.cpp.obj CMakeFiles/TermTable.dir/measuredtermenergies.cpp.obj CMakeFiles/TermTable.dir/termdata.cpp.obj CMakeFiles/TermTable.dir/termtable.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libTermTable.a

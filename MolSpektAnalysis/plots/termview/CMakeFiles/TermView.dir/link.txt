@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw492_32\bin\ar.exe qc libTermView.a  CMakeFiles/TermView.dir/TermView_autogen/mocs_compilation.cpp.obj CMakeFiles/TermView.dir/termview.cpp.obj
-C:\Qt\Tools\mingw492_32\bin\ranlib.exe libTermView.a
