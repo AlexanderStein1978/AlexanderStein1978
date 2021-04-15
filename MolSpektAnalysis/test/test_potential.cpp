@@ -58,8 +58,8 @@ public:
     double getLRPoint(const double R, const double UInf, const double *const LRC, const int *const PLRC, const int NLRC)
     {
         int p = PLRC[NLRC-1];
-        double Res;
-        for (int n = NLRC - 2, Res = LRC[NLRC - 1]; n>=0 ; n--)
+        double Res = LRC[NLRC - 1];
+        for (int n = NLRC - 2; n>=0 ; n--)
         {
             while (p > PLRC[n])
             {
