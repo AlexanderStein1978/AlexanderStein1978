@@ -21,3 +21,4 @@ target_link_libraries(MolSpektAnalysis_test
 gtest_add_tests(TARGET MolSpektAnalysis_test)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TestSpline.pot DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TestSpline2.pot DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

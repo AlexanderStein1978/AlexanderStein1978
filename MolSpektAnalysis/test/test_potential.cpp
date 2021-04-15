@@ -33,14 +33,17 @@ public:
 
     void SetUp()
     {
-        ASSERT_TRUE(pot->readData("TestSpline.pot"));
-
-        ASSERT_EQ(SplinePotential, pot->getPotType());
     }
 
     void TearDown()
     {
+    }
 
+    void LoadPotential(const QString fileName)
+    {
+        ASSERT_TRUE(pot->readData(fileName));
+
+        ASSERT_EQ(SplinePotential, pot->getPotType());
     }
     
     double getSplineSlope(const SplinePoint* const points, const int p, const double A, const double B)
@@ -87,7 +90,23 @@ public:
             Res += static_cast<double>(PLRC[i]) * LRC[i];
         }
         return Res * pow(dR, one + static_cast<double>(PLRC[0]));
-     }
+    }
+
+    void verifyContinuousDifferentabilityOfSplinePotential()
+    {
+        double Rm(pot->getInnerConnectionRadius()), RM(pot->getOuterConnectionRadius()), *LRC, iA, iO, Exp;
+        int NSplinePoints, NLRC, *pLRC;
+        SplinePoint *points;
+        pot->getSplinePotForWriting(NSplinePoints, points, NLRC, pLRC, LRC, iA, iO, Exp);
+        pot->cdConnectSR();
+        pot->cdConnectLR(pLRC[NLRC - 2]);
+
+        EXPECT_DOUBLE_EQ(iO + iA * pow(Rm, -Exp), points[0].y);
+        EXPECT_DOUBLE_EQ(-Exp * iA * pow(Rm, -Exp - 1.0), getSplineSlope(points, 1, 1.0, 0.0));
+
+        EXPECT_DOUBLE_EQ(points[NSplinePoints - 1].y, getLRPoint(points[NSplinePoints - 1].x, pot->getUinf(), LRC, pLRC, NLRC));
+        EXPECT_DOUBLE_EQ(getSplineSlope(points, NSplinePoints - 1, 0.0, 1.0), getLRSlope(points[NSplinePoints - 1].x, LRC, pLRC, NLRC));
+    }
 
 protected:
     Potential* pot;
@@ -96,6 +115,7 @@ protected:
 
 TEST_F(PotentialTest, CheckInnerWall)
 {
+    LoadPotential("TestSpline.pot");
     double RM(pot->getInnerConnectionRadius()), Rm(0.5 * RM);
     ASSERT_LT(0.0, Rm);
 
@@ -104,6 +124,7 @@ TEST_F(PotentialTest, CheckInnerWall)
 
 TEST_F(PotentialTest, CheckSplineRegion)
 {
+    LoadPotential("TestSpline.pot");
     double Rm(pot->getInnerConnectionRadius()), RM(pot->getOuterConnectionRadius());
     ASSERT_LT(0.0, Rm);
     ASSERT_LT(Rm, RM);
@@ -113,6 +134,7 @@ TEST_F(PotentialTest, CheckSplineRegion)
 
 TEST_F(PotentialTest, CheckLongRangePart)
 {
+    LoadPotential("TestSpline.pot");
     double Rm(pot->getOuterConnectionRadius()), RM(2.0 * Rm);
     ASSERT_LT(0.0, Rm);
 
@@ -121,16 +143,12 @@ TEST_F(PotentialTest, CheckLongRangePart)
 
 TEST_F(PotentialTest, VerifyThatPotIsContinuouslyDifferentiable)
 {
-    double Rm(pot->getInnerConnectionRadius()), RM(pot->getOuterConnectionRadius()), *LRC, iA, iO, Exp;
-    int NSplinePoints, NLRC, *pLRC;
-    SplinePoint *points;
-    pot->getSplinePotForWriting(NSplinePoints, points, NLRC, pLRC, LRC, iA, iO, Exp);
-    pot->cdConnectSR();
-    pot->cdConnectLR(pLRC[NLRC - 2]);
-    
-    EXPECT_DOUBLE_EQ(iO + iA * pow(Rm, -Exp), points[0].y);
-    EXPECT_DOUBLE_EQ(-Exp * iA * pow(Rm, -Exp - 1.0), getSplineSlope(points, 1, 1.0, 0.0));
-    
-    EXPECT_DOUBLE_EQ(points[NSplinePoints - 1].y, getLRPoint(points[NSplinePoints - 1].x, pot->getUinf(), LRC, pLRC, NLRC));
-    EXPECT_DOUBLE_EQ(getSplineSlope(points, NSplinePoints - 1, 0.0, 1.0), getLRSlope(points[NSplinePoints - 1].x, LRC, pLRC, NLRC));
+    LoadPotential("TestSpline.pot");
+    verifyContinuousDifferentabilityOfSplinePotential();
+}
+
+TEST_F(PotentialTest, VerifyThatPot2IsContinuouslyDifferentiable)
+{
+    LoadPotential("TestSpline2.pot");
+    verifyContinuousDifferentabilityOfSplinePotential();
 }
