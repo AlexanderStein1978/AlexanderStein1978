@@ -2574,7 +2574,7 @@ void PotWorker::cdConnectLR(int p1)
     {
         int n, i, p2;
         double yd = points[numSplinePoints - 1].y, Ra = points[numSplinePoints - 1].x, Rd = Ra - points[numSplinePoints - 2].x, B;
-        double ysd = (yd - points[numSplinePoints - 2].y) / Rd + 1.0 / 6.0 * Rd * points[numSplinePoints - 2].yss 
+        double ysd = (yd - points[numSplinePoints - 2].y) / Rd + 1.0 / 6.0 * Rd * points[numSplinePoints - 2].yss
                                                                + 1.0 / 3.0 * Rd * points[numSplinePoints - 1].yss; 
         for (i=0; (i < NLRC ? PLRC[i] != p1 : false); i++) ;
         if (i+1 < NLRC) p2 = PLRC[i+1];
@@ -2621,14 +2621,12 @@ void PotWorker::cdConnectSR(const bool wasMovingPoints)
     {
         if (numSplinePoints > 1)
         {
-            double xd = points[1].x - points[0].x, ds = 0.16666666666667;
-            iA = ds * pow(points[0].x, iExp + 1.0) 
-               * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
+            double iF = -1.0 * pow(points[0].x, iExp + 1.0) / iExp;
+            iA = getSplineSlope(1, 1.0, 0.0) * iF;
             if (iA < 0.0 && !wasMovingPoints && numSplinePoints > 2)
             {
                 points[0].y += points[1].y - points[2].y;
-                iA = ds * pow(points[0].x, iExp + 1.0) 
-                   * (ds * xd * points[1].yss - (points[1].y - points[0].y) / xd);
+                iA = getSplineSlope(1, 1.0, 0.0) * iF;
             }
             iO = points[0].y - iA * pow(points[0].x, -iExp);
         }
@@ -3393,4 +3391,16 @@ void PotWorker::calcFitResult()
                 Result.LRelParDev = devq;
     }
     else Result.LRelParDev = 0.0;
+}
+
+double PotWorker::getSplineSlope(const int p, const double A, const double B)
+{
+    double deltaX, dDeltaX = -1.0, Q, deltaXdsix, yssF1, yssF2;
+    const double one = 1.0, three = 3.0, dsix = one / 6.0;
+    dDeltaX = 1.0 / (deltaX = points[p].x - points[p-1].x);
+    Q = (points[p].y - points[p-1].y) * dDeltaX;
+    deltaXdsix = deltaX * dsix;
+    yssF1 = deltaXdsix * points[p-1].yss;
+    yssF2 = deltaXdsix * points[p].yss;
+    return Q - (three * A * A - one) * yssF1 + (three * B * B - one) * yssF2;
 }

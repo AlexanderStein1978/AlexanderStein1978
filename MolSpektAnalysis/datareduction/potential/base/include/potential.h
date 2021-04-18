@@ -346,6 +346,11 @@ public:
     {
         return Worker->getOuterConnectionRadius();
     }
+
+    inline double getSplineSlope(const int p, const double A, const double B)
+    {
+        return Worker->getSplineSlope(p, A, B);
+    }
 	
 signals:
 	void FitFinished(int ThreadNum, double FQS);

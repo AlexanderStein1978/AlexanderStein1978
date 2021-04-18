@@ -126,6 +126,7 @@ public:
 	virtual void setLRCoeff(double R, int numCoefficients, int *Exponents, double *Coefficients, bool *LRCFree = 0);
     virtual double getInnerConnectionRadius() const;
     virtual double getOuterConnectionRadius() const;
+    double getSplineSlope(const int p, const double A, const double B);
 	
 	inline void setSFQSU(bool ****nSFQSU)
 	{

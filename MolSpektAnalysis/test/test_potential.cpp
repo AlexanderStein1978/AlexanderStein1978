@@ -46,18 +46,6 @@ public:
         ASSERT_EQ(SplinePotential, pot->getPotType());
     }
     
-    double getSplineSlope(const SplinePoint* const points, const int p, const double A, const double B)
-    {
-        double deltaX, dDeltaX = -1.0, Q, deltaXdsix, yssF1, yssF2;
-        const double one = 1.0, three = 3.0, dsix = one / 6.0;
-        dDeltaX = 1.0 / (deltaX = points[p].x - points[p-1].x);
-        Q = (points[p].y - points[p-1].y) * dDeltaX;
-        deltaXdsix = deltaX * dsix;
-        yssF1 = deltaXdsix * points[p-1].yss;
-        yssF2 = deltaXdsix * points[p].yss;
-        return Q - (three * A * A - one) * yssF1 + (three * B * B - one) * yssF2;
-    }
-
     double getLRPoint(const double R, const double UInf, const double *const LRC, const int *const PLRC, const int NLRC)
     {
         int p = PLRC[NLRC-1];
@@ -94,18 +82,19 @@ public:
 
     void verifyContinuousDifferentabilityOfSplinePotential()
     {
-        double Rm(pot->getInnerConnectionRadius()), RM(pot->getOuterConnectionRadius()), *LRC, iA, iO, Exp;
+        double *LRC, iA, iO, Exp, prec(1e-12);
         int NSplinePoints, NLRC, *pLRC;
         SplinePoint *points;
-        pot->getSplinePotForWriting(NSplinePoints, points, NLRC, pLRC, LRC, iA, iO, Exp);
         pot->cdConnectSR();
+        pot->getSplinePotForWriting(NSplinePoints, points, NLRC, pLRC, LRC, iA, iO, Exp);
         pot->cdConnectLR(pLRC[NLRC - 2]);
 
-        EXPECT_DOUBLE_EQ(iO + iA * pow(Rm, -Exp), points[0].y);
-        EXPECT_DOUBLE_EQ(-Exp * iA * pow(Rm, -Exp - 1.0), getSplineSlope(points, 1, 1.0, 0.0));
+        double ISL = pot->getSplineSlope(1, 1.0, 0.0), OSL = pot->getSplineSlope(NSplinePoints - 1, 0.0, 1.0);
+        EXPECT_NEAR(iO + iA * pow(points[0].x, -Exp), points[0].y, abs(prec * points[0].y));
+        EXPECT_NEAR(-Exp * iA * pow(points[0].x, -Exp - 1.0), ISL, abs(prec * ISL));
 
-        EXPECT_DOUBLE_EQ(points[NSplinePoints - 1].y, getLRPoint(points[NSplinePoints - 1].x, pot->getUinf(), LRC, pLRC, NLRC));
-        EXPECT_DOUBLE_EQ(getSplineSlope(points, NSplinePoints - 1, 0.0, 1.0), getLRSlope(points[NSplinePoints - 1].x, LRC, pLRC, NLRC));
+        EXPECT_NEAR(points[NSplinePoints - 1].y, getLRPoint(points[NSplinePoints - 1].x, pot->getUinf(), LRC, pLRC, NLRC), abs(prec * points[NSplinePoints - 1].y));
+        EXPECT_NEAR(OSL, getLRSlope(points[NSplinePoints - 1].x, LRC, pLRC, NLRC), abs(prec * OSL));
     }
 
 protected:
