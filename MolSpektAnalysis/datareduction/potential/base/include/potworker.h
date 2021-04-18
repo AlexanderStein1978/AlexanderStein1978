@@ -127,6 +127,7 @@ public:
     virtual double getInnerConnectionRadius() const;
     virtual double getOuterConnectionRadius() const;
     double getSplineSlope(const int p, const double A, const double B);
+    void calcIWallByTwoSplinePoints();
 	
 	inline void setSFQSU(bool ****nSFQSU)
 	{

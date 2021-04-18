@@ -3404,3 +3404,11 @@ double PotWorker::getSplineSlope(const int p, const double A, const double B)
     yssF2 = deltaXdsix * points[p].yss;
     return Q - (three * A * A - one) * yssF1 + (three * B * B - one) * yssF2;
 }
+
+void PotWorker::calcIWallByTwoSplinePoints()
+{
+    if (numSplinePoints < 2) return;
+    double pow0(pow(points[0].x, -iExp));
+    iA = (points[1].y - points[0].y) / (pow(points[1].x, -iExp) - pow0);
+    iO = points[0].y - iA * pow0;
+}

@@ -5561,13 +5561,7 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
 
 void Potential::addPoint(double x, double y)
 {
-    if (Worker->addPoint(x, y))
-    {
-        mWasMoving = true;
-        UpdateTab();
-        calcyss(true);
-        Changed();
-    }
+    if (Worker->addPoint(x, y)) calcyss(mWasMoving = true);
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");
 }
 
@@ -5575,23 +5569,15 @@ void Potential::movePoint(int &n, double x, double y)
 {
     if (Worker->movePoint(n, x, y))
     {
-        mWasMoving = true;
-        UpdateTab();
-        calcyss(true);
-        Changed();
+        Worker->calcIWallByTwoSplinePoints();
+        calcyss(mWasMoving = true);
     }
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");
 }
 
 void Potential::removePoint(int n)
 {
-    if (Worker->removePoint(n))
-    {
-        mWasMoving = true;
-        UpdateTab();
-        calcyss(true);
-        Changed();
-    }
+    if (Worker->removePoint(n)) calcyss(mWasMoving = true);
     else QMessageBox::information(this, "MolSpektAnalysis", "The spline points cannot be changed manually while a fit is running.");
 }
 
