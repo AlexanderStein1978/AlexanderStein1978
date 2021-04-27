@@ -52,12 +52,17 @@ class Window : public QWidget
         void writeSnapShot(Particle* P, int N);
 
     protected:
-        void closeEvent(QCloseEvent *event);
+        void closeEvent(QCloseEvent *event) override;
+        void paintEvent(QPaintEvent *e) override;
 
     private:
+        void destroyData();
 
         Picture *Pict;
         Calculation *Calc;
+
+        double *mXP, *mYP, *mZP;
+        int mN;
 };
 
 #endif // WINDOW_H
