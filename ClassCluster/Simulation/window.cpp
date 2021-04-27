@@ -12,7 +12,7 @@
 #include <QMessageBox>
 
 
-Window::Window(PotStruct *PotSs)
+Window::Window(PotStruct *PotSs) : mXP(nullptr), mYP(nullptr), mZP(nullptr), mN(0)
 {
     Calc = new Calculation(PotSs);
     QBoxLayout *L = new QBoxLayout(QBoxLayout::LeftToRight, this);
@@ -32,6 +32,17 @@ Window::~Window()
 {
     stopCalc();
     delete Calc;
+    destroyData();
+}
+
+void Window::destroyData()
+{
+    if (0 != mN)
+    {
+        delete[] mXP;
+        delete[] mYP;
+        delete[] mZP;
+    }
 }
 
 void Window::stopCalc()
@@ -51,29 +62,50 @@ void Window::closeEvent(QCloseEvent* event)
 
 void Window::draw(double* XP, double* YP, double* ZP, int N)
 {
-    int w = Pict->width(), he = Pict->height(), col, n, z, MaxZ;
-    double ScF;
-    Calc->getScales(ScF, MaxZ);
-    double zSc = 255.0 / MaxZ, xc, yc;
-    QPainter Paint(Pict->getPixmap());
-    Paint.eraseRect(0, 0, w, he);
     Calc->mutex.lock();
-    for (n=0, z=-100; n<N; n++)
+    if (mN != N)
     {
-        if (int(ZP[n] * zSc) != z)
-        {
-            col = 254 - (z = int(ZP[n] * zSc));
-            if (col < 0) col = 0;
-            if (col > 254) col = 254;
-            Paint.setPen(QColor(col, col, col));
-            Paint.setBrush(QColor(col, col, col));
-        }
-        xc = XP[n] * ScF;
-        yc = YP[n] * ScF;
-        Paint.drawEllipse(QRectF(xc - 5.0, yc - 5.0, 10.0, 10.0));
+        destroyData();
+        mN = N;
+        mXP = new double[N];
+        mYP = new double[N];
+        mZP = new double[N];
     }
+    int BS = N * sizeof(double);
+    memcpy(mXP, XP, BS);
+    memcpy(mYP, YP, BS);
+    memcpy(mZP, ZP, BS);
     Calc->mutex.unlock();
-    Pict->repaint();
+    update();
+}
+
+void Window::paintEvent(QPaintEvent *e)
+{
+    if (0 != mN)
+    {
+        int w = Pict->width(), he = Pict->height(), col, n, z, MaxZ;
+        double ScF;
+        Calc->getScales(ScF, MaxZ);
+        double zSc = 255.0 / MaxZ, xc, yc;
+        QPainter Paint(Pict->getPixmap());
+        Paint.eraseRect(0, 0, w, he);
+        for (n=0, z=-100; n < mN; n++)
+        {
+            if (int(mZP[n] * zSc) != z)
+            {
+                col = 254 - (z = int(mZP[n] * zSc));
+                if (col < 0) col = 0;
+                if (col > 254) col = 254;
+                Paint.setPen(QColor(col, col, col));
+                Paint.setBrush(QColor(col, col, col));
+            }
+            xc = mXP[n] * ScF;
+            yc = mYP[n] * ScF;
+            Paint.drawEllipse(QRectF(xc - 5.0, yc - 5.0, 10.0, 10.0));
+        }
+        Pict->update();
+    }
+    e->accept();
 }
 
 int Window::getNumParticles() const
