@@ -284,10 +284,10 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
             U += Pot[Remaining][p];
         }
     }
-    if (abs(a) > UaMax)
+    if (abs(a*r) > UaMax)
     {
         printf("i1=%d, i2=%d, a=%f gets reduced to %f\n", i1, i2, a, UaMax);
-        a = UaMax;
+        a = UaMax / r;
     }
     if (calcA)
     {
