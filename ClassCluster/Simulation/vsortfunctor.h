@@ -16,8 +16,7 @@ public:
     {
         if (n1 == -1) return false;
         if (n2 == -1) return true;
-        return  mParticles[n1].vX * mParticles[n1].vX + mParticles[n1].vY * mParticles[n1].vY + mParticles[n1].vZ * mParticles[n1].vZ >
-                mParticles[n2].vX * mParticles[n2].vX + mParticles[n2].vY * mParticles[n2].vY + mParticles[n2].vZ * mParticles[n2].vZ;
+        return mParticles[n1].v.lengthSquared() > mParticles[n2].v.lengthSquared();
     }
 
 private:

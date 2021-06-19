@@ -12,6 +12,7 @@ class Particle;
 class Potential;
 class CalculationTest;
 class WatchPoint;
+class Vector;
 class QFile;
 class QTextStream;
 
@@ -94,7 +95,7 @@ class Calculation : public QThread
 		QMutex mutex;
 		
 	signals:
-		void PictureChanged(double *XP, double *YP, double *ZP, int N);
+        void PictureChanged(Vector* Pos, int N);
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void WriteSnapShot(Particle* P, int N);
 		
@@ -110,13 +111,12 @@ class Calculation : public QThread
 
         enum Positions{temporaryPos, lastPos, currentPos, particles};
 
-        void getU(const Particle* const P1, const Particle* const P2, double &U, const double* const tx, const double* const ty,
-                  const double* const tz, Positions pos, double* ax = NULL, double* ay = NULL, double* az = NULL) const;
-		void geta(double *tx, double *ty, double *tz, double *ax, double *ay, double *az);
-        double getE(const Particle* const P, const double X, const double Y, const double Z, const bool lastPos) const;
+        void getU(const Particle* const P1, const Particle* const P2, double &U, const Vector* const t0, Positions pos,
+                  Vector *a) const;
+		void geta(Vector *t0, Vector *a);
+        double getE(const Particle* const P, const Vector& R, const bool lastPos) const;
         void correctLocalE();
-        void initializeParticle(Particle &cP, const int x, const int z, const double X, const double Y, const double Z,
-                                const double XF, const double YF, const double ZF) const;
+        void initializeParticle(Particle &cP, const int x, const int z, const Vector& R, const Vector& Fact) const;
         void WriteSnapshot();
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
         void calcMAR();
@@ -127,7 +127,8 @@ class Calculation : public QThread
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
-        double *XP, *YP, *ZP, Speed, YMid, potRangeScale;
+        double Speed, YMid, potRangeScale;
+        Vector *Pos;
 		Particle *P, ****G, **D;
         WatchPoint* ParticleWatchPoint;
         MARStruct **MAR;

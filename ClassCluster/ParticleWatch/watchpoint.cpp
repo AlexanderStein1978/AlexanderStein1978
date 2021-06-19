@@ -23,14 +23,14 @@ double WatchPoint::get(const int step, const int particleIndex, const int coordi
     return steps[step]->get(particleIndex, coordinate);
 }
 
-void WatchPoint::set(const int step, const int particleIndex, const double x, const double y, const double z)
+void WatchPoint::set(const int step, const int particleIndex, const Vector &r)
 {
-    steps[step]->set(particleIndex, x, y, z);
+    steps[step]->set(particleIndex, r);
 }
 
-void WatchPoint::setSum(const int step, const double X, const double Y, const double Z)
+void WatchPoint::setSum(const int step, const Vector &R)
 {
-    steps[step]->setSum(X, Y, Z);
+    steps[step]->setSum(R);
 }
 
 double WatchPoint::getSumX(const int step) const

@@ -7,11 +7,13 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Simulation STATIC
+	include/vector.h
     include/window.h
     include/Calculation.h
     include/particle.h
     Calculation.cpp
     deltaesortfunctor.h
+	vector.cpp
     vsortfunctor.h
     window.cpp
 )

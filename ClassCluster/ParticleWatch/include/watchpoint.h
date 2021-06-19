@@ -3,6 +3,7 @@
 
 
 class WatchStep;
+class Vector;
 
 
 class WatchPoint
@@ -12,8 +13,8 @@ public:
     ~WatchPoint();
     void reset();
     double get(const int step, const int particleIndex, const int coordinate) const;
-    void set(const int step, const int particleIndex, const double x, const double y, const double z);
-    void setSum(const int step, const double X, const double Y, const double Z);
+    void set(const int step, const int particleIndex, const Vector& r);
+    void setSum(const int step, const Vector& R);
     double getSumX(const int step) const;
     double getSumY(const int step) const;
     double getSumZ(const int step) const;

@@ -2,6 +2,9 @@
 #define WATCHSTEP_H
 
 
+#include "vector.h"
+
+
 class ParticleContribution;
 
 
@@ -12,8 +15,8 @@ public:
     ~WatchStep();
     void reset();
     double get(const int particleIndex, const int coordinate) const;
-    void set(const int particleIndex, const double x, const double y, const double z);
-    void setSum(const double X, const double Y, const double Z);
+    void set(const int particleIndex, const Vector& r);
+    void setSum(const Vector& sum);
     double getSumX() const;
     double getSumY() const;
     double getSumZ() const;
@@ -21,7 +24,7 @@ public:
 private:
     ParticleContribution* const contributions;
     const int numParticles;
-    double sumX, sumY, sumZ;
+    Vector sum;
 };
 
 #endif // WATCHSTEP_H

@@ -48,7 +48,7 @@ class Window : public QWidget
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
 
     private slots:
-        void draw(double *XP, double *YP, double *ZP, int N);
+        void draw(Vector* Pos, int N);
         void writeSnapShot(Particle* P, int N);
 
     protected:
@@ -61,7 +61,7 @@ class Window : public QWidget
         Picture *Pict;
         Calculation *Calc;
 
-        double *mXP, *mYP, *mZP;
+        Vector *mPos;
         int mN;
 };
 
