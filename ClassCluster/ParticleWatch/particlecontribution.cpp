@@ -3,7 +3,7 @@
 #include <cassert>
 
 
-ParticleContribution::ParticleContribution() : x(0.0), y(0.0), z(0.0)
+ParticleContribution::ParticleContribution() : r()
 {
 }
 
@@ -12,11 +12,11 @@ double ParticleContribution::get(const int coordinate) const
     switch (coordinate)
     {
         case 0:
-            return x;
+            return r.X();
         case 1:
-            return y;
+            return r.Y();
         case 2:
-            return z;
+            return r.Z();
         default:
             return 0.0;
             break;
@@ -25,13 +25,11 @@ double ParticleContribution::get(const int coordinate) const
 
 void ParticleContribution::reset()
 {
-    x = y = z = 0.0;
+    r = Vector();
 }
 
-void ParticleContribution::set(const double ix, const double iy, const double iz)
+void ParticleContribution::set(const Vector &i)
 {
-    assert(x == 0.0 && y == 0.0 && z == 0.0);
-    x = ix;
-    y = iy;
-    z = iz;
+    assert(r.X() == 0.0 && r.Y() == 0.0 && r.Z() == 0.0);
+    r = i;
 }

@@ -2,7 +2,7 @@
 #include "particlecontribution.h"
 
 
-WatchStep::WatchStep(const int iNumParticles) : contributions(new ParticleContribution[iNumParticles]), numParticles(iNumParticles), sumX(0.0), sumY(0.0), sumZ(0.0)
+WatchStep::WatchStep(const int iNumParticles) : contributions(new ParticleContribution[iNumParticles]), numParticles(iNumParticles), sum()
 {
 }
 
@@ -14,7 +14,7 @@ WatchStep::~WatchStep()
 void WatchStep::reset()
 {
     for (int i=0; i < numParticles; ++i) contributions[i].reset();
-    sumX = sumY = sumZ = 0.0;
+    sum = Vector();
 }
 
 double WatchStep::get(const int particleIndex, const int coordinate) const
@@ -22,29 +22,27 @@ double WatchStep::get(const int particleIndex, const int coordinate) const
     return contributions[particleIndex].get(coordinate);
 }
 
-void WatchStep::set(const int particleIndex, const double x, const double y, const double z)
+void WatchStep::set(const int particleIndex, const Vector &r)
 {
-    contributions[particleIndex].set(x, y, z);
+    contributions[particleIndex].set(r);
 }
 
-void WatchStep::setSum(const double X, const double Y, const double Z)
+void WatchStep::setSum(const Vector& Sum)
 {
-    sumX = X;
-    sumY = Y;
-    sumZ = Z;
+    sum = Sum;
 }
 
 double WatchStep::getSumX() const
 {
-    return sumX;
+    return sum.X();
 }
 
 double WatchStep::getSumY() const
 {
-    return sumY;
+    return sum.Y();
 }
 
 double WatchStep::getSumZ() const
 {
-    return sumZ;
+    return sum.Z();
 }

@@ -2,12 +2,15 @@
 #define PARTICLE_H
 
 
+#include "vector.h"
+
 struct Particle
 {
     enum boundParticles{NBound = 4};
     Particle *next, *prev, *bound[NBound];
     int xp, yp, zp, NB;
-    double X, Y, Z, vX, vY, vZ, lX, lY, lZ, lvX, lvY, lvZ, aaX, aaY, aaZ, E, deltaE, T, deltaT, U, deltaU, corrX, corrY, corrZ;
+    double E, deltaE, T, deltaT, U, deltaU;
+    Vector R, v, lR, lv, aa, corr;
 };
 
 #endif // PARTICLE_H

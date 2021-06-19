@@ -68,9 +68,7 @@ protected:
 
     void swapParticlePositions(const int index1, const int index2)
     {
-        std::swap(Calc.P[index1].X, Calc.P[index2].X);
-        std::swap(Calc.P[index1].Y, Calc.P[index2].Y);
-        std::swap(Calc.P[index1].Z, Calc.P[index2].Z);
+        std::swap(Calc.P[index1].R, Calc.P[index2].R);
     }
 
     void updateBindings()

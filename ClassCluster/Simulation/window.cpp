@@ -2,6 +2,7 @@
 #include "Calculation.h"
 #include "Picture.h"
 #include "particle.h"
+#include "vector.h"
 
 #include <QCloseEvent>
 #include <QPainter>
@@ -12,7 +13,7 @@
 #include <QMessageBox>
 
 
-Window::Window(PotStruct *PotSs) : mXP(nullptr), mYP(nullptr), mZP(nullptr), mN(0)
+Window::Window(PotStruct *PotSs) : mPos(nullptr), mN(0)
 {
     Calc = new Calculation(PotSs);
     QBoxLayout *L = new QBoxLayout(QBoxLayout::LeftToRight, this);
@@ -23,8 +24,8 @@ Window::Window(PotStruct *PotSs) : mXP(nullptr), mYP(nullptr), mZP(nullptr), mN(
     setMaximumSize(XSize, YSize);
 
     connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
-    connect(Calc, SIGNAL(PictureChanged(double*, double*, double*, int)),
-            this, SLOT(draw(double*, double*, double*, int)));
+    connect(Calc, SIGNAL(PictureChanged(Vector*, int)),
+            this, SLOT(draw(Vector*, int)));
     connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SIGNAL(EnergiesChanged(double,double)));
 }
 
@@ -37,12 +38,7 @@ Window::~Window()
 
 void Window::destroyData()
 {
-    if (0 != mN)
-    {
-        delete[] mXP;
-        delete[] mYP;
-        delete[] mZP;
-    }
+    if (0 != mN) delete[] mPos;
 }
 
 void Window::stopCalc()
@@ -60,21 +56,16 @@ void Window::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
-void Window::draw(double* XP, double* YP, double* ZP, int N)
+void Window::draw(Vector *Pos, int N)
 {
     Calc->mutex.lock();
     if (mN != N)
     {
         destroyData();
         mN = N;
-        mXP = new double[N];
-        mYP = new double[N];
-        mZP = new double[N];
+        mPos = new Vector[N];
     }
-    int BS = N * sizeof(double);
-    memcpy(mXP, XP, BS);
-    memcpy(mYP, YP, BS);
-    memcpy(mZP, ZP, BS);
+    memcpy(mPos, Pos, N * sizeof(Vector));
     Calc->mutex.unlock();
     update();
 }
@@ -91,16 +82,16 @@ void Window::paintEvent(QPaintEvent *e)
         Paint.eraseRect(0, 0, w, he);
         for (n=0, z=-100; n < mN; n++)
         {
-            if (int(mZP[n] * zSc) != z)
+            if (int(mPos[n].Z() * zSc) != z)
             {
-                col = 254 - (z = int(mZP[n] * zSc));
+                col = 254 - (z = int(mPos[n].Z() * zSc));
                 if (col < 0) col = 0;
                 if (col > 254) col = 254;
                 Paint.setPen(QColor(col, col, col));
                 Paint.setBrush(QColor(col, col, col));
             }
-            xc = mXP[n] * ScF;
-            yc = mYP[n] * ScF;
+            xc = mPos[n].X() * ScF;
+            yc = mPos[n].Y() * ScF;
             Paint.drawEllipse(QRectF(xc - 5.0, yc - 5.0, 10.0, 10.0));
         }
         Pict->update();
@@ -237,11 +228,12 @@ void Window::writeSnapShot(Particle *P, int N)
         S << (Calc->getMove() ? "is moving\n" : "is not moving\n");
         S << " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t aaX \t aaY \t aaZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ \n";
         for (int n=0; n<N; ++n)
-            S << P[n].xp << "\t" << P[n].yp << "\t" << P[n].zp << "\t" << QString::number(P[n].X, 'f', 12) << "\t" << QString::number(P[n].Y, 'f', 12) << "\t" << QString::number(P[n].Z, 'f', 12)
-              << "\t" << QString::number(P[n].vX, 'f', 12) << "\t" << QString::number(P[n].vY, 'f', 12) << "\t" << QString::number(P[n].vZ, 'f', 12)
-              << "\t" << QString::number(P[n].aaX, 'f', 12) << "\t" << QString::number(P[n].aaY, 'f', 12) << "\t" << QString::number(P[n].aaZ, 'f', 12)
-              << "\t" << QString::number(P[n].lX, 'f', 12) << "\t" << QString::number(P[n].lY, 'f', 12) << "\t" << QString::number(P[n].lZ, 'f', 12)
-              << "\t" << QString::number(P[n].lvX, 'f', 12) << "\t" << QString::number(P[n].lvY, 'f', 12) << "\t" << QString::number(P[n].lvZ, 'f', 12) << "\n";
+            S << P[n].xp << "\t" << P[n].yp << "\t" << P[n].zp << "\t" << QString::number(P[n].R.X(), 'f', 12) << "\t" << QString::number(P[n].R.Y(), 'f', 12) << "\t"
+              << QString::number(P[n].R.Z(), 'f', 12) << "\t" << QString::number(P[n].v.X(), 'f', 12) << "\t" << QString::number(P[n].v.Y(), 'f', 12) << "\t"
+              << QString::number(P[n].v.Z(), 'f', 12) << "\t" << QString::number(P[n].aa.X(), 'f', 12) << "\t" << QString::number(P[n].aa.Y(), 'f', 12) << "\t"
+              << QString::number(P[n].aa.Z(), 'f', 12) << "\t" << QString::number(P[n].lR.X(), 'f', 12) << "\t" << QString::number(P[n].lR.Y(), 'f', 12) << "\t"
+              << QString::number(P[n].lR.Z(), 'f', 12) << "\t" << QString::number(P[n].lv.X(), 'f', 12) << "\t" << QString::number(P[n].lv.Y(), 'f', 12) << "\t"
+              << QString::number(P[n].lv.Z(), 'f', 12) << "\n";
     }
 }
 
@@ -273,21 +265,21 @@ void Window::restoreSnapShot(bool &isMoving)
         L = S.readLine().split('\t');
         if (L.size() == 18)
         {
-            part[n].X = L[3].toDouble();
-            part[n].Y = L[4].toDouble();
-            part[n].Z = L[5].toDouble();
-            part[n].vX = L[6].toDouble();
-            part[n].vY = L[7].toDouble();
-            part[n].vZ = L[8].toDouble();
-            part[n].aaX = L[9].toDouble();
-            part[n].aaY = L[10].toDouble();
-            part[n].aaZ = L[11].toDouble();
-            part[n].lX = L[12].toDouble();
-            part[n].lY = L[13].toDouble();
-            part[n].lZ = L[14].toDouble();
-            part[n].lvX = L[15].toDouble();
-            part[n].lvY = L[16].toDouble();
-            part[n].lvZ = L[17].toDouble();
+            part[n].R.setX(L[3].toDouble());
+            part[n].R.setY(L[4].toDouble());
+            part[n].R.setZ(L[5].toDouble());
+            part[n].v.setX(L[6].toDouble());
+            part[n].v.setY(L[7].toDouble());
+            part[n].v.setZ(L[8].toDouble());
+            part[n].aa.setX(L[9].toDouble());
+            part[n].aa.setY(L[10].toDouble());
+            part[n].aa.setZ(L[11].toDouble());
+            part[n].lR.setX(L[12].toDouble());
+            part[n].lR.setY(L[13].toDouble());
+            part[n].lR.setZ(L[14].toDouble());
+            part[n].lv.setX(L[15].toDouble());
+            part[n].lv.setY(L[16].toDouble());
+            part[n].lv.setZ(L[17].toDouble());
         }
         else error = true;
     }
