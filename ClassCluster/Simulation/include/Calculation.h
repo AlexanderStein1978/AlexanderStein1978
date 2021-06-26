@@ -111,6 +111,7 @@ class Calculation : public QThread
 
         enum Positions{temporaryPos, lastPos, currentPos, particles};
 
+        void rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector *dm, Vector *dvm);
         void getU(const Particle* const P1, const Particle* const P2, double &U, const Vector* const t0, Positions pos,
                   Vector *a) const;
 		void geta(Vector *t0, Vector *a);
