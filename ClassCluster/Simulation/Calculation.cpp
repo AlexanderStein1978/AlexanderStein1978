@@ -205,6 +205,28 @@ void Calculation::geta(Vector* t0, Vector *a)
 	//printf("End geta\n");
 }
 
+bool Calculation::wasStepOK() const
+{
+    int mx, my, mz, lx, ly, lz;
+	Particle *PP1, *PP2;
+	for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
+	{
+		if (G[mx][my][mz] != 0)
+		{
+			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if ((PP1->R - PP2->R).dot(PP1->lR - PP2->lR) < 0.0) return false;
+			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
+				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
+						ly < YS && ly <= my + GridSizeDiv; ly++)
+					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
+							lx < XS && lx <= mx + GridSizeDiv; lx++)
+						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if ((PP1->R - PP2->R).dot(PP1->lR - PP2->lR) < 0.0) return false;
+		}
+	}
+	return true;
+}
+
 void Calculation::getU(const Particle * const P1, const Particle * const P2, double &U, const Vector* const t0, Positions pos, Vector* a) const
 {
     double r, amp;
@@ -556,7 +578,7 @@ void Calculation::run()
             printf("Break!");
         }
 
-        rk4(t0, dvt, a, dt, dm, dvm);
+        rk4(t0, dvt, a, dt, dm, dvm, h);
 
         if (writeSnapShot)
         {
@@ -607,10 +629,10 @@ void Calculation::run()
     delete[] t0;
 }
 
-void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm, Vector* dvm)
+void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm, Vector* dvm, const double lh)
 {
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ);
-    double hh = 0.5 * h, h6 = h / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
+    double hh = 0.5 * lh, h6 = lh / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
     double XMid = 0.5 * MaxX;
     int n, x, y, z;
     for (n=0; n<N; n++)
@@ -639,7 +661,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         {
             dX = XMid - P[n].R.X();
             dZ = ZMid - P[n].R.Z();
-            R = h * Speed / (dX * dX + dZ * dZ);
+            R = lh * Speed / (dX * dX + dZ * dZ);
             if (P[n].R.Y() > YMid) P[n].R += Vector(dX * R, 0.0, dZ * R);
             else P[n].R -= Vector(dX * R, 0.0, dZ * R);
         }
@@ -668,9 +690,9 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     for (n=0; n<N; n++) if (!Fixed[n])
     {
         P[n].aa += 2.0 * dvm[n];
-        t0[n] = P[n].R + h * dm[n];
+        t0[n] = P[n].R + lh * dm[n];
         dm[n] += dt[n];
-        dt[n] = P[n].v + h * dvm[n];
+        dt[n] = P[n].v + lh * dvm[n];
         dvm[n] += dvt[n];
     }
     for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
@@ -691,6 +713,25 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             printf("After calculation of new position and v: Particel %d is nan!\n", n);
             Run = false;
         }*/
+    }
+    if (!wasStepOK())
+    {
+        const double nh(0.5 * lh);
+        Vector* lR = new Vector[N], *lv = new Vector[N];
+        for (n=0; n<N; ++n) if (!Fixed[n])
+        {
+            lR[n] = P[n].R = P[n].lR;
+            lv[n] = P[n].v = P[n].lv;
+            P[n].aa.clear();
+        }
+        rk4(t0, dvt, a, dt, dm, dvm, nh);
+        rk4(t0, dvt, a, dt, dm, dvm, nh);
+        for (n=0; n<N; ++n) if (!Fixed[n])
+        {
+            P[n].lR = lR[n];
+            P[n].lv = lv[n];
+            P[n].aa *= 0.5;
+        }
     }
 }
 
