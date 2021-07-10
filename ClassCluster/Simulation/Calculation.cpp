@@ -732,6 +732,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             P[n].lv = lv[n];
             P[n].aa *= 0.5;
         }
+        delete[] lR;
+        delete[] lv;
     }
 }
 
