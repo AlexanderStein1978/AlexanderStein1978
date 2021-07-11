@@ -262,6 +262,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (bi1 <= 1 && bi2 <= 1)
     {
+        if (Pot[ClosestTwo][p] > UaMax) throw(1);
         if (calcA) amp = dPdR[ClosestTwo][p] / r;
         U += Pot[ClosestTwo][p];
     }
@@ -280,19 +281,21 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         }
         if (SecondOrderBound)
         {
+            if (Pot[SecondOrder][p] > UaMax) throw(1);
             if (calcA) amp = dPdR[SecondOrder][p] / r;
             U += Pot[SecondOrder][p];
         }
         else
         {
+            if (Pot[Remaining][p] > UaMax) throw(1);
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
     }
     if (abs(amp * r) > UaMax)
     {
-        printf("i1=%d, i2=%d, a=%f gets reduced to %f\n", i1, i2, amp, UaMax);
-        amp = UaMax / r;
+        //printf("i1=%d, i2=%d, a=%f: Stepsize gets reduced!\n", i1, i2, amp*r);
+        throw(2);
     }
     if (calcA)
     {
@@ -635,105 +638,93 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     double hh = 0.5 * lh, h6 = lh / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
     double XMid = 0.5 * MaxX;
     int n, x, y, z;
-    for (n=0; n<N; n++)
+    try
     {
-        x = ((x = int(F.X() * P[n].R.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
-        y = ((y = int(F.Y() * P[n].R.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
-        z = ((z = int(F.Z() * P[n].R.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
-        if (P[n].xp != x || P[n].yp != y || P[n].zp != z)
+        for (n=0; n<N; n++)
         {
-            if (P[n].next != 0) P[n].next->prev = P[n].prev;
-            if (P[n].prev != 0) P[n].prev->next = P[n].next;
-            else G[P[n].xp][P[n].yp][P[n].zp] = P[n].next;
-            P[n].prev = 0;
-            P[n].next = G[x][y][z];
-            if (G[x][y][z] != 0) G[x][y][z]->prev = P + n;
-            G[x][y][z] = P + n;
-            P[n].xp = x;
-            P[n].yp = y;
-            P[n].zp = z;
+            x = ((x = int(F.X() * P[n].R.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
+            y = ((y = int(F.Y() * P[n].R.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
+            z = ((z = int(F.Z() * P[n].R.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
+            if (P[n].xp != x || P[n].yp != y || P[n].zp != z)
+            {
+                if (P[n].next != 0) P[n].next->prev = P[n].prev;
+                if (P[n].prev != 0) P[n].prev->next = P[n].next;
+                else G[P[n].xp][P[n].yp][P[n].zp] = P[n].next;
+                P[n].prev = 0;
+                P[n].next = G[x][y][z];
+                if (G[x][y][z] != 0) G[x][y][z]->prev = P + n;
+                G[x][y][z] = P + n;
+                P[n].xp = x;
+                P[n].yp = y;
+                P[n].zp = z;
+            }
+            t0[n] = P[n].R;
         }
-        t0[n] = P[n].R;
-    }
-    if (Move)
-    {
-        for (n=0; n<N; n++) if (Fixed[n])
+        if (Move)
         {
-            dX = XMid - P[n].R.X();
-            dZ = ZMid - P[n].R.Z();
-            R = lh * Speed / (dX * dX + dZ * dZ);
-            if (P[n].R.Y() > YMid) P[n].R += Vector(dX * R, 0.0, dZ * R);
-            else P[n].R -= Vector(dX * R, 0.0, dZ * R);
+            for (n=0; n<N; n++) if (Fixed[n])
+            {
+                dX = XMid - P[n].R.X();
+                dZ = ZMid - P[n].R.Z();
+                R = lh * Speed / (dX * dX + dZ * dZ);
+                if (P[n].R.Y() > YMid) P[n].R += Vector(dX * R, 0.0, dZ * R);
+                else P[n].R -= Vector(dX * R, 0.0, dZ * R);
+            }
+        }
+        for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
+        if (watchParticle >= 0) particleWatchStep = 0;
+        geta(t0, a);
+        if (E == 0.0 || T == 0.0 || Move) E = T + U;
+        for (n=0; n<N; n++) if (!Fixed[n])
+        {
+            t0[n] = P[n].R + hh * P[n].v;
+            dt[n] = P[n].v + hh * a[n];
+        }
+        for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, a[watchParticle]);
+        geta(t0, dvt);
+        for (n=0; n<N; n++) if (!Fixed[n])
+        {
+            P[n].aa = dvt[n];
+            t0[n] = P[n].R + hh * dt[n];
+            dm[n] = P[n].v + hh * dvt[n];
+        }
+        for (n=0, U = T = 0.0; n<N; n++) T += dm[n].lengthSquared();
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvt[watchParticle]);
+        geta(t0, dvm);
+        for (n=0; n<N; n++) if (!Fixed[n])
+        {
+            P[n].aa += 2.0 * dvm[n];
+            t0[n] = P[n].R + lh * dm[n];
+            dm[n] += dt[n];
+            dt[n] = P[n].v + lh * dvm[n];
+            dvm[n] += dvt[n];
+        }
+        for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
+        if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
+        geta(t0, dvt);
+        for (n=0; n<N; n++) if (!Fixed[n])
+        {
+            P[n].lR = P[n].R;
+            P[n].lv = P[n].v;
+            P[n].aa += dvt[n];
+            P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
+            P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
+            if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
+            if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
+            if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
+            /*if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
+            {
+                printf("After calculation of new position and v: Particel %d is nan!\n", n);
+                Run = false;
+            }*/
         }
     }
-    for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
-    if (watchParticle >= 0) particleWatchStep = 0;
-    geta(t0, a);
-    if (E == 0.0 || T == 0.0 || Move) E = T + U;
-    for (n=0; n<N; n++) if (!Fixed[n])
+    catch (int)
     {
-        t0[n] = P[n].R + hh * P[n].v;
-        dt[n] = P[n].v + hh * a[n];
-    }
-    for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
-    if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, a[watchParticle]);
-    geta(t0, dvt);
-    for (n=0; n<N; n++) if (!Fixed[n])
-    {
-        P[n].aa = dvt[n];
-        t0[n] = P[n].R + hh * dt[n];
-        dm[n] = P[n].v + hh * dvt[n];
-    }
-    for (n=0, U = T = 0.0; n<N; n++) T += dm[n].lengthSquared();
-    if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvt[watchParticle]);
-    geta(t0, dvm);
-    for (n=0; n<N; n++) if (!Fixed[n])
-    {
-        P[n].aa += 2.0 * dvm[n];
-        t0[n] = P[n].R + lh * dm[n];
-        dm[n] += dt[n];
-        dt[n] = P[n].v + lh * dvm[n];
-        dvm[n] += dvt[n];
-    }
-    for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
-    if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
-    geta(t0, dvt);
-    for (n=0; n<N; n++) if (!Fixed[n])
-    {
-        P[n].lR = P[n].R;
-        P[n].lv = P[n].v;
-        P[n].aa += dvt[n];
-        P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
-        P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
-        if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
-        if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
-        if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
-        /*if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
-        {
-            printf("After calculation of new position and v: Particel %d is nan!\n", n);
-            Run = false;
-        }*/
-    }
-    if (!wasStepOK())
-    {
-        const double nh(0.5 * lh);
-        Vector* lR = new Vector[N], *lv = new Vector[N];
-        for (n=0; n<N; ++n) if (!Fixed[n])
-        {
-            lR[n] = P[n].R = P[n].lR;
-            lv[n] = P[n].v = P[n].lv;
-            P[n].aa.clear();
-        }
+        const double nh = 0.5 * lh;
         rk4(t0, dvt, a, dt, dm, dvm, nh);
         rk4(t0, dvt, a, dt, dm, dvm, nh);
-        for (n=0; n<N; ++n) if (!Fixed[n])
-        {
-            P[n].lR = lR[n];
-            P[n].lv = lv[n];
-            P[n].aa *= 0.5;
-        }
-        delete[] lR;
-        delete[] lv;
     }
 }
 
@@ -852,7 +843,6 @@ void Calculation::setPotential(const PotRole role, PotStruct &PotS)
     {
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;
-        if (Pot[role][n] > UaMax) Pot[role][n] = UaMax;
     }
 }
 
