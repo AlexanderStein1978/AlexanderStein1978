@@ -101,6 +101,8 @@ class Calculation : public QThread
 		
 	private:
 
+        const double Error_Double;
+
         friend class CalculationTest;
 
         struct MARStruct
@@ -110,11 +112,12 @@ class Calculation : public QThread
         };
 
         enum Positions{temporaryPos, lastPos, currentPos, particles};
+        enum Result{Success, Error};
 
         void rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector *dm, Vector *dvm, const double lh);
-        void getU(const Particle* const P1, const Particle* const P2, double &U, const Vector* const t0, Positions pos,
+        Result getU(const Particle* const P1, const Particle* const P2, double &U, const Vector* const t0, Positions pos,
                   Vector *a) const;
-		void geta(Vector *t0, Vector *a);
+        Result geta(Vector *t0, Vector *a);
         bool wasStepOK() const;
         double getE(const Particle* const P, const Vector& R, const bool lastPos) const;
         void correctLocalE();

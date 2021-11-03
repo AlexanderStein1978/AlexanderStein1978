@@ -24,7 +24,7 @@
 const double UaMax = 1e6;
 
 
-Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): Error_Double(0.0/0.0), QThread(parent), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
     Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
 {
 	//printf("Calculation::Calculation\n");
@@ -170,7 +170,7 @@ void Calculation::calcMAR()
     }
 }
 
-void Calculation::geta(Vector* t0, Vector *a)
+Calculation::Result Calculation::geta(Vector* t0, Vector *a)
 {
 	//printf("geta\n");
     int mx, my, mz, lx, ly, lz;// i1, i2, p, n;
@@ -183,7 +183,7 @@ void Calculation::geta(Vector* t0, Vector *a)
 		{
 			//printf("l0\n");
 			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) getU(PP1, PP2, U, t0, temporaryPos, a);
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, t0, temporaryPos, a) == Error) return Error;
 			//printf("l1\n");
 			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
 				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
@@ -191,7 +191,7 @@ void Calculation::geta(Vector* t0, Vector *a)
 					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
 							lx < XS && lx <= mx + GridSizeDiv; lx++)
 						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, t0, temporaryPos, a);
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, t0, temporaryPos, a) == Error) return Error;
 		}
 	}
     /*for (n=0; n<N; ++n) if (isnan(ax[n]) || isnan(ay[n]) || isnan(az[n]))
@@ -203,6 +203,7 @@ void Calculation::geta(Vector* t0, Vector *a)
 	T *= 0.5;
 	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
 	//printf("End geta\n");
+    return Success;
 }
 
 bool Calculation::wasStepOK() const
@@ -227,9 +228,9 @@ bool Calculation::wasStepOK() const
 	return true;
 }
 
-void Calculation::getU(const Particle * const P1, const Particle * const P2, double &U, const Vector* const t0, Positions pos, Vector* a) const
+Calculation::Result Calculation::getU(const Particle * const P1, const Particle * const P2, double &U, const Vector* const t0, Positions pos, Vector* a) const
 {
-    double r, amp;
+    double r, amp(0.0);
     Vector d, b;
     bool calcA = (NULL != a);
     int i1 = P1 - P, i2 = P2 - P, p, bi1=N, bi2=N;
@@ -253,7 +254,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
     r = d.length();
     p = int((r - Rm) * potRangeScale);
-    if (p < 0 || p >= NPot) return;
+    if (p < 0 || p >= NPot) return Success;
     for (int n=0; n<4; ++n)
     {
         if (P1->bound[n] == P2) bi1=n;
@@ -262,7 +263,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (bi1 <= 1 && bi2 <= 1)
     {
-        if (Pot[ClosestTwo][p] > UaMax) throw(1);
+        if (Pot[ClosestTwo][p] > UaMax) return Error;
         if (calcA) amp = dPdR[ClosestTwo][p] / r;
         U += Pot[ClosestTwo][p];
     }
@@ -281,13 +282,13 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
         }
         if (SecondOrderBound)
         {
-            if (Pot[SecondOrder][p] > UaMax) throw(1);
+            if (Pot[SecondOrder][p] > UaMax) return Error;
             if (calcA) amp = dPdR[SecondOrder][p] / r;
             U += Pot[SecondOrder][p];
         }
         else
         {
-            if (Pot[Remaining][p] > UaMax) throw(1);
+            if (Pot[Remaining][p] > UaMax) return Error;
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
@@ -295,7 +296,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
     if (abs(amp * r) > UaMax)
     {
         //printf("i1=%d, i2=%d, a=%f: Stepsize gets reduced!\n", i1, i2, amp*r);
-        throw(2);
+        return Error;
     }
     if (calcA)
     {
@@ -307,6 +308,7 @@ void Calculation::getU(const Particle * const P1, const Particle * const P2, dou
             else if (watchParticle == i2) ParticleWatchPoint->set(particleWatchStep, i1, -amp * d);
         }
     }
+    return Success;
 }
 
 void Calculation::correctLocalE()
@@ -420,7 +422,7 @@ double Calculation::getE(const Particle * const cP, const Vector &R, const bool 
     for (lz = ((lz = cP->zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= cP->zp + GridSizeDiv; lz++)
         for (ly = ((ly = cP->yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= cP->yp + GridSizeDiv; ly++)
             for (lx = ((lx = cP->xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= cP->xp + GridSizeDiv; lx++)
-                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) getU(cP, P2, E, &R, (useLastPos ? lastPos : currentPos), nullptr);
+                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) if (getU(cP, P2, E, &R, (useLastPos ? lastPos : currentPos), nullptr) == Error) return Error_Double;
     return 0.5 * E;
 }
 
@@ -445,7 +447,7 @@ double Calculation::getPotentialEnergy() const
         {
             //printf("l0\n");
             for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) getU(PP1, PP2, U, nullptr, particles, nullptr);
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr) == Error) return Error_Double;
             //printf("l1\n");
             for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
                 for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
@@ -453,7 +455,7 @@ double Calculation::getPotentialEnergy() const
                     for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
                             lx < XS && lx <= mx + GridSizeDiv; lx++)
                         for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getU(PP1, PP2, U, nullptr, particles, nullptr);
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr) == Error) return Error_Double;
         }
     }
     return U;
@@ -638,7 +640,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     double hh = 0.5 * lh, h6 = lh / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
     double XMid = 0.5 * MaxX;
     int n, x, y, z;
-    try
+    Result result = Success;
+    for (int i=1; i==1; ++i)
     {
         for (n=0; n<N; n++)
         {
@@ -673,7 +676,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
         if (watchParticle >= 0) particleWatchStep = 0;
-        geta(t0, a);
+        result = geta(t0, a);
+        if (result == Error) break;
         if (E == 0.0 || T == 0.0 || Move) E = T + U;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
@@ -682,7 +686,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, a[watchParticle]);
-        geta(t0, dvt);
+        result = geta(t0, dvt);
+        if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
             P[n].aa = dvt[n];
@@ -691,7 +696,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += dm[n].lengthSquared();
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvt[watchParticle]);
-        geta(t0, dvm);
+        result = geta(t0, dvm);
+        if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
             P[n].aa += 2.0 * dvm[n];
@@ -702,7 +708,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
-        geta(t0, dvt);
+        result = geta(t0, dvt);
+        if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
             P[n].lR = P[n].R;
@@ -720,7 +727,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             }*/
         }
     }
-    catch (int)
+    if (result == Error)
     {
         const double nh = 0.5 * lh;
         rk4(t0, dvt, a, dt, dm, dvm, nh);
