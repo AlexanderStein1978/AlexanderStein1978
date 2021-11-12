@@ -263,7 +263,8 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (bi1 <= 1 && bi2 <= 1)
     {
-        if (Pot[ClosestTwo][p] > UaMax) return Error;
+        if (Pot[ClosestTwo][p] > UaMax)
+            return Error;
         if (calcA) amp = dPdR[ClosestTwo][p] / r;
         U += Pot[ClosestTwo][p];
     }
@@ -282,13 +283,15 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
         }
         if (SecondOrderBound)
         {
-            if (Pot[SecondOrder][p] > UaMax) return Error;
+            if (Pot[SecondOrder][p] > UaMax)
+                return Error;
             if (calcA) amp = dPdR[SecondOrder][p] / r;
             U += Pot[SecondOrder][p];
         }
         else
         {
-            if (Pot[Remaining][p] > UaMax) return Error;
+            if (Pot[Remaining][p] > UaMax)
+                return Error;
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
@@ -677,7 +680,15 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
         if (watchParticle >= 0) particleWatchStep = 0;
         result = geta(t0, a);
-        if (result == Error) break;
+        if (result == Error)
+        {
+            for (n=0; n<N; ++n)
+            {
+                P[n].v = P[n].lv;
+                P[n].R = P[n].lR;
+            }
+            break;
+        }
         if (E == 0.0 || T == 0.0 || Move) E = T + U;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
@@ -730,6 +741,10 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     if (result == Error)
     {
         const double nh = 0.5 * lh;
+        if (nh < 1e-10)
+        {
+            printf("Break!");
+        }
         rk4(t0, dvt, a, dt, dm, dvm, nh);
         rk4(t0, dvt, a, dt, dm, dvm, nh);
     }
