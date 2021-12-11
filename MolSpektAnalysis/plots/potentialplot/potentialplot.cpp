@@ -204,7 +204,7 @@ void PotentialPlot::plotPotential(Potential *potential)
     if (pot != 0)
     {
         disconnect(pot, SIGNAL(propertiesChanged()), this, SLOT(PotentialChanged()));
-        addPotential(pot);
+        if (nullptr != potential) addPotential(pot);
     }
 	pot = potential;
 	if (pot != 0) 
@@ -280,9 +280,9 @@ void PotentialPlot::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ )
 {
 	//printf("PotentialPlot::PSpektrum, NCopies=%d, copyP=%d, potName=%s\n", 
 		//   NCopies, copyP, potCopies[0]->getName().ascii());
-	if (pot == 0) 
+    if (NCopies == 0)
 	{
-		printf("Pot = 0!!\n");
+        printf("No potential to plot!!\n");
 		return;
 	}
 	int i, s, w = A.width() - ScaleYWidth, h = A.height() - ScaleXHeight;
