@@ -270,6 +270,8 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
     }
     else if (bi1 <= 3 && bi2 <= 3)
     {
+        if (Pot[NextTwo][p] > UaMax)
+            return Error;
         if (calcA) amp = dPdR[NextTwo][p] / r;
         U += Pot[NextTwo][p];
     }
