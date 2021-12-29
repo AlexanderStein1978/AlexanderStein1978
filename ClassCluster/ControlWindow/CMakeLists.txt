@@ -7,7 +7,6 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(ControlWindow STATIC
-    include/potstruct.h
     include/controlwindow.h
     controlwindow.cpp
     potcontrol.cpp

@@ -6,6 +6,8 @@ project(MolSpektAnalysis_test)
 
 include(GoogleTest)
 
+find_package(Qt5 COMPONENTS Core REQUIRED)
+
 add_executable(MolSpektAnalysis_test
 	integrationtest.h
 	integrationtest.cpp
@@ -16,6 +18,9 @@ add_executable(MolSpektAnalysis_test
 target_link_libraries(MolSpektAnalysis_test
 	gtest
 	Potential
+	TableWindow
+	Tools
+	Qt5::Core
 )
 
 gtest_add_tests(TARGET MolSpektAnalysis_test)

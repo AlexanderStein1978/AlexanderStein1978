@@ -21,6 +21,7 @@ add_library(FCF STATIC
 target_include_directories(FCF PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(FCF
+    MolSpektAnalysisMainWindow
 	TableWindow
 	Wavefuncs
 	Qt5::Widgets

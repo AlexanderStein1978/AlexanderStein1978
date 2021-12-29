@@ -14,6 +14,7 @@ add_library(TermView STATIC
 target_include_directories(TermView PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(TermView
+    MolSpektAnalysisMainWindow
 	TableWindow
 	Qt5::Widgets
 )

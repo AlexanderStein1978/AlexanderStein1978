@@ -15,6 +15,9 @@ target_include_directories(PotentialPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/incl
 
 target_link_libraries(PotentialPlot
 	DiagWindow
+	MolSpektAnalysisMainWindow
+	Potential
 	Residualfit
+	TableWindow
 	Qt5::Widgets
 )

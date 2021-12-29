@@ -28,5 +28,6 @@ target_include_directories(Residualfit PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 target_link_libraries(Residualfit
     Calc
 	FitObject
+	MolSpektAnalysisMainWindow
 	Qt5::Widgets
 )

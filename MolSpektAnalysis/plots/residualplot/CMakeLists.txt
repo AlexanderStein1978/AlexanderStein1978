@@ -19,5 +19,7 @@ target_include_directories(ResidualPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 
 target_link_libraries(ResidualPlot
 	DiagWindow
+	MolSpektAnalysisMainWindow
+	Residualfit
 	Qt5::Widgets
 )

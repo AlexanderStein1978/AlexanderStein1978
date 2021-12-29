@@ -22,5 +22,6 @@ target_include_directories(AddSpektrum PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 
 target_link_libraries(AddSpektrum
 	DiagWindow
+	Spektrum
 	Qt5::Widgets
 )

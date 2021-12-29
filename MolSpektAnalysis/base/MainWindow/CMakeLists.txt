@@ -23,6 +23,7 @@ target_link_libraries(MolSpektAnalysisMainWindow
 	DunhamCoefficients
 	IntensityHistogram
 	PotentialControls
+	PotentialDialogs
 	ResidualPlot
 	TermTable
 	TermView

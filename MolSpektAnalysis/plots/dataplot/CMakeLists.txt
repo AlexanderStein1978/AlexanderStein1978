@@ -17,5 +17,6 @@ target_include_directories(DataPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(DataPlot
 	DiagWindow
+	MolSpektAnalysisMainWindow
 	Qt5::Widgets
 )
