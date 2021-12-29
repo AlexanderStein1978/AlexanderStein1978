@@ -17,5 +17,6 @@ target_include_directories(Wavefuncs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Wavefuncs
 	MdiChild
+	Potential
 	Qt5::Widgets
 )

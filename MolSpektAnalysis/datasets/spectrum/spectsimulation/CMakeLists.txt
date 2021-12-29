@@ -21,6 +21,7 @@ target_include_directories(SpectSimulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 
 target_link_libraries(SpectSimulation
 	DiagWindow
+	MolSpektAnalysisMainWindow
 	Potential
 	Templates
 	Qt5::Widgets

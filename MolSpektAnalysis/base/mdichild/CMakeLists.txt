@@ -13,7 +13,7 @@ add_library(MdiChild STATIC
 
 target_include_directories(MdiChild PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(MdiChild 
+target_link_libraries(MdiChild PRIVATE
 	MolSpektAnalysisMainWindow
 	Qt5::Widgets
 )

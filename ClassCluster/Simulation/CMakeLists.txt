@@ -11,6 +11,7 @@ add_library(Simulation STATIC
     include/window.h
     include/Calculation.h
     include/particle.h
+    include/potstruct.h
     Calculation.cpp
     deltaesortfunctor.h
 	vector.cpp
@@ -21,7 +22,8 @@ add_library(Simulation STATIC
 target_include_directories(Simulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Simulation
-    ControlWindow
+    ParticleWatch
+    PotentialTypes
     Potential
     Templates
     Tools

@@ -16,8 +16,8 @@ add_executable(ClassCluster_test
 )
 
 target_link_libraries(ClassCluster_test
-    Simulation
     Potential
+    Simulation
     Templates
     Tools
     gtest

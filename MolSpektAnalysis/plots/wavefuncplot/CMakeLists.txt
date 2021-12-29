@@ -15,5 +15,8 @@ target_include_directories(WaveFuncPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 
 target_link_libraries(WaveFuncPlot
 	DiagWindow
+	MolSpektAnalysisMainWindow
+	MonteCarloSim
+	PotentialStructs
 	Qt5::Widgets
 )
