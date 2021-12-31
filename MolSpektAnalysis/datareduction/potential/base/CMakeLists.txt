@@ -20,10 +20,15 @@ add_library(Potential STATIC
 target_include_directories(Potential PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Potential PRIVATE
+	Calc
+	LineTable
 	MdiChild
 	MonteCarloSim
 	PotentialDialogs
 	PotentialStructs
 	PotentialTypes
+	TableWindow
+	TermTable
+	Tools
 	Qt5::Widgets
 )

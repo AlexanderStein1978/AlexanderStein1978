@@ -16,7 +16,9 @@ add_library(PotentialStructs STATIC
 
 target_include_directories(PotentialStructs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(PotentialStructs
+target_link_libraries(PotentialStructs PRIVATE
 	MonteCarloSim
+	Tools
+	Residualfit
 	Qt5::Widgets
 )

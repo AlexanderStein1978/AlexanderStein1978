@@ -21,8 +21,12 @@ add_library(PotentialTypes STATIC
 
 target_include_directories(PotentialTypes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(PotentialTypes
+target_link_libraries(PotentialTypes PRIVATE
+	Calc
+	LineTable
     MonteCarloSim
 	Potential
+	PotentialStructs
+	Tools
 	Qt5::Widgets
 )

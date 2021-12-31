@@ -17,6 +17,7 @@ target_include_directories(DiagWindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 
 target_link_libraries(DiagWindow
     MdiChild
+	MolSpektAnalysisMainWindow
 	Tools
 	Qt5::Widgets
 )

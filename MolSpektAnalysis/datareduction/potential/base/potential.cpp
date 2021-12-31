@@ -10,7 +10,6 @@
 
 #include "potential.h"
 #include "tools.h"
-#include "MainWindow.h"
 #include "termtable.h"
 #include "linetable.h"
 #include "molecule.h"

@@ -24,6 +24,7 @@ target_link_libraries(MolSpektAnalysisMainWindow
 	IntensityHistogram
 	PotentialControls
 	PotentialDialogs
+	PotentialPlot
 	ResidualPlot
 	TermTable
 	TermView

@@ -3,6 +3,7 @@
 #include "potential.h"
 #include "potentialplot.h"
 #include "controlwindow.h"
+#include "MainWindow.h"
 
 #include <QLineEdit>
 #include <QPushButton>

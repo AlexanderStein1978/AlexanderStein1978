@@ -19,6 +19,8 @@
 class IsoTab;
 class TableLine;
 class TermTable;
+class Transition;
+
 
 /**
 	@author Alexander Stein <AlexanderStein@t-online.de>

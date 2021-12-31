@@ -27,7 +27,7 @@ add_library(PotentialDialogs STATIC
 
 target_include_directories(PotentialDialogs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(PotentialDialogs
+target_link_libraries(PotentialDialogs PRIVATE
     MolSpektAnalysisMainWindow
 	Tools
 	Qt5::Widgets

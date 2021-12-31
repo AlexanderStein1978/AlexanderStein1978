@@ -13,8 +13,9 @@ add_library(Calc STATIC
 
 target_include_directories(Calc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(Calc
+target_link_libraries(Calc PRIVATE
     Molecule
+	Residualfit
 	Tools
 	Qt5::Widgets
 )

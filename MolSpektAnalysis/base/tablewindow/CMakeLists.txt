@@ -17,7 +17,8 @@ add_library(TableWindow STATIC
 
 target_include_directories(TableWindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(TableWindow
+target_link_libraries(TableWindow PRIVATE
 	MdiChild
+	MolSpektAnalysisMainWindow
 	Qt5::Widgets
 )

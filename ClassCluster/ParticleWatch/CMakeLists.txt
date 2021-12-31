@@ -19,7 +19,9 @@ add_library(ParticleWatch STATIC
 
 target_include_directories(ParticleWatch PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(ParticleWatch
+target_link_libraries(ParticleWatch PRIVATE
+	MdiChild
+	MonteCarloSim
     Simulation
     TableWindow
     Qt5::Widgets

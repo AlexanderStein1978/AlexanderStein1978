@@ -17,7 +17,13 @@ add_executable(MolSpektAnalysis_test
 
 target_link_libraries(MolSpektAnalysis_test
 	gtest
+	Calc
+	LineTable
+	MdiChild
+	MonteCarloSim
 	Potential
+	PotentialStructs
+	Residualfit
 	TableWindow
 	Tools
 	Qt5::Core

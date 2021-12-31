@@ -24,7 +24,8 @@ add_library(MonteCarloSim STATIC
 
 target_include_directories(MonteCarloSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(MonteCarloSim
+target_link_libraries(MonteCarloSim PRIVATE
+	MolSpektAnalysisMainWindow
 	TableWindow
 	Qt5::Widgets
 )

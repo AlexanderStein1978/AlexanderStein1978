@@ -22,6 +22,7 @@ target_include_directories(Progressions PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 target_link_libraries(Progressions
 	Datensatz
 	Molecule
+	MolSpektAnalysisMainWindow
 	MolSpektAnalysisStructs
 	Qt5::Widgets
 )

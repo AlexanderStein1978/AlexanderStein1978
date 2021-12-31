@@ -61,7 +61,7 @@ void CouplingFuncs::getData(int &Nb, double *&b, double &binf, double &Rs, doubl
     epsilon = Tab->item(n+3, 1)->text().toDouble();
 }
 
-void CouplingFuncs::getTexTable()
+QTextEdit *CouplingFuncs::getTexTable()
 {
     int Nb, NR = (m_Nb + 5) / 2, n;
     double *b, binf, Rs, Rc, epsilon;
@@ -84,5 +84,5 @@ void CouplingFuncs::getTexTable()
     TexTable << "\\hline" << "\\end{tabular}" << "\\end{table}";
     QTextEdit *Window = new QTextEdit();
     Window->setPlainText(TexTable.join("\n"));
-    MW->showMDIChild(Window);
+    return Window;
 }

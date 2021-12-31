@@ -15,6 +15,8 @@
 
 #include "potential.h"
 
+class QTextEdit;
+
 
 class CouplingFuncs : public Potential
 {
@@ -36,7 +38,7 @@ public:
 
     void setData(int Nb, double* b, double binf, double Rs, double Rc, double epsilon, double xi_Rx_s, double xi_eps);
     void getData(int& Nb, double*& b, double& binf, double& Rs, double &Rc, double& epsilon);
-    void getTexTable();
+    QTextEdit* getTexTable();
 
 private:
 

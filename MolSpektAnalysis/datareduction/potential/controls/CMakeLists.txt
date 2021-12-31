@@ -22,6 +22,7 @@ add_library(PotentialControls STATIC
 target_include_directories(PotentialControls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(PotentialControls
+	MolSpektAnalysisMainWindow
 	TableWindow
 	Qt5::Widgets
 )
