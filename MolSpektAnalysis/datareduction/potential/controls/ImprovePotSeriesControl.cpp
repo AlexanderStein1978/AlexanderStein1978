@@ -14,6 +14,7 @@
 #include "potential.h"
 #include "utils.h"
 #include "elstate.h"
+#include "MainWindow.h"
 
 #include <QDir>
 

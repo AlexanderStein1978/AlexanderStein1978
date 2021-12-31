@@ -13,6 +13,8 @@
 
 #include <tablewindow.h>
 
+class TermTable;
+
 
 class TermView : public TableWindow
 {

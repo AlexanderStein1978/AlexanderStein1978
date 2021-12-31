@@ -28,6 +28,7 @@ class TableLine;
 class LineTable;
 class TermEnergy;
 class ResidualFit;
+class Spektrum;
 
 class QListWidget;
 

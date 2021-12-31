@@ -12,7 +12,6 @@
 #define TABLEWINDOW_H
 
 #include "mdichild.h"
-#include "MainWindow.h"
 #include "viewlist.h"
 #include "mtable.h"
 #include "tabsortfunctor.h"
@@ -27,6 +26,7 @@
 
 class QProgressBar;
 class Molecule;
+class ElState;
 
 
 class TableWindow : public MDIChild

@@ -14,6 +14,7 @@
 #include "elstate.h"
 #include "fitdata.h"
 #include "utils.h"
+#include "MainWindow.h"
 
 
 MonteCarloSimControl::MonteCarloSimControl(MainWindow* mw, Potential* Pot, QString PotDir, int NumIterations, int NumParFits, 

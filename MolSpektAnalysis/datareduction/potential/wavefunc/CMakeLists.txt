@@ -16,7 +16,10 @@ add_library(Wavefuncs STATIC
 target_include_directories(Wavefuncs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Wavefuncs
+	FitObject
 	MdiChild
+	Molecule
 	Potential
+	Residualfit
 	Qt5::Widgets
 )

@@ -4108,7 +4108,7 @@ void MainWindow::showTexTable()
         CouplingFuncs* CF;
         for (i=0; (i < numPotentials ? W != potentials[i] : false); i++) ;
         if (i < numPotentials) potentials[i]->getTexTable(NumPoints);
-        else if ((CF = dynamic_cast<CouplingFuncs*>(W)) != 0) CF->getTexTable();
+        else if ((CF = dynamic_cast<CouplingFuncs*>(W)) != 0) workspace->addSubWindow(CF->getTexTable());
         else
 		{
 			printf("MainWindow::showTexTable() error: For the active window has no function defined for creating a tex table!\n");

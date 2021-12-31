@@ -22,7 +22,7 @@ add_library(LineTable STATIC
 
 target_include_directories(LineTable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(LineTable
+target_link_libraries(LineTable PRIVATE
 	Molecule
 	MolSpektAnalysisMainWindow
 	PotentialPlot

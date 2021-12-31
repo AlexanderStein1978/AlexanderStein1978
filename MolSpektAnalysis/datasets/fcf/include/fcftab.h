@@ -18,6 +18,7 @@
 
 class MainWindow;
 class Molecule;
+class Transition;
 
 
 class FCFTab : public TableWindow

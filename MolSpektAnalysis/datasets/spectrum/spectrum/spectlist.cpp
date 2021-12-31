@@ -12,6 +12,7 @@
 #include "spectlist.h"
 #include "intprog.h"
 #include "Spektrum.h"
+#include "MainWindow.h"
 
 #include <QFile>
 #include <QFileDialog>

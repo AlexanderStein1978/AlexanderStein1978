@@ -22,9 +22,17 @@ add_library(Simulation STATIC
 target_include_directories(Simulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Simulation
+	Calc
+	DiagWindow
+	LineTable
+	MdiChild
+	MonteCarloSim
     ParticleWatch
+	PotentialStructs
     PotentialTypes
     Potential
+	Residualfit
+	TableWindow
     Templates
     Tools
     Qt5::Widgets

@@ -35,6 +35,7 @@ class SplinePot;
 class CouplingFuncs;
 class CoupledSineWaveFunc;
 class PotFitLogWindow;
+class TermTable;
 
 struct SplinePoint;
 struct WantedCoeffValue;

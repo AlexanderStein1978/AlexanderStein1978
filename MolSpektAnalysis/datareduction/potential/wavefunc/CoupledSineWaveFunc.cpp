@@ -12,7 +12,6 @@
 #include "CoupledSineWaveFunc.h"
 #include "naturalspline.h"
 #include "utils.h"
-#include "MainWindow.h"
 #include "molecule.h"
 #include "SplinePoint.h"
 
