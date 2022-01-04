@@ -24,7 +24,7 @@
 const double UaMax = 1e6;
 
 
-Calculation::Calculation(PotStruct* PotSs, QObject* parent): Error_Double(0.0/0.0), QThread(parent), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
     Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
 {
 	//printf("Calculation::Calculation\n");

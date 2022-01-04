@@ -85,7 +85,7 @@ class AnaPot : public PotWorker
 		}
 		
 	protected:
-		double *Points(double Rmin, double Rmax, int nPoints, int FC = 0);
+		double *Points(double Rmin, double Rmax, int nPoints, int FC = 0, std::function<double(const double)> mapping = [](const double x){return x;}) override;
 		void saveCoefficients(double *&bC);
 		void updatePotential(double *C);
 		void getLRCoeff(double &R, int &numCoefficients, int *&Exponents, double *&Coefficients);
