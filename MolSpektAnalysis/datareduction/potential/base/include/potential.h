@@ -168,14 +168,14 @@ public:
 		Worker->getSFQSU(SFQSU, mJ, mv);
 	}
 	
-	inline double *getPoints(double Rmin, double Rmax, int numPoints, int FC = 0)
+	inline double *getPoints(double Rmin, double Rmax, int numPoints, int FC = 0, std::function<double(const double)> mapping = [](const double x){return x;})
 	{
-		return Worker->getPoints(Rmin, Rmax, numPoints, FC);
+		return Worker->getPoints(Rmin, Rmax, numPoints, FC, mapping);
 	}
 
-    inline double *get_dVdR(const double Rmin, const double Rmax, const int numPoints) const
+    inline double *get_dVdR(const double Rmin, const double Rmax, const int numPoints, std::function<double(const double)> mapping = [](const double x){return x;}) const
     {
-        return Worker->get_dVdR(Rmin, Rmax, numPoints);
+        return Worker->get_dVdR(Rmin, Rmax, numPoints, mapping);
     }
 	
 	inline double getPoint(double R, int FC = 0)

@@ -14,6 +14,7 @@
 
 
 #include <QObject>
+#include <functional>
 
 #include "fitresult.h"
 #include "wantedcoeffvalue.h"
@@ -87,9 +88,9 @@ public:
 	void CreateFitEQS(int &N, double **&EQS, double *&EO, double *&DE, double *&Sig, double *&Err, int **&QN, int NP, int nEs, 
 					  int *NEL, TermEnergy **EL, int nGS, int *nGP, int *nGL, int **PS, TableLine **GL, int AdRows = 0);
     void calcE(double ****E, int *mJ, int **mv, int Mv, int NumWFPoints, double ****MinErr = 0, bool ****SFQSU = 0, double SFQSRad = 0.0);
-	double *getPoints(double Rmin, double Rmax, int numPoints, int FC = 0);
-    double *get_dVdR(const double Rmin, const double Rmax, const int numPoints) const;
-	double getPoint(double R, int FC = 0);
+    double *getPoints(double Rmin, double Rmax, int numPoints, int FC = 0, std::function<double(const double)> mapping = [](const double x){return x;});
+    double *get_dVdR(const double Rmin, const double Rmax, const int numPoints, std::function<double(const double)> mapping = [](const double x){return x;}) const;
+    double getPoint(double R, int FC = 0);
     void getDiagFuncs(double *&WFS, double *&WWFS, int NumWFPoints);
 	bool setMolData(IsoTab *IsoT, double *MU, double *IsoF);
 	void takeMolData(IsoTab *&IsoT, double *&MU, double *&IsoF);
@@ -370,9 +371,10 @@ protected:
 	virtual void calcS(int numPoints, double RMin, double RMax);
 	virtual double Point(double R, int FC = 0);
 	virtual void setCurValuesForWantedValues();
-	virtual double *Points(double Rmin, double Rmax, int numPoints, int FC = 0);
-    virtual double *dVdR(const double Rmin, const double Rmax, const int numPoints) const;
-	
+	virtual double *Points(double Rmin, double Rmax, int numPoints, int FC = 0, std::function<double(const double)> mapping = [](const double x){return x;});
+    virtual double *dVdR(const double Rmin, const double Rmax, const int numPoints, std::function<double(const double)> mapping = [](const double x){return x;}) const;
+    virtual void calcLMatrix();
+
 	PotentialType Type;
 	SplinePoint *points;
 	int numSplinePoints; 
@@ -402,7 +404,6 @@ private:
 	   					double **EQS, double *EO, double *DE, double *Sig, double *Err, int **QN);
 	void DestroyPotentials();
 	void DestroyLS();
-	void calcLMatrix();
 	void calcLMEQS(int NEQ, double **EQS, double *Sig, double *Diff, double **LMEQS, double hCi_cP);
 	int splineFit(bool *RPoints, double &FQSv, double &FQSn, int *&mJ, int **&mv, int &Mv, int &nEs,
 				  int *&NEL, TermEnergy **&EL, int &nGS, int *&nGP, int *&nGL, int **&PS, 

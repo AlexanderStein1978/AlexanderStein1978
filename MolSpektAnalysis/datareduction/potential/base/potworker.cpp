@@ -2878,17 +2878,17 @@ double PotWorker::getMinR(double E, double Prec)
     return R2;
 }
 
-double *PotWorker::getPoints(double Ri, double Ra, int N, int FC)
+double *PotWorker::getPoints(double Ri, double Ra, int N, int FC, std::function<double(const double)> mapping)
 {
     //printf("Potential::getPoints, Ri=%f, Ra=%f, N=%d\n", Ri, Ra, N);
     QMutexLocker lock(Lock);
-    return Points(Ri, Ra, N, FC);
+    return Points(Ri, Ra, N, FC, mapping);
 }
 
-double *PotWorker::get_dVdR(const double Rmin, const double Rmax, const int numPoints) const
+double *PotWorker::get_dVdR(const double Rmin, const double Rmax, const int numPoints, std::function<double(const double)> mapping) const
 {
     QMutexLocker lock(Lock);
-    return dVdR(Rmin, Rmax, numPoints);
+    return dVdR(Rmin, Rmax, numPoints, mapping);
 }
 
 PotentialData* PotWorker::getPotentialData()
@@ -2941,12 +2941,12 @@ PotentialData* PotWorker::getPotentialData()
     return R;
 }
 
-double* PotWorker::Points(double Ri, double Ra, int N, int FC)
+double* PotWorker::Points(double Ri, double Ra, int N, int FC, std::function<double(const double)> mapping)
 {
     if (Type == NoPotential) return 0;
     double *R = new double[N], r, s = (Ra - Ri) / double(N - 1);
     int n;
-    for (n=0, r = Ri; n<N; n++, r+=s) R[n] = Point(r, FC);
+    for (n=0, r = Ri; n<N; n++, r+=s) R[n] = Point(mapping(r), FC);
     return R;
 }
 
@@ -3042,33 +3042,45 @@ double PotWorker::Point(double R, int /*FC*/)
                        + B*(B*B-1.0) * points[n].yss) * 0.16666666666667;
 }
 
-double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoints) const
+double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoints, std::function<double(const double)> mapping) const
 {
-    const double h = (Rmax - Rmin) / (numPoints - 1);
+    double h = (Rmax - Rmin) / (numPoints - 1);
     double *Ret = new double[numPoints], R = Rmin;
     int n = 0;
+    if (mapping(Rmin) > mapping(Rmax))
+    {
+        R = Rmax;
+        h *= -1.0;
+    }
     if (Rmin < points[0].x)
     {
         const double F = -iExp * iA, exp = -iExp - 1.0;
-        for ( ; R < points[0].x && n < numPoints; ++n, R+=h) Ret[n] = F * pow(R, exp);
+        for ( ; n < numPoints; ++n, R+=h)
+        {
+            const double r = mapping(R);
+            if (r > points[0].x) break;
+            Ret[n] = F * pow(r, exp);
+        }
     }
     if (Rmin < points[numSplinePoints - 1].x && n < numPoints)
     {
         int p = 1;
         double deltaX, dDeltaX = -1.0, A, B, Q, deltaXdsix, yssF1, yssF2;
         const double one = 1.0, three = 3.0, dsix = one / 6.0;
-        for ( ; R < points[numSplinePoints - 1].x && n < numPoints; ++n, R+=h)
+        for ( ; n < numPoints; ++n, R+=h)
         {
-            if (R > points[p].x || dDeltaX < 0.0)
+            const double r = mapping(R);
+            if (r > points[numSplinePoints - 1].x) break;
+            if (r > points[p].x || dDeltaX < 0.0)
             {
-                while (R > points[p].x) ++p;
+                while (r > points[p].x) ++p;
                 dDeltaX = 1.0 / (deltaX = points[p].x - points[p-1].x);
                 Q = (points[p].y - points[p-1].y) * dDeltaX;
                 deltaXdsix = deltaX * dsix;
                 yssF1 = deltaXdsix * points[p-1].yss;
                 yssF2 = deltaXdsix * points[p].yss;
             }
-            B = 1.0 - (A = (points[p].x - R) * dDeltaX);
+            B = 1.0 - (A = (points[p].x - r) * dDeltaX);
             Ret[n] = Q - (three * A * A - one) * yssF1 + (three * B * B - one) * yssF2;
         }
     }
@@ -3079,7 +3091,7 @@ double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoint
         int p, i;
         for ( ; n < numPoints; ++n, R+=h)
         {
-            for (i = NLRC - 2, p = PLRC[NLRC-1], Res = static_cast<double>(p) * LRC[NLRC - 1], dR = one / R; i>=0 ; --i)
+            for (i = NLRC - 2, p = PLRC[NLRC-1], Res = static_cast<double>(p) * LRC[NLRC - 1], dR = one / mapping(R); i>=0 ; --i)
             {
                 while (p > PLRC[i])
                 {
@@ -3090,6 +3102,12 @@ double* PotWorker::dVdR(const double Rmin, const double Rmax, const int numPoint
             }
             Ret[n] = Res * pow(dR, one + static_cast<double>(PLRC[0]));
         }
+    }
+    if (h < 0.0) for (n=0; n < numPoints / 2; ++n)
+    {
+        const double B = Ret[n];
+        Ret[n] = Ret[numPoints - n - 1];
+        Ret[numPoints - n - 1] = B;
     }
     return Ret;
 }

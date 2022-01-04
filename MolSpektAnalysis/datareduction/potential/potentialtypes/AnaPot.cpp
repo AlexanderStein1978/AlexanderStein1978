@@ -140,26 +140,31 @@ AnaPot* AnaPot::scalePotential(double newRe, double newDe)
     return RPot;
 }
 
-double *AnaPot::Points(double RMin, double RMax, int nP, int)
+double *AnaPot::Points(double RMin, double RMax, int nP, int, std::function<double(const double)> mapping)
 {
     //printf("getPointRep: nP=%d\n", nP);
     if (nLRCoeff <= 0 || nPotCoeff <= 0 || Ri == 0.0 || nP <= 0 || RMin >= RMax) return NULL;
-    double *RA = new double[nP], h = (RMax - RMin) / double(nP - 1), R, x, edR;
-    int i, Ni = int((Ri - RMin) / h), Na = int((Ra - RMin) / h), n, p;
+    double *RA = new double[nP], h = (RMax - RMin) / double(nP - 1), R = RMin, x, edR;
+    int i, n, p;
     //printf("Ni=%d, Na=%d, Np=%d\n", Ni, Na, nP);
-    if (Ni < 0) Ni = -1;
-    if (Na < 0) Na = -1;
-    if (Ni >= nP) Ni = nP - 1;
-    if (Na >= nP) Na = nP - 1;
-    for (i=0, R = RMin; i <= Ni; i++)
+    if (mapping(RMin) > mapping(RMax))
     {
-        RA[i] = iOff + iCoeff * pow(R, -iExp);
+        R = RMax;
+        h *= -1.0;
+    }
+    for (i=0; i < nP; i++)
+    {
+        const double r = mapping(R);
+        if (r > Ri) break;
+        RA[i] = iOff + iCoeff * pow(r, -iExp);
         //printf("RA[%d]=%g\n", i, RA[i]);
         R += h;
     }
-    for (i = Ni + 1; i <= Na; i++)
+    for (; i < nP; i++)
     {
-        x = (R - Rm) / (R + b * Rm);
+        const double r = mapping(R);
+        if (r > Ra) break;
+        x = (r - Rm) / (r + b * Rm);
         for (n = nPotCoeff - 1, RA[i] = 0.0; n >= 0; n--)
         {
             RA[i] += PotCoeff[n];
@@ -168,9 +173,10 @@ double *AnaPot::Points(double RMin, double RMax, int nP, int)
         RA[i] += Tm;
         R += h;
     }
-    for (i = Na + 1; i < nP; i++)
+    for (; i < nP; i++)
     {
-        edR = 1.0 / R;
+        const double r = mapping(R);
+        edR = 1.0 / r;
         for (n = nLRCoeff - 1, p = pLRCoeff[nLRCoeff-1], RA[i] = 0.0; n >= 0; n--)
         {
             while (p > pLRCoeff[n]) 
@@ -182,8 +188,14 @@ double *AnaPot::Points(double RMin, double RMax, int nP, int)
         }
         RA[i] *= pow(edR, pLRCoeff[0]);
         RA[i] += Uinf;
-        if (A_ex != 0.0) RA[i] -= A_ex * pow(R, gamma) * exp(-beta * R);
+        if (A_ex != 0.0) RA[i] -= A_ex * pow(r, gamma) * exp(-beta * r);
         R += h;
+    }
+    if (h < 0.0) for (i=0; i < nP / 2; ++i)
+    {
+        const double B = RA[i];
+        RA[i] = RA[nP - i - 1];
+        RA[nP - i - 1] = B;
     }
     //printf("Ende getPointRep\n");
     return RA;
