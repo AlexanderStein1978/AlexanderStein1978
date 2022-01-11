@@ -874,7 +874,11 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 
 void Calculation::checkPotential(const PotRole role)
 {
-    if (role == ClosestTwo) checkPotentials();
+    if (role == ClosestTwo)
+    {
+        if (Pot[ClosestTwo] != nullptr) potentialOK[role] = true;
+        checkPotentials();
+    }
     else if (Pot[role] != nullptr)
     {
         potentialOK[role] = true;
