@@ -55,9 +55,9 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
     {
         Pot[n] = nullptr;
         dPdR[n] = nullptr;
-        if (nullptr != PotSs && nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
+        potentialOK[n] = false;
     }
-	
+    if (nullptr != PotSs) for (n=0; n < NumPot; ++n) if (nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
 	PZS = int(round(MaxZ / Re));
 	PYS = int(round(MaxY / Re)); 
 	PXS = int(round(MaxX / Re));
@@ -575,7 +575,7 @@ void Calculation::move()
 void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
-    for (int n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return;
+    for (int n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr || !potentialOK[n]) return;
     int n, i, x, y, z; // m;
     bool isNotFirstIt(false);
     Vector *a = new Vector[N], *dm = new Vector[N], *dvm = new Vector[N], *dt = new Vector[N], *t0 = new Vector[N];
@@ -856,7 +856,7 @@ double Calculation::setKineticEnergy(const double newT)
 	return Energy;
 }
 
-void Calculation::setPotential(const PotRole role, PotStruct &PotS)
+bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 {
     if (Pot[role] != nullptr) delete[] Pot[role];
     if (dPdR[role] != nullptr) delete[] dPdR[role];
@@ -868,6 +868,33 @@ void Calculation::setPotential(const PotRole role, PotStruct &PotS)
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;
     }
+    checkPotential(role);
+    return potentialOK[role];
+}
+
+void Calculation::checkPotential(const PotRole role)
+{
+    if (role == ClosestTwo) checkPotentials();
+    else if (Pot[role] != nullptr)
+    {
+        potentialOK[role] = true;
+        if (Pot[ClosestTwo]  != nullptr) for (int n=0; n < NPot && Pot[ClosestTwo][n] > 0.0; ++n) if (Pot[role][n] < Pot[ClosestTwo][n])
+        {
+            potentialOK[role] = false;
+            break;
+        }
+    }
+}
+
+void Calculation::checkPotentials()
+{
+    for (int n = 1; n < NumPot; ++n) checkPotential(static_cast<PotRole>(n));
+}
+
+bool Calculation::arePotentialsOK()
+{
+    for (int n = ClosestTwo; n != NumPot; ++n) if (!potentialOK[n]) return false;
+    return true;
 }
 
 void Calculation::setSpeed(double S)

@@ -44,8 +44,9 @@ class Calculation : public QThread
         void rotate();
         void triggerSnapShot();
         Particle* getParticles(int &N);
-        void setPotential(const PotRole role, PotStruct &Pot);
+        bool setPotential(const PotRole role, PotStruct &Pot);
         void setLayerDistance(double newDistance);
+        bool arePotentialsOK();
         
         void setParticleWatchPoint(WatchPoint* point)
         {
@@ -128,7 +129,10 @@ class Calculation : public QThread
         void updateBindings();
         static double dist(const Particle *const P1, const Particle *const P2);
         static bool isNotBound(const Particle *const P1, const Particle *const P2);
+        void checkPotentials();
+        void checkPotential(const PotRole role);
 
+        bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
