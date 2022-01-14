@@ -16,7 +16,9 @@ public:
     {
         if (n1 == -1) return false;
         if (n2 == -1) return true;
-        return mParticles[n1].v.lengthSquared() > mParticles[n2].v.lengthSquared();
+        double l1(mParticles[n1].v.lengthSquared()), l2(mParticles[n2].v.lengthSquared());
+        if (l1 < l2 && l1 > l2) return false;
+        return (l1 > l2);
     }
 
 private:
