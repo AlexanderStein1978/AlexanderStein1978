@@ -55,6 +55,7 @@ class Window : public QWidget
         void writeSnapShot(QString fileName);
         void emitReloadPotentials();
         void copyDataIfNew(QByteArray& data, const QByteArray& sendCommand);
+        char* getDrawingDataToFill(const int N);
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);

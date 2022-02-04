@@ -14,7 +14,14 @@ public:
     void SendCommand(const Command command, const QString parameter);
 
 protected:
-    void dataReceived();
+    void dataReceived() override;
+    void commandReceived(const Command command) override;
+
+private:
+    void readData();
+
+    bool mWaitingForData;
+    qint32 mDataLength;
 };
 
 #endif // NETWORKCLIENT_H
