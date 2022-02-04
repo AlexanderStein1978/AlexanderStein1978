@@ -4,7 +4,7 @@ project(Simulation)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 
 add_library(Simulation STATIC
 	include/vector.h
@@ -27,6 +27,7 @@ target_link_libraries(Simulation
 	LineTable
 	MdiChild
 	MonteCarloSim
+	Network
     ParticleWatch
 	PotentialStructs
     PotentialTypes
@@ -35,5 +36,6 @@ target_link_libraries(Simulation
 	TableWindow
     Templates
     Tools
+	Qt5::Network
     Qt5::Widgets
 )
