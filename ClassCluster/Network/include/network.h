@@ -25,8 +25,12 @@ public:
 
 protected:
     void run();
-    virtual void dataReceived() = 0;
+    virtual void dataReceived();
+    virtual void commandReceived(const Command command);
+    double readDouble(bool complete);
+    quint32 readUint32(bool complete);
 
+    qint64 minimumDataToRead;
     QTcpSocket* mSocket;
     Window* mWindow;
     QMap<QByteArray, Command> mCommandMap;

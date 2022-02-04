@@ -6,18 +6,8 @@ NetworkServer::NetworkServer(Window *window) : Network(window)
 {
 }
 
-void NetworkServer::dataReceived()
+void NetworkServer::commandReceived(const Command command)
 {
-    char buffer[SIZE_OF_COMMAND_STRINGS + 1];
-    memset(buffer, 0, SIZE_OF_COMMAND_STRINGS + 1);
-    quint64 bytesRead = mSocket->readData(buffer, SIZE_OF_COMMAND_STRINGS);
-    bool complete = true;
-    if (bytesRead < SIZE_OF_COMMAND_STRINGS)
-    {
-        SendCommand(ERROR_INCOMPLETE);
-        return;
-    }
-    Command command(mCommandMap.value(buffer, ERROR_UNKNOWN_COMMAND));
     switch (command)
     {
     case START:
@@ -102,13 +92,9 @@ void NetworkServer::dataReceived()
 
 QString NetworkServer::readString()
 {
-    quint32 size;
-    bytesRead = mSocket->readData(reinterpret_cast<char*>(&size), sizeof(quint32));
-    if (bytesRead < quint32)
-    {
-        SendCommand(ERROR_INCOMPLETE);
-        return "";
-    }
+    bool complete = true;
+    quint32 size(readUint32(complete));
+    if (!complete) return;
     QString filename;
     filename.resize(size);
     bytesRead = mSocket->readData(filename.data(), size);
@@ -120,21 +106,9 @@ QString NetworkServer::readString()
     return filename;
 }
 
-double NetworkServer::readDouble(bool complete)
-{
-    double value;
-    bytesRead = mSocket->readData(reinterpret_cast<char*>(&value), sizeof(double));
-    if (bytesRead < sizeof(double))
-    {
-        SendCommand(ERROR_INCOMPLETE);
-        complete = false;
-    }
-    return value;
-}
-
 void NetworkServer::SendData()
 {
     QByteArray data;
     mWindow->copyDataIfNew(data, mCommandMap.key(DATA_FOLLOWING));
-    if (data.length() > 24) SendCommand(data);
+    if (data.length() > 28) SendCommand(data);
 }

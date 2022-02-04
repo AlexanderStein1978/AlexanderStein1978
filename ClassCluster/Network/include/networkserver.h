@@ -13,11 +13,10 @@ public:
     void SendData();
 
 protected:
-    void dataReceived();
+    void commandReceived(const Command command) override;
 
 private:
     QString readString();
-    double readDouble(bool complete);
 };
 
 #endif // NETWORKSERVER_H

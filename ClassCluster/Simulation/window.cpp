@@ -29,7 +29,6 @@ Window::Window(PotStruct *PotSs) : mServer(nullptr), mNetworkClient(nullptr), mN
     connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
     connect(Calc, SIGNAL(PictureChanged(Vector*, int)),
             this, SLOT(draw(Vector*, int)));
-    connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SIGNAL(EnergiesChanged(double,double)));
     connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SLOT(updateRemoteEnergies(double,double)));
 }
 
@@ -102,19 +101,35 @@ void Window::copyDataIfNew(QByteArray &data, const QByteArray &sendCommand)
         return;
     }
     mWaitingForData = mDataIsNew = false;
-    data.reserve(19224);
+    const size_t headerSize = 28;
+    const size_t dataSize = mN * 24 + headerSize;
+    data.reserve(dataSize);
     data += sendCommand;
-    data.resize(19224);
+    data.resize(dataSize);
     char* dataPtr = data.data();
-    memcpy(data + 8, &mRemoteKineticEnergy, 8);
-    memcpy(data + 16, &mRemoteTotalEnergy, 8);
-    memcpy(data + 24, mPos, 19200);
+    quint32 remoteN = mN;
+    memcpy(dataPtr + 8, &mRemoteKineticEnergy, 8);
+    memcpy(dataPtr + 16, &mRemoteTotalEnergy, 8);
+    memcpy(dataptr + 24, &remoteN, 4);
+    memcpy(dataPtr + headerSize, mPos, dataSize - headerSize);
+}
+
+char* Window::getDrawingDataToFill(const int N)
+{
+    if (mN != N)
+    {
+        destroyData();
+        mN = N;
+        mPos = new Vector[N];
+    }
+    return reinterpret_cast<char*>(mPos);
 }
 
 void Window::updateRemoteEnergies(const double kineticEnergy, const double totalEnergy)
 {
     mRemoteKineticEnergy = kineticEnergy;
     mRemoteTotalEnergy = totalEnergy;
+    emit EnergiesChanged(kineticEnergy, totalEnergy);
 }
 
 void Window::paintEvent(QPaintEvent *e)
