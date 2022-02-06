@@ -50,7 +50,10 @@ class Window : public QWidget
         int getNumParticles() const;
         static int getNumSteps();
         void setLayerDistance(const double newDistance);
-        void listenAsCalculationServer(const QString IpAddress);
+        bool listenAsCalculationServer(const QString IpAddress);
+        void connectToCalculationServer(const QString IpAddress);
+        void switchBackToLocalCalulations();
+        void stopListeningAsCalculationServer();
         void sendReloadPotentials();
         void writeSnapShot(QString fileName);
         void emitReloadPotentials();
@@ -60,11 +63,16 @@ class Window : public QWidget
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void ReloadPotentials();
+        void IsConnectedToServer();
+        void ConnectionFailed();
+
+    public slots:
+        void updateRemoteEnergies(const double kineticEnergy, const double totalEnergy);
 
     private slots:
         void draw(Vector* Pos, int N);
         void writeSnapShot(Particle* P, int N);
-        void updateRemoteEnergies(const double kineticEnergy, const double totalEnergy);
+        void newClientConnection();
 
     protected:
         void closeEvent(QCloseEvent *event) override;
@@ -72,7 +80,7 @@ class Window : public QWidget
 
     private:
         void destroyData();
-        void writeSnapShot(article* P, int N, QString& fileName);
+        void writeSnapShot(Particle* P, int N, QString& fileName);
 
         Picture *Pict;
         Calculation *Calc;

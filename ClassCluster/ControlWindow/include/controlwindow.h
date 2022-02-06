@@ -9,6 +9,7 @@ class QLineEdit;
 class QLabel;
 class QCloseEvent;
 class QPushButton;
+class QComboBox;
 
 class Window;
 class PotControl;
@@ -48,6 +49,18 @@ private slots:
     void ValueChanged();
     void EnergyRelevantValueChanged();
     void UpdateEnergies(double kinteticEnergy, double totalEnergy);
+    void networkSelectionChanged(int index);
+    void connectToServer();
+
+    inline void connectionEstablished()
+    {
+        setConnectionStatus(true);
+    }
+
+    void disconnected()
+    {
+        setConnectionStatus(false);
+    }
 
 protected:
     void focusInEvent(QFocusEvent *event) override;
@@ -56,11 +69,13 @@ private:
     void prepareWindow();
     void start();
     bool stopIfItsRunning();
+    void setConnectionStatus(bool connected);
 
     Window* window;
-    QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit;
-    QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel;
-    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move;
+    QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit, *IpAddressEdit;
+    QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel, *ConnectionStatus;
+    QComboBox *NetworkSelection;
+    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect;
     PotControl** PotControls;
     PotentialPlot* Plot;
     MainWindow *MW;

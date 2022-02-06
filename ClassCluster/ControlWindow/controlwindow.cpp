@@ -16,9 +16,9 @@
 #include <QDir>
 
 
-ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new QLineEdit(this)),
-    PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"),
-    MW(mw), ProgramPath(QDir::currentPath())
+ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new QLineEdit(this)), IpAddressEdit(new QLineEdit("192.168.1.1", this)),
+    ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
+    PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), MW(mw), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), kineticEnergy("-1.0"), rangeScale(QString::number(1.0, 'f', 3)), layerDistance("5.657");
@@ -74,6 +74,13 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     SettingsLayout->addWidget(PotentialEnergyLabel = new QLabel("Potential energy: ", this), 2, 0, 1, 2);
     SettingsLayout->addWidget(KineticEnergyLabel = new QLabel("Kinetic energy: ", this), 2, 2, 1, 2);
     SettingsLayout->addWidget(TotalEnergyLabel = new QLabel("Total energy: ", this), 2, 4, 1, 2);
+    SettingsLayout->addWidget(NetworkSelection, 3, 0, 1, 2);
+    NetworkSelection->addItems(QStringList() << "No network, use local calculation" << "Listen as calculation server" << "Connect to calculation server");
+    SettingsLayout->addWidget(new QLabel("IP Address:", this), 3, 2);
+    SettingsLayout->addWidget(IpAddressEdit, 3, 3);
+    SettingsLayout->addWidget(Connect, 3, 4);
+    SettingsLayout->addWidget(ConnectionStatus, 3, 5);
+    disconnected();
     L->setRowMinimumHeight(3, 20);
     L->addWidget(new QLabel("Interaction potentials:", this), 4, 0, 1, 4);
     L->addLayout(PotLayout, 5, 0, 1, 4);
@@ -106,6 +113,10 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     connect(LayerDistanceEdit, SIGNAL(editingFinished()), this, SLOT(EnergyRelevantValueChanged()));
     connect(MW, SIGNAL(MainWindowCloses()), this, SLOT(saveSettings()));
     connect(window, SIGNAL(EnergiesChanged(double,double)), this, SLOT(UpdateEnergies(double,double)));
+    connect(NetworkSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(networkSelectionChanged(int)));
+    connect(Connect, SIGNAL(clicked()), this, SLOT(connectToServer()));
+    connect(window, SIGNAL(IsConnectedToServer()), this, SLOT(connectionEstablished()));
+    connect(window, SIGNAL(ConnectionFailed()), this, SLOT(disconnected()));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -114,6 +125,47 @@ ControlWindow::~ControlWindow()
 {
     for (int n=0; n < Calculation::NumPot; ++n) delete PotControls[n];
     delete[] PotControls;
+}
+
+void ControlWindow::networkSelectionChanged(int index)
+{
+    switch(index)
+    {
+    case 0:
+        IpAddressEdit->setEnabled(false);
+        Connect->setEnabled(false);
+        window->switchBackToLocalCalulations();
+        window->stopListeningAsCalculationServer();
+        break;
+    case 1:
+        IpAddressEdit->setEnabled(true);
+        Connect->setEnabled(false);
+        Connect->setText("Listen");
+        window->switchBackToLocalCalulations();
+        break;
+    case 2:
+        IpAddressEdit->setEnabled(true);
+        Connect->setEnabled(true);
+        Connect->setText("Connect");
+        window->stopListeningAsCalculationServer();
+        break;
+    }
+}
+
+void ControlWindow::connectToServer()
+{
+    if (NetworkSelection->currentIndex() == 2) window->connectToCalculationServer(IpAddressEdit->text());
+    else setConnectionStatus(window->listenAsCalculationServer(IpAddressEdit->text()));
+}
+
+void ControlWindow::setConnectionStatus(bool connected)
+{
+    QPalette palette(ConnectionStatus->palette());
+    if (connected) palette.setColor(QPalette::WindowText, QColor(0, 255, 0));
+    else palette.setColor(QPalette::WindowText, QColor(255, 0, 0));
+    ConnectionStatus->setPalette(palette);
+    if (NetworkSelection->currentIndex() == 2) ConnectionStatus->setText(connected ? "connected" : "disconnected");
+    else ConnectionStatus->setText(connected ? "listening" : "failed");
 }
 
 void ControlWindow::UpdateEnergies(double kineticEnergy, double totalEnergy)

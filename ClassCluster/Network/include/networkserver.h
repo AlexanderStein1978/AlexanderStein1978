@@ -8,8 +8,10 @@
 class NetworkServer : public Network
 {
 public:
-    NetworkServer(Window *window);
+    NetworkServer(Window *window, QTcpSocket *socket);
 
+    bool IsConnected();
+    void NewConnection(QTcpSocket *socket);
     void SendData();
 
 protected:

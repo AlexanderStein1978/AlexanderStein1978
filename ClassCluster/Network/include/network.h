@@ -3,13 +3,14 @@
 
 
 #include <QThread>
+#include <QMap>
 
 class QTcpSocket;
 
 class Window;
 
 
-class Network : private QThread
+class Network : public QThread
 {
 public:
     enum Command
@@ -26,7 +27,7 @@ public:
 protected:
     void run();
     virtual void dataReceived();
-    virtual void commandReceived(const Command command);
+    virtual void commandReceived(const Command command) = 0;
     double readDouble(bool complete);
     quint32 readUint32(bool complete);
 
