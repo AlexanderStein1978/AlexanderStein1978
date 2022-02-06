@@ -4,6 +4,7 @@
 #include "particle.h"
 #include "vector.h"
 #include "networkclient.h"
+#include "networkserver.h"
 
 #include <QCloseEvent>
 #include <QPainter>
@@ -48,17 +49,67 @@ void Window::destroyData()
     if (0 != mN) delete[] mPos;
 }
 
-void Window::listenAsCalculationServer(const QString IpAddress)
+bool Window::listenAsCalculationServer(const QString IpAddress)
 {
     if (nullptr == mServer) mServer = new QTcpServer;
-    if (nullptr != mServer) mServer->listen(IpAddress, 50000);
+    if (nullptr != mServer)
+    {
+        bool result = mServer->listen(QHostAddress(IpAddress), 50000);
+        if (result) connect(mServer, SIGNAL(newConnection()), this, SLOT(newClientConnection()));
+    }
+    return false;
+}
+
+void Window::stopListeningAsCalculationServer()
+{
+    if (nullptr != mServer)
+    {
+        if (nullptr != mNetworkServer)
+        {
+            delete mNetworkServer;
+            mNetworkServer = nullptr;
+        }
+        disconnect(mServer, SIGNAL(newConnection()), this, SLOT(newClientConnection()));
+        delete mServer;
+        mServer = nullptr;
+    }
+}
+
+void Window::newClientConnection()
+{
+    if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, mServer->nextPendingConnection());
+    else if (!mNetworkServer->IsConnected())
+    {
+        mNetworkServer->NewConnection(mServer->nextPendingConnection());
+        if (Calc->isRunning()) mNetworkServer->SendData();
+    }
+}
+
+void Window::connectToCalculationServer(const QString IpAddress)
+{
+    if (nullptr == mNetworkClient)
+    {
+        mNetworkClient = new NetworkClient(this);
+        connect(mNetworkClient, SIGNAL(ConnectionFailed()), this, SIGNAL(ConnectionFailed()));
+        connect(mNetworkClient, SIGNAL(IsConnected()), this, SIGNAL(IsConnectedToServer()));
+    }
+    mNetworkClient->ConnectToServer(IpAddress);
+}
+
+void Window::switchBackToLocalCalulations()
+{
+    if (nullptr != mNetworkClient)
+    {
+        delete mNetworkClient;
+        mNetworkClient = nullptr;
+    }
 }
 
 void Window::stopCalc()
 {
     if (nullptr != mNetworkClient)
     {
-        mNetworkClient->SendCommand(mNetworkClient::STOP_CALC);
+        mNetworkClient->SendCommand(Network::STOP_CALC);
         mIsRemoteRunning = false;
     }
     else if (Calc->isRunning())
@@ -94,7 +145,7 @@ void Window::draw(Vector *Pos, int N)
 
 void Window::copyDataIfNew(QByteArray &data, const QByteArray &sendCommand)
 {
-    QMutexLocker lock(mDataMutex);
+    QMutexLocker lock(&mDataMutex);
     if (!mDataIsNew)
     {
         mWaitingForData = true;
@@ -110,7 +161,7 @@ void Window::copyDataIfNew(QByteArray &data, const QByteArray &sendCommand)
     quint32 remoteN = mN;
     memcpy(dataPtr + 8, &mRemoteKineticEnergy, 8);
     memcpy(dataPtr + 16, &mRemoteTotalEnergy, 8);
-    memcpy(dataptr + 24, &remoteN, 4);
+    memcpy(dataPtr + 24, &remoteN, 4);
     memcpy(dataPtr + headerSize, mPos, dataSize - headerSize);
 }
 
@@ -210,7 +261,7 @@ void Window::reset()
 {
     if (nullptr != mNetworkClient)
     {
-        mNetworkClient->SendCommand(NetworkClient->RESET);
+        mNetworkClient->SendCommand(Network::RESET);
         mIsRemoteRunning = false;
     }
     else
@@ -222,13 +273,13 @@ void Window::reset()
 
 void Window::rotate()
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->ROTATE);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::ROTATE);
     else Calc->rotate();
 }
 
 void Window::move()
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->MOVE);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::MOVE);
     Calc->move();
 }
 
@@ -239,7 +290,7 @@ bool Window::isMoving() const
 
 void Window::setSpeed(const double newSpeed)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->SET_SPEED, newSpeed);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_SPEED, newSpeed);
     else Calc->setSpeed(newSpeed);
 }
 
@@ -257,7 +308,7 @@ double Window::setKineticEnergy(const double T)
 {
     if (nullptr != mNetworkClient)
     {
-        mNetworkClient->SendCommand(NetworkClient->SET_KINETIC_ENERGY, T);
+        mNetworkClient->SendCommand(Network::SET_KINETIC_ENERGY, T);
         return mRemoteKineticEnergy;
     }
     return Calc->setKineticEnergy(T);
@@ -291,13 +342,13 @@ void Window::setParticleWatch(const int indexToWatch)
 
 void Window::setPotentialRangeScale(const double newScale)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->SET_POTENTIAL_RANGE_SCALE, newScale);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_POTENTIAL_RANGE_SCALE, newScale);
     else Calc->setPotRangeScale(newScale);
 }
 
 void Window::setStepSize(const double size)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->SET_STEP_SIZE, size);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_STEP_SIZE, size);
     else Calc->setStepSize(size);
 }
 
@@ -305,7 +356,7 @@ void Window::triggerSnapShot()
 {
     if (nullptr != mNetworkClient)
     {
-        mNetworkClient->SendCommand(NetworkClient->TRIGGER_SNAP_SHOT);
+        mNetworkClient->SendCommand(Network::TRIGGER_SNAP_SHOT);
         QString FN = QFileDialog::getSaveFileName(this, "Select filename and path for snapshot");
         if (nullptr != FN) mNetworkClient->SendCommand(mNetworkClient->WRITE_SNAP_SHOT, FN);
     }
@@ -319,7 +370,7 @@ void Window::setPotential(const Calculation::PotRole role, PotStruct &Pot)
 
 void Window::sendReloadPotentials()
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(NetworkClient->RELOAD_POTENTIALS);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::RELOAD_POTENTIALS);
 }
 
 void Window::emitReloadPotentials()
@@ -361,9 +412,9 @@ void Window::writeSnapShot(Particle *P, int N)
     }
 }
 
-void Window::writeSnapShot(article *P, int N, QString &fileName)
+void Window::writeSnapShot(Particle *P, int N, QString &fileName)
 {
-    QFile file(FN);
+    QFile file(fileName);
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
     S << "Speed:\t" << QString::number(Calc->getSpeed(), 'f', 12) << "\n";
@@ -389,7 +440,7 @@ void Window::restoreSnapShot(bool &isMoving)
     }
 }
 
-void restoreSnapShot(bool &isMoving, const QString& FileN)
+void Window::restoreSnapShot(bool &isMoving, const QString& FileN)
 {
     int n, N;
     double speed, stepSize;

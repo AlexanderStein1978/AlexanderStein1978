@@ -1,13 +1,16 @@
 #include "networkserver.h"
 #include "window.h"
+#include "QTcpSocket"
 
 
-NetworkServer::NetworkServer(Window *window) : Network(window)
+NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(window)
 {
+    mSocket = socket;
 }
 
 void NetworkServer::commandReceived(const Command command)
 {
+    bool complete;
     switch (command)
     {
     case START:
@@ -90,20 +93,31 @@ void NetworkServer::commandReceived(const Command command)
     }
 }
 
+bool NetworkServer::IsConnected()
+{
+    return (mSocket->state() == QAbstractSocket::ConnectedState);
+}
+
+void NetworkServer::NewConnection(QTcpSocket *socket)
+{
+    delete mSocket;
+    mSocket = socket;
+}
+
 QString NetworkServer::readString()
 {
     bool complete = true;
     quint32 size(readUint32(complete));
-    if (!complete) return;
-    QString filename;
-    filename.resize(size);
-    bytesRead = mSocket->readData(filename.data(), size);
+    if (!complete) return "";
+    QByteArray buffer;
+    buffer.resize(size);
+    qint64 bytesRead = mSocket->read(buffer.data(), size);
     if (bytesRead < size)
     {
         SendCommand(ERROR_INCOMPLETE);
         return "";
     }
-    return filename;
+    return buffer;
 }
 
 void NetworkServer::SendData()

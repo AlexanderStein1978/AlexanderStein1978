@@ -6,6 +6,21 @@
 
 NetworkClient::NetworkClient(Window *window) : Network(window), mWaitingForData(false), mDataLength(0)
 {
+    mSocket = new QTcpSocket;
+    connect(mSocket, SIGNAL(connected()), this, SIGNAL(IsConnected()));
+    connect(mSocket, SIGNAL(disconnected()), this, SIGNAL(ConnectionFailed()));
+    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(ConnectionError()));
+}
+
+void NetworkClient::ConnectToServer(const QString IpAddress)
+{
+    mSocket->connectToHost(IpAddress, 50000);
+}
+
+void NetworkClient::ConnectionError()
+{
+    QAbstractSocket::SocketState state = mSocket->state();
+    if (state != QAbstractSocket::ConnectedState && state != QAbstractSocket::HostLookupState && state != QAbstractSocket::ConnectingState) emit ConnectionFailed();
 }
 
 void NetworkClient::SendCommand(const Command command, const double parameter)
@@ -13,10 +28,10 @@ void NetworkClient::SendCommand(const Command command, const double parameter)
     QByteArray completeCommand;
     const int completeSize = SIZE_OF_COMMAND_STRINGS + sizeof(double);
     completeCommand.reserve(completeSize);
-    completeCommand += mCommandStrings[command];
+    completeCommand += mCommandMap.key(command);
     completeCommand.resize(completeSize);
-    memcpy(completeCommand.data() + command.size(), &parameter, sizeof(double));
-    SendCommand(completeCommand);
+    memcpy(completeCommand.data() + SIZE_OF_COMMAND_STRINGS, &parameter, sizeof(double));
+    Network::SendCommand(completeCommand);
 }
 
 void NetworkClient::SendCommand(const Command command, const QString parameter)
@@ -25,11 +40,11 @@ void NetworkClient::SendCommand(const Command command, const QString parameter)
     quint32 size = parameter.size();
     int fullSize = SIZE_OF_COMMAND_STRINGS + sizeof(quint32) + size;
     completeCommand.reserve(fullSize);
-    completeCommand += mCommandStrings[command];
-    completeCommand.resize(command.size() + sizeof(quint32));
-    memcpy(completeCommand.data() + command.size(), &size, sizeof(quint32));
+    completeCommand += mCommandMap.key(command);
+    completeCommand.resize(SIZE_OF_COMMAND_STRINGS + sizeof(quint32));
+    memcpy(completeCommand.data() + SIZE_OF_COMMAND_STRINGS, &size, sizeof(quint32));
     completeCommand += parameter;
-    SendCommand(completeCommand);
+    Network::SendCommand(completeCommand);
 }
 
 void NetworkClient::dataReceived()
@@ -40,12 +55,12 @@ void NetworkClient::dataReceived()
         mWaitingForData = false;
         minimumDataToRead = SIZE_OF_COMMAND_STRINGS;
         qint64 dataBytesLength = mDataLength * 24;
-        qint64 bytesRead = mSocket->readData(mWindow->getDrawingDataToFill(mDataLength), dataBytesLength);
-        if (bytesRead < dataBytesLength) SendCommand(ERROR_INCOMPLETE);
+        qint64 bytesRead = mSocket->read(mWindow->getDrawingDataToFill(mDataLength), dataBytesLength);
+        if (bytesRead < dataBytesLength) Network::SendCommand(ERROR_INCOMPLETE);
         else
         {
             mWindow->update();
-            SendCommand(DATA_RECEIVED);
+            Network::SendCommand(DATA_RECEIVED);
         }
     }
 }
@@ -65,7 +80,7 @@ void NetworkClient::commandReceived(const Command command)
                 mWindow->updateRemoteEnergies(kineticEnergy, totalEnergy);
                 mWaitingForData = true;
                 qint64 dataBytesLength = mDataLength * 24;
-                if (mSocket->bytesAvailable() >= dataLength) dataReceived();
+                if (mSocket->bytesAvailable() >= dataBytesLength) dataReceived();
                 else minimumDataToRead = dataBytesLength;
             }
         }
@@ -74,7 +89,7 @@ void NetworkClient::commandReceived(const Command command)
     case ERROR_UNKNOWN_COMMAND:
         break;
     default:
-        SendCommand(ERROR_UNKNOWN_COMMAND);
+        Network::SendCommand(ERROR_UNKNOWN_COMMAND);
         break;
     }
 }

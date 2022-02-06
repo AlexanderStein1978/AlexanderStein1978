@@ -2,12 +2,14 @@
 #include <QTcpSocket>
 
 
-int Network::SIZE_OF_COMMAND_STRINGS = 8;
+const int Network::SIZE_OF_COMMAND_STRINGS = 8;
 
 
 Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), mSocket(nullptr), mWindow(window),
-    mCommandMap({"STARTSTA", "STOPSTOP", "RESETRES", "MOVEMOVE", "TRIGSNAP", "WRITSNAP", "RESTSNAP", "SETKINEN", "SETPOTRS", "SETSPEED", "SETSTEPS", "RELOAPOT", "STOPCALC",
-                 "ROTATERO", "SETLAYDI", "DATRECED", "DATFOLLO", "ERRORINC", "ERRORUNK"}),
+    mCommandMap({{"STARTSTA", START}, {"STOPSTOP", STOP}, {"RESETRES", RESET}, {"MOVEMOVE", MOVE}, {"TRIGSNAP", TRIGGER_SNAP_SHOT}, {"WRITSNAP", WRITE_SNAP_SHOT},
+                 {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED}, {"SETSTEPS", SET_STEP_SIZE},
+                 {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
+                 {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
     continueRunning(true)
 {
 }
@@ -31,6 +33,7 @@ void Network::run()
 
 void Network::SendCommand(const QByteArray &command)
 {
+    if (mSocket->state() != QAbstractSocket::ConnectedState) return;
     mSocket->write(command);
     mSocket->flush();
 }
@@ -44,7 +47,7 @@ void Network::dataReceived()
 {
     char buffer[SIZE_OF_COMMAND_STRINGS + 1];
     memset(buffer, 0, SIZE_OF_COMMAND_STRINGS + 1);
-    quint64 bytesRead = mSocket->readData(buffer, SIZE_OF_COMMAND_STRINGS);
+    quint64 bytesRead = mSocket->read(buffer, SIZE_OF_COMMAND_STRINGS);
     bool complete = true;
     if (bytesRead < SIZE_OF_COMMAND_STRINGS)
     {
@@ -58,7 +61,7 @@ void Network::dataReceived()
 double Network::readDouble(bool complete)
 {
     double value;
-    bytesRead = mSocket->readData(reinterpret_cast<char*>(&value), sizeof(double));
+    quint64 bytesRead = mSocket->read(reinterpret_cast<char*>(&value), sizeof(double));
     if (bytesRead < sizeof(double))
     {
         SendCommand(ERROR_INCOMPLETE);
@@ -70,7 +73,7 @@ double Network::readDouble(bool complete)
 quint32 Network::readUint32(bool complete)
 {
     quint32 size;
-    bytesRead = mSocket->readData(reinterpret_cast<char*>(&size), sizeof(quint32));
+    quint64 bytesRead = mSocket->read(reinterpret_cast<char*>(&size), sizeof(quint32));
     if (bytesRead < sizeof(quint32))
     {
         SendCommand(ERROR_INCOMPLETE);
