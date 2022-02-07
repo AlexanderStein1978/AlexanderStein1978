@@ -56,6 +56,7 @@ bool Window::listenAsCalculationServer(const QString IpAddress)
     {
         bool result = mServer->listen(QHostAddress(IpAddress), 50000);
         if (result) connect(mServer, SIGNAL(newConnection()), this, SLOT(newClientConnection()));
+        return result;
     }
     return false;
 }
