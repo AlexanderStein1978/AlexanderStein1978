@@ -139,7 +139,7 @@ void ControlWindow::networkSelectionChanged(int index)
         break;
     case 1:
         IpAddressEdit->setEnabled(true);
-        Connect->setEnabled(false);
+        Connect->setEnabled(true);
         Connect->setText("Listen");
         window->switchBackToLocalCalulations();
         break;
