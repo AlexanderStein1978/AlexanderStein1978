@@ -15,6 +15,7 @@ NetworkClient::NetworkClient(Window *window) : Network(window), mWaitingForData(
 void NetworkClient::ConnectToServer(const QString IpAddress)
 {
     mSocket->connectToHost(IpAddress, 50000);
+    start();
 }
 
 void NetworkClient::ConnectionError()

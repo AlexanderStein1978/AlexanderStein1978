@@ -1,4 +1,4 @@
-#include "include/network.h"
+#include "network.h"
 #include <QTcpSocket>
 
 
@@ -16,9 +16,9 @@ Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), m
 
 Network::~Network()
 {
-    if (nullptr != mSocket) delete mSocket;
     continueRunning = false;
     wait();
+    if (nullptr != mSocket) delete mSocket;
 }
 
 void Network::run()
