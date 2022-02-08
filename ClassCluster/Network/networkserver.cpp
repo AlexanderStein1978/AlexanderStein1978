@@ -6,6 +6,7 @@
 NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(window)
 {
     mSocket = socket;
+    start();
 }
 
 void NetworkServer::commandReceived(const Command command)
@@ -100,8 +101,11 @@ bool NetworkServer::IsConnected()
 
 void NetworkServer::NewConnection(QTcpSocket *socket)
 {
+    continueRunning = false;
+    wait();
     delete mSocket;
     mSocket = socket;
+    start();
 }
 
 QString NetworkServer::readString()

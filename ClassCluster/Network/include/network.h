@@ -37,8 +37,6 @@ protected:
     QMap<QByteArray, Command> mCommandMap;
 
     static const int SIZE_OF_COMMAND_STRINGS;
-
-private:
     bool continueRunning;
 };
 
