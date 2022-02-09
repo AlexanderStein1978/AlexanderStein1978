@@ -38,6 +38,8 @@ protected:
 
     static const int SIZE_OF_COMMAND_STRINGS;
     bool continueRunning;
+    std::vector<QTcpSocket*> mOldSockets;
+
 };
 
 #endif // NETWORK_H

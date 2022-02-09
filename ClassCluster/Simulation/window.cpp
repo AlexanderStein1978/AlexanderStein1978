@@ -79,14 +79,12 @@ void Window::stopListeningAsCalculationServer()
 
 void Window::newClientConnection()
 {
-    QTcpSocket* newestConnection = nullptr, *newConnection;
+    QTcpSocket* newConnection;
     while ((newConnection = mServer->nextPendingConnection()) != nullptr)
     {
-        if (nullptr != newestConnection) delete newestConnection;
-        newestConnection = newConnection;
+        if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, newConnection);
+        else mNetworkServer->NewConnection(newConnection);
     }
-    if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, newestConnection);
-    mNetworkServer->NewConnection(newestConnection);
     if (Calc->isRunning()) mNetworkServer->SendData();
 }
 

@@ -27,6 +27,15 @@ void Network::run()
     while (continueRunning)
     {
         if (mSocket->bytesAvailable() >= minimumDataToRead) dataReceived();
+        
+        for (auto it = mOldSockets.begin(); it != mOldSockets.end(); ++it)
+            if ((*it)->state() == QAbstractSocket::UnconnectedState)
+        {
+            delete *it;
+            *it = nullptr;
+            mOldSockets.erase(it);
+        }
+        
         msleep(1);
     }
 }
