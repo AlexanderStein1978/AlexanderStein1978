@@ -79,6 +79,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     SettingsLayout->addWidget(new QLabel("IP Address:", this), 3, 2);
     SettingsLayout->addWidget(IpAddressEdit, 3, 3);
     SettingsLayout->addWidget(Connect, 3, 4);
+    Connect->setEnabled(false);
     SettingsLayout->addWidget(ConnectionStatus, 3, 5);
     disconnected();
     L->setRowMinimumHeight(3, 20);
@@ -150,6 +151,7 @@ void ControlWindow::networkSelectionChanged(int index)
         window->stopListeningAsCalculationServer();
         break;
     }
+    setConnectionStatus(false);
 }
 
 void ControlWindow::connectToServer()
