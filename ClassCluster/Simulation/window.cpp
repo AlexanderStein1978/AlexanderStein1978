@@ -14,6 +14,7 @@
 #include <QBoxLayout>
 #include <QMessageBox>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 
 Window::Window(PotStruct *PotSs) : mServer(nullptr), mNetworkClient(nullptr), mNetworkServer(nullptr), mIsRemoteRunning(false), mDataIsNew(false), mWaitingForData(false), mPos(nullptr),
@@ -78,12 +79,15 @@ void Window::stopListeningAsCalculationServer()
 
 void Window::newClientConnection()
 {
-    if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, mServer->nextPendingConnection());
-    else if (!mNetworkServer->IsConnected())
+    QTcpSocket* newestConnection = nullptr, *newConnection;
+    while ((newConnection = mServer->nextPendingConnection()) != nullptr)
     {
-        mNetworkServer->NewConnection(mServer->nextPendingConnection());
-        if (Calc->isRunning()) mNetworkServer->SendData();
+        if (nullptr != newestConnection) delete newestConnection;
+        newestConnection = newConnection;
     }
+    if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, newestConnection);
+    mNetworkServer->NewConnection(newestConnection);
+    if (Calc->isRunning()) mNetworkServer->SendData();
 }
 
 void Window::connectToCalculationServer(const QString IpAddress)
