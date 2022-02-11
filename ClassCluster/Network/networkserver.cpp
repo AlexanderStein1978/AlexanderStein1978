@@ -106,6 +106,7 @@ void NetworkServer::NewConnection(QTcpSocket *socket)
     mSocket->disconnectFromHost();
     mOldSockets.push_back(mSocket);
     mSocket = socket;
+    continueRunning = true;
     start();
 }
 
