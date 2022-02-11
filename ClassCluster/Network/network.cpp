@@ -34,6 +34,7 @@ void Network::run()
             delete *it;
             *it = nullptr;
             mOldSockets.erase(it);
+            break;
         }
         
         msleep(1);

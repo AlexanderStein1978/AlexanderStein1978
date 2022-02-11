@@ -39,9 +39,9 @@ Window::~Window()
     stopCalc();
     delete Calc;
     destroyData();
-    if (nullptr != mServer) delete mServer;
     if (nullptr != mNetworkClient) delete mNetworkClient;
     if (nullptr != mNetworkServer) delete mNetworkServer;
+    if (nullptr != mServer) delete mServer;
     if (nullptr != mRemoteSnapShotParticles) delete[] mRemoteSnapShotParticles;
 }
 
@@ -85,7 +85,11 @@ void Window::newClientConnection()
         if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, newConnection);
         else mNetworkServer->NewConnection(newConnection);
     }
-    if (Calc->isRunning()) mNetworkServer->SendData();
+    if (Calc->isRunning())
+    {
+        mDataIsNew = true;
+        mNetworkServer->SendData();
+    }
 }
 
 void Window::connectToCalculationServer(const QString IpAddress)
