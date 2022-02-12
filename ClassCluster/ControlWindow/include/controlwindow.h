@@ -10,6 +10,7 @@ class QLabel;
 class QCloseEvent;
 class QPushButton;
 class QComboBox;
+class QTextStream;
 
 class Window;
 class PotControl;
@@ -34,6 +35,7 @@ public:
     }
 
 private slots:
+    void Init(QString& data);
     void run();
     void restart();
     void move();
@@ -66,6 +68,8 @@ protected:
     void focusInEvent(QFocusEvent *event) override;
 
 private:
+    void Init(QTextStream& inStream);
+    void Serialize(QTextStream& outStream);
     void prepareWindow();
     void start();
     bool stopIfItsRunning();

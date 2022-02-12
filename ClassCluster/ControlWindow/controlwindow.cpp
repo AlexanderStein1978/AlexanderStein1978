@@ -16,36 +16,21 @@
 #include <QDir>
 
 
-ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new QLineEdit(this)), IpAddressEdit(new QLineEdit("192.168.1.1", this)),
-    ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
-    PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), MW(mw), ProgramPath(QDir::currentPath())
+ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), TEdit(new QLineEdit("-1.0", this)),
+    Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
+    IpAddressEdit(new QLineEdit("192.168.1.1", this)), ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
+    PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), MW(mw), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
-    QString speed(QString::number(1e3, 'f', 3)), stepSize(QString::number(1e-3, 'f', 3)), kineticEnergy("-1.0"), rangeScale(QString::number(1.0, 'f', 3)), layerDistance("5.657");
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
     if (settingsFile.exists())
     {
         settingsFile.open(QIODevice::ReadOnly);
         QTextStream S(&settingsFile);
-        QStringList settings = S.readLine().split('\t');
-        if (settings.size() >= 4u)
-        {
-            speed = settings[0];
-            stepSize = settings[1];
-            kineticEnergy = settings[2];
-            if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
-            TEdit->setText(kineticEnergy);
-            rangeScale = settings[3];
-            if (settings.size() >= 5u) layerDistance = settings[4];
-            for (int n=0; n < Calculation::NumPot && !S.atEnd(); ++n)
-            {
-                const QString data = S.readLine();
-                PotControls[n]->Init(data);
-            }
-        }
+        Init(S);
     }
     prepareWindow();
-    const double cEnergy = window->getPotentialEnergy() + kineticEnergy.toDouble();
+    const double cEnergy = window->getPotentialEnergy() + TEdit->text().toDouble();
     QGridLayout *L = new QGridLayout(this), *SettingsLayout = new QGridLayout, *PotLayout = new QGridLayout;
     L->setColumnStretch(0, 1);
     L->setColumnStretch(1, 1);
@@ -60,17 +45,18 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), TEdit(new
     L->addWidget(ShowParticleWatchWindow = new QPushButton("Show particle amplification watch window", this), 1, 2, 1, 2);
     L->addLayout(SettingsLayout, 2, 0, 1, 4);
     SettingsLayout->addWidget(new QLabel("Speed:", this), 0, 0);
-    SettingsLayout->addWidget(Speed = new QLineEdit(speed, this), 0, 1);
+    SettingsLayout->addWidget(Speed , 0, 1);
     SettingsLayout->addWidget(new QLabel("Step size:", this), 0, 2);
-    SettingsLayout->addWidget(StepE = new QLineEdit(stepSize, this), 0, 3);
+    SettingsLayout->addWidget(StepE, 0, 3);
     SettingsLayout->addWidget(new QLabel("Potential range:"), 0, 4);
-    SettingsLayout->addWidget(PotRangeScaleEdit = new QLineEdit(rangeScale, this), 0, 5);
+    SettingsLayout->addWidget(PotRangeScaleEdit, 0, 5);
     SettingsLayout->addWidget(new QLabel("Layer distance:", this), 1, 0);
-    SettingsLayout->addWidget(LayerDistanceEdit = new QLineEdit(layerDistance, this), 1, 1);
+    SettingsLayout->addWidget(LayerDistanceEdit, 1, 1);
     SettingsLayout->addWidget(new QLabel("Kintetic energy:", this), 1, 2);
     SettingsLayout->addWidget(TEdit, 1, 3);
     SettingsLayout->addWidget(new QLabel("Total energy:", this), 1, 4);
-    SettingsLayout->addWidget(EnE = new QLineEdit(QString::number(cEnergy, 'g', 6), this), 1, 5);
+    SettingsLayout->addWidget(EnE, 1, 5);
+    EnE->setText(QString::number(cEnergy, 'g', 6));
     SettingsLayout->addWidget(PotentialEnergyLabel = new QLabel("Potential energy: ", this), 2, 0, 1, 2);
     SettingsLayout->addWidget(KineticEnergyLabel = new QLabel("Kinetic energy: ", this), 2, 2, 1, 2);
     SettingsLayout->addWidget(TotalEnergyLabel = new QLabel("Total energy: ", this), 2, 4, 1, 2);
@@ -126,6 +112,32 @@ ControlWindow::~ControlWindow()
 {
     for (int n=0; n < Calculation::NumPot; ++n) delete PotControls[n];
     delete[] PotControls;
+}
+
+void ControlWindow::Init(QTextStream& inStream)
+{
+    QStringList settings = inStream.readLine().split('\t');
+    if (settings.size() >= 4u)
+    {
+        Speed->setText(settings[0]);
+        StepE->setText(settings[1]);
+        QString kineticEnergy = settings[2];
+        if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
+        TEdit->setText(kineticEnergy);
+        PotRangeScaleEdit->setText(settings[3]);
+        if (settings.size() >= 5u) LayerDistanceEdit->setText(settings[4]);
+        for (int n=0; n < Calculation::NumPot && !inStream.atEnd(); ++n)
+        {
+            const QString data = inStream.readLine();
+            PotControls[n]->Init(data);
+        }
+    }
+}
+
+void ControlWindow::Init(QString& data)
+{
+    QTextStream instream(&data, QIODevice::ReadOnly);
+    Init(instream);
 }
 
 void ControlWindow::networkSelectionChanged(int index)
@@ -305,8 +317,13 @@ void ControlWindow::saveSettings()
     QFile file(SettingsFileName);
     file.open(QIODevice::WriteOnly);
     QTextStream S(&file);
-    S << Speed->text() << '\t' << StepE->text() << '\t' << TEdit->text() << '\t' << PotRangeScaleEdit->text() << '\t' << LayerDistanceEdit->text() << '\n';
-    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(S, ProgramPath);
+    Serialize(S);
+}
+
+void ControlWindow::Serialize(QTextStream& outStream)
+{
+    outStream << Speed->text() << '\t' << StepE->text() << '\t' << TEdit->text() << '\t' << PotRangeScaleEdit->text() << '\t' << LayerDistanceEdit->text() << '\n';
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(outStream, ProgramPath);
 }
 
 void ControlWindow::EChanged()

@@ -27,7 +27,7 @@ public:
     virtual ~PotControl();
 
     void Init(const QString& data);
-    void Serialize(QTextStream& stream, const QString& programPath) const;
+    void Serialize(QTextStream& stream, const QString& programPath);
     void FillLayout(QGridLayout* layout, const int row) const;
     void FillStruct(PotStruct& potStruct) const;
     void UpdatePotentialBox();
