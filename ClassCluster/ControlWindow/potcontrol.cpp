@@ -63,7 +63,7 @@ bool PotControl::isChangedSinceLastRun()
     return false;
 }
 
-void PotControl::Serialize(QTextStream& stream, const QString &programPath) const
+void PotControl::Serialize(QTextStream& stream, const QString &programPath)
 {
     stream << (pot != nullptr ? pot->getRelativePath(programPath + "/DummyString.dat") : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
 }
