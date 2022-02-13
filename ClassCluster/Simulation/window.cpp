@@ -85,11 +85,14 @@ void Window::newClientConnection()
         if (nullptr == mNetworkServer) mNetworkServer = new NetworkServer(this, newConnection);
         else mNetworkServer->NewConnection(newConnection);
     }
+    char flags(0x00);
     if (Calc->isRunning())
     {
         mDataIsNew = true;
         mNetworkServer->SendData();
+        flags = 0x80;
     }
+    mNetworkServer->SendFlags(flags);
 }
 
 void Window::connectToCalculationServer(const QString IpAddress)
@@ -123,8 +126,16 @@ void Window::stopCalc()
     {
         Calc->stop();
         Calc->wait();
+        if (nullptr != mNetworkServer) mNetworkServer->SendFlags(0x00);
     }
+    emit IsRunning(false);
 }
+
+void Window::flagsReceived(char flags)
+{
+    emit IsRunning((flags & 0x80) != 0x00);
+}
+
 
 void Window::closeEvent(QCloseEvent* event)
 {
@@ -246,7 +257,12 @@ void Window::start()
         mNetworkClient->SendCommand(mNetworkClient->START);
         mIsRemoteRunning = true;
     }
-    else Calc->start();
+    else
+    {
+        Calc->start();
+        if (nullptr != mNetworkServer) mNetworkServer->SendFlags(0x80);
+    }
+    emit IsRunning(true);
 }
 
 void Window::stop()
@@ -256,7 +272,12 @@ void Window::stop()
         mNetworkClient->SendCommand(mNetworkClient->STOP);
         mIsRemoteRunning = false;
     }
-    else Calc->stop();
+    else
+    {
+        Calc->stop();
+        if (nullptr != mNetworkServer) mNetworkServer->SendFlags(0x00);
+    }
+    emit IsRunning(false);
 }
 
 bool Window::isRunning() const

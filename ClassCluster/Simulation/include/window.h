@@ -12,10 +12,11 @@ class QTcpSocket;
 
 class Picture;
 class Particle;
-class PotStruct;
 class WatchPoint;
 class NetworkClient;
 class NetworkServer;
+
+struct PotStruct;
 
 
 class Window : public QWidget
@@ -59,12 +60,14 @@ class Window : public QWidget
         void emitReloadPotentials();
         void copyDataIfNew(QByteArray& data, const QByteArray& sendCommand);
         char* getDrawingDataToFill(const int N);
+        void flagsReceived(char flags);
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void ReloadPotentials();
         void IsConnectedToServer();
         void ConnectionFailed();
+        void IsRunning(bool running);
 
     public slots:
         void updateRemoteEnergies(const double kineticEnergy, const double totalEnergy);

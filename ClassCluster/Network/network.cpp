@@ -6,9 +6,9 @@ const int Network::SIZE_OF_COMMAND_STRINGS = 8;
 
 
 Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), mSocket(nullptr), mWindow(window),
-    mCommandMap({{"STARTSTA", START}, {"STOPSTOP", STOP}, {"RESETRES", RESET}, {"MOVEMOVE", MOVE}, {"TRIGSNAP", TRIGGER_SNAP_SHOT}, {"WRITSNAP", WRITE_SNAP_SHOT},
-                 {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED}, {"SETSTEPS", SET_STEP_SIZE},
-                 {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
+    mCommandMap({{"STARTSTA", START}, {"STOPSTOP", STOP}, {"SEDFLAGS", SEND_FLAGS}, {"RESETRES", RESET}, {"MOVEMOVE", MOVE}, {"TRIGSNAP", TRIGGER_SNAP_SHOT}, {"WRITSNAP", WRITE_SNAP_SHOT},
+                 {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED},
+                 {"SETSTEPS", SET_STEP_SIZE}, {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
                  {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
     continueRunning(true)
 {
@@ -52,6 +52,16 @@ void Network::SendCommand(const Command command)
 {
     SendCommand(mCommandMap.key(command));
 }
+
+void Network::SendFlags(const char flags)
+{
+    QByteArray data;
+    data.reserve(SIZE_OF_COMMAND_STRINGS + 1);
+    data += mCommandMap.key(SEND_FLAGS);
+    data[SIZE_OF_COMMAND_STRINGS] = flags;
+    SendCommand(data);
+}
+
 
 void Network::dataReceived()
 {
