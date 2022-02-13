@@ -2778,9 +2778,13 @@ double Potential::PFakt(double M, double E)
     return 1.0 / (1.0 - 0.0833333333333 * M * E);
 }
 
-bool Potential::readData(QString Filename)
+bool Potential::init(QTextStream& inStream)
 {
-    //printf("Potential::readData\n");
+    QString Spacer = " | ";
+    QStringList L;
+    QString Buffer;
+    bool notSaved = false;
+    int n, r, cc, lc = 0;
     if (CoupledComp != 0)
     {
         delete[] CoupledComp;
@@ -2791,33 +2795,24 @@ bool Potential::readData(QString Filename)
         delete[] CoupledPot;
         CoupledPot = 0;
     }
-    Tab->setColumnCount(4);
-    QFile Datei(Filename);
-    if (!read(&Datei)) return false;
     Tab->blockSignals(true);
-    int n, r, cc, lc = 0;
-    bool Success = true, notSaved = false;
-    QString Buffer;
-    QTextStream S(&Datei);
-    QString Spacer = " | ";
-    QStringList L;
-    mWasMoving = false;
+    Tab->setColumnCount(4);
     PreliminaryPotentialType potType = likelyASplinePotential;
-    if ((Buffer = S.readLine()).left(8) != "Source: ") Success = false; 
+    if ((Buffer = inStream.readLine()).left(8) != "Source: ") return false; 
     else 
     {
         setSource(Buffer.right(Buffer.length() - 8));
-        if ((Buffer = S.readLine()).left(6) != "Name: ") Success = false;
+        if ((Buffer = inStream.readLine()).left(6) != "Name: ") return false;
         else
         {
             setName(Buffer.right(Buffer.length() - 6));
-            for (r=0, cc = Tab->columnCount(); !S.atEnd(); r++)
+            for (r=0, cc = Tab->columnCount(); !inStream.atEnd(); r++)
             {
                 if (Tab->rowCount() == r) Tab->setRowCount(r + 100);
-                if ((Buffer = S.readLine()).left(15) == "Column titles: ")
+                if ((Buffer = inStream.readLine()).left(15) == "Column titles: ")
                 {
                     if (Buffer == "Column titles: R [A] | E [cm^-1] | d^2E/dR^2") potType = splinePot;
-                    Buffer = S.readLine();
+                    Buffer = inStream.readLine();
                 }
                 if (Buffer.left(21) == "Coupling information:") break;
                 L = Buffer.split(Spacer);
@@ -2825,22 +2820,22 @@ bool Potential::readData(QString Filename)
                 for (n=0; n < lc; n++) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
                 while (n < cc) Tab->setItem(r, n++, new QTableWidgetItem(""));
             }
-            if (!S.atEnd())
+            if (!inStream.atEnd())
             {
                 r-=2;
-                Buffer = S.readLine();
+                Buffer = inStream.readLine();
                 QString MolFile, FB;
                 if (Buffer.indexOf("CouplingFunction: ") == -1)
                 {
                     Filename = Buffer.right(Buffer.length() - 16);
                     if (molecule != 0) Filename = getAbsolutePath(Filename, MolFile = molecule->getFileName());
-                    S.readLine();
-                    S.readLine();
+                    inStream.readLine();
+                    inStream.readLine();
                     CoupledComp = new int[10];
                     CoupledPot = new Potential*[10];
-                    for (NCoupled = 0; NCoupled < 10 && !S.atEnd(); NCoupled++)
+                    for (NCoupled = 0; NCoupled < 10 && !inStream.atEnd(); NCoupled++)
                     {
-                        n = (Buffer = S.readLine()).indexOf(" | ");
+                        n = (Buffer = inStream.readLine()).indexOf(" | ");
                         if (n>0)
                         {
                             CoupledPot[NCoupled] = MW->getPotential((molecule != 0 ? getAbsolutePath(FB = Buffer.left(n), MolFile)
@@ -2876,7 +2871,7 @@ bool Potential::readData(QString Filename)
                         else if (WaveFuncs->didFileNameChange()) notSaved = true;
                     }
                     if (WaveFuncs != 0) WaveFuncs->Assign();
-                    if (!S.atEnd()) Buffer = S.readLine();
+                    if (!inStream.atEnd()) Buffer = inStream.readLine();
                 }
                 if (Buffer.left(18) == "CouplingFunction: ")
                 {
@@ -2885,9 +2880,9 @@ bool Potential::readData(QString Filename)
                     if (CoupledPot == 0)
                     {
                         CoupledPot = new Potential*[10];
-                        while (!S.atEnd())
+                        while (!inStream.atEnd())
                         {
-                            Buffer = S.readLine();
+                            Buffer = inStream.readLine();
                             if (Buffer.left(19) == "Coupled potential: ")
                             {
                                 FB = Buffer.right(Buffer.length() - 19);
@@ -2909,19 +2904,25 @@ bool Potential::readData(QString Filename)
             Tab->setRowCount(r);
         }
     }
-    if (!Success) 
-    {
-        Tab->blockSignals(false);
-        if (!readPointPot(Filename)) if (!readPotData(Filename)) if (!readCoupledPotData(Filename)) return false;
-    }
-    else 
-    {
-        //printf("TableWindow::readData successfull\n");
-        UpdatePot(potType);
-    }
+    UpdatePot(potType);
     Tab->blockSignals(false);
     if (notSaved) Changed();
     else Saved();
+    return true;
+}
+
+bool Potential::readData(QString Filename)
+{
+    //printf("Potential::readData\n");
+    QFile Datei(Filename);
+    if (!read(&Datei)) return false;
+    QTextStream S(&Datei);
+    bool Success = init(S);    
+    if (!Success) 
+    {
+        if (!readPointPot(Filename)) if (!readPotData(Filename)) if (!readCoupledPotData(Filename)) return false;
+        Saved();
+    }
     //printf("Ende Potential::readData\n");
     return true;
 }
@@ -3507,26 +3508,32 @@ void Potential::getTexTable(int NumWFPoints, double FQS)
     MW->showMDIChild(Window);
 }
 
+void Potential::serialize(QTextStream& outStream) const
+{
+    int r, c, R = Tab->rowCount(), C = Tab->columnCount();
+    QStringList L;
+    QTableWidgetItem *I;
+    QString Spacer = " | ";
+    outStream << "Source: " << getSource() << "\n";
+    outStream << "Name: " << getName() << "\n";
+    for (c=0; c<C; c++) L << ((I = Tab->horizontalHeaderItem(c)) != 0 ? I->text() : "?");
+    outStream << "Column titles: " << L.join(Spacer) << "\n";
+    for (r=0; r < R; r++) 
+    {
+        L.clear();
+        for (c=0; c < C; c++) L << ((I = Tab->item(r, c)) != 0 ? I->text() : "");
+        outStream << L.join(Spacer) << "\n";
+    }
+}    
+
 bool Potential::writeData(QString Filename, bool writeFitData)
 {
     m_saving = true;
     QFile Datei(Filename);
     if (!write(&Datei)) return false;
-    int r, c, R = Tab->rowCount(), C = Tab->columnCount();
+    int r;
     QTextStream S(&Datei);
-    QStringList L;
-    QTableWidgetItem *I;
-    QString Spacer = " | ";
-    S << "Source: " << getSource() << "\n";
-    S << "Name: " << getName() << "\n";
-    for (c=0; c<C; c++) L << ((I = Tab->horizontalHeaderItem(c)) != 0 ? I->text() : "?");
-    S << "Column titles: " << L.join(Spacer) << "\n";
-    for (r=0; r < R; r++) 
-    {
-        L.clear();
-        for (c=0; c < C; c++) L << ((I = Tab->item(r, c)) != 0 ? I->text() : "");
-        S << L.join(Spacer) << "\n";
-    }
+    serialize(S);
     if (WaveFuncs != 0)
     {
         if (!WaveFuncs->isSaved())
