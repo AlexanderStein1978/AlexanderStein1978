@@ -42,7 +42,7 @@ public:
 	virtual void setMolecule(Molecule *Mol);
 	Molecule *getMolecule();	
 	void setSource(QString nSource);
-	QString getSource();
+	QString getSource() const;
 	int getvMax();
 	int getJMax();
 	void setvMax(int vM);

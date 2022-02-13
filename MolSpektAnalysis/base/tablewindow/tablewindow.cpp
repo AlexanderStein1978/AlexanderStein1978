@@ -687,7 +687,7 @@ Molecule *TableWindow::getMolecule()
 	return molecule;
 }
 
-QString TableWindow::getSource()
+QString TableWindow::getSource() const
 {
 	return Source->text();
 }

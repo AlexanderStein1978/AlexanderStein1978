@@ -54,6 +54,7 @@ class QMutex;
 class QPlainTextEdit;
 class QCloseEvent;
 class QProgressBar;
+class QTextStream;
 
 
 class Potential : public TableWindow
@@ -66,6 +67,7 @@ public:
     Potential(MainWindow *MW = 0, Molecule *Mol = 0, int ThreadNum = -1);
 	Potential(const Potential &C);
     ~Potential();
+    bool init(QTextStream& inStream);
 	Potential *scalePotential(double newRe, double newDe);
     void getEV(double ****&Ev, int &Nc, int &NI, int &Nv, int &NJ, int NumWFPoints);
     void exportAsymptoticLevels(QString FileName, int numv, int maxJ, int NumWFPoints);
@@ -162,6 +164,7 @@ public:
 	void setWorker(PotWorker *NWorker);
 	void calcFQS_SFQS(bool ****SFQSU = 0, double SFQSRad = 0.0);
     void calcyss(const bool movingPoints);
+    void serialize(QTextStream& outStream) const;
 	
 	inline void getSFQSU(bool ****&SFQSU, int *&mJ, int **&mv)
 	{
