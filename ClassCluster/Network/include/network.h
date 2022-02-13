@@ -15,7 +15,7 @@ class Network : public QThread
 public:
     enum Command
     {
-        START, STOP, RESET, MOVE, TRIGGER_SNAP_SHOT, WRITE_SNAP_SHOT, RESTORE_SNAP_SHOT, SET_KINETIC_ENERGY, SET_POTENTIAL_RANGE_SCALE, SET_SPEED, SET_STEP_SIZE,
+        START, STOP, SEND_FLAGS, RESET, MOVE, TRIGGER_SNAP_SHOT, WRITE_SNAP_SHOT, RESTORE_SNAP_SHOT, SET_SETTINGS, SET_POTENTIAL, SET_KINETIC_ENERGY, SET_POTENTIAL_RANGE_SCALE, SET_SPEED, SET_STEP_SIZE,
         RELOAD_POTENTIALS, STOP_CALC, ROTATE, SET_LAYER_DISTANCE, DATA_RECEIVED, DATA_FOLLOWING, ERROR_INCOMPLETE, ERROR_UNKNOWN_COMMAND
     };
 
@@ -23,6 +23,7 @@ public:
     virtual ~Network();
     void SendCommand(const QByteArray& command);
     void SendCommand(const Command command);
+    void SendFlags(const char flags);
 
 protected:
     void run();
