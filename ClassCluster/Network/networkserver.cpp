@@ -11,7 +11,7 @@ NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(windo
 
 void NetworkServer::commandReceived(const Command command)
 {
-    bool complete;
+    bool complete(true);
     switch (command)
     {
     case START:
