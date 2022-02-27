@@ -12,19 +12,21 @@ class QPushButton;
 class QCheckBox;
 class QMutex;
 
+class MainWindow;
+
 
 class LogWindow : public TableWindow
 {
     Q_OBJECT
 public:
-    explicit LogWindow(QWidget *parent = 0);
+    explicit LogWindow(MainWindow *parent = 0);
 
     void LogMessage(QStringList& message);
     void SetMessageBuffer(QMutex& loggerMutex, QList<QStringList> buffer);
 
 private slots:
     void ShowFileDialog();
-    void WriteLogFileChanged();
+    void WriteLogFileChanged(Qt::CheckState state);
 
 private:
     QLineEdit* mFilenameEdit;
