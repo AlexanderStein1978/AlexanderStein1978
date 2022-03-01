@@ -50,7 +50,9 @@ void Network::SendCommand(const QByteArray &command)
 
 void Network::SendCommand(const Command command)
 {
-    SendCommand(mCommandMap.key(command));
+    QByteArray string = mCommandMap.key(command);
+    qInfo() << "Sending command " << string;
+    SendCommand(string);
 }
 
 void Network::SendFlags(const char flags)
@@ -59,9 +61,9 @@ void Network::SendFlags(const char flags)
     data.reserve(SIZE_OF_COMMAND_STRINGS + 1);
     data += mCommandMap.key(SEND_FLAGS);
     data[SIZE_OF_COMMAND_STRINGS] = flags;
+    qInfo() << "Sending flags: " << static_cast<int>(flags);
     SendCommand(data);
 }
-
 
 void Network::dataReceived()
 {
@@ -69,6 +71,7 @@ void Network::dataReceived()
     memset(buffer, 0, SIZE_OF_COMMAND_STRINGS + 1);
     quint64 bytesRead = mSocket->read(buffer, SIZE_OF_COMMAND_STRINGS);
     bool complete = true;
+    qInfo() << "Received data: " << buffer;
     if (bytesRead < SIZE_OF_COMMAND_STRINGS)
     {
         SendCommand(ERROR_INCOMPLETE);
