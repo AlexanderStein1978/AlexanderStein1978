@@ -20,6 +20,7 @@ class LogWindow : public TableWindow
     Q_OBJECT
 public:
     explicit LogWindow(MainWindow *parent = 0);
+    ~LogWindow();
 
     void LogMessage(QStringList& message);
     void SetMessageBuffer(QMutex& loggerMutex, QList<QStringList> buffer);
