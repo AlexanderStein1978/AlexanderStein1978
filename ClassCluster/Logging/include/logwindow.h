@@ -27,7 +27,7 @@ public:
 
 private slots:
     void ShowFileDialog();
-    void WriteLogFileChanged(Qt::CheckState state);
+    void WriteLogFileChanged(int state);
 
 private:
     QLineEdit* mFilenameEdit;

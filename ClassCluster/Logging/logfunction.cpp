@@ -9,7 +9,7 @@
 void LogFunction(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     static QMap<QtMsgType, QString> typeMap({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}});
-    QString file(QString("%s:%d").arg(context.file ? context.file : "").arg(context.line));
+    QString file(QString("%1:%2").arg(context.file ? context.file : "").arg(context.line));
     QString function(context.function ? context.function : "");
     QDateTime dateTime(QDateTime::currentDateTime());
     Logger& logger(Logger::getLogger());

@@ -13,20 +13,20 @@
 LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mFileDialogButton(new QPushButton("...", this)),
     mWriteLogFileCheckBox(new QCheckBox("Write messages to file", this)), mModel(), mLoggerMutex(nullptr), mLogStream(nullptr), mLogFile(nullptr), mWriteToFile(false)
 {
-    QGridLayout L(this);
-    L.addWidget(mWriteLogFileCheckBox, 0, 0);
-    L.addWidget(new QLabel("Filename:", this), 0, 1);
-    L.addWidget(mFilenameEdit, 0, 2);
-    L.addWidget(mFileDialogButton, 0, 3);
-    L.setColumnMinimumWidth(3, 30);
-    L.setColumnStretch(0, 10);
-    L.setColumnStretch(1, 10);
-    L.setColumnStretch(2, 10);
-    L.addWidget(table = new MTable(this), 1, 0, 1, 4);
-    L.setRowMinimumHeight(0, 20);
-    L.setRowStretch(1, 10);
+    QGridLayout* L = new QGridLayout(this);
+    L->addWidget(mWriteLogFileCheckBox, 0, 0);
+    L->addWidget(new QLabel("Filename:", this), 0, 1);
+    L->addWidget(mFilenameEdit, 0, 2);
+    L->addWidget(mFileDialogButton, 0, 3);
+    L->setColumnMinimumWidth(3, 15);
+    L->setColumnStretch(0, 10);
+    L->setColumnStretch(1, 10);
+    L->setColumnStretch(2, 10);
+    L->addWidget(table = new MTable(this), 1, 0, 1, 4);
+    L->setRowMinimumHeight(0, 20);
+    L->setRowStretch(1, 10);
     table->setModel(&mModel);
-    connect(mWriteLogFileCheckBox, SIGNAL(Qt::CheckState), this, SLOT(WriteLogFileChanged(Qt::CheckState)));
+    connect(mWriteLogFileCheckBox, SIGNAL(stateChanged(int)), this, SLOT(WriteLogFileChanged(int)));
     connect(mFileDialogButton, SIGNAL(clicked()), this, SLOT(ShowFileDialog()));
 }
 
@@ -39,7 +39,11 @@ LogWindow::~LogWindow()
 void LogWindow::LogMessage(QStringList &message)
 {
     mModel.AddLogMessage(message);
-    if (mWriteToFile) (*mLogStream) << message.join('\t') << '\n';
+    if (mWriteToFile)
+    {
+        (*mLogStream) << message.join('\t') << '\n';
+        mLogStream->flush();
+    }
 }
 
 void LogWindow::SetMessageBuffer(QMutex &loggerMutex, QList<QStringList> buffer)
@@ -54,7 +58,7 @@ void LogWindow::ShowFileDialog()
     if (!filename.isEmpty()) mFilenameEdit->setText(filename);
 }
 
-void LogWindow::WriteLogFileChanged(Qt::CheckState state)
+void LogWindow::WriteLogFileChanged(int state)
 {
     if (state == Qt::Unchecked)
     {
@@ -74,13 +78,13 @@ void LogWindow::WriteLogFileChanged(Qt::CheckState state)
         }
         if (nullptr == mLogFile) mLogFile = new QFile(filename);
         else mLogFile->setFileName(filename);
+        mLogFile->open(QIODevice::WriteOnly);
         if (!mLogFile->isWritable())
         {
             QMessageBox::warning(this, "ClassCluster logging", "Error: unable to write to the selected file!");
             mWriteLogFileCheckBox->setChecked(false);
             return;
         }
-        mLogFile->open(QIODevice::WriteOnly);
         if (nullptr == mLogStream) mLogStream = new QTextStream(mLogFile);
         (*mLogStream) << "Time\tSeverity\tFunction\tFile\tMessage\n";
         const QList<QStringList>& messageBuffer = mModel.GetMessageBuffer();
@@ -88,6 +92,7 @@ void LogWindow::WriteLogFileChanged(Qt::CheckState state)
         for (int i=0; i < currentMessageCount; ++i) (*mLogStream) << messageBuffer[i].join('\t') << '\n';
         mLoggerMutex->lock();
         for (int i = currentMessageCount; i < messageBuffer.size(); ++i) (*mLogStream) << messageBuffer[i].join('\t') << '\n';
+        mLogStream->flush();
         mWriteToFile = true;
         mLoggerMutex->unlock();
         mFilenameEdit->setReadOnly(true);
