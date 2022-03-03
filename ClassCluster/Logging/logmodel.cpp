@@ -55,4 +55,5 @@ void LogModel::SetMessageBuffer(QList<QStringList> &messageBuffer)
 {
     beginInsertRows(QModelIndex(),0, messageBuffer.size() - 1);
     mMessageBuffer = messageBuffer;
+    endInsertRows();
 }
