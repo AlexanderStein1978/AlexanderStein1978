@@ -77,8 +77,30 @@ void Network::dataReceived()
         SendCommand(ERROR_INCOMPLETE);
         return;
     }
-    Command command(mCommandMap.value(buffer, ERROR_UNKNOWN_COMMAND));
-    commandReceived(command);
+    Command command(mCommandMap.value(buffer, NO_KNOWN_COMMAND));
+    if (command == NO_KNOWN_COMMAND)
+    {
+        SendCommand(ERROR_UNKNOWN_COMMAND);
+        RecoverFromError(buffer);
+    }
+    else commandReceived(command);
+}
+
+void Network::RecoverFromError(char *receivedBuffer)
+{
+    qint64 bytesRead;
+    Command command;
+    int offset(0);
+    char buffer[SIZE_OF_COMMAND_STRINGS + 1];
+    memcpy(buffer, receivedBuffer, SIZE_OF_COMMAND_STRINGS + 1);
+    do
+    {
+        for (int i=1; i < SIZE_OF_COMMAND_STRINGS; ++i) buffer[i-1] = buffer[i];
+        bytesRead = mSocket->read(buffer + SIZE_OF_COMMAND_STRINGS - 1, 1);
+        if (bytesRead == 0) break;
+        command = mCommandMap.value(buffer + offset, NO_KNOWN_COMMAND);
+    } while (command == NO_KNOWN_COMMAND);
+    if (command != NO_KNOWN_COMMAND) commandReceived(command);
 }
 
 double Network::readDouble(bool complete)
