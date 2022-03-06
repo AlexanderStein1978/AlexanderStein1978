@@ -43,6 +43,9 @@ protected:
 
 private:
     void RecoverFromError(char* receivedBuffer);
+
+    int mResendCount;
+    QByteArray mLastSentCommand;
 };
 
 #endif // NETWORK_H

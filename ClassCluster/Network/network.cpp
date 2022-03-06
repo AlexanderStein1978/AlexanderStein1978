@@ -10,7 +10,7 @@ Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), m
                  {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED},
                  {"SETSTEPS", SET_STEP_SIZE}, {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
                  {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
-    continueRunning(true)
+    continueRunning(true), mResendCount(0), mLastSentCommand()
 {
 }
 
@@ -44,6 +44,11 @@ void Network::run()
 void Network::SendCommand(const QByteArray &command)
 {
     if (mSocket->state() != QAbstractSocket::ConnectedState) return;
+    if (command != mLastSentCommand)
+    {
+        mResendCount = 0;
+        mLastSentCommand = command;
+    }
     mSocket->write(command);
     mSocket->flush();
 }
@@ -83,6 +88,7 @@ void Network::dataReceived()
         SendCommand(ERROR_UNKNOWN_COMMAND);
         RecoverFromError(buffer);
     }
+    else if ((command == ERROR_INCOMPLETE || command == ERROR_UNKNOWN_COMMAND) && ++mResendCount < 3) SendCommand(mLastSentCommand);
     else commandReceived(command);
 }
 
