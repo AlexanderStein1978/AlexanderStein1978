@@ -12,6 +12,7 @@ class Window;
 
 class Network : public QObject
 {
+    Q_OBJECT
 public:
     enum Command
     {
