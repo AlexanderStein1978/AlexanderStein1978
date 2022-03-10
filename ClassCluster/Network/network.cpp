@@ -1,5 +1,6 @@
 #include "network.h"
 #include <QTcpSocket>
+#include <QTimer>
 
 
 const int Network::SIZE_OF_COMMAND_STRINGS = 8;
@@ -10,34 +11,28 @@ Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), m
                  {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED},
                  {"SETSTEPS", SET_STEP_SIZE}, {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
                  {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
-    continueRunning(true), mResendCount(0), mLastSentCommand()
+    mResendCount(0), mLastSentCommand()
 {
+    mTimer.setInterval(1);
+    connect(&mTimer, SIGNAL(timeout()), this, SLOT(run()));
 }
 
 Network::~Network()
 {
-    continueRunning = false;
-    wait();
     if (nullptr != mSocket) delete mSocket;
 }
 
 void Network::run()
 {
     if (nullptr == mSocket) return;
-    while (continueRunning)
+    if (mSocket->bytesAvailable() >= minimumDataToRead) dataReceived();
+    for (auto it = mOldSockets.begin(); it != mOldSockets.end(); ++it)
+        if ((*it)->state() == QAbstractSocket::UnconnectedState)
     {
-        if (mSocket->bytesAvailable() >= minimumDataToRead) dataReceived();
-        
-        for (auto it = mOldSockets.begin(); it != mOldSockets.end(); ++it)
-            if ((*it)->state() == QAbstractSocket::UnconnectedState)
-        {
-            delete *it;
-            *it = nullptr;
-            mOldSockets.erase(it);
-            break;
-        }
-        
-        msleep(1);
+        delete *it;
+        *it = nullptr;
+        mOldSockets.erase(it);
+        break;
     }
 }
 

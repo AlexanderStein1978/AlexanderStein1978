@@ -2,7 +2,7 @@
 #define NETWORK_H
 
 
-#include <QThread>
+#include <QTimer>
 #include <QMap>
 
 class QTcpSocket;
@@ -10,7 +10,7 @@ class QTcpSocket;
 class Window;
 
 
-class Network : public QThread
+class Network : public QObject
 {
 public:
     enum Command
@@ -26,7 +26,6 @@ public:
     void SendFlags(const char flags);
 
 protected:
-    void run();
     virtual void dataReceived();
     virtual void commandReceived(const Command command) = 0;
     double readDouble(bool complete);
@@ -36,10 +35,13 @@ protected:
     QTcpSocket* mSocket;
     Window* mWindow;
     QMap<QByteArray, Command> mCommandMap;
+    QTimer mTimer;
 
     static const int SIZE_OF_COMMAND_STRINGS;
-    bool continueRunning;
     std::vector<QTcpSocket*> mOldSockets;
+
+private slots:
+    void run();
 
 private:
     void RecoverFromError(char* receivedBuffer);
