@@ -93,6 +93,7 @@ Vector& Vector::operator =(const Vector& right)
     x = right.x;
     y = right.y;
     z = right.z;
+    return *this;
 }
 
 double Vector::dot(const Vector &other) const
