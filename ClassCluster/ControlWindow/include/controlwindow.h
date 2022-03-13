@@ -53,6 +53,7 @@ private slots:
     void UpdateEnergies(double kinteticEnergy, double totalEnergy);
     void networkSelectionChanged(int index);
     void connectToServer();
+    void setIsRunning(bool isRunning);
 
     inline void connectionEstablished()
     {

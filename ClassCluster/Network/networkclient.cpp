@@ -89,6 +89,14 @@ void NetworkClient::commandReceived(const Command command)
             }
         }
         break;
+    case SEND_FLAGS:
+        {
+            char flags;
+            qint64 bytesRead = mSocket->read(&flags, 1);
+            if (0u == bytesRead) Network::SendCommand(ERROR_INCOMPLETE);
+            else mWindow->flagsReceived(flags);
+        }
+        break;
     case ERROR_INCOMPLETE:
     case ERROR_UNKNOWN_COMMAND:
         break;
