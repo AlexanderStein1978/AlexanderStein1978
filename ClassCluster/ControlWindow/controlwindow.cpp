@@ -104,6 +104,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(Connect, SIGNAL(clicked()), this, SLOT(connectToServer()));
     connect(window, SIGNAL(IsConnectedToServer()), this, SLOT(connectionEstablished()));
     connect(window, SIGNAL(ConnectionFailed()), this, SLOT(disconnected()));
+    connect(window, SIGNAL(IsRunning(bool)), this, SLOT(setIsRunning(bool)));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -211,17 +212,18 @@ void ControlWindow::prepareWindow()
 void ControlWindow::run()
 {
     if (nullptr == window) prepareWindow();
-    if (window->isRunning())
-    {
-        window->stop();
-        Start->setText("Start");
-    }
+    if (window->isRunning()) window->stop();
     else
     {
         if (!window->isVisible()) window->show();
         start();
-        Start->setText("Stop");
     }
+}
+
+void ControlWindow::setIsRunning(bool isRunning)
+{
+    if (isRunning) Start->setText("Stop");
+    else Start->setText("Start");
 }
 
 void ControlWindow::start()
