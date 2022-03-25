@@ -131,6 +131,16 @@ void Window::stopCalc()
     emit IsRunning(false);
 }
 
+void Window::SendSettings(const QByteArray &data)
+{
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_SETTINGS, data);
+}
+
+void Window::SendPotential(const QByteArray &data)
+{
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_POTENTIAL, data);
+}
+
 void Window::flagsReceived(char flags)
 {
     emit IsRunning((flags & 0x80) != 0x00);

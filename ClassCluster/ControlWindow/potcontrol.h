@@ -34,6 +34,11 @@ public:
     void PLotCloses();
     bool isChangedSinceLastRun();
 
+    inline Potential* getPotential()
+    {
+        return pot;
+    }
+
 private slots:
     void Plot(const bool show);
     void RecalcExtensions();

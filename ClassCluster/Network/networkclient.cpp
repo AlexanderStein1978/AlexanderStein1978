@@ -38,17 +38,13 @@ void NetworkClient::SendCommand(const Command command, const double parameter)
 
 void NetworkClient::SendCommand(const Command command, const QString parameter)
 {
-    qInfo() << "Sending command " << mCommandMap.key(command) << " with parameter '" << parameter << "'";
-    QByteArray completeCommand;
-    quint32 size = parameter.size();
-    int fullSize = SIZE_OF_COMMAND_STRINGS + sizeof(quint32) + size;
-    completeCommand.reserve(fullSize);
-    completeCommand += mCommandMap.key(command);
-    qInfo() << "Sending command " << completeCommand << " with parameter '" << parameter << "'";
-    completeCommand.resize(SIZE_OF_COMMAND_STRINGS + sizeof(quint32));
-    memcpy(completeCommand.data() + SIZE_OF_COMMAND_STRINGS, &size, sizeof(quint32));
-    completeCommand += parameter;
-    Network::SendCommand(completeCommand);
+    QByteArray data(parameter.toUtf8());
+    Network::SendCommand(command, data);
+}
+
+void NetworkClient::SendCommand(const Command command, const QByteArray& data)
+{
+    Network::SendCommand(command, data);
 }
 
 void NetworkClient::dataReceived()

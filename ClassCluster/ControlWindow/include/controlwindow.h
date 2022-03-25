@@ -69,6 +69,8 @@ protected:
     void focusInEvent(QFocusEvent *event) override;
 
 private:
+    enum NetworkSelections{NetSelLocal, NetSelServer, NetSelClient};
+
     void Init(QTextStream& inStream);
     void Serialize(QTextStream& outStream);
     void prepareWindow();
