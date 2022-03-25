@@ -15,6 +15,7 @@ public:
     void ConnectToServer(const QString IpAddress);
     void SendCommand(const Command command, const double parameter);
     void SendCommand(const Command command, const QString parameter);
+    void SendCommand(const Command command, const QByteArray& data);
 
     inline void SendCommand(const Command command)
     {

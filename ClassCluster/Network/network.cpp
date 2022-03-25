@@ -8,9 +8,9 @@ const int Network::SIZE_OF_COMMAND_STRINGS = 8;
 
 Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), mSocket(nullptr), mWindow(window),
     mCommandMap({{"STARTSTA", START}, {"STOPSTOP", STOP}, {"SEDFLAGS", SEND_FLAGS}, {"RESETRES", RESET}, {"MOVEMOVE", MOVE}, {"TRIGSNAP", TRIGGER_SNAP_SHOT}, {"WRITSNAP", WRITE_SNAP_SHOT},
-                 {"RESTSNAP", RESTORE_SNAP_SHOT}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"SETKINEN", SET_KINETIC_ENERGY}, {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED},
-                 {"SETSTEPS", SET_STEP_SIZE}, {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED},
-                 {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
+                 {"RESTSNAP", RESTORE_SNAP_SHOT}, {"GETSETPS", GET_SETTINGS_AND_POTENTIALS}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"SETKINEN", SET_KINETIC_ENERGY},
+                 {"SETPOTRS", SET_POTENTIAL_RANGE_SCALE}, {"SETSPEED", SET_SPEED}, {"SETSTEPS", SET_STEP_SIZE}, {"RELOAPOT", RELOAD_POTENTIALS}, {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE},
+                 {"SETLAYDI", SET_LAYER_DISTANCE}, {"DATRECED", DATA_RECEIVED}, {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
     mResendCount(0), mLastSentCommand()
 {
     mTimer.setInterval(1);
@@ -53,6 +53,20 @@ void Network::SendCommand(const Command command)
     QByteArray string = mCommandMap.key(command);
     qInfo() << "Sending command " << string;
     SendCommand(string);
+}
+
+void Network::SendCommand(const Command command, const QByteArray &data)
+{
+    qInfo() << "Sending command " << mCommandMap.key(command) << " with data '" << data << "'";
+    QByteArray completeCommand;
+    quint32 size = data.size();
+    int fullSize = SIZE_OF_COMMAND_STRINGS + sizeof(quint32) + size;
+    completeCommand.reserve(fullSize);
+    completeCommand += mCommandMap.key(command);
+    completeCommand.resize(SIZE_OF_COMMAND_STRINGS + sizeof(quint32));
+    memcpy(completeCommand.data() + SIZE_OF_COMMAND_STRINGS, &size, sizeof(quint32));
+    completeCommand += data;
+    Network::SendCommand(completeCommand);
 }
 
 void Network::SendFlags(const char flags)

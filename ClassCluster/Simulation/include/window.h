@@ -61,6 +61,8 @@ class Window : public QWidget
         void copyDataIfNew(QByteArray& data, const QByteArray& sendCommand);
         char* getDrawingDataToFill(const int N);
         void flagsReceived(char flags);
+        void SendSettings(const QByteArray& data);
+        void SendPotential(const QByteArray& data);
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);

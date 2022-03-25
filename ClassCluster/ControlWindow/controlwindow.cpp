@@ -5,6 +5,7 @@
 #include "potstruct.h"
 #include "potentialplot.h"
 #include "MainWindow.h"
+#include "potential.h"
 #include "particlewatchtable.h"
 
 #include <QGridLayout>
@@ -145,19 +146,19 @@ void ControlWindow::networkSelectionChanged(int index)
 {
     switch(index)
     {
-    case 0:
+    case NetSelLocal:
         IpAddressEdit->setEnabled(false);
         Connect->setEnabled(false);
         window->switchBackToLocalCalulations();
         window->stopListeningAsCalculationServer();
         break;
-    case 1:
+    case NetSelServer:
         IpAddressEdit->setEnabled(true);
         Connect->setEnabled(true);
         Connect->setText("Listen");
         window->switchBackToLocalCalulations();
         break;
-    case 2:
+    case NetSelClient:
         IpAddressEdit->setEnabled(true);
         Connect->setEnabled(true);
         Connect->setText("Connect");
@@ -228,16 +229,32 @@ void ControlWindow::setIsRunning(bool isRunning)
 
 void ControlWindow::start()
 {
-    window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
-    window->setLayerDistance(LayerDistanceEdit->text().toDouble());
-    for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
+    if (NetworkSelection->currentIndex() == NetSelClient)
     {
-        PotStruct Pots;
-        PotControls[n]->FillStruct(Pots);
-        window->setPotential(static_cast<Calculation::PotRole>(n), Pots);
+        QByteArray data;
+        QTextStream stream(&data);
+        Serialize(stream);
+        window->SendSettings(data);
+        for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
+        {
+            data.clear();
+            Potential* pot = PotControls[n]->getPotential();
+            if (nullptr != pot) pot->serialize(stream);
+        }
     }
-    EnE->setText(QString::number(window->setKineticEnergy(TEdit->text().toDouble()), 'g', 3));
-    window->setStepSize(StepE->text().toDouble());
+    else
+    {
+        window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
+        window->setLayerDistance(LayerDistanceEdit->text().toDouble());
+        for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
+        {
+            PotStruct Pots;
+            PotControls[n]->FillStruct(Pots);
+            window->setPotential(static_cast<Calculation::PotRole>(n), Pots);
+        }
+        EnE->setText(QString::number(window->setKineticEnergy(TEdit->text().toDouble()), 'g', 3));
+        window->setStepSize(StepE->text().toDouble());
+    }
     window->start();
 }
 
