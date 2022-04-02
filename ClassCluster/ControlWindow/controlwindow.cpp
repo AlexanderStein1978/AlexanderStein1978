@@ -20,7 +20,7 @@
 ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), TEdit(new QLineEdit("-1.0", this)),
     Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
     IpAddressEdit(new QLineEdit("192.168.1.1", this)), ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
-    PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), MW(mw), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), ProgramPath(QDir::currentPath())
+    GetSettings(new QPushButton("Get settings", this)), PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), MW(mw), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
@@ -32,7 +32,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     }
     prepareWindow();
     const double cEnergy = window->getPotentialEnergy() + TEdit->text().toDouble();
-    QGridLayout *L = new QGridLayout(this), *SettingsLayout = new QGridLayout, *PotLayout = new QGridLayout;
+    QGridLayout *L = new QGridLayout(this), *SettingsLayout = new QGridLayout, *PotLayout = new QGridLayout, *CornerLayout = new QGridLayout;
     L->setColumnStretch(0, 1);
     L->setColumnStretch(1, 1);
     L->setColumnStretch(2, 1);
@@ -67,7 +67,9 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     SettingsLayout->addWidget(IpAddressEdit, 3, 3);
     SettingsLayout->addWidget(Connect, 3, 4);
     Connect->setEnabled(false);
-    SettingsLayout->addWidget(ConnectionStatus, 3, 5);
+    CornerLayout->addWidget(ConnectionStatus, 0, 0);
+    CornerLayout->addWidget(GetSettings, 0, 1);
+    SettingsLayout->addLayout(CornerLayout, 3, 5);
     disconnected();
     L->setRowMinimumHeight(3, 20);
     L->addWidget(new QLabel("Interaction potentials:", this), 4, 0, 1, 4);
@@ -103,9 +105,11 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(window, SIGNAL(EnergiesChanged(double,double)), this, SLOT(UpdateEnergies(double,double)));
     connect(NetworkSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(networkSelectionChanged(int)));
     connect(Connect, SIGNAL(clicked()), this, SLOT(connectToServer()));
+    connect(GetSettings, SIGNAL(clicked()), this, SLOT(sendGetSettingsRequest()));
     connect(window, SIGNAL(IsConnectedToServer()), this, SLOT(connectionEstablished()));
     connect(window, SIGNAL(ConnectionFailed()), this, SLOT(disconnected()));
     connect(window, SIGNAL(IsRunning(bool)), this, SLOT(setIsRunning(bool)));
+    connect(window, SIGNAL(GetSettings()), this, SLOT(getSettings()));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -119,7 +123,7 @@ ControlWindow::~ControlWindow()
 void ControlWindow::Init(QTextStream& inStream)
 {
     QStringList settings = inStream.readLine().split('\t');
-    if (settings.size() >= 4u)
+    if (settings.size() >= 4)
     {
         Speed->setText(settings[0]);
         StepE->setText(settings[1]);
@@ -127,7 +131,7 @@ void ControlWindow::Init(QTextStream& inStream)
         if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
         TEdit->setText(kineticEnergy);
         PotRangeScaleEdit->setText(settings[3]);
-        if (settings.size() >= 5u) LayerDistanceEdit->setText(settings[4]);
+        if (settings.size() >= 5) LayerDistanceEdit->setText(settings[4]);
         for (int n=0; n < Calculation::NumPot && !inStream.atEnd(); ++n)
         {
             const QString data = inStream.readLine();
@@ -140,6 +144,41 @@ void ControlWindow::Init(QString& data)
 {
     QTextStream instream(&data, QIODevice::ReadOnly);
     Init(instream);
+}
+
+void ControlWindow::setSettings(QByteArray& data)
+{
+    QTextStream stream(&data, QIODevice::ReadOnly);
+    Init(stream);
+    window->setSpeed(Speed->text().toDouble());
+    if (window->isRunning())
+    {
+        window->stop();
+        start();
+    }
+}
+
+void ControlWindow::setPotentialData(QByteArray& data)
+{
+    QTextStream stream(&data, QIODevice::ReadOnly);
+    stream.readLine();
+    QStringList NameL = stream.readLine().split(": ");
+    if (NameL.size() >= 2)
+    {
+        QString Name = NameL[1];
+        if (!Name.isEmpty())
+        {
+            Potential* pot = MW->getPotential(Name);
+            if (nullptr == pot)
+            {
+                pot = MW->CreatePotential();
+                if (nullptr == pot) return;
+                pot->show();
+            }
+            stream.seek(0);
+            pot->init(stream);
+        }
+    }
 }
 
 void ControlWindow::networkSelectionChanged(int index)
@@ -229,19 +268,7 @@ void ControlWindow::setIsRunning(bool isRunning)
 
 void ControlWindow::start()
 {
-    if (NetworkSelection->currentIndex() == NetSelClient)
-    {
-        QByteArray data;
-        QTextStream stream(&data);
-        Serialize(stream);
-        window->SendSettings(data);
-        for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
-        {
-            data.clear();
-            Potential* pot = PotControls[n]->getPotential();
-            if (nullptr != pot) pot->serialize(stream);
-        }
-    }
+    if (NetworkSelection->currentIndex() == NetSelClient) getSettings();
     else
     {
         window->setPotentialRangeScale(PotRangeScaleEdit->text().toDouble());
@@ -256,6 +283,29 @@ void ControlWindow::start()
         window->setStepSize(StepE->text().toDouble());
     }
     window->start();
+}
+
+void ControlWindow::getSettings()
+{
+    QByteArray data;
+    QTextStream stream(&data);
+    Serialize(stream);
+    window->SendSettings(data);
+    for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
+    {
+        data.clear();
+        Potential* pot = PotControls[n]->getPotential();
+        if (nullptr != pot)
+        {
+            pot->serialize(stream);
+            window->SendPotential(data);
+        }
+    }
+}
+
+void ControlWindow::sendGetSettingsRequest()
+{
+    window->SendGetSettingsRequest();
 }
 
 void ControlWindow::restart()

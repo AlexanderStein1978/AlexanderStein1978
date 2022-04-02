@@ -85,11 +85,14 @@ void NetworkServer::commandReceived(const Command command)
     case DATA_RECEIVED:
         SendData();
         break;
+    case GET_SETTINGS_AND_POTENTIALS:
+        mWindow->GetSettingsRequestReceived();
+        break;
     case ERROR_INCOMPLETE:
     case ERROR_UNKNOWN_COMMAND:
         break;
     default:
-        SendCommand(ERROR_UNKNOWN_COMMAND);
+        Network::commandReceived(command);
         break;
     }
 }

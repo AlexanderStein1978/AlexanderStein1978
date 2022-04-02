@@ -63,6 +63,10 @@ class Window : public QWidget
         void flagsReceived(char flags);
         void SendSettings(const QByteArray& data);
         void SendPotential(const QByteArray& data);
+        void SendGetSettingsRequest();
+        void SettingsReceived(const QByteArray& data);
+        void PotentialReceived(const QByteArray& data);
+        void GetSettingsRequestReceived();
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
@@ -70,6 +74,9 @@ class Window : public QWidget
         void IsConnectedToServer();
         void ConnectionFailed();
         void IsRunning(bool running);
+        void SendSettings();
+        void ReceivedSetting(const QByteArray& data);
+        void ReceivedPotential(const QByteArray& data);
 
     public slots:
         void updateRemoteEnergies(const double kineticEnergy, const double totalEnergy);

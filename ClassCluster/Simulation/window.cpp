@@ -141,6 +141,26 @@ void Window::SendPotential(const QByteArray &data)
     if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_POTENTIAL, data);
 }
 
+void Window::SendGetSettingsRequest()
+{
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::GET_SETTINGS_AND_POTENTIALS);
+}
+
+void Window::SettingsReceived(const QByteArray &data)
+{
+    emit ReceivedSetting(data);
+}
+
+void Window::PotentialReceived(const QByteArray &data)
+{
+    emit ReceivedPotential(data);
+}
+
+void Window::GetSettingsRequestReceived()
+{
+    emit SendSettings();
+}
+
 void Window::flagsReceived(char flags)
 {
     emit IsRunning((flags & 0x80) != 0x00);

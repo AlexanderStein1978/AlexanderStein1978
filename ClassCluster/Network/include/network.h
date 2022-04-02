@@ -30,7 +30,7 @@ public:
 
 protected:
     virtual void dataReceived();
-    virtual void commandReceived(const Command command) = 0;
+    virtual void commandReceived(const Command command);
     double readDouble(bool complete);
     quint32 readUint32(bool complete);
 
@@ -48,6 +48,7 @@ private slots:
 
 private:
     void RecoverFromError(char* receivedBuffer);
+    bool ReadStreamedObject(QByteArray& buffer);
 
     int mResendCount;
     QByteArray mLastSentCommand;

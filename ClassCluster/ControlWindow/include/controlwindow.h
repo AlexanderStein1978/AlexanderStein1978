@@ -54,6 +54,10 @@ private slots:
     void networkSelectionChanged(int index);
     void connectToServer();
     void setIsRunning(bool isRunning);
+    void getSettings();
+    void sendGetSettingsRequest();
+    void setSettings(QByteArray& data);
+    void setPotentialData(QByteArray& data);
 
     inline void connectionEstablished()
     {
@@ -82,7 +86,7 @@ private:
     QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit, *IpAddressEdit;
     QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel, *ConnectionStatus;
     QComboBox *NetworkSelection;
-    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect;
+    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect, *GetSettings;
     PotControl** PotControls;
     PotentialPlot* Plot;
     MainWindow *MW;

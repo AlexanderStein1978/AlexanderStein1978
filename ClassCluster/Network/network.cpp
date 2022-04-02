@@ -1,4 +1,5 @@
 #include "network.h"
+#include "window.h"
 #include <QTcpSocket>
 #include <QTimer>
 
@@ -84,7 +85,6 @@ void Network::dataReceived()
     char buffer[SIZE_OF_COMMAND_STRINGS + 1];
     memset(buffer, 0, SIZE_OF_COMMAND_STRINGS + 1);
     quint64 bytesRead = mSocket->read(buffer, SIZE_OF_COMMAND_STRINGS);
-    bool complete = true;
     qInfo() << "Received data: " << buffer;
     if (bytesRead < SIZE_OF_COMMAND_STRINGS)
     {
@@ -105,7 +105,6 @@ void Network::RecoverFromError(char *receivedBuffer)
 {
     qint64 bytesRead;
     Command command;
-    int offset(0);
     char buffer[SIZE_OF_COMMAND_STRINGS + 1];
     memcpy(buffer, receivedBuffer, SIZE_OF_COMMAND_STRINGS + 1);
     do
@@ -113,7 +112,7 @@ void Network::RecoverFromError(char *receivedBuffer)
         for (int i=1; i < SIZE_OF_COMMAND_STRINGS; ++i) buffer[i-1] = buffer[i];
         bytesRead = mSocket->read(buffer + SIZE_OF_COMMAND_STRINGS - 1, 1);
         if (bytesRead == 0) break;
-        command = mCommandMap.value(buffer + offset, NO_KNOWN_COMMAND);
+        command = mCommandMap.value(buffer, NO_KNOWN_COMMAND);
     } while (command == NO_KNOWN_COMMAND);
     if (command != NO_KNOWN_COMMAND) commandReceived(command);
 }
@@ -140,4 +139,35 @@ quint32 Network::readUint32(bool complete)
         complete = false;
     }
     return size;
+}
+
+void Network::commandReceived(const Command command)
+{
+    QByteArray buffer;
+    switch (command)
+    {
+    case SET_SETTINGS:
+        if (ReadStreamedObject(buffer)) mWindow->SettingsReceived(buffer);
+        break;
+    case SET_POTENTIAL:
+        if (ReadStreamedObject(buffer)) mWindow->PotentialReceived(buffer);
+        break;
+    default:
+        SendCommand(ERROR_UNKNOWN_COMMAND);
+        break;
+    }
+}
+
+bool Network::ReadStreamedObject(QByteArray &buffer)
+{
+    bool complete = true;
+    quint32 size(readUint32(complete));
+    if (complete)
+    {
+        buffer.resize(size);
+        qint64 bytesRead = mSocket->read(buffer.data(), size);
+        if (bytesRead == size) return true;
+    }
+    SendCommand(ERROR_INCOMPLETE);
+    return false;
 }
