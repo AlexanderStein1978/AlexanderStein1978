@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QDebug>
 
 #include <math.h>
 #include <cstdlib>
@@ -810,7 +811,8 @@ double Calculation::setKineticEnergy(const double newT)
     double nE = getPotentialEnergy() + newT, ParE, ParV;
 	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (nE - Energy) / double(N);
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
-	if (nE > Energy)
+    qInfo() << "SetKineticEnergy: newT=" << newT << " nE=" << nE << " Energy=" << Energy;
+    if (nE > Energy)
 	{
 		Energy = nE;
 		VC = sqrt(EnDiff);
