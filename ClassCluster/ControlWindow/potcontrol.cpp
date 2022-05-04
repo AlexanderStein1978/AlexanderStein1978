@@ -24,7 +24,7 @@ PotControl::PotControl(ControlWindow *i_parent, MainWindow *mw)
     , adjustReB(new QPushButton("adjust Re", parent))
     , showBox(new QCheckBox("plot", parent))
     , MW(mw)
-    , changed(false)
+    , changed(true)
     , changing(false)
 {
     VScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, VScale));
