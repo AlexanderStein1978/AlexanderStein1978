@@ -109,7 +109,9 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(window, SIGNAL(IsConnectedToServer()), this, SLOT(connectionEstablished()));
     connect(window, SIGNAL(ConnectionFailed()), this, SLOT(disconnected()));
     connect(window, SIGNAL(IsRunning(bool)), this, SLOT(setIsRunning(bool)));
-    connect(window, SIGNAL(GetSettings()), this, SLOT(getSettings()));
+    connect(window, SIGNAL(SendSettings()), this, SLOT(getSettings()));
+    connect(window, SIGNAL(ReceivedSetting(const QByteArray&)), this, SLOT(setSettings(const QByteArray&)));
+    connect(window, SIGNAL(ReceivedPotential(const QByteArray&)), this, SLOT(setPotentialData(const QByteArray&)));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -146,9 +148,9 @@ void ControlWindow::Init(QString& data)
     Init(instream);
 }
 
-void ControlWindow::setSettings(QByteArray& data)
+void ControlWindow::setSettings(const QByteArray& data)
 {
-    QTextStream stream(&data, QIODevice::ReadOnly);
+    QTextStream stream(data, QIODevice::ReadOnly);
     Init(stream);
     window->setSpeed(Speed->text().toDouble());
     if (window->isRunning())
@@ -158,9 +160,9 @@ void ControlWindow::setSettings(QByteArray& data)
     }
 }
 
-void ControlWindow::setPotentialData(QByteArray& data)
+void ControlWindow::setPotentialData(const QByteArray& data)
 {
-    QTextStream stream(&data, QIODevice::ReadOnly);
+    QTextStream stream(data, QIODevice::ReadOnly);
     stream.readLine();
     QStringList NameL = stream.readLine().split(": ");
     if (NameL.size() >= 2)
