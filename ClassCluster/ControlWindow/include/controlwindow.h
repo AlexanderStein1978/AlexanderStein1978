@@ -56,8 +56,8 @@ private slots:
     void setIsRunning(bool isRunning);
     void getSettings();
     void sendGetSettingsRequest();
-    void setSettings(QByteArray& data);
-    void setPotentialData(QByteArray& data);
+    void setSettings(const QByteArray& data);
+    void setPotentialData(const QByteArray& data);
 
     inline void connectionEstablished()
     {
