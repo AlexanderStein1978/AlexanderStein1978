@@ -67,6 +67,7 @@ class Window : public QWidget
         void SettingsReceived(const QByteArray& data);
         void PotentialReceived(const QByteArray& data);
         void GetSettingsRequestReceived();
+        void StartCommandReceived();
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
@@ -77,6 +78,7 @@ class Window : public QWidget
         void SendSettings();
         void ReceivedSetting(const QByteArray& data);
         void ReceivedPotential(const QByteArray& data);
+        void ReceivedStartCommand();
 
     public slots:
         void updateRemoteEnergies(const double kineticEnergy, const double totalEnergy);

@@ -15,7 +15,7 @@ void NetworkServer::commandReceived(const Command command)
     switch (command)
     {
     case START:
-        mWindow->start();
+        mWindow->StartCommandReceived();
         SendData();
         break;
     case STOP:

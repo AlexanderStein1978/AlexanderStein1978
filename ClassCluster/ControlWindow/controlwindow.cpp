@@ -112,6 +112,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(window, SIGNAL(SendSettings()), this, SLOT(getSettings()));
     connect(window, SIGNAL(ReceivedSetting(const QByteArray&)), this, SLOT(setSettings(const QByteArray&)));
     connect(window, SIGNAL(ReceivedPotential(const QByteArray&)), this, SLOT(setPotentialData(const QByteArray&)));
+    connect(window, SIGNAL(ReceivedStartCommand()), this, SLOT(run()));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
