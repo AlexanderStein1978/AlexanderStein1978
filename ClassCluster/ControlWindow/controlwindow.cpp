@@ -290,6 +290,7 @@ void ControlWindow::getSettings()
     QByteArray data;
     QTextStream stream(&data);
     Serialize(stream);
+    stream.flush();
     window->SendSettings(data);
     for (int n=0; n < Calculation::NumPot; ++n) if (PotControls[n]->isChangedSinceLastRun())
     {
@@ -298,6 +299,7 @@ void ControlWindow::getSettings()
         if (nullptr != pot)
         {
             pot->serialize(stream);
+            stream.flush();
             window->SendPotential(data);
         }
     }
