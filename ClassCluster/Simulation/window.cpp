@@ -295,6 +295,11 @@ void Window::start()
     emit IsRunning(true);
 }
 
+void Window::StartCommandReceived()
+{
+    emit ReceivedStartCommand();
+}
+
 void Window::stop()
 {
     if (nullptr != mNetworkClient)
