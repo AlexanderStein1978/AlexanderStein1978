@@ -178,8 +178,8 @@ void ControlWindow::setPotentialData(const QByteArray& data)
                 if (nullptr == pot) return;
                 pot->show();
             }
-            stream.seek(0);
-            pot->init(stream);
+            QTextStream stream2(data, QIODevice::ReadOnly);
+            pot->init(stream2);
         }
     }
 }
