@@ -430,7 +430,6 @@ void ControlWindow::ValueChanged()
 void ControlWindow::EnergyRelevantValueChanged()
 {
     bool wasWindowRunning(stopIfItsRunning());
-    window->setLayerDistance(LayerDistanceEdit->text().toDouble());
     EnE->setText(QString::number(TEdit->text().toDouble() + window->getPotentialEnergy()));
     if (wasWindowRunning) start();
 }

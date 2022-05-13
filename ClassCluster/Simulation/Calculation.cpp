@@ -560,10 +560,10 @@ void Calculation::setLayerDistance(double newDistance)
 {
     const double cDist(P[1].R.Y() - P[0].R.Y());
     const Vector diff(0.0, 0.5 * (newDistance - cDist), 0.0);
-    for (int n=0; n<N; n+=2)
+    for (int n=0; n < N-1; n+=2)
     {
         P[n].R -= diff;
-        P[n].R += diff;
+        P[n+1].R += diff;
     }
 }
 
