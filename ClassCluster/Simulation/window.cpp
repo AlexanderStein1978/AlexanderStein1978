@@ -563,5 +563,6 @@ void Window::restoreSnapShot(bool &isMoving, const QString& FileN)
 
 void Window::setLayerDistance(const double newDistance)
 {
-    Calc->setLayerDistance(newDistance);
+    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_LAYER_DISTANCE, newDistance);
+    else Calc->setLayerDistance(newDistance);
 }

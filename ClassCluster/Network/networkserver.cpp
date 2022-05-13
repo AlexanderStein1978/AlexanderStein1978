@@ -79,7 +79,7 @@ void NetworkServer::commandReceived(const Command command)
     case SET_LAYER_DISTANCE:
         {
             double distance = readDouble(complete);
-            if (complete) mWindow->setStepSize(distance);
+            if (complete) mWindow->setLayerDistance(distance);
         }
         break;
     case DATA_RECEIVED:
