@@ -178,6 +178,7 @@ void ControlWindow::setPotentialData(const QByteArray& data)
                 if (nullptr == pot) return;
                 pot->show();
             }
+            else for (int n=0; n < Calculation::NumPot; ++n) if (pot == PotControls[n]->getPotential()) PotControls[n]->setChanged();
             QTextStream stream2(data, QIODevice::ReadOnly);
             pot->init(stream2);
         }
