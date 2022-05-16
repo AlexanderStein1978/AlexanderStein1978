@@ -353,8 +353,7 @@ bool Window::isMoving() const
 
 void Window::setSpeed(const double newSpeed)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_SPEED, newSpeed);
-    else Calc->setSpeed(newSpeed);
+    if (nullptr == mNetworkClient) Calc->setSpeed(newSpeed);
 }
 
 double Window::getPotentialEnergy() const
@@ -369,11 +368,7 @@ double Window::getKineticEnergy() const
 
 double Window::setKineticEnergy(const double T)
 {
-    if (nullptr != mNetworkClient)
-    {
-        mNetworkClient->SendCommand(Network::SET_KINETIC_ENERGY, T);
-        return mRemoteKineticEnergy;
-    }
+    if (nullptr != mNetworkClient) return mRemoteKineticEnergy;
     return Calc->setKineticEnergy(T);
 }
 
@@ -405,14 +400,12 @@ void Window::setParticleWatch(const int indexToWatch)
 
 void Window::setPotentialRangeScale(const double newScale)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_POTENTIAL_RANGE_SCALE, newScale);
-    else Calc->setPotRangeScale(newScale);
+    if (nullptr == mNetworkClient) Calc->setPotRangeScale(newScale);
 }
 
 void Window::setStepSize(const double size)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_STEP_SIZE, size);
-    else Calc->setStepSize(size);
+    if (nullptr == mNetworkClient) Calc->setStepSize(size);
 }
 
 void Window::triggerSnapShot()
@@ -563,6 +556,5 @@ void Window::restoreSnapShot(bool &isMoving, const QString& FileN)
 
 void Window::setLayerDistance(const double newDistance)
 {
-    if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::SET_LAYER_DISTANCE, newDistance);
-    else Calc->setLayerDistance(newDistance);
+    if (nullptr == mNetworkClient) Calc->setLayerDistance(newDistance);
 }
