@@ -39,6 +39,11 @@ public:
         return pot;
     }
 
+    inline void setChanged()
+    {
+        changed = true;
+    }
+
 private slots:
     void Plot(const bool show);
     void RecalcExtensions();

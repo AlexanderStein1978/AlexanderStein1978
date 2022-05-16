@@ -576,7 +576,24 @@ void Calculation::move()
 void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
-    for (int n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr || !potentialOK[n]) return;
+    for (int n=0; n < NumPot; ++n)
+    {
+        if (Pot[n] == nullptr)
+        {
+            qCritical() << "Pot[" << n << "] == NULL!";
+            return;
+        }
+        if (dPdR[n] == nullptr)
+        {
+            qCritical() << "dPdR[" << n << "] == NULL!";
+            return;
+        }
+        if (!potentialOK[n])
+        {
+            qCritical() << "Pot[" << n << "] is not OK!";
+            return;
+        }
+    }
     int n, i, x, y, z; // m;
     bool isNotFirstIt(false);
     Vector *a = new Vector[N], *dm = new Vector[N], *dvm = new Vector[N], *dt = new Vector[N], *t0 = new Vector[N];
