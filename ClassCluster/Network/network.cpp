@@ -5,12 +5,14 @@
 
 
 const int Network::SIZE_OF_COMMAND_STRINGS = 8;
+const qint64 Network::SIZE_OF_LOG_MESSAGE_TIME = 23u;
 
 
 Network::Network(Window *window) : minimumDataToRead(SIZE_OF_COMMAND_STRINGS), mSocket(nullptr), mWindow(window),
     mCommandMap({{"STARTSTA", START}, {"STOPSTOP", STOP}, {"SEDFLAGS", SEND_FLAGS}, {"RESETRES", RESET}, {"MOVEMOVE", MOVE}, {"TRIGSNAP", TRIGGER_SNAP_SHOT}, {"WRITSNAP", WRITE_SNAP_SHOT},
                  {"RESTSNAP", RESTORE_SNAP_SHOT}, {"GETSETPS", GET_SETTINGS_AND_POTENTIALS}, {"SETSETTI", SET_SETTINGS}, {"SETPOTAL", SET_POTENTIAL}, {"RELOAPOT", RELOAD_POTENTIALS},
-                 {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"DATRECED", DATA_RECEIVED}, {"DATFOLLO", DATA_FOLLOWING}, {"ERRORINC", ERROR_INCOMPLETE}, {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
+                 {"STOPCALC", STOP_CALC}, {"ROTATERO", ROTATE}, {"DATRECED", DATA_RECEIVED}, {"DATFOLLO", DATA_FOLLOWING}, {"LOGMESSA", LOGMESSAGE}, {"ERRORINC", ERROR_INCOMPLETE},
+                 {"ERRORUNK", ERROR_UNKNOWN_COMMAND}}),
     mResendCount(0), mLastSentCommand()
 {
     mTimer.setInterval(1);
@@ -169,4 +171,20 @@ bool Network::ReadStreamedObject(QByteArray &buffer)
     }
     SendCommand(ERROR_INCOMPLETE);
     return false;
+}
+
+QString Network::readString()
+{
+    bool complete = true;
+    quint32 size(readUint32(complete));
+    if (!complete) return "";
+    QByteArray buffer;
+    buffer.resize(size);
+    qint64 bytesRead = mSocket->read(buffer.data(), size);
+    if (bytesRead < size)
+    {
+        SendCommand(ERROR_INCOMPLETE);
+        return "";
+    }
+    return buffer;
 }
