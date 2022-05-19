@@ -1,5 +1,7 @@
 #include "networkserver.h"
 #include "window.h"
+#include "logger.h"
+
 #include "QTcpSocket"
 
 
@@ -11,7 +13,6 @@ NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(windo
 
 void NetworkServer::commandReceived(const Command command)
 {
-    bool complete(true);
     switch (command)
     {
     case START:
@@ -78,23 +79,8 @@ void NetworkServer::NewConnection(QTcpSocket *socket)
     mSocket->disconnectFromHost();
     mOldSockets.push_back(mSocket);
     mSocket = socket;
+    Logger::getLogger().SetNetworkServer(this);
     mTimer.start();
-}
-
-QString NetworkServer::readString()
-{
-    bool complete = true;
-    quint32 size(readUint32(complete));
-    if (!complete) return "";
-    QByteArray buffer;
-    buffer.resize(size);
-    qint64 bytesRead = mSocket->read(buffer.data(), size);
-    if (bytesRead < size)
-    {
-        SendCommand(ERROR_INCOMPLETE);
-        return "";
-    }
-    return buffer;
 }
 
 void NetworkServer::SendData()
@@ -102,4 +88,28 @@ void NetworkServer::SendData()
     QByteArray data;
     mWindow->copyDataIfNew(data, mCommandMap.key(DATA_FOLLOWING));
     if (data.length() > 28) SendCommand(data);
+}
+
+void NetworkServer::SendLogMessage(const QtMsgType type, const QString &time, const QString &function, const QString &file, const QString &message)
+{
+    static const size_t minSizeLogMessage(44u);
+    static const size_t functionOffset(SIZE_OF_COMMAND_STRINGS + 1 + time.size());
+    QByteArray string = mCommandMap.key(LOGMESSAGE);
+    string.resize(minSizeLogMessage + function.size() + file.size() + message.size());
+    string[SIZE_OF_COMMAND_STRINGS] = static_cast<quint8>(type);
+    memcpy(string.data() + SIZE_OF_COMMAND_STRINGS + 1, time.data(), time.size());
+    size_t offset(functionOffset);
+    appendToByteArray(string, offset, function);
+    appendToByteArray(string, offset, file);
+    appendToByteArray(string, offset, message);
+    SendCommand(string);
+}
+
+void NetworkServer::appendToByteArray(QByteArray& string, size_t& offset, const QString& stringToAppend)
+{
+    const quint32 size(stringToAppend.size());
+    memcpy(string.data() + offset, &size, sizeof(quint32));
+    offset += sizeof(quint32);
+    memcpy(string.data() + offset, stringToAppend.data(), size);
+    offset += size;
 }

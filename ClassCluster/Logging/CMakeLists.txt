@@ -21,6 +21,7 @@ target_include_directories(Logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Logging PRIVATE
     MdiChild
+	Network
     TableWindow
     Qt5::Widgets
 )

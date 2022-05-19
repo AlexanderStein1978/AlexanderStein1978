@@ -13,12 +13,11 @@ public:
     bool IsConnected();
     void NewConnection(QTcpSocket *socket);
     void SendData();
+    void SendLogMessage(const QtMsgType type, const QString& time, const QString& function, const QString& file, const QString& message);
 
 protected:
     void commandReceived(const Command command) override;
-
-private:
-    QString readString();
+    void appendToByteArray(QByteArray& string, size_t& offset, const QString& stringToAppend);
 };
 
 #endif // NETWORKSERVER_H

@@ -18,6 +18,7 @@ add_library(Network STATIC
 target_include_directories(Network PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Network
+	Logging
 	Simulation
 	Qt5::Network
 )

@@ -17,7 +17,7 @@ public:
     enum Command
     {
         START, STOP, SEND_FLAGS, RESET, MOVE, TRIGGER_SNAP_SHOT, WRITE_SNAP_SHOT, RESTORE_SNAP_SHOT, GET_SETTINGS_AND_POTENTIALS, SET_SETTINGS, SET_POTENTIAL, RELOAD_POTENTIALS, STOP_CALC,
-        ROTATE, DATA_RECEIVED, DATA_FOLLOWING, ERROR_INCOMPLETE, ERROR_UNKNOWN_COMMAND, NO_KNOWN_COMMAND
+        ROTATE, DATA_RECEIVED, DATA_FOLLOWING, LOGMESSAGE, ERROR_INCOMPLETE, ERROR_UNKNOWN_COMMAND, NO_KNOWN_COMMAND
     };
 
     Network(Window *window);
@@ -32,6 +32,10 @@ protected:
     virtual void commandReceived(const Command command);
     double readDouble(bool complete);
     quint32 readUint32(bool complete);
+    QString readString();
+
+    static const int SIZE_OF_COMMAND_STRINGS;
+    static const qint64 SIZE_OF_LOG_MESSAGE_TIME;
 
     qint64 minimumDataToRead;
     QTcpSocket* mSocket;
@@ -39,7 +43,6 @@ protected:
     QMap<QByteArray, Command> mCommandMap;
     QTimer mTimer;
 
-    static const int SIZE_OF_COMMAND_STRINGS;
     std::vector<QTcpSocket*> mOldSockets;
 
 private slots:
