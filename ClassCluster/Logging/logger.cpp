@@ -4,7 +4,9 @@
 #include <QMutexLocker>
 
 
-Logger::Logger() : mTypeMap({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}}), mLogWindow(nullptr)
+Logger::Logger() 
+: mTypeMap({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}})
+, mLogWindow(nullptr), mNetworkServer(nullptr)
 {
 }
 
