@@ -8,6 +8,7 @@
 NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(window)
 {
     mSocket = socket;
+    Logger::getLogger().SetNetworkServer(this);
     mTimer.start();
 }
 
@@ -79,7 +80,6 @@ void NetworkServer::NewConnection(QTcpSocket *socket)
     mSocket->disconnectFromHost();
     mOldSockets.push_back(mSocket);
     mSocket = socket;
-    Logger::getLogger().SetNetworkServer(this);
     mTimer.start();
 }
 
@@ -97,7 +97,7 @@ void NetworkServer::SendLogMessage(const QtMsgType type, const QString &time, co
     QByteArray string = mCommandMap.key(LOGMESSAGE);
     string.resize(minSizeLogMessage + function.size() + file.size() + message.size());
     string[SIZE_OF_COMMAND_STRINGS] = static_cast<quint8>(type);
-    memcpy(string.data() + SIZE_OF_COMMAND_STRINGS + 1, time.data(), time.size());
+    memcpy(string.data() + SIZE_OF_COMMAND_STRINGS + 1, time.toUtf8().data(), time.size());
     size_t offset(functionOffset);
     appendToByteArray(string, offset, function);
     appendToByteArray(string, offset, file);
@@ -110,6 +110,6 @@ void NetworkServer::appendToByteArray(QByteArray& string, size_t& offset, const 
     const quint32 size(stringToAppend.size());
     memcpy(string.data() + offset, &size, sizeof(quint32));
     offset += sizeof(quint32);
-    memcpy(string.data() + offset, stringToAppend.data(), size);
+    memcpy(string.data() + offset, stringToAppend.toUtf8().data(), size);
     offset += size;
 }
