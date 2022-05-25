@@ -96,14 +96,16 @@ void NetworkClient::commandReceived(const Command command)
         break;
     case LOGMESSAGE:
         {
-            QtMsgType type;
-            if (0u == mSocket->read(reinterpret_cast<char*>(&type), 1))
+            char typeChar;
+            if (0u == mSocket->read(&typeChar, 1))
             {
                 Network::SendCommand(ERROR_INCOMPLETE);
                 return;
             }
+            QtMsgType type = static_cast<QtMsgType>(typeChar);
             QString function, file, message;
             QByteArray time;
+            time.resize(Network::SIZE_OF_LOG_MESSAGE_TIME);
             if (Network::SIZE_OF_LOG_MESSAGE_TIME > mSocket->read(time.data(), Network::SIZE_OF_LOG_MESSAGE_TIME))
             {
                 Network::SendCommand(ERROR_INCOMPLETE);
