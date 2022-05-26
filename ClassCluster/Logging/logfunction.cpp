@@ -15,8 +15,6 @@ void LogFunction(QtMsgType type, const QMessageLogContext &context, const QStrin
     Logger& logger(Logger::getLogger());
     QString timeString(dateTime.toString("dd.MM.yyyy hh:mm:ss.zzz"));
 
-    NetworkServer* server = logger.GetNetworkServer();
-    if (nullptr != server) server->SendLogMessage(type, timeString, function, file, msg);
-
     logger.LogMessage(QStringList() << timeString << logger.getTypeMap().value(type) << function << file << msg);
+    logger.LogRemoteMessage(type, timeString, function, file, msg);
 }

@@ -6,7 +6,7 @@
 
 Logger::Logger() 
 : mTypeMap({{QtDebugMsg, "Debug"}, {QtInfoMsg, "Info"}, {QtWarningMsg, "Warning"}, {QtCriticalMsg, "Critical"}, {QtFatalMsg, "Fatal"}})
-, mLogWindow(nullptr), mNetworkServer(nullptr)
+, mLogWindow(nullptr)
 {
 }
 
@@ -35,10 +35,4 @@ void Logger::SetLogWindow(LogWindow *window)
     QMutexLocker lock(&mMutex);
     mLogWindow = window;
     window->SetMessageBuffer(mMutex, mMessageBuffer);
-}
-
-NetworkServer* Logger::GetNetworkServer() const
-{
-    if (nullptr != mNetworkServer && mNetworkServer->IsConnected()) return mNetworkServer;
-    else return nullptr;
 }
