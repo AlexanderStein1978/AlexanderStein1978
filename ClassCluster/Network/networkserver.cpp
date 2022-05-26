@@ -8,7 +8,8 @@
 NetworkServer::NetworkServer(Window *window, QTcpSocket* socket) : Network(window)
 {
     mSocket = socket;
-    Logger::getLogger().SetNetworkServer(this);
+    connect(&Logger::getLogger(), SIGNAL(SendLogMessage(const QtMsgType, const QString&, const QString&, const QString&, const QString&)),
+                              this, SLOT(SendLogMessage(const QtMsgType, const QString&, const QString&, const QString&, const QString&)));
     mTimer.start();
 }
 

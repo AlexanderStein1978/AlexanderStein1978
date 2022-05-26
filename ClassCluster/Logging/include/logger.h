@@ -5,14 +5,15 @@
 #include <QStringList>
 #include <QMutex>
 #include <QMap>
+#include <QObject>
 
 
 class LogWindow;
-class NetworkServer;
 
 
-class Logger
+class Logger : public QObject
 {
+    Q_OBJECT
 public:
     static Logger& getLogger();
 
@@ -22,17 +23,19 @@ public:
     void SetLogWindow(LogWindow* window);
     void LogMessage(QStringList& message);
     void LogRemoteMessage(const QtMsgType type, const QString& time, const QString& function, const QString& file, const QString& message);
-    NetworkServer* GetNetworkServer() const;
 
-    inline void SetNetworkServer(NetworkServer* server)
+    inline void SendLogMessageToClient(const QtMsgType type, const QString& time, const QString& function, const QString& file, const QString& message)
     {
-        mNetworkServer = server;
+        emit SendLogMessage(type, time, function, file, message);
     }
 
     inline const QMap<QtMsgType, QString>& getTypeMap()
     {
         return mTypeMap;
     }
+
+signals:
+    void SendLogMessage(const QtMsgType type, const QString& time, const QString& function, const QString& file, const QString& message);
 
 private:
     Logger();
@@ -41,7 +44,6 @@ private:
     QList<QStringList> mMessageBuffer;
     QMutex mMutex;
     LogWindow* mLogWindow;
-    NetworkServer* mNetworkServer;
 };
 
 #endif // LOGGER_H

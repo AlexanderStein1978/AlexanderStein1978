@@ -7,12 +7,15 @@
 
 class NetworkServer : public Network
 {
+    Q_OBJECT
 public:
     NetworkServer(Window *window, QTcpSocket *socket);
 
     bool IsConnected();
     void NewConnection(QTcpSocket *socket);
     void SendData();
+
+private slots:
     void SendLogMessage(const QtMsgType type, const QString& time, const QString& function, const QString& file, const QString& message);
 
 protected:
