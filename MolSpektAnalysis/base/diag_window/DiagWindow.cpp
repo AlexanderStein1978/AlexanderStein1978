@@ -52,7 +52,7 @@
 using std::isinf;
 using std::isnan;
 
-DiagWindow::DiagWindow(Type type, MainWindow *mw, QString Filter, QString FileExt) 
+DiagWindow::DiagWindow(Type type, MainWindow *mw, QString Filter, QString FileExt, int o)
     : MDIChild(type, mw, Filter, FileExt), HScroll(0), xStartLabel(0), xStart(0), xStopLabel(0), xStop(0), VScroll(0), yStartLabel(0), yStart(0)
     , yStopLabel(0), yStop(0), Bild(0), SpektrumLayout(0), spacer1(0), IsoBox(0), StateBox(0), JBox(0), vBox(0), SimBox(0), TUnit(0), MolBox(0)
     , SourceBox(0), RefBox(0), CompBox(0), Evs(0), Temp(0), LaserF(0), WindowS(0), WindowE(0), Calc(0), PrintB(0), m_contrastSlider(0)
@@ -64,7 +64,6 @@ DiagWindow::DiagWindow(Type type, MainWindow *mw, QString Filter, QString FileEx
     , AssFont(), SpektColor(0, 0, 0), CopyColor(new QColor[26]), ZoomB(0), Image(0)
 {
     //printf("DiagWindow::DiagWindow, MW=%d\n", mw);
-    int o=0;
 	ShowMarkerLabels = true;
 	setMouseTracking(true);
 	ScaleAllowedSteps[0] = 1;

@@ -44,7 +44,7 @@ class DiagWindow : public MDIChild
 
 public:
     DiagWindow(Type type = SimpleDiagWindow, MainWindow *MW = 0, 
-			   QString Filter = "Data files (*.dat)", QString FileExt = ".dat");
+               QString Filter = "Data files (*.dat)", QString FileExt = ".dat", int o=0);
     virtual ~DiagWindow();
 	virtual void setData(double **Data, int numRows);
 	void addData(double **Data, int numRows);

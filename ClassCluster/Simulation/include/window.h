@@ -15,6 +15,7 @@ class Particle;
 class WatchPoint;
 class NetworkClient;
 class NetworkServer;
+class PotentialDefinerInputData;
 
 struct PotStruct;
 
@@ -68,6 +69,8 @@ class Window : public QWidget
         void PotentialReceived(const QByteArray& data);
         void GetSettingsRequestReceived();
         void StartCommandReceived();
+        void SetEnergyDefinitionAxis(const int particeIndex, const Vector& direction, Vector& end1, Vector& end2);
+        void GetAxisEnergies(PotentialDefinerInputData& data);
 
     signals:
         void EnergiesChanged(double kineticEnergy, double totalEnergy);

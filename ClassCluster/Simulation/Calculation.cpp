@@ -9,6 +9,7 @@
 #include "potential.h"
 #include "watchpoint.h"
 #include "vector.h"
+#include "potentialdefinerinputdata.h"
 
 #include <QGridLayout>
 #include <QFile>
@@ -657,33 +658,41 @@ void Calculation::run()
     delete[] t0;
 }
 
+void Calculation::updateBlock(int n)
+{
+    static const Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ);
+    int x, y, z;
+    x = ((x = int(F.X() * P[n].R.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
+    y = ((y = int(F.Y() * P[n].R.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
+    z = ((z = int(F.Z() * P[n].R.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
+    if (P[n].xp != x || P[n].yp != y || P[n].zp != z)
+    {
+        if (P[n].next != 0) P[n].next->prev = P[n].prev;
+        if (P[n].prev != 0) P[n].prev->next = P[n].next;
+        else G[P[n].xp][P[n].yp][P[n].zp] = P[n].next;
+        P[n].prev = 0;
+        P[n].next = G[x][y][z];
+
+        if (G[x][y][z] != 0) G[x][y][z]->prev = P + n;
+        G[x][y][z] = P + n;
+        P[n].xp = x;
+        P[n].yp = y;
+        P[n].zp = z;
+    }
+}
+
 void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm, Vector* dvm, const double lh)
 {
-    Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ);
+
     double hh = 0.5 * lh, h6 = lh / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
     double XMid = 0.5 * MaxX;
-    int n, x, y, z;
+    int n;
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
         for (n=0; n<N; n++)
         {
-            x = ((x = int(F.X() * P[n].R.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
-            y = ((y = int(F.Y() * P[n].R.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
-            z = ((z = int(F.Z() * P[n].R.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
-            if (P[n].xp != x || P[n].yp != y || P[n].zp != z)
-            {
-                if (P[n].next != 0) P[n].next->prev = P[n].prev;
-                if (P[n].prev != 0) P[n].prev->next = P[n].next;
-                else G[P[n].xp][P[n].yp][P[n].zp] = P[n].next;
-                P[n].prev = 0;
-                P[n].next = G[x][y][z];
-                if (G[x][y][z] != 0) G[x][y][z]->prev = P + n;
-                G[x][y][z] = P + n;
-                P[n].xp = x;
-                P[n].yp = y;
-                P[n].zp = z;
-            }
+            updateBlock(n);
             t0[n] = P[n].R;
         }
         if (Move)
@@ -770,8 +779,9 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     }
 }
 
-void Calculation::updateBindings()
+bool Calculation::updateBindings()
 {
+    bool rValue = false;
     double randF = static_cast<double>(static_cast<int>(Particle::NBound) * N) / RAND_MAX;
     for (int n=0; n < static_cast<int>(Particle::NBound)*N/2; ++n)
     {
@@ -788,6 +798,7 @@ void Calculation::updateBindings()
         }
         for (std::map<double,int>::const_reverse_iterator it1 = map1.rbegin(), it2 = map2.rbegin(); it1 != map1.rend() && it2 != map2.rend() && it1->first + it2->first > 0.0; ++it1, ++it2)
         {
+            rValue = true;
             for (int i4 = 0; i4 < static_cast<int>(Particle::NBound); ++i4)
             {
                 if (P[i0].bound[it1->second]->bound[i4] == P + i0) P[i0].bound[it1->second]->bound[i4] = P[i0].bound[i1];
@@ -796,6 +807,7 @@ void Calculation::updateBindings()
             std::swap(P[i0].bound[it1->second], P[i0].bound[i1]->bound[it2->second]);
         }
     }
+    return rValue;
 }
 
 double Calculation::dist(const Particle * const P1, const Particle * const P2)
@@ -945,4 +957,115 @@ Particle* Calculation::getParticles(int &num)
 {
     num = N;
     return P;
+}
+
+void Calculation::CalcEndpointsOfEnergyDefinitionAxis(const int particeIndex, const Vector &direction, Vector &end1, Vector &end2) const
+{
+    const Vector& Point1 = P[particeIndex].R;
+    double F = (MaxX - Point1.X()) / direction.X();
+    Vector S = Point1 + F * direction;
+    if (0.0 == direction.X() || MaxY < S.Y())
+    {
+        F = (MaxY - Point1.Y()) / direction.Y();
+        S = Point1 + F * direction;
+    }
+    else if (0.0 < S.Y())
+    {
+        F = -Point1.Y() / direction.Y();
+        S = Point1 + F * direction;
+    }
+    if ((0.0 == direction.X() && 0.0 == direction.Y()) || MaxZ < S.Z())
+    {
+        F = (MaxZ - Point1.Z()) / direction.Z();
+        S = Point1 + F * direction;
+    }
+    else if (0.0 < S.Z())
+    {
+        F = -Point1.Z() / direction.Z();
+        S = Point1 + F * direction;
+    }
+    end1 = S;
+    F = -Point1.X() / direction.X();
+    S = Point1 + F * direction;
+    if (MaxY < S.Y())
+    {
+        F = (MaxY - Point1.Y()) / direction.Y();
+        S = Point1 + F * direction;
+    }
+    else if (0.0 == direction.X() || 0.0 < S.Y())
+    {
+        F = -Point1.Y() / direction.Y();
+        S = Point1 + F * direction;
+    }
+    if (MaxZ < S.Z())
+    {
+        F = (MaxZ - Point1.Z()) / direction.Z();
+        S = Point1 + F * direction;
+    }
+    else if ((0.0 == direction.X() && 0.0 == direction.Y()) || 0.0 < S.Z())
+    {
+        F = -Point1.Z() / direction.Z();
+        S = Point1 + F * direction;
+    }
+    end2 = S;
+}
+
+void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
+{
+    const int particleIndex = data.getParticleIndex(), N = data.getNumnPoints();
+    Particle& currentParticle = P[particleIndex];
+    const Vector start = data.getEnd1(), end = data.getEnd2(), diff = end - start, particlePos = currentParticle.R;
+    const double s = 1.0 / (N-1);
+    Vector point = start;
+    for (int n=0; n<N; ++n, point += s * diff)
+    {
+        currentParticle.R = point;
+        updateBlock(particleIndex);
+        if (updateBindings()) data.addBoundChange(n);
+        const Particle* P2;
+        double SecondOrderSum = 0.0, UnboundSum = 0.0;
+        int lx, ly, lz;
+        for (lz = ((lz = currentParticle.zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= currentParticle.zp + GridSizeDiv; lz++)
+            for (ly = ((ly = currentParticle.yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= currentParticle.yp + GridSizeDiv; ly++)
+                for (lx = ((lx = currentParticle.xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= currentParticle.xp + GridSizeDiv; lx++)
+                    for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != &currentParticle)
+        {
+            Vector d = P2->R - currentParticle.R, b;
+            int bi1=N, bi2=N;
+            double r = d.length();
+            int p = int((r - Rm) * potRangeScale);
+            if (p < 0 || p >= NPot) continue;
+            for (int m=0; m<4; ++m)
+            {
+                if (currentParticle.bound[m] == P2) bi1=m;
+                if (P2->bound[m] == &currentParticle) bi2=m;
+            }
+            if (bi1 <= 1 && bi2 <= 1)
+            {
+                if (bi1 == 0) data.SetFirstBound(n, Pot[ClosestTwo][p]);
+                else data.SetSecondBound(n, Pot[ClosestTwo][p]);
+            }
+            else if (bi1 <= 3 && bi2 <= 3)
+            {
+                if (bi1 == 2) data.SetThirdBound(n, Pot[NextTwo][p]);
+                else data.SetFourthBound(n, Pot[NextTwo][p]);
+            }
+            else
+            {
+                bool SecondOrderBound(false);
+                for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (currentParticle.bound[n] == P2->bound[m])
+                {
+                    SecondOrderBound = true;
+                    break;
+                }
+                if (SecondOrderBound) SecondOrderSum += Pot[SecondOrder][p];
+                else UnboundSum += Pot[Remaining][p];
+            }
+        }
+        data.SetSecondOrderBound(n, SecondOrderSum);
+        data.SetUnbound(n, UnboundSum);
+    }
+    currentParticle.R = particlePos;
+    updateBlock(particleIndex);
+    updateBindings();
 }
