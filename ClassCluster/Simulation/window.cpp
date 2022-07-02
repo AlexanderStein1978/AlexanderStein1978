@@ -558,3 +558,14 @@ void Window::setLayerDistance(const double newDistance)
 {
     if (nullptr == mNetworkClient) Calc->setLayerDistance(newDistance);
 }
+
+void Window::SetEnergyDefinitionAxis(const int particeIndex, const Vector &direction, Vector &end1, Vector &end2)
+{
+    Calc->CalcEndpointsOfEnergyDefinitionAxis(particeIndex, direction, end1, end2);
+
+}
+
+void Window::GetAxisEnergies(PotentialDefinerInputData &data)
+{
+    Calc->GetAxisEnergies(data);
+}

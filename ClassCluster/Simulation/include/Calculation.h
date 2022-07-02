@@ -13,6 +13,7 @@ class Potential;
 class CalculationTest;
 class WatchPoint;
 class Vector;
+class PotentialDefinerInputData;
 class QFile;
 class QTextStream;
 
@@ -47,6 +48,8 @@ class Calculation : public QThread
         bool setPotential(const PotRole role, PotStruct &Pot);
         void setLayerDistance(double newDistance);
         bool arePotentialsOK();
+        void CalcEndpointsOfEnergyDefinitionAxis(const int particeIndex, const Vector& direction, Vector& end1, Vector& end2) const;
+        void GetAxisEnergies(PotentialDefinerInputData& data);
         
         void setParticleWatchPoint(WatchPoint* point)
         {
@@ -126,11 +129,12 @@ class Calculation : public QThread
         void WriteSnapshot();
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
         void calcMAR();
-        void updateBindings();
+        bool updateBindings();
         static double dist(const Particle *const P1, const Particle *const P2);
         static bool isNotBound(const Particle *const P1, const Particle *const P2);
         void checkPotentials();
         void checkPotential(const PotRole role);
+        void updateBlock(int particleIndex);
 
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
