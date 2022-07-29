@@ -20,12 +20,13 @@ protected:
     void PSpektrum(QPainter &P, const QRect & A, bool PrintFN) override;
 
 private slots:
-    void InputChanged();
+    void Calculate();
 
 private:
     PotentialDefinerInputData mData;
     Window* mWindow;
     Vector mStart, mEnd;
+    QPushButton *mCalcB;
     QLineEdit *mParticleIndexInput, *mDirectionXInput, *mDirectionYInput, *mDirectionZInput;
 };
 

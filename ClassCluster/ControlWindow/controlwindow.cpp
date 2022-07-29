@@ -7,6 +7,7 @@
 #include "MainWindow.h"
 #include "potential.h"
 #include "particlewatchtable.h"
+#include "potentialdefiner.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -20,7 +21,8 @@
 ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), TEdit(new QLineEdit("-1.0", this)),
     Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
     IpAddressEdit(new QLineEdit("192.168.1.1", this)), ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
-    GetSettings(new QPushButton("Get settings", this)), PotControls(new PotControl*[Calculation::NumPot]), Plot(nullptr), MW(mw), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), ProgramPath(QDir::currentPath())
+    GetSettings(new QPushButton("Get settings", this)), ShowPotentialDefinitionWindow(new QPushButton("Show potential definer", this)), PotControls(new PotControl*[Calculation::NumPot]),
+    Plot(nullptr), definitionWindow(nullptr), MW(mw), SettingsFileName("../../../Physics/ClassCluster/Data/Settings.dat"), ProgramPath(QDir::currentPath())
 {
     QFile settingsFile(SettingsFileName);
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
@@ -43,7 +45,8 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     L->addWidget(Move = new QPushButton("Move", this), 0, 3);
     L->addWidget(WriteSnapShot = new QPushButton("Write snapshot", this), 1, 0);
     L->addWidget(RestoreSnapShot = new QPushButton("Restore snapshot", this), 1, 1);
-    L->addWidget(ShowParticleWatchWindow = new QPushButton("Show particle amplification watch window", this), 1, 2, 1, 2);
+    L->addWidget(ShowPotentialDefinitionWindow, 1, 2);
+    L->addWidget(ShowParticleWatchWindow = new QPushButton("Show watch window", this), 1, 3);
     L->addLayout(SettingsLayout, 2, 0, 1, 4);
     SettingsLayout->addWidget(new QLabel("Speed:", this), 0, 0);
     SettingsLayout->addWidget(Speed , 0, 1);
@@ -95,6 +98,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(Speed, SIGNAL(editingFinished()), this, SLOT(speedChanged()));
     connect(WriteSnapShot, SIGNAL(clicked()), this, SLOT(writeSnapShot()));
     connect(RestoreSnapShot, SIGNAL(clicked()), this, SLOT(restoreSnapShot()));
+    connect(ShowPotentialDefinitionWindow, SIGNAL(clicked()), this, SLOT(showPotentialDefinitionWindow()));
     connect(ShowParticleWatchWindow, SIGNAL(clicked()), this, SLOT(showParticleWatchWindow()));
     connect(StepE, SIGNAL(editingFinished()), this, SLOT(ValueChanged()));
     connect(EnE, SIGNAL(editingFinished()), this, SLOT(EChanged()));
@@ -183,6 +187,12 @@ void ControlWindow::setPotentialData(const QByteArray& data)
             pot->init(stream2);
         }
     }
+}
+
+void ControlWindow::showPotentialDefinitionWindow()
+{
+    if (nullptr == definitionWindow) definitionWindow = new PotentialDefiner(window, MW);
+    MW->showMDIChild(definitionWindow);
 }
 
 void ControlWindow::networkSelectionChanged(int index)

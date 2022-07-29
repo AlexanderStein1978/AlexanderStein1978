@@ -7,9 +7,10 @@
 #include <QLabel>
 
 
-PotentialDefiner::PotentialDefiner(Window* window, MainWindow* MW) : DiagWindow(SimpleDiagWindow, MW, "", "*.*", 1), mWindow(window), mParticleIndexInput(new QLineEdit("0", this)),
-    mDirectionXInput(new QLineEdit("0.0", this)), mDirectionYInput(new QLineEdit("0.0", this)), mDirectionZInput(new QLineEdit("0.0", this))
+PotentialDefiner::PotentialDefiner(Window* window, MainWindow* MW) : DiagWindow(SimpleDiagWindow, MW, "", "*.*", 1), mWindow(window), mCalcB(new QPushButton("Calculate", this)),
+    mParticleIndexInput(new QLineEdit("0", this)), mDirectionXInput(new QLineEdit("0.0", this)), mDirectionYInput(new QLineEdit("0.0", this)), mDirectionZInput(new QLineEdit("0.0", this))
 {
+    setWindowTitle("Potential definition window");
     mParticleIndexInput->setValidator(new QIntValidator(0, window->getNumParticles() - 1, mParticleIndexInput));
     mDirectionXInput->setValidator(new QDoubleValidator(mDirectionXInput));
     mDirectionYInput->setValidator(new QDoubleValidator(mDirectionYInput));
@@ -23,31 +24,41 @@ PotentialDefiner::PotentialDefiner(Window* window, MainWindow* MW) : DiagWindow(
     layout->addWidget(mDirectionYInput, 0, 5);
     layout->addWidget(new QLabel("z:", this), 0, 6);
     layout->addWidget(mDirectionZInput, 0, 7);
+    layout->addWidget(mCalcB, 0, 8);
     SpektrumLayout->addLayout(layout, 0, 0, 1, 9);
-    connect(mParticleIndexInput, SIGNAL(editingFinished()), this, SLOT(InputChanged()));
-    connect(mDirectionXInput, SIGNAL(editingFinished()), this, SLOT(InputChanged()));
-    connect(mDirectionYInput, SIGNAL(editingFinished()), this, SLOT(InputChanged()));
-    connect(mDirectionZInput, SIGNAL(editingFinished()), this, SLOT(InputChanged()));
+    connect(mCalcB, SIGNAL(clicked()), this, SLOT(Calculate()));
+}
+
+void PotentialDefiner::Calculate()
+{
+    Vector direction(mDirectionXInput->text().toDouble(), mDirectionYInput->text().toDouble(), mDirectionZInput->text().toDouble());
+    if (mWindow->isRunning()) mWindow->stopCalc();
+    mWindow->SetEnergyDefinitionAxis(mParticleIndexInput->text().toInt(), direction, mStart, mEnd);
+    QRect A = Bild->contentsRect();
+    int w = A.width() - ScaleYWidth;
+    double minR = xStart->text().toDouble(), maxR = xStop->text().toDouble();
+    const Vector diff = mStart - mEnd, start = mStart + minR * diff, end = mStart + maxR * diff;
+    mData.Rescale(start, end, w + 1);
+    if (mWindow->isRunning()) mWindow->stopCalc();
+    mWindow->GetAxisEnergies(mData);
+    Paint();
 }
 
 void PotentialDefiner::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ )
 {
-    int i, w = A.width() - ScaleYWidth, h = A.height() - ScaleXHeight, di;
+    int w = A.width() - ScaleYWidth, h = A.height() - ScaleXHeight, di, n, N = mData.getNumnPoints();
     if (w <= 0 || h <= 0) return;
-    int l = A.left() + ScaleYWidth - 1;
-    int /*t = A.top(), r = l + w,*/ lp, n;
-    int p=0, b = A.bottom() - ScaleXHeight;
     double minR = xStart->text().toDouble(), maxR = xStop->text().toDouble();
-    double minE = yStart->text().toDouble(), maxE = yStop->text().toDouble();
-    double ESc = (double)h / (maxE - minE), Data[w];
-    const Vector diff = mStart - mEnd, start = mStart + minR * diff, end = mStart + maxR * diff;
-    mData.Rescale(start, end, w + 1);
-    mWindow->GetAxisEnergies(mData);
-    for (i=0; i<w; ++i) Data[i] = 0.0;
+    Vector start = mData.getEnd1(), end = mData.getEnd2();
+    double Data[N], dataStart = (start - mStart).length(), length = (end - start).length(), step =  length / (N-1), R;
+    if (maxR < dataStart || minR > dataStart + length) return;
+    int nStart = (minR > dataStart ? (minR - dataStart) / step : 0);
+    for (n=0; n<N; ++n) Data[n] = 0.0;
     for (n=0; n<6; n++)
     {
         P.setPen(CopyColor[n]);
-        for (di=0, i=l; i <= l+w && di <= w; i++, di++)
+        startLine(R = dataStart + nStart * step, Data[nStart]);
+        for (di = nStart + 1; di < N && R < maxR; di++)
         {
             switch(n)
             {
@@ -70,11 +81,7 @@ void PotentialDefiner::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ 
                 Data[di] += mData.GetUnbound(di);
                 break;
             }
-            lp = p;
-            p = b - int(ESc * (Data[di] - minE)) + 1;
-            if (p > b) p = b + 1;
-            if (i>l ? (p > lp ? p - lp : lp - p) > 1 : false) P.drawLine(i-1, lp, i, p);
-            else P.drawPoint(i, p);
+            continueLine(P, R += step, Data[di]);
         }
     }
     //DrawPoints(P, A);

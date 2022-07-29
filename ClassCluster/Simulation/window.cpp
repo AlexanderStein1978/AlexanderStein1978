@@ -29,8 +29,7 @@ Window::Window(PotStruct *PotSs) : mServer(nullptr), mNetworkClient(nullptr), mN
     setMaximumSize(XSize, YSize);
 
     connect(Calc, SIGNAL(WriteSnapShot(Particle*, int)), this, SLOT(writeSnapShot(Particle*, int)));
-    connect(Calc, SIGNAL(PictureChanged(Vector*, int)),
-            this, SLOT(draw(Vector*, int)));
+    connect(Calc, SIGNAL(PictureChanged(Vector*, int)), this, SLOT(draw(Vector*, int)));
     connect(Calc, SIGNAL(EnergiesChanged(double,double)), this, SLOT(updateRemoteEnergies(double,double)));
 }
 

@@ -15,6 +15,7 @@ class QTextStream;
 class Window;
 class PotControl;
 class Potential;
+class PotentialDefiner;
 class PotentialPlot;
 class MainWindow;
 
@@ -58,6 +59,7 @@ private slots:
     void sendGetSettingsRequest();
     void setSettings(const QByteArray& data);
     void setPotentialData(const QByteArray& data);
+    void showPotentialDefinitionWindow();
 
     inline void connectionEstablished()
     {
@@ -86,9 +88,10 @@ private:
     QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit, *IpAddressEdit;
     QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel, *ConnectionStatus;
     QComboBox *NetworkSelection;
-    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect, *GetSettings;
+    QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect, *GetSettings, *ShowPotentialDefinitionWindow;
     PotControl** PotControls;
     PotentialPlot* Plot;
+    PotentialDefiner* definitionWindow;
     MainWindow *MW;
     const QString SettingsFileName, ProgramPath;
 };
