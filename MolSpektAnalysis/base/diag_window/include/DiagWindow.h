@@ -98,6 +98,9 @@ protected:
     virtual void PaintScale(QPainter &P, const QRect &A);
     virtual void PSpektrum(QPainter &P, const QRect &A, bool PrintFN );
     void DrawPoints(QPainter &P, const QRect &A);
+    void drawPoint(QPainter &P, double X, double Y);
+    void startLine(double X, double Y);
+    void continueLine(QPainter &P, double X, double Y);
 		
 	QScrollBar* HScroll;
     QLabel* xStartLabel;
@@ -117,9 +120,9 @@ protected:
 	QPushButton *Calc, *PrintB;
     QSlider *m_contrastSlider, *m_intensitySlider;
     SplinePoint *points;
-    double XMax, XMin, YMax, YMin, XO, YO, XSF, YSF, aPosx, aPosy, m_minSelectedFrequency, m_maxSelectedFrequency;
+    double XMax, XMin, YMax, YMin, XO, YO, XSF, YSF, mXStart, mXStop, mYStart, mYStop, aPosx, aPosy, m_minSelectedFrequency, m_maxSelectedFrequency, mLastX, mLastY;
 	int ScaleMaxLargeSteps, ScaleSmallStepDiv, ScaleNAllowedSteps, *ScaleAllowedSteps;
-    int ScaleXHeight, ScaleYWidth, ScaleMinYWidth, ScaleTopOffset, numPoints;
+    int ScaleXHeight, ScaleYWidth, ScaleMinYWidth, ScaleTopOffset, numPoints, mLastPicX, mLastPicY;
 	QString XUnit, YUnit;
 	QFont UnitFont, ScaleFont;
 	Datensatz *Daten;
