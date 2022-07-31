@@ -11,6 +11,20 @@ PotentialDefiner::PotentialDefiner(Window* window, MainWindow* MW) : DiagWindow(
     mParticleIndexInput(new QLineEdit("0", this)), mDirectionXInput(new QLineEdit("0.0", this)), mDirectionYInput(new QLineEdit("0.0", this)), mDirectionZInput(new QLineEdit("0.0", this))
 {
     setWindowTitle("Potential definition window");
+    xStartLabel->setText("R [A]:    from ");
+    xStart->setText("0");
+    xStopLabel->setText(" to ");
+    xStop->setText("100");
+    yStartLabel->setText("Energie [cm-1]  :    from ");
+    yStart->setText("0");
+    yStopLabel->setText(" to ");
+    yStop->setText("5000");
+    XUnit = "% of axis length";
+    YUnit = "Energy [cm^{-1}]";
+    XMin = 0.0;
+    XMax = 100.0;
+    YMin = -10000.0;
+    YMax = 50000.0;
     mParticleIndexInput->setValidator(new QIntValidator(0, window->getNumParticles() - 1, mParticleIndexInput));
     mDirectionXInput->setValidator(new QDoubleValidator(mDirectionXInput));
     mDirectionYInput->setValidator(new QDoubleValidator(mDirectionYInput));
@@ -37,7 +51,7 @@ void PotentialDefiner::Calculate()
     QRect A = Bild->contentsRect();
     int w = A.width() - ScaleYWidth;
     double minR = xStart->text().toDouble(), maxR = xStop->text().toDouble();
-    const Vector diff = mStart - mEnd, start = mStart + minR * diff, end = mStart + maxR * diff;
+    const Vector step = 0.01 * (mEnd - mStart), start = mStart + minR * step, end = mStart + maxR * step;
     mData.Rescale(start, end, w + 1);
     if (mWindow->isRunning()) mWindow->stopCalc();
     mWindow->GetAxisEnergies(mData);

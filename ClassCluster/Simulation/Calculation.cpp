@@ -962,52 +962,29 @@ Particle* Calculation::getParticles(int &num)
 void Calculation::CalcEndpointsOfEnergyDefinitionAxis(const int particeIndex, const Vector &direction, Vector &end1, Vector &end2) const
 {
     const Vector& Point1 = P[particeIndex].R;
-    double F = (MaxX - Point1.X()) / direction.X();
-    Vector S = Point1 + F * direction;
-    if (0.0 == direction.X() || MaxY < S.Y())
+    if (direction.X() != 0.0)
     {
-        F = (MaxY - Point1.Y()) / direction.Y();
-        S = Point1 + F * direction;
+        end1 = Point1 - (Point1.X() / direction.X()) * direction;
+        end2 = Point1 + ((MaxX - Point1.X()) / direction.X()) * direction;
     }
-    else if (0.0 < S.Y())
+    else if (direction.Y() != 0.0)
     {
-        F = -Point1.Y() / direction.Y();
-        S = Point1 + F * direction;
+        end1 = Point1 - (Point1.Y() / direction.Y()) * direction;
+        end2 = Point1 + ((MaxY - Point1.Y()) / direction.Y()) * direction;
     }
-    if ((0.0 == direction.X() && 0.0 == direction.Y()) || MaxZ < S.Z())
+    else
     {
-        F = (MaxZ - Point1.Z()) / direction.Z();
-        S = Point1 + F * direction;
+        end1 = Point1 - (Point1.Z() / direction.Z()) * direction;
+        end2 = Point1 + ((MaxZ - Point1.Z()) / direction.Z()) * direction;
     }
-    else if (0.0 < S.Z())
-    {
-        F = -Point1.Z() / direction.Z();
-        S = Point1 + F * direction;
-    }
-    end1 = S;
-    F = -Point1.X() / direction.X();
-    S = Point1 + F * direction;
-    if (MaxY < S.Y())
-    {
-        F = (MaxY - Point1.Y()) / direction.Y();
-        S = Point1 + F * direction;
-    }
-    else if (0.0 == direction.X() || 0.0 < S.Y())
-    {
-        F = -Point1.Y() / direction.Y();
-        S = Point1 + F * direction;
-    }
-    if (MaxZ < S.Z())
-    {
-        F = (MaxZ - Point1.Z()) / direction.Z();
-        S = Point1 + F * direction;
-    }
-    else if ((0.0 == direction.X() && 0.0 == direction.Y()) || 0.0 < S.Z())
-    {
-        F = -Point1.Z() / direction.Z();
-        S = Point1 + F * direction;
-    }
-    end2 = S;
+    if (end1.Y() < 0.0) end1 = Point1 - (Point1.Y() / direction.Y()) * direction;
+    else if (end1.Y() > MaxY) end1 = Point1 + ((MaxY - Point1.Y()) / direction.Y()) * direction;
+    if (end2.Y() < 0.0) end2 = Point1 - (Point1.Y() / direction.Y()) * direction;
+    else if (end2.Y() > MaxY) end2 = Point1 + ((MaxY - Point1.Y()) / direction.Y()) * direction;
+    if (end1.Z() < 0.0) end1 = Point1 - (Point1.Z() / direction.Z()) * direction;
+    else if (end1.Z() > MaxZ) end1 = Point1 + ((MaxZ - Point1.Z()) / direction.Z()) * direction;
+    if (end2.Z() < 0.0) end2 = Point1 - (Point1.Z() / direction.Z()) * direction;
+    else if (end2.Z() > MaxZ) end2 = Point1 + ((MaxZ - Point1.Z()) / direction.Z()) * direction;
 }
 
 void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
