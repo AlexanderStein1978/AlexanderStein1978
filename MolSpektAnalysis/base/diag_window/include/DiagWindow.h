@@ -66,7 +66,7 @@ public:
     {
         return showPoints;
     }
-	
+
 public slots:
 	virtual void Print(QPrinter &P);
     virtual void Paint();
@@ -155,6 +155,8 @@ private slots:
 	void MouseMovedOverPicture(int x, int y);
 	
 private:
+    void setClippingRect(QPainter& Pt, int width, int height);
+    
     QPixmap image0;
     bool ScrollsEnabled, ShowMarkerLabels;
     QDoubleValidator *VEVon, *VEBis, *VWNVon, *VWNBis;
