@@ -419,10 +419,17 @@ void DiagWindow::Print(QPrinter &P)
 					 QMessageBox::Abort) return;
 		}
 		PaintScale(Pt, R);
+        setClippingRect(Pt, P.width(), P.height());
 		PSpektrum(Pt, R, false);
     }
     Pt.end();
 	delete PD;
+}
+
+void DiagWindow::setClippingRect(QPainter& Pt, int width, int height)
+{
+    Pt.setClipping(true);
+    Pt.setClipRect(ScaleYWidth, 0, width - ScaleYWidth, height - ScaleXHeight);
 }
 
 void DiagWindow::Paint()
@@ -445,6 +452,7 @@ void DiagWindow::Paint()
      ScrollsEnabled = true;
 	 QPainter P(Bild->getPixmap());
      PaintScale(P, Bild->contentsRect());
+     setClippingRect(P, Bild->width(), Bild->height());
      PSpektrum(P, Bild->contentsRect(), false);
      Bild->update();
 }
@@ -672,99 +680,17 @@ void DiagWindow::startLine(double X, double Y)
 {
     mLastX = X;
     mLastY = Y;
-    if (X >= mXStart && X <= mXStop && Y >= mYStart && Y <= mYStop)
-    {
-        mLastPicX = static_cast<int>(XO + XSF * X);
-        mLastPicY = static_cast<int>(YO - YSF * Y);
-    }
-    else mLastPicX = mLastPicY = -1;
 }
 
 void DiagWindow::continueLine(QPainter &P, double X, double Y)
 {
-    if (mLastPicX > 0 && mLastPicY > 0 && X >= mXStart && X <= mXStop && Y >= mYStart && Y <= mYStop)
-    {
-        int newX = static_cast<int>(XO + XSF * X);
-        int newY = static_cast<int>(YO - YSF * Y);
-        if (mLastPicX != newX || mLastPicY != newY)
-        {
-            P.drawLine(mLastPicX, mLastPicY, newX, newY);
-            mLastPicX = newX;
-            mLastPicY = newY;
-        }
-        else P.drawPoint(newX, newY);
-        mLastX = X;
-        mLastY = Y;
-    }
-    else if ((mLastX >= mXStart || X >= mXStart) && (mLastX <= mXStop || X <= mXStop) && (mLastY >= mYStart || Y >= mYStart) && (mLastY <= mYStop || Y <= mXStop))
-    {
-        double X1 = X, X2 = mLastX, Y1 = Y, Y2 = mLastY;
-        if (X < mXStart || mLastX < mXStart)
-        {
-            Y1 = mLastY + (mXStart - mLastX) * (Y - mLastY) / (X - mLastX);
-            X1 = mXStart;
-            if (X >= mXStart)
-            {
-                X2 = X;
-                Y2 = Y;
-            }
-        }
-        if (X1 > mXStop || X2 > mXStop)
-        {
-            double Yn = Y1 + (mXStop - X1) * (Y2 - Y1) / (X2 - X1);
-            if (X2 > mXStop)
-            {
-                X2 = mXStop;
-                Y2 = Yn;
-            }
-            else
-            {
-                X1 = mXStop;
-                Y1 = Yn;
-            }
-        }
-        if ((Y1 > mYStop && Y2 > mYStop) || (Y1 < mYStart && Y2 < mYStart))
-        {
-            startLine(X, Y);
-            return;
-        }
-        if (Y1 < mYStart || Y2 < mYStart)
-        {
-            double Xn = X1 + (X2 - X1) * (mYStart - Y1) / (Y2 - Y1);
-            if (Y1 > mYStop)
-            {
-                X1 = Xn;
-                Y1 = mYStop;
-            }
-            else
-            {
-                X2 = Xn;
-                Y2 = mYStop;
-            }
-        }
-        if (Y1 > mYStop || Y2 > mYStop)
-        {
-            double Xn = X1 + (X2 - X1) * (mYStop - Y1) / (Y2 - Y1);
-            if (Y1 < mYStart)
-            {
-                X1 = Xn;
-                Y1 = mYStart;
-            }
-            else
-            {
-                X2 = Xn;
-                Y2 = mYStart;
-            }
-        }
-        int x1 = static_cast<int>(XO + XSF * X1);
-        int y1 = static_cast<int>(YO - YSF * Y1);
-        int x2 = static_cast<int>(XO + XSF * X2);
-        int y2 = static_cast<int>(YO - YSF * Y2);
-        if (x1 != x2 || y1 != y2) P.drawLine(x1, y1, x2, y2);
-        else P.drawPoint(X1, Y2);
-        startLine(X, Y);
-    }
-    else startLine(X, Y);
+    int x1 = static_cast<int>(XO + XSF * mLastX);
+    int y1 = static_cast<int>(YO - YSF * mLastY);
+    int x2 = static_cast<int>(XO + XSF * X);
+    int y2 = static_cast<int>(YO - YSF * Y);
+    if (x1 != x2 || y1 != y2) P.drawLine(x1, y1, x2, y2);
+    else P.drawPoint(X, Y);
+    startLine(X, Y);
 }
 
 void DiagWindow::mouseMoveEvent(QMouseEvent *)
