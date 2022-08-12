@@ -147,10 +147,10 @@ TEST_F(CalculationTest, CalcEndpointsOfEnergyDefinitionAxis)
 {
     Vector end1, end2, direction(1.0, 1.0, 1.0);
     Calc.CalcEndpointsOfEnergyDefinitionAxis(210, direction, end1, end2);
-    EXPECT_EQ(1.0, end1.X());
-    EXPECT_EQ(1.0, end1.Y());
-    EXPECT_EQ(1.0, end1.Z());
-    EXPECT_EQ(1.0, end2.X());
-    EXPECT_EQ(1.0, end2.Y());
-    EXPECT_EQ(1.0, end2.Z());
+    EXPECT_EQ(0.0, end1.X());
+    EXPECT_NEAR(15.1716, end1.Y(), 1e-4);
+    EXPECT_EQ(0.0, end1.Z());
+    EXPECT_NEAR(64.8284, end2.X(), 1e-4);
+    EXPECT_EQ(80.0, end2.Y());
+    EXPECT_NEAR(64.8284, end2.Z(), 1e-4);
 }
