@@ -142,3 +142,15 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
         }
     }
 }
+
+TEST_F(CalculationTest, CalcEndpointsOfEnergyDefinitionAxis)
+{
+    Vector end1, end2, direction(1.0, 1.0, 1.0);
+    Calc.CalcEndpointsOfEnergyDefinitionAxis(210, direction, end1, end2);
+    EXPECT_EQ(1.0, end1.X());
+    EXPECT_EQ(1.0, end1.Y());
+    EXPECT_EQ(1.0, end1.Z());
+    EXPECT_EQ(1.0, end2.X());
+    EXPECT_EQ(1.0, end2.Y());
+    EXPECT_EQ(1.0, end2.Z());
+}
