@@ -3,6 +3,7 @@
 #include "Calculation.h"
 #include "heapsort.h"
 #include "deltaesortfunctor.h"
+#include "yz_sortfunctor.h"
 #include "vsortfunctor.h"
 #include "utils.h"
 #include "potstruct.h"
@@ -27,7 +28,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false)
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false), mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
     double IntDist = 20.0, st;
@@ -625,22 +626,20 @@ void Calculation::run()
         *DebugLog << i;
         if (isNotFirstIt) correctLocalE();
         else isNotFirstIt = true;
-        for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (D[n]->R.Z() < D[n-1]->R.Z())
+        if (mRotationChanged)
+        {
+            int *Sort = utils::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
+            for (n=0; n<N; ++n) D[Sort[n]] = P + n;
+            mRotationChanged = false;
+        }
+        else for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (rotated ? D[n]->R.Y() < D[n-1]->R.Y() : D[n]->R.Z() < D[n-1]->R.Z())
 		{
 			PB = D[n];
 			D[n] = D[n-1];
-			D[n-1] = PB;
+            D[n-1] = PB;
 		}
 		mutex.lock();
-		if (rotated)
-		{
-			for (n=x=0, z=N; n < N; n++) 
-			{
-				y = D[n] - P;
-                if (y < N && y >= 0) Pos[x++] = Vector(D[n]->R.X(), D[n]->R.Z(), D[n]->R.Y());
-                else Pos[z++] = Vector(D[n]->R.X(), D[n]->R.Z(), D[n]->R.Y());
-			}
-		}
+        if (rotated) for (n=0; n < N; n++) Pos[n] = Vector(D[n]->R.X(), D[n]->R.Z(), D[n]->R.Y());
         else for (n=0; n < N; n++) Pos[n] = D[n]->R;
 		mutex.unlock();
         emit PictureChanged(Pos, N);
@@ -774,8 +773,11 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         {
             printf("Break!");
         }
-        rk4(t0, dvt, a, dt, dm, dvm, nh);
-        rk4(t0, dvt, a, dt, dm, dvm, nh);
+        else
+        {
+            rk4(t0, dvt, a, dt, dm, dvm, nh);
+            rk4(t0, dvt, a, dt, dm, dvm, nh);
+        }
     }
 }
 
@@ -832,6 +834,7 @@ void Calculation::rotate()
 {
 	if (rotated) rotated = false;
 	else rotated = true;
+    mRotationChanged = true;
 }
 
 double Calculation::setKineticEnergy(const double newT)
