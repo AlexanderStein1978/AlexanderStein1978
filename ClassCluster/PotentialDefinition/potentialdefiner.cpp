@@ -64,16 +64,19 @@ void PotentialDefiner::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ 
     if (w <= 0 || h <= 0) return;
     double minR = xStart->text().toDouble(), maxR = xStop->text().toDouble();
     Vector start = mData.getEnd1(), end = mData.getEnd2();
-    double Data[N], dataStart = (start - mStart).length(), length = (end - start).length(), step =  length / (N-1), R;
+    double Data[N], dataStart = (start - mStart).length(), length = (end - start).length(), step = length / (N-1), R, lastR;
     if (maxR < dataStart || minR > dataStart + length) return;
     int nStart = (minR > dataStart ? (minR - dataStart) / step : 0);
+    step *= 100.0 / length;
     for (n=0; n<N; ++n) Data[n] = 0.0;
     for (n=0; n<6; n++)
     {
-        P.setPen(CopyColor[n]);
-        startLine(R = dataStart + nStart * step, Data[nStart]);
-        for (di = nStart + 1; di < N && R < maxR; di++)
+        if (n<5) P.setPen(CopyColor[n+1]);
+        else P.setPen(CopyColor[0]);
+        startLine(lastR = R = dataStart + nStart * step, Data[nStart]);
+        for (di = nStart + 1; di < N && lastR < maxR; di++)
         {
+            lastR = R;
             switch(n)
             {
             case 0:
