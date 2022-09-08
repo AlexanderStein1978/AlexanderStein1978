@@ -1020,15 +1020,23 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
                 if (currentParticle.bound[m] == P2) bi1=m;
                 if (P2->bound[m] == &currentParticle) bi2=m;
             }
-            if (bi1 <= 1 && bi2 <= 1)
+            if (bi1 <= 3 && bi2 <= 3)
             {
-                if (bi1 == 0) data.SetFirstBound(n, Pot[ClosestTwo][p]);
-                else data.SetSecondBound(n, Pot[ClosestTwo][p]);
-            }
-            else if (bi1 <= 3 && bi2 <= 3)
-            {
-                if (bi1 == 2) data.SetThirdBound(n, Pot[NextTwo][p]);
-                else data.SetFourthBound(n, Pot[NextTwo][p]);
+                switch (bi1)
+                {
+                case 0:
+                    data.SetFirstBound(n, Pot[ClosestTwo][p]);
+                    break;
+                case 1:
+                    data.SetSecondBound(n, Pot[ClosestTwo][p]);
+                    break;
+                case 2:
+                    data.SetThirdBound(n, Pot[NextTwo][p]);
+                    break;
+                default:
+                    data.SetFourthBound(n, Pot[NextTwo][p]);
+                    break;
+                }
             }
             else
             {
@@ -1048,4 +1056,10 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
     currentParticle.R = particlePos;
     updateBlock(particleIndex);
     updateBindings();
+}
+
+int Calculation::TranslateParticleIndex(int index) const
+{
+    for (int i=0; i < N; ++i) if (D[i] == P + index) return i;
+    return -1;
 }
