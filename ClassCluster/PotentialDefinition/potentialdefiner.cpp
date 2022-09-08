@@ -47,11 +47,13 @@ void PotentialDefiner::Calculate()
 {
     Vector direction(mDirectionXInput->text().toDouble(), mDirectionYInput->text().toDouble(), mDirectionZInput->text().toDouble());
     if (mWindow->isRunning()) mWindow->stopCalc();
-    mWindow->SetEnergyDefinitionAxis(mParticleIndexInput->text().toInt(), direction, mStart, mEnd);
+    int particleIndex = mParticleIndexInput->text().toInt();
+    mWindow->SetEnergyDefinitionAxis(particleIndex, direction, mStart, mEnd);
     QRect A = Bild->contentsRect();
     int w = A.width() - ScaleYWidth;
     double minR = xStart->text().toDouble(), maxR = xStop->text().toDouble();
     const Vector step = 0.01 * (mEnd - mStart), start = mStart + minR * step, end = mStart + maxR * step;
+    mData.setParticleIndex(particleIndex);
     mData.Rescale(start, end, w + 1);
     if (mWindow->isRunning()) mWindow->stopCalc();
     mWindow->GetAxisEnergies(mData);

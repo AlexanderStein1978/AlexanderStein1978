@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "Calculation.h"
+#include "vector.h"
 
 
 class QTcpServer;
@@ -108,8 +109,8 @@ class Window : public QWidget
         bool mIsRemoteRunning, mDataIsNew, mWaitingForData;
         QMutex mDataMutex;
 
-        Vector *mPos;
-        int mN, mNumRemoteParticles;
+        Vector *mPos, mAxisStart, mAxisEnd;
+        int mN, mNumRemoteParticles, mMarkedParticle, mMarkedIndex;
         double mRemoteKineticEnergy, mRemoteTotalEnergy;
         QString mRemoteSnapShotFileName;
         Particle* mRemoteSnapShotParticles;

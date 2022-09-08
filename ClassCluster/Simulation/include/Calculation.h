@@ -50,6 +50,7 @@ class Calculation : public QThread
         bool arePotentialsOK();
         void CalcEndpointsOfEnergyDefinitionAxis(const int particeIndex, const Vector& direction, Vector& end1, Vector& end2) const;
         void GetAxisEnergies(PotentialDefinerInputData& data);
+        int TranslateParticleIndex(int index) const;
         
         void setParticleWatchPoint(WatchPoint* point)
         {
@@ -94,6 +95,11 @@ class Calculation : public QThread
         inline int getNumXDimParticles() const
         {
             return PXS;
+        }
+
+        inline bool IsRotated() const
+        {
+            return rotated;
         }
 		
 		QMutex mutex;

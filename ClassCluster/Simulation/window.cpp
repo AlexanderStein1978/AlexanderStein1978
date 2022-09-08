@@ -2,7 +2,6 @@
 #include "Calculation.h"
 #include "Picture.h"
 #include "particle.h"
-#include "vector.h"
 #include "networkclient.h"
 #include "networkserver.h"
 
@@ -18,7 +17,7 @@
 
 
 Window::Window(PotStruct *PotSs) : mServer(nullptr), mNetworkClient(nullptr), mNetworkServer(nullptr), mIsRemoteRunning(false), mDataIsNew(false), mWaitingForData(false), mPos(nullptr),
-    mN(0), mNumRemoteParticles(0), mRemoteKineticEnergy(0.0), mRemoteTotalEnergy(0.0), mRemoteSnapShotParticles(nullptr)
+    mN(0), mNumRemoteParticles(0), mMarkedParticle(-1), mMarkedIndex(-1), mRemoteKineticEnergy(0.0), mRemoteTotalEnergy(0.0), mRemoteSnapShotParticles(nullptr)
 {
     Calc = new Calculation(PotSs);
     QBoxLayout *L = new QBoxLayout(QBoxLayout::LeftToRight, this);
@@ -186,6 +185,7 @@ void Window::draw(Vector *Pos, int N)
     mDataIsNew = true;
     Calc->mutex.unlock();
     mDataMutex.unlock();
+    if (mMarkedIndex >= 0) mMarkedParticle = Calc->TranslateParticleIndex(mMarkedIndex);
     update();
     if (mWaitingForData && nullptr != mNetworkServer) mNetworkServer->SendData();
 }
@@ -234,7 +234,7 @@ void Window::paintEvent(QPaintEvent *e)
 {
     if (0 != mN)
     {
-        int w = Pict->width(), he = Pict->height(), col, n, z, MaxZ;
+        int w = Pict->width(), he = Pict->height(), col, n, z, MaxZ, markedX = -10, markedY = -10;
         double ScF;
         Calc->getScales(ScF, MaxZ);
         double zSc = 255.0 / MaxZ, xc, yc;
@@ -242,7 +242,7 @@ void Window::paintEvent(QPaintEvent *e)
         Paint.eraseRect(0, 0, w, he);
         for (n=0, z=-100; n < mN; n++)
         {
-            if (int(mPos[n].Z() * zSc) != z)
+            if (int(mPos[n].Z() * zSc) != z || n-1 == mMarkedParticle)
             {
                 col = 254 - (z = int(mPos[n].Z() * zSc));
                 if (col < 0) col = 0;
@@ -252,7 +252,34 @@ void Window::paintEvent(QPaintEvent *e)
             }
             xc = mPos[n].X() * ScF;
             yc = mPos[n].Y() * ScF;
-            Paint.drawEllipse(QRectF(xc - 5.0, yc - 5.0, 10.0, 10.0));
+            if (n == mMarkedParticle)
+            {
+                Paint.setPen(QColor(255, 0, 0));
+                Paint.setBrush(QColor(255, 0, 0));
+                markedX = xc;
+                markedY = yc;
+            }
+            if (abs(markedX - xc) > 2 || abs(markedY - yc) > 2 || n == mMarkedParticle) Paint.drawEllipse(QRectF(xc - 5.0, yc - 5.0, 10.0, 10.0));
+        }
+        if (mMarkedParticle >= 0)
+        {
+            Paint.setPen(QColor(0, 0, 0));
+            Vector start, stop;
+            if (Calc->IsRotated())
+            {
+                start = Vector(mAxisStart.X() * ScF, mAxisStart.Z() * ScF, 0.0);
+                stop = Vector(mAxisEnd.X() * ScF, mAxisEnd.Z() * ScF, 0.0);
+            }
+            else
+            {
+                start = Vector(mAxisStart.X() * ScF, mAxisStart.Y() * ScF, 0.0);
+                stop = Vector(mAxisEnd.X() * ScF, mAxisEnd.Y() * ScF, 0.0);
+            }
+            Paint.drawLine(start.X(), start.Y(), stop.X(), stop.Y());
+            Vector step(0.1 * (stop - start));
+            double dl = 10.0 / step.length();
+            Vector ortho(dl * step.Y(), -dl * step.X(), 0.0), point(start + step);
+            for (int n=1; n<=9; ++n, point += step) Paint.drawLine(point.X() - ortho.X(), point.Y() - ortho.Y(), point.X() + ortho.X(), point.Y() + ortho.Y());
         }
         Pict->update();
     }
@@ -337,6 +364,7 @@ void Window::rotate()
 {
     if (nullptr != mNetworkClient) mNetworkClient->SendCommand(Network::ROTATE);
     else Calc->rotate();
+    mMarkedParticle = Calc->TranslateParticleIndex(mMarkedIndex);
 }
 
 void Window::move()
@@ -561,7 +589,9 @@ void Window::setLayerDistance(const double newDistance)
 void Window::SetEnergyDefinitionAxis(const int particeIndex, const Vector &direction, Vector &end1, Vector &end2)
 {
     Calc->CalcEndpointsOfEnergyDefinitionAxis(particeIndex, direction, end1, end2);
-
+    mMarkedParticle = Calc->TranslateParticleIndex(mMarkedIndex = particeIndex);
+    mAxisStart = end1;
+    mAxisEnd = end2;
 }
 
 void Window::GetAxisEnergies(PotentialDefinerInputData &data)
