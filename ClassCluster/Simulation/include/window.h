@@ -12,13 +12,13 @@ class QTcpServer;
 class QTcpSocket;
 
 class Picture;
-class Particle;
 class WatchPoint;
 class NetworkClient;
 class NetworkServer;
 class PotentialDefinerInputData;
 
 struct PotStruct;
+struct Particle;
 
 
 class Window : public QWidget

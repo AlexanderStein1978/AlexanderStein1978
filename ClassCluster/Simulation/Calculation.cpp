@@ -3,6 +3,7 @@
 #include "Calculation.h"
 #include "heapsort.h"
 #include "deltaesortfunctor.h"
+#include "random_sortfunctor.h"
 #include "yz_sortfunctor.h"
 #include "vsortfunctor.h"
 #include "utils.h"
@@ -173,7 +174,7 @@ void Calculation::calcMAR()
     }
 }
 
-Calculation::Result Calculation::geta(Vector* t0, Vector *a)
+Calculation::Result Calculation::geta(Vector* t0, Vector *a, const bool collectCandidates)
 {
 	//printf("geta\n");
     int mx, my, mz, lx, ly, lz;// i1, i2, p, n;
@@ -186,7 +187,7 @@ Calculation::Result Calculation::geta(Vector* t0, Vector *a)
 		{
 			//printf("l0\n");
 			for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, t0, temporaryPos, a) == Error) return Error;
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, t0, temporaryPos, a, collectCandidates) == Error) return Error;
 			//printf("l1\n");
 			for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
 				for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my); 
@@ -194,7 +195,7 @@ Calculation::Result Calculation::geta(Vector* t0, Vector *a)
 					for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
 							lx < XS && lx <= mx + GridSizeDiv; lx++)
 						for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, t0, temporaryPos, a) == Error) return Error;
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, t0, temporaryPos, a, collectCandidates) == Error) return Error;
 		}
 	}
     /*for (n=0; n<N; ++n) if (isnan(ax[n]) || isnan(ay[n]) || isnan(az[n]))
@@ -231,7 +232,7 @@ bool Calculation::wasStepOK() const
 	return true;
 }
 
-Calculation::Result Calculation::getU(const Particle * const P1, const Particle * const P2, double &U, const Vector* const t0, Positions pos, Vector* a) const
+Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, double& U, const Vector *const t0, Positions pos, Vector* a, const bool collectCandidates) const
 {
     double r, amp(0.0);
     Vector d, b;
@@ -257,31 +258,53 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
     r = d.length();
     p = int((r - Rm) * potRangeScale);
-    if (p < 0 || p >= NPot) return Success;
+    if (p < 0) return Success;
     for (int n=0; n<4; ++n)
     {
-        if (P1->bound[n] == P2) bi1=n;
-        if (P2->bound[n] == P1) bi2=n;
+        if (P1->bound[n].p == P2) bi1=n;
+        if (P2->bound[n].p == P1) bi2=n;
+    }
+    if (p >= NPot)
+    {
+        if (bi1 <= P1->NB || bi2 <= P2->NB)
+        {
+            removeBinding(P1, bi1);
+            removeBinding(P2, bi2);
+        }
+        return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-    if (bi1 <= 1 && bi2 <= 1)
+    if (bi1 <= 3 && bi2 <= 3)
     {
-        if (Pot[ClosestTwo][p] > UaMax)
-            return Error;
-        if (calcA) amp = dPdR[ClosestTwo][p] / r;
-        U += Pot[ClosestTwo][p];
-    }
-    else if (bi1 <= 3 && bi2 <= 3)
-    {
-        if (Pot[NextTwo][p] > UaMax)
-            return Error;
-        if (calcA) amp = dPdR[NextTwo][p] / r;
-        U += Pot[NextTwo][p];
+        if (bi1 <= 1 || bi2 <= 1)
+        {
+            if (Pot[ClosestTwo][p] > UaMax)
+                return Error;
+            if (calcA) amp = dPdR[ClosestTwo][p] / r;
+            U += Pot[ClosestTwo][p];
+        }
+        else 
+        {
+            if (Pot[NextTwo][p] > UaMax)
+                return Error;
+            if (calcA) amp = dPdR[NextTwo][p] / r;
+            U += Pot[NextTwo][p];
+        }
+        if (collectCandidates)
+        {
+            P1->bound[bi1].lastDist = r;
+            P2->bound[bi2].lastDist = r;
+        }
     }
     else
     {
+        if (collectCandidates)
+        {
+            addCandidate(P1, P2, r);
+            addCandidate(P2, P1, r);
+        }
         bool SecondOrderBound(false);
-        for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (P1->bound[n] == P2->bound[m])
+        for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (P1->bound[n].p == P2->bound[m].p)
         {
             SecondOrderBound = true;
             break;
@@ -300,6 +323,7 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
+        
     }
     if (abs(amp * r) > UaMax)
     {
@@ -317,6 +341,29 @@ Calculation::Result Calculation::getU(const Particle * const P1, const Particle 
         }
     }
     return Success;
+}
+
+void Calculation::removeBinding(Particle *const part, const int index) const
+{
+    for (int n = index + 1; n < part->NB; ++n) part->bound[n-1] = part->bound[n];
+    --(part->NB);
+    part->bound[part->NB].p = nullptr;
+}
+
+void Calculation::addCandidate(Particle *const currPart, Particle *const candidate, const double dist) const
+{
+    int n, m;
+    if (currPart->NB == Particle::NBound)
+    {
+        for (n=0; n < Particle::NBound; ++n) if (currPart->bound[n].lastDist > dist) break;
+        if (n == Particle::NBound) return;
+    }
+    for (n = currPart->NC - 1; n >= 0; n--) if (currPart->candidates[n].lastDist < dist) break;
+    if (n+1 == Particle::NCandidates) return;
+    if (currPart->NC < Particle::NCandidates) ++(currPart->NC);
+    for (m = currPart->NC - 2; m > n; --m) currPart->candidates[m+1] = currPart->candidates[m];
+    currPart->candidates[n+1].p = candidate;
+    currPart->candidates[n+1].lastDist = dist;
 }
 
 void Calculation::correctLocalE()
@@ -707,7 +754,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
         if (watchParticle >= 0) particleWatchStep = 0;
-        result = geta(t0, a);
+        result = geta(t0, a, false);
         if (result == Error)
         {
             for (n=0; n<N; ++n)
@@ -725,7 +772,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, a[watchParticle]);
-        result = geta(t0, dvt);
+        result = geta(t0, dvt, false);
         if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
@@ -735,7 +782,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         for (n=0, U = T = 0.0; n<N; n++) T += dm[n].lengthSquared();
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvt[watchParticle]);
-        result = geta(t0, dvm);
+        result = geta(t0, dvm, false);
         if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
@@ -745,9 +792,13 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             dt[n] = P[n].v + lh * dvm[n];
             dvm[n] += dvt[n];
         }
-        for (n=0, U = T = 0.0; n<N; n++) T += dt[n].lengthSquared();
+        for (n=0, U = T = 0.0; n<N; n++)
+        {
+            T += dt[n].lengthSquared();
+            P[n].NC = 0;
+        }
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
-        result = geta(t0, dvt);
+        result = geta(t0, dvt, true);
         if (result == Error) break;
         for (n=0; n<N; n++) if (!Fixed[n])
         {
@@ -783,34 +834,69 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
 
 bool Calculation::updateBindings()
 {
-    bool rValue = false;
-    double randF = static_cast<double>(static_cast<int>(Particle::NBound) * N) / RAND_MAX;
-    for (int n=0; n < static_cast<int>(Particle::NBound)*N/2; ++n)
+    bool rValue = true;
+    int* randomOrder = createRandomParticleOrder();
+    for (int n=0; n<N; ++n)
     {
-        int random(static_cast<int>(static_cast<double>(rand()) * randF));
-        int i0 = random % N, i1(random % static_cast<int>(Particle::NBound));
-        if (i0 == N || i1 == static_cast<int>(Particle::NBound) || nullptr == P[i0].bound[i1]) continue;
-        std::map<double,int> map1, map2;
-        for (int i2 = 0; i2 < static_cast<int>(Particle::NBound); ++i2)
+        Particle* CP = P + randomOrder[n];
+        for (int m=0; m < CP->NC; ++m)
         {
-            if (i1 != i2 && nullptr != P[i0].bound[i2] && isNotBound(P[i0].bound[i1], P[i0].bound[i2]))
-                map1.insert(std::make_pair(dist(P + i0, P[i0].bound[i2]) - dist(P[i0].bound[i1], P[i0].bound[i2]), i2));
-            if (P + i0 != P[i0].bound[i1]->bound[i2] && nullptr != P[i0].bound[i1]->bound[i2] && isNotBound(P + i0, P[i0].bound[i1]->bound[i2]))
-                map2.insert(std::make_pair(dist(P[i0].bound[i1], P[i0].bound[i1]->bound[i2]) - dist(P + i0, P[i0].bound[i1]->bound[i2]), i2));
-        }
-        for (std::map<double,int>::const_reverse_iterator it1 = map1.rbegin(), it2 = map2.rbegin(); it1 != map1.rend() && it2 != map2.rend() && it1->first + it2->first > 0.0; ++it1, ++it2)
-        {
-            rValue = true;
-            for (int i4 = 0; i4 < static_cast<int>(Particle::NBound); ++i4)
+            Particle* CanP = CP->candidates[m].p;
+            if (isNotBound(CP, CanP))
             {
-                if (P[i0].bound[it1->second]->bound[i4] == P + i0) P[i0].bound[it1->second]->bound[i4] = P[i0].bound[i1];
-                if (P[i0].bound[i1]->bound[it2->second]->bound[i4] == P[i0].bound[i1]) P[i0].bound[i1]->bound[it2->second]->bound[i4] = P + i0;
+                if (CP->NB < Particle::NBound)
+                {
+                    if (CanP->NB < Particle::NBound)
+                    {
+                        CP->bound[CP->NB++] = CP->candidates[m];
+                        CanP->bound[CanP->NB].p = CP;
+                        CanP->bound[CanP->NB++].lastDist = CP->candidates[m].lastDist;
+                    }
+                    else bindToRadical(CP, CanP, CP->candidates[m]);
+                }
+                else
+                {
+                    if (CanP->NB < Particle::NBound) bindToRadical(CanP, CP, CP->candidates[m]);
+                    else
+                    {
+                        for (int i=0; i < CanP->NB; ++i) for (int j=0; j < CanP->bound[i].p->NC; ++j) if (isNotBound(CanP->bound[i].p, CanP->bound[i].p->candidates[j].p)) for (int k=0; k < CP->NB; ++k)
+                            if (CP->bound[k].p == CanP->bound[i].p->candidates[j].p 
+                                && CP->bound[k].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CanP->bound[i].p->candidates[j].lastDist)
+                        {
+                            Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[k].p;
+                            
+                        }
+                    }
+                }
             }
-            std::swap(P[i0].bound[it1->second], P[i0].bound[i1]->bound[it2->second]);
         }
     }
     return rValue;
 }
+
+void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, Particle::Binding& CanB) const
+{
+    int leastBound = 0;
+    for (int i=1; i < CanP->NB; ++i) if (CanP->bound[i].lastDist > CanP->bound[leastBound].lastDist) leastBound = i;
+    if (CanP->bound[leastBound].lastDist > CanB.lastDist)
+    {
+        Particle* LBP = CanP->bound[leastBound].p;
+        int i;
+        for (i=0; i < LBP->NB; ++i) if (LBP->bound[i].p == CanP) break;
+        if (i < LBP->NB) removeBinding(LBP, i);
+        CanP->bound[leastBound].p = CP;
+        CanP->bound[leastBound].lastDist = CanB.lastDist;
+        CP->bound[CP->NB++] = CanB;
+    }
+}
+
+int* Calculation::createRandomParticleOrder()
+{
+    double randArray[N];
+    for (int n=0; n<N; ++n) randArray[n] = rand();
+    return utils::heapSort(RandomSortFunctor(randArray), N);
+}
+
 
 double Calculation::dist(const Particle * const P1, const Particle * const P2)
 {
