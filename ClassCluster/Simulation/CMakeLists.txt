@@ -18,6 +18,7 @@ add_library(Simulation STATIC
     vsortfunctor.h
     window.cpp
 	yz_sortfunctor.h
+	random_sortfunctor.h
 )
 
 target_include_directories(Simulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

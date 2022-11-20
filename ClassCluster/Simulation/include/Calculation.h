@@ -8,7 +8,9 @@
 #include <QThread>
 #include <QMutex>
 
-class Particle;
+#include "particle.h"
+
+
 class Potential;
 class CalculationTest;
 class WatchPoint;
@@ -125,9 +127,11 @@ class Calculation : public QThread
         enum Result{Success, Error};
 
         void rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector *dm, Vector *dvm, const double lh);
-        Result getU(const Particle* const P1, const Particle* const P2, double &U, const Vector* const t0, Positions pos,
-                  Vector *a) const;
-        Result geta(Vector *t0, Vector *a);
+        Result getU(Particle* const P1, Particle* const P2, double &U, const Vector* const t0, Positions pos, Vector *a, const bool collectCandidates) const;
+        Result geta(Vector *t0, Vector *a, const bool collectCandidates);
+        void addCandidate(Particle* const currPart, Particle *const candidate, const double dist) const;
+        void removeBinding(Particle *const part, const int index) const;
+        void bindToRadical(Particle *const CP, Particle *const CanP, Particle::Binding& CanB) const;
         bool wasStepOK() const;
         double getE(const Particle* const P, const Vector& R, const bool lastPos) const;
         void correctLocalE();
@@ -141,6 +145,7 @@ class Calculation : public QThread
         void checkPotentials();
         void checkPotential(const PotRole role);
         void updateBlock(int particleIndex);
+        int* createRandomParticleOrder();
 
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;

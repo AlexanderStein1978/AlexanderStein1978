@@ -6,9 +6,16 @@
 
 struct Particle
 {
-    enum boundParticles{NBound = 4};
-    Particle *next, *prev, *bound[NBound];
-    int xp, yp, zp, NB;
+    struct Binding
+    {
+        Particle* p;
+        double lastDist;
+    };
+    
+    enum boundParticles{NBound = 4, NCandidates = 10};
+    Particle *next, *prev;
+    Binding bound[NBound], candidates[NCandidates];
+    int xp, yp, zp, NB, NC;
     double E, deltaE, T, deltaT, U, deltaU;
     Vector R, v, lR, lv, aa, corr;
 };
