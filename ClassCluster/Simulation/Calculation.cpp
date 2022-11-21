@@ -469,15 +469,15 @@ void Calculation::updateDelta(double &toUpdate, double &delta, const double newV
     toUpdate = newValue;
 }
 
-double Calculation::getE(const Particle * const cP, const Vector &R, const bool useLastPos) const
+double Calculation::getE(Particle * const cP, const Vector &R, const bool useLastPos) const
 {
-    const Particle* P2;
+    Particle* P2;
     int lx, ly, lz;
     double E = 0.0;
     for (lz = ((lz = cP->zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= cP->zp + GridSizeDiv; lz++)
         for (ly = ((ly = cP->yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= cP->yp + GridSizeDiv; ly++)
             for (lx = ((lx = cP->xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= cP->xp + GridSizeDiv; lx++)
-                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) if (getU(cP, P2, E, &R, (useLastPos ? lastPos : currentPos), nullptr) == Error) return Error_Double;
+                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) if (getU(cP, P2, E, &R, (useLastPos ? lastPos : currentPos), nullptr, false) == Error) return Error_Double;
     return 0.5 * E;
 }
 
@@ -502,7 +502,7 @@ double Calculation::getPotentialEnergy() const
         {
             //printf("l0\n");
             for (PP1 = G[mx][my][mz]; PP1->next != 0; PP1 = PP1->next)
-                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr) == Error) return Error_Double;
+                for (PP2 = PP1->next; PP2 != 0; PP2 = PP2->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr, false) == Error) return Error_Double;
             //printf("l1\n");
             for (lz = mz; lz < ZS && lz <= mz + GridSizeDiv; lz++)
                 for (ly = (lz > mz ? ((ly = my - GridSizeDiv) >= 0 ? ly : 0) : my);
@@ -510,7 +510,7 @@ double Calculation::getPotentialEnergy() const
                     for (lx = (ly > my || lz > mz ? ((lx = mx - GridSizeDiv) >= 0 ? lx : 0) : mx + 1);
                             lx < XS && lx <= mx + GridSizeDiv; lx++)
                         for (PP2 = G[lx][ly][lz]; PP2 != 0; PP2 = PP2->next)
-                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr) == Error) return Error_Double;
+                            for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) if (getU(PP1, PP2, U, nullptr, particles, nullptr, false) == Error) return Error_Double;
         }
     }
     return U;
@@ -564,8 +564,8 @@ void Calculation::initialize()
         for (y=0; y<2 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
         if (y<2 && MAR[z][y].index == n)
         {
-            P[n].bound[P[n].NB++] = P+z;
-            P[z].bound[P[z].NB++] = P+n;
+            P[n].bound[P[n].NB++].p = P+z;
+            P[z].bound[P[z].NB++].p = P+n;
         }
     }
     for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
@@ -573,10 +573,10 @@ void Calculation::initialize()
         z = MAR[n][x].index;
         if (z <= n) continue;
         for (y=0; y<4 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
-        if (y<4 && MAR[z][y].index == n && P[n].bound[0] != P+z && P[n].bound[1] != P+z)
+        if (y<4 && MAR[z][y].index == n && P[n].bound[0].p != P+z && P[n].bound[1].p != P+z)
         {
-            P[n].bound[P[n].NB++] = P+z;
-            P[z].bound[P[z].NB++] = P+n;
+            P[n].bound[P[n].NB++].p = P+z;
+            P[z].bound[P[z].NB++].p = P+n;
         }
     }
 }
@@ -643,7 +643,7 @@ void Calculation::run()
             return;
         }
     }
-    int n, i, x, y, z; // m;
+    int n, i;
     bool isNotFirstIt(false);
     Vector *a = new Vector[N], *dm = new Vector[N], *dvm = new Vector[N], *dt = new Vector[N], *t0 = new Vector[N];
     Vector *dvt = new Vector[N];
@@ -859,12 +859,51 @@ bool Calculation::updateBindings()
                     if (CanP->NB < Particle::NBound) bindToRadical(CanP, CP, CP->candidates[m]);
                     else
                     {
-                        for (int i=0; i < CanP->NB; ++i) for (int j=0; j < CanP->bound[i].p->NC; ++j) if (isNotBound(CanP->bound[i].p, CanP->bound[i].p->candidates[j].p)) for (int k=0; k < CP->NB; ++k)
-                            if (CP->bound[k].p == CanP->bound[i].p->candidates[j].p 
-                                && CP->bound[k].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CanP->bound[i].p->candidates[j].lastDist)
+                        for (int i=0; i < CanP->NB; ++i)
                         {
-                            Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[k].p;
-                            
+                            int j;
+                            for (j=0; j < CanP->bound[i].p->NC; ++j) if (isNotBound(CanP->bound[i].p, CanP->bound[i].p->candidates[j].p))
+                            {
+                                int k;
+                                for (k=0; k < CP->NB; ++k)
+                                    if (CP->bound[k].p == CanP->bound[i].p->candidates[j].p
+                                        && CP->bound[k].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CanP->bound[i].p->candidates[j].lastDist)
+                                {
+                                    Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[k].p;
+                                    int l, o;
+                                    for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
+                                    for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
+                                    if (l < P3->NB && o < P4->NB)
+                                    {
+                                        std::swap(CP->bound[k], P3->bound[l]);
+                                        std::swap(CanP->bound[i], P4->bound[o]);
+                                        break;
+                                    }
+                                }
+                                if (k < CP->NB) break;
+                            }
+                            if (j < CanP->bound[i].p->NC) break;
+                            for (j=0; j < CP->NB; ++j)
+                            {
+                                int k;
+                                for (k=0; k < CP->bound[j].p->NC; ++k)
+                                    if (CP->bound[j].p->candidates[k].p == CanP->bound[i].p && isNotBound(CP->bound[j].p, CP->bound[j].p->candidates[k].p)
+                                        && CP->bound[j].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CP->bound[j].p->candidates[k].lastDist)
+                                {
+                                    Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[j].p;
+                                    int l, o;
+                                    for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
+                                    for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
+                                    if (l < P3->NB && o < P4->NB)
+                                    {
+                                        std::swap(CP->bound[j], P3->bound[l]);
+                                        std::swap(CanP->bound[i], P4->bound[o]);
+                                        break;
+                                    }
+                                }
+                                if (k < CP->bound[j].p->NC) break;
+                            }
+                            if (j < CP->NB) break;
                         }
                     }
                 }
@@ -905,7 +944,7 @@ double Calculation::dist(const Particle * const P1, const Particle * const P2)
 
 bool Calculation::isNotBound(const Particle *const P1, const Particle *const P2)
 {
-    for (int i=0; i<4; ++i) if (P1->bound[i] == P2) return false;
+    for (int i=0; i<4; ++i) if (P1->bound[i].p == P2) return false;
     return true;
 }
 
@@ -1103,8 +1142,8 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
             if (p < 0 || p >= NPot) continue;
             for (int m=0; m<4; ++m)
             {
-                if (currentParticle.bound[m] == P2) bi1=m;
-                if (P2->bound[m] == &currentParticle) bi2=m;
+                if (currentParticle.bound[m].p == P2) bi1=m;
+                if (P2->bound[m].p == &currentParticle) bi2=m;
             }
             if (bi1 <= 3 && bi2 <= 3)
             {
@@ -1127,7 +1166,7 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
             else
             {
                 bool SecondOrderBound(false);
-                for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (currentParticle.bound[n] == P2->bound[m])
+                for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (currentParticle.bound[n].p == P2->bound[m].p)
                 {
                     SecondOrderBound = true;
                     break;

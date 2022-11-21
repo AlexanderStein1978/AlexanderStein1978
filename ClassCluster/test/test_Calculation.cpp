@@ -44,7 +44,7 @@ protected:
 
     bool bindsParticleTo(Particle* P1, Particle* P2) const
     {
-        for (int n=0; n<4; ++n) if (P1->bound[n] == P2) return true;
+        for (int n=0; n<4; ++n) if (P1->bound[n].p == P2) return true;
         return false;
     }
 
@@ -93,7 +93,7 @@ protected:
     
     int getBoundParticleIndex(const int particleIndex, const int bindingIndex) const
     {
-        return Calc.P[particleIndex].bound[bindingIndex] - Calc.P;
+        return Calc.P[particleIndex].bound[bindingIndex].p - Calc.P;
     }
     
     int getNumParticles() const
@@ -104,7 +104,7 @@ protected:
     bool isNoBindingDoubled(const int particleIndex) const
     {
        for (int i=0; i < Particle::NBound - 1; ++i) for (int j=i+1; j < Particle::NBound; ++j)
-           if (Calc.P[particleIndex].bound[i] == Calc.P[particleIndex].bound[j]) return false;
+           if (Calc.P[particleIndex].bound[i].p == Calc.P[particleIndex].bound[j].p) return false;
         return true;
     }
     
