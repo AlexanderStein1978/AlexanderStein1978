@@ -261,8 +261,8 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     if (p < 0) return Success;
     for (int n=0; n<4; ++n)
     {
-        if (P1->bound[n].p == P2) bi1=n;
-        if (P2->bound[n].p == P1) bi2=n;
+        if (n < P1->NB && P1->bound[n].p == P2) bi1=n;
+        if (n < P2->NB && P2->bound[n].p == P1) bi2=n;
     }
     if (p >= NPot)
     {
@@ -304,7 +304,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             addCandidate(P2, P1, r);
         }
         bool SecondOrderBound(false);
-        for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (P1->bound[n].p == P2->bound[m].p)
+        for (int n=0; !SecondOrderBound && n < P1->NB; ++n) for (int m=0; m < P2->NB; ++m) if (P1->bound[n].p == P2->bound[m].p)
         {
             SecondOrderBound = true;
             break;
@@ -377,7 +377,7 @@ void Calculation::correctLocalE()
         for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
         {
             updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->v.lengthSquared()));
-            updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->R, false));
+            updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->R, false, false));
             updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
             currT += PP1->T;
             currSumE += PP1->E;
@@ -469,15 +469,16 @@ void Calculation::updateDelta(double &toUpdate, double &delta, const double newV
     toUpdate = newValue;
 }
 
-double Calculation::getE(Particle * const cP, const Vector &R, const bool useLastPos) const
+double Calculation::getE(Particle * const cP, const Vector &R, const bool useLastPos, const bool collectCandidates) const
 {
     Particle* P2;
     int lx, ly, lz;
     double E = 0.0;
+    Positions pos(collectCandidates ? particles : (useLastPos ? lastPos : currentPos));
     for (lz = ((lz = cP->zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= cP->zp + GridSizeDiv; lz++)
         for (ly = ((ly = cP->yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= cP->yp + GridSizeDiv; ly++)
             for (lx = ((lx = cP->xp - GridSizeDiv) >= 0 ? lx : 0); lx < XS && lx <= cP->xp + GridSizeDiv; lx++)
-                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) if (getU(cP, P2, E, &R, (useLastPos ? lastPos : currentPos), nullptr, false) == Error) return Error_Double;
+                for (P2 = G[lx][ly][lz]; P2 != 0; P2 = P2->next) if (P2 != cP) if (getU(cP, P2, E, &R, pos, nullptr, collectCandidates) == Error) return Error_Double;
     return 0.5 * E;
 }
 
@@ -564,8 +565,10 @@ void Calculation::initialize()
         for (y=0; y<2 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
         if (y<2 && MAR[z][y].index == n)
         {
-            P[n].bound[P[n].NB++].p = P+z;
-            P[z].bound[P[z].NB++].p = P+n;
+            P[n].bound[P[n].NB].p = P+z;
+            P[n].bound[P[n].NB++].lastDist = 0.0;
+            P[z].bound[P[z].NB].p = P+n;
+            P[z].bound[P[z].NB++].lastDist = 0.0;
         }
     }
     for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
@@ -575,8 +578,10 @@ void Calculation::initialize()
         for (y=0; y<4 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
         if (y<4 && MAR[z][y].index == n && P[n].bound[0].p != P+z && P[n].bound[1].p != P+z)
         {
-            P[n].bound[P[n].NB++].p = P+z;
-            P[z].bound[P[z].NB++].p = P+n;
+            P[n].bound[P[n].NB].p = P+z;
+            P[n].bound[P[n].NB++].lastDist = 0.0;
+            P[z].bound[P[z].NB].p = P+n;
+            P[z].bound[P[z].NB++].lastDist = 0.0;
         }
     }
 }
@@ -832,6 +837,14 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     }
 }
 
+bool Calculation::UpdateBindings()
+{
+    for (int n=0; n<N; ++n) P[n].NC = 0;
+    for (int mz = 0; mz < ZS; ++mz) for (int my = 0; my < YS; ++my) for (int mx = 0; mx < XS; ++mx)
+        for (Particle *PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next) getE(PP1, PP1->R, false, true);
+    return updateBindings();
+}
+
 bool Calculation::updateBindings()
 {
     bool rValue = true;
@@ -944,7 +957,7 @@ double Calculation::dist(const Particle * const P1, const Particle * const P2)
 
 bool Calculation::isNotBound(const Particle *const P1, const Particle *const P2)
 {
-    for (int i=0; i<4; ++i) if (P1->bound[i].p == P2) return false;
+    for (int i=0; i < P1->NB; ++i) if (P1->bound[i].p == P2) return false;
     return true;
 }
 
@@ -1126,7 +1139,7 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
     {
         currentParticle.R = point;
         updateBlock(particleIndex);
-        if (updateBindings()) data.addBoundChange(n);
+        if (UpdateBindings()) data.addBoundChange(n);
         const Particle* P2;
         double SecondOrderSum = 0.0, UnboundSum = 0.0;
         int lx, ly, lz;
@@ -1180,7 +1193,7 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
     }
     currentParticle.R = particlePos;
     updateBlock(particleIndex);
-    updateBindings();
+    UpdateBindings();
 }
 
 int Calculation::TranslateParticleIndex(int index) const
