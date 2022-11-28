@@ -4,6 +4,8 @@ cmake_policy(SET CMP0057 NEW)
 
 project(ClassCluster_test)
 
+add_definitions(-DDATA_DIRECTORY="${CMAKE_SOURCE_DIR}/ClassCluster/Data")
+
 set(CMAKE_AUTOMOC ON)
 
 include(GoogleTest)

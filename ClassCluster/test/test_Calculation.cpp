@@ -12,6 +12,8 @@
 #include "gtest/gtest.h"
 #include "Calculation.h"
 #include "particle.h"
+#include "potstruct.h"
+#include "potential.h"
 
 #include <algorithm>
 
@@ -20,19 +22,30 @@ class CalculationTest : public ::testing::Test
 {
 public:
     CalculationTest()
-        : Calc()
+        : Calc(nullptr)
     {
 
     }
 
     ~CalculationTest()
     {
-
+        if (nullptr != Calc) delete Calc;
     }
 
     void SetUp()
     {
-
+        PotStruct struc[Calculation::NumPot];
+        Potential closestTwo, nextTwo, remaining, secondOrder;
+        QString dataDir(DATA_DIRECTORY);
+        closestTwo.readData(dataDir + "/ClosestTwo.pot");
+        nextTwo.readData(dataDir + "/NextTwo.pot");
+        remaining.readData(dataDir + "/Remaining.pot");
+        secondOrder.readData(dataDir + "/SecondOrder.pot");
+        struc[Calculation::ClosestTwo].pot = &closestTwo;
+        struc[Calculation::NextTwo].pot = &nextTwo;
+        struc[Calculation::Remaining].pot = &remaining;
+        struc[Calculation::SecondOrder].pot = &secondOrder;
+        Calc = new Calculation(struc);
     }
 
     void TearDown()
@@ -55,60 +68,65 @@ protected:
 
     bool areParticlesBound(const int index1, const int index2) const
     {
-        return areParticlesBound(Calc.P + index1, Calc.P + index2);
+        return areParticlesBound(Calc->P + index1, Calc->P + index2);
     }
 
     bool areParticleBindingsCorrectlyInitialized(int index) const
     {
-        return (areParticlesBound(Calc.P + index, Calc.P + index - 2)
-             && areParticlesBound(Calc.P + index, Calc.P + index + 2)
-             && areParticlesBound(Calc.P + index, Calc.P + index - 2 * Calc.PXS)
-             && areParticlesBound(Calc.P + index, Calc.P + index + 2 * Calc.PXS));
+        return (areParticlesBound(Calc->P + index, Calc->P + index - 2)
+             && areParticlesBound(Calc->P + index, Calc->P + index + 2)
+             && areParticlesBound(Calc->P + index, Calc->P + index - 2 * Calc->PXS)
+             && areParticlesBound(Calc->P + index, Calc->P + index + 2 * Calc->PXS));
     }
 
     void swapParticlePositions(const int index1, const int index2)
     {
-        std::swap(Calc.P[index1].R, Calc.P[index2].R);
+        std::swap(Calc->P[index1].R, Calc->P[index2].R);
     }
 
     void updateBindings()
     {
-        Calc.updateBindings();
+        Calc->UpdateBindings();
     }
 
     int getPXS() const
     {
-        return Calc.PXS;
+        return Calc->PXS;
     }
 
     int getPZS() const
     {
-        return Calc.PZS;
+        return Calc->PZS;
     }
     
     double getDist(const int index1, const int index2) const
     {
-        return Calculation::dist(Calc.P + index1, Calc.P + index2);
+        return Calculation::dist(Calc->P + index1, Calc->P + index2);
     }
     
     int getBoundParticleIndex(const int particleIndex, const int bindingIndex) const
     {
-        return Calc.P[particleIndex].bound[bindingIndex].p - Calc.P;
+        return Calc->P[particleIndex].bound[bindingIndex].p - Calc->P;
     }
     
     int getNumParticles() const
     {
-        return Calc.N;
+        return Calc->N;
     }
     
     bool isNoBindingDoubled(const int particleIndex) const
     {
-       for (int i=0; i < Particle::NBound - 1; ++i) for (int j=i+1; j < Particle::NBound; ++j)
-           if (Calc.P[particleIndex].bound[i].p == Calc.P[particleIndex].bound[j].p) return false;
+       for (int i=0; i < Calc->P[particleIndex].NB - 1; ++i) for (int j=i+1; j < Calc->P[particleIndex].NB; ++j)
+           if (Calc->P[particleIndex].bound[i].p == Calc->P[particleIndex].bound[j].p) return false;
         return true;
     }
     
-    Calculation Calc;
+    int getParticleNB(const int particleIndex) const
+    {
+        return Calc->P[particleIndex].NB;
+    }
+    
+    Calculation* Calc;
 };
 
 TEST_F(CalculationTest, CheckParticleBindingInitialisation)
@@ -132,7 +150,7 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
     {
         EXPECT_TRUE(isNoBindingDoubled(i));
         
-        for (int j=0; j < Particle::NBound; ++j)
+        for (int j=0; j < getParticleNB(i); ++j)
         {
             int k = getBoundParticleIndex(i, j);
             if (k<0) break;
@@ -146,7 +164,7 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
 TEST_F(CalculationTest, CalcEndpointsOfEnergyDefinitionAxis)
 {
     Vector end1, end2, direction(1.0, 1.0, 1.0);
-    Calc.CalcEndpointsOfEnergyDefinitionAxis(210, direction, end1, end2);
+    Calc->CalcEndpointsOfEnergyDefinitionAxis(210, direction, end1, end2);
     EXPECT_EQ(0.0, end1.X());
     EXPECT_NEAR(15.1716, end1.Y(), 1e-4);
     EXPECT_EQ(0.0, end1.Z());

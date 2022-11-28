@@ -133,13 +133,14 @@ class Calculation : public QThread
         void removeBinding(Particle *const part, const int index) const;
         void bindToRadical(Particle *const CP, Particle *const CanP, Particle::Binding& CanB) const;
         bool wasStepOK() const;
-        double getE(Particle * const P, const Vector& R, const bool lastPos) const;
+        double getE(Particle * const P, const Vector& R, const bool lastPos, const bool collectCandidates) const;
         void correctLocalE();
         void initializeParticle(Particle &cP, const int x, const int z, const Vector& R, const Vector& Fact) const;
         void WriteSnapshot();
         static void updateDelta(double& tuUpdate, double& delta, const double newValue);
         void calcMAR();
         bool updateBindings();
+        bool UpdateBindings();
         static double dist(const Particle *const P1, const Particle *const P2);
         static bool isNotBound(const Particle *const P1, const Particle *const P2);
         void checkPotentials();
