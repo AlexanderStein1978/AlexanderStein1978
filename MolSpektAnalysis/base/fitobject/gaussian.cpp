@@ -76,7 +76,7 @@ Gaussian::Gaussian(double *x, double *y, double *Sig, int N) : LineProfile(4, x,
 
 Gaussian::Gaussian(const QString &data) : LineProfile(4), B(0.0), E(0.0), G(0.0)
 {
-    QStringList L = data.split('\t', QString::SkipEmptyParts);
+    QStringList L = data.split('\t', Qt::SkipEmptyParts);
     initialize(L);
 }
 

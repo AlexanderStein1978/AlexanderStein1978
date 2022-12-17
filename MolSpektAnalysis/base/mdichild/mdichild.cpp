@@ -19,7 +19,7 @@
 #include <QFileDialog>
 #include <QPainter>
 
-MDIChild::MDIChild(Type ntype, MainWindow *mw, QString filter, QString FE) : QWidget(0, 0), m_fileNameChanged(false)
+MDIChild::MDIChild(Type ntype, MainWindow *mw, QString filter, QString FE) : QWidget(nullptr), m_fileNameChanged(false)
 {
 	//printf("MDIChild::MDIChild, mw=%d\n", mw);
 	changed = true;
@@ -173,8 +173,11 @@ QString MDIChild::getTypeString()
 		case WaveFunctionPlot:
 			return "WaveFunctionPlot";
 			break;
+        default:
+            printf("Error: MDIChild::getTypeString: for the current type %d is no name string defined!", type);
+            break;
 	}
-	printf("Error: MDIChild::getTypeString: for the current type %d is no name string defined!", type);
+
 	return "";
 }
 
@@ -261,7 +264,7 @@ bool MDIChild::read(QFile *Datei)
 
 QString MDIChild::getRelativePath(const QString& CurrentPath, const QString &MolPath)
 {
-    QStringList MolList = MolPath.split(QRegExp("[\\/]"), QString::SkipEmptyParts), LocalList = CurrentPath.split(QRegExp("[\\/]"), QString::SkipEmptyParts);
+    QStringList MolList = MolPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts), LocalList = CurrentPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts);
     int n, m;
     for (n=0; n < MolList.length() && n < LocalList.length() && MolList[n] == LocalList[n]; ++n) ;
     if (n==0) return CurrentPath;

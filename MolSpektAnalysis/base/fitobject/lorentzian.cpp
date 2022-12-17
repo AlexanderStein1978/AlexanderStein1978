@@ -36,7 +36,7 @@ Lorentzian::Lorentzian(double* x, double* y, double* Sig, int N) : LineProfile(4
 
 Lorentzian::Lorentzian(const QString &data) : LineProfile(4), A(0.0), E(0.0), Gamma(0.0), AWF(1.0), EWF(1.0), GWF(1.0)
 {
-    QStringList L = data.split('\t', QString::SkipEmptyParts);
+    QStringList L = data.split('\t', Qt::SkipEmptyParts);
     if (L.size() >= 8)
     {
         A = L[0].toDouble();

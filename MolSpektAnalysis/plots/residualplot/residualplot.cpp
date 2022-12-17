@@ -799,7 +799,7 @@ void ResidualPlot::Printall()
 	if (PD->exec() == QDialog::Accepted)
 	{
 		QPainter P(&Pr);
-		QRect R = Pr.pageRect();
+        QRect R = Pr.pageLayout().paintRectPixels(Pr.resolution());
 		for (I = 0; I < NI; I++)
 		{
 			IsoBox->setCurrentIndex(I);

@@ -2782,11 +2782,11 @@ void MainWindow::importFitData()
 	int Error = 0;
 	TableLine *L = new TableLine[10000];
 	Buffer = S.readLine();
-	QStringList SL = Buffer.split(' ', QString::SkipEmptyParts);
+    QStringList SL = Buffer.split(' ', Qt::SkipEmptyParts);
 	double M = pow(10, SL[6].indexOf('.') - SL[6].length() + 1);
 	for (N=0; !S.atEnd() && Buffer.left(11) != "  There are" && N < 10000; N++)
 	{
-		SL = Buffer.split(' ', QString::SkipEmptyParts);
+        SL = Buffer.split(' ', Qt::SkipEmptyParts);
 		if (SL.count() < 9)
 		{
 			Error = 2;
@@ -2911,7 +2911,7 @@ void MainWindow::saveAs()
 	QString fileName;
 	MDIChild *C = activeMDIChild();
 	if (C == 0)	QMessageBox::information(this, "MolSpektAnalysis", "The active window cannot be saved!");
-	else fileName = QFileDialog::getSaveFileName(this, "Save " + C->getType(), C->getFileName(), C->getFilter()); 
+    else fileName = QFileDialog::getSaveFileName(this, "Save " + C->getName(), C->getFileName(), C->getFilter());
 	if (!fileName.isEmpty()) C->writeData(fileName);
 }
 
@@ -3671,7 +3671,8 @@ void MainWindow::update()
 		else
 		{
 			for (n=0, N = S->getNumDunTables(); 
-				 (n<N ? Source.indexOf(S->getDunTableName(n)) == -1 : false); n++) ;
+                 (n<N ? Source.indexOf(S->getDunTableName(n)) == -1 : false); n++)
+                ;
             if (n<N ? (D = S->getDunTable(n)) != 0 : false) D->calcTermEnergies(T, NumWFPoints);
             else if ((P = S->getPotential()) != 0) P->calcTermEnergies(T, NumWFPoints);
             else if ((D = S->getDunTable()) != 0) D->calcTermEnergies(T, NumWFPoints);
@@ -4560,7 +4561,9 @@ void MainWindow::autoCalcScatLengthsPotentialSet()
 void MainWindow::summarizePotInfo()
 {
 	int n, N, row = 0, nr, nc, r;
-	QString dir = QFileDialog::getExistingDirectory(this, "Select the directory with the potentials to summaraize", Dir, 0);
+    QFileDialog fileDialog(this, "Select or open the directory with the potentials to summaraize", Dir, 0);
+    if (fileDialog.exec() == QDialog::Rejected) return;
+    QString dir = fileDialog.directory().absolutePath();
 	if (dir.isEmpty()) return;
 	QDir D(dir);
 	QStringList PotList = D.entryList(QStringList() << "*.pot" << "*FTT.dat", QDir::Files);
@@ -6902,7 +6905,7 @@ void MainWindow::importCoupledTermTable()
 			MixC[0][I][v][J][n] = 0.0;
 		while (!St.atEnd())
 		{
-			IData = St.readLine().split(' ', QString::SkipEmptyParts);
+            IData = St.readLine().split(' ', Qt::SkipEmptyParts);
 			if (IData.count() < 5 + NStates)
 			{
 				if (IData[0] == "mass:") 
@@ -6953,7 +6956,7 @@ void MainWindow::importCoupledTermTable()
 	}
 	while (!St.atEnd())
 	{
-		IData = St.readLine().split(' ', QString::SkipEmptyParts);
+        IData = St.readLine().split(' ', Qt::SkipEmptyParts);
 		if (IData.count() < 5 + NStates)
 		{
 			if (IData[0] == "mass:")
@@ -7191,7 +7194,7 @@ void MainWindow::importCoupledWaveFunctions()
 		S.setDevice(&TFile);
 		S.readLine();
 		S.readLine();
-		while (L.count() != 5 + NStates && !S.atEnd()) L = S.readLine().split(' ', QString::SkipEmptyParts);
+        while (L.count() != 5 + NStates && !S.atEnd()) L = S.readLine().split(' ', Qt::SkipEmptyParts);
 		TFile.close();
 		if (L.count() != 5 + NStates)
 		{
@@ -7246,7 +7249,7 @@ void MainWindow::importCoupledWaveFunctions()
 		S.readLine();
 		for (NCoeff = 0; !S.atEnd() && NCoeff < 1000; NCoeff++)
 		{
-			L = S.readLine().split(' ', QString::SkipEmptyParts);
+            L = S.readLine().split(' ', Qt::SkipEmptyParts);
 			if (NCoeff == 0) NChan = L.count() - 2;
 			else if (L.count() <= NChan) break;
 			R[NCoeff] = L[0].toDouble() * a0_Angstrom;
@@ -7305,7 +7308,7 @@ void MainWindow::importCoupledWaveFunctions()
 			S.readLine();
 			for (r=0; r < NCoeff; r++)
 			{
-				L = S.readLine().split(' ', QString::SkipEmptyParts);
+                L = S.readLine().split(' ', Qt::SkipEmptyParts);
 				if (L.count() <= NChan)
 				{
 					ErrFile = IsoDirs[n] + WFDir[m];
@@ -7324,7 +7327,7 @@ void MainWindow::importCoupledWaveFunctions()
 	S.readLine();
 	for ( ; !S.atEnd(); v++)
 	{
-		L = S.readLine().split(' ', QString::SkipEmptyParts);
+        L = S.readLine().split(' ', Qt::SkipEmptyParts);
 		if (L.count() < 5 + NChan)
 		{
 			if (L[0] == "mass:")
@@ -7335,7 +7338,7 @@ void MainWindow::importCoupledWaveFunctions()
 					MD = ID;
 					n = ITR[m];
 				}
-				L = S.readLine().split(' ', QString::SkipEmptyParts);
+                L = S.readLine().split(' ', Qt::SkipEmptyParts);
 				//for (m=0; m < L.count(); m++) printf("L[%d]=%s\n", m, L[m].toAscii().data());
 				if (L.count() < 5 + NChan) continue;
 				J = L[0].toInt();

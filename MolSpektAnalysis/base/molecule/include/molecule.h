@@ -11,15 +11,17 @@
 #ifndef MOLECULE_H
 #define MOLECULE_H
 
+#include <QComboBox>
+#include <QLabel>
+#include <QTableWidget>
+#include <QPushButton>
+
 #include "constants.h"
 
 #include "elstate.h"
 #include "MainWindow.h"
 #include "mdichild.h"
-#include <QComboBox>
-#include <QLabel>
-#include <QTableWidget>
-#include <QPushButton>
+
 
 class LineTable;
 class IsoTab;

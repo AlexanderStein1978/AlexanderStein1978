@@ -3807,7 +3807,7 @@ bool Potential::readPointPot(QString FileName)
     while (!S.atEnd())
     {
         Buffer = S.readLine();
-        L = Buffer.split(" ", QString::SkipEmptyParts);
+        L = Buffer.split(" ", Qt::SkipEmptyParts);
         c = L.count();
         if (c!=2) 
         {
@@ -5497,7 +5497,7 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
             IS << IsoS1[m] << IsoS2[m] << " /\n" << "   11" << PotFile.replace('/', '\\') << "\n" 
                     << IBuff;
             IFile.close();
-            Calc->start(ProgDir);
+            Calc->start(ProgDir, QStringList());
             if (!Calc->waitForStarted(5000))
             {
                 QMessageBox::information(this, "MolSpektAnalysis", "0Error starting " + ProgDir);

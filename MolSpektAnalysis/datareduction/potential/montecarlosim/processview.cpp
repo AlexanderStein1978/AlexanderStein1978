@@ -122,7 +122,7 @@ double ProcessView::getSigma(int N)
 		QString B;
 		while (!S.atEnd() && (n = B.indexOf("Sigma=")) == -1) B = S.readLine();
 		if (n >= 0)
-			R = (B.right(B.length() - n - 6).split(' ', QString::SkipEmptyParts))[0].toDouble();
+            R = (B.right(B.length() - n - 6).split(' ', Qt::SkipEmptyParts))[0].toDouble();
 	}
 	return R;
 }
@@ -197,7 +197,7 @@ void ProcessView::start(int FN)
 	QFile F(FitInFile1), F2(FitInFileName);
 	if (F2.exists()) F2.remove();
 	F.copy(FitInFileName);
-	Process->start('\"' + FitProg + '\"');
+    Process->start('\"' + FitProg + '\"', QStringList());
 	//*LogStream << "Process started: " << FitProg << '\n';
 	//LogStream->flush();
 	Timer->start(600000);
@@ -250,7 +250,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 			F2.remove();
 			F.copy(PotFileName);
 			F.remove();
-			Process->start('\"' + FitProg + '\"');
+            Process->start('\"' + FitProg + '\"', QStringList());
 		}
 		else
 		{
@@ -260,7 +260,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 				QFile F2(FitInFileName);
 				F2.remove();
 				F.copy(FitInFileName);
-				Process->start('\"' + FitProg + '\"');
+                Process->start('\"' + FitProg + '\"', QStringList());
 				Status = 2;
 			}
 			else 
@@ -269,7 +269,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 				F.remove();
 				F.setFileName(FitOutInFile);
 				F.copy(FitInFileName);
-				Process->start('\"' + FitProg + '\"');
+                Process->start('\"' + FitProg + '\"', QStringList());
 				Status = 3;
 			}
 		}
@@ -282,7 +282,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 		double Sigma = getSigma();
 		if (Sigma < lSigma) 
 		{
-			Process->start('\"' + FitProg + '\"');
+            Process->start('\"' + FitProg + '\"', QStringList());
 			lSigma = Sigma;
 		}
 		else if (Status == 1)
@@ -293,7 +293,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 				QFile F2(FitInFileName);
 				F2.remove();
 				F.copy(FitInFileName);
-				Process->start('\"' + FitProg + '\"');
+                Process->start('\"' + FitProg + '\"', QStringList());
 				Status = 2;
 			}
 			else finish();
@@ -305,7 +305,7 @@ void ProcessView::ProcessFinished(int, QProcess::ExitStatus ExitStatus)
 			F.remove();
 			F.setFileName(FitInFile1);
 			F.copy(FitInFileName);
-			Process->start('\"' + FitProg + '\"');
+            Process->start('\"' + FitProg + '\"', QStringList());
 			oSigma = lSigma;
 		}
 		else finish();
