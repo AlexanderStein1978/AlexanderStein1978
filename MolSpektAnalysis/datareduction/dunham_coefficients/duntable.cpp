@@ -625,7 +625,7 @@ bool DunTable::readData(QString FileName)
 		int km[lm + 1];
 		Buffer = S.readLine();
 		L = Buffer.right(Buffer.length() - Buffer.indexOf("=") - 1).split("	",
-					QString::SkipEmptyParts);
+                    Qt::SkipEmptyParts);
 		if (L.size() <= lm) 
 		{
 			printf("DunTable::readData: error L.size()=%d <= lm=%d\n", L.size(), lm);
@@ -638,7 +638,7 @@ bool DunTable::readData(QString FileName)
 		BlockIC = true;
 		for (n=0; n <= m; n++)
 		{
-			L = S.readLine().split("	", QString::SkipEmptyParts);
+            L = S.readLine().split("	", Qt::SkipEmptyParts);
 			l = L.size();
 			for (i=0, k=-1; i < l; i++)
 			{
@@ -654,7 +654,7 @@ bool DunTable::readData(QString FileName)
 		}
 		BlockIC = false;
 		//printf("Nach Schleife\n");
-		L = S.readLine().split("	", QString::SkipEmptyParts);
+        L = S.readLine().split("	", Qt::SkipEmptyParts);
 		setImported();
 		if (L.size() < 2) 
 		{

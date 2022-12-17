@@ -441,22 +441,22 @@ bool CoupledSineWaveFunc::readData(QString FN)
     QFile Datei(FN);
     if (!read(&Datei)) return false;
     QTextStream S(&Datei);
-    QStringList L = S.readLine().split(' ', QString::SkipEmptyParts);
+    QStringList L = S.readLine().split(' ', Qt::SkipEmptyParts);
     if (L.count() > 0 ? L[0].indexOf("name:", 0, Qt::CaseInsensitive) == -1 : true) return false;
     if (L.count() >= 2) setName(L[1]);
-    if ((L = S.readLine().split(' ', QString::SkipEmptyParts)).count() > 0 ? 
+    if ((L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() > 0 ?
         L[0].indexOf("source:", 0, Qt::CaseInsensitive) == -1 : true) return false;
     if (L.count() >= 2) Source = L[1];
     DestroyData();
-    if ((nChan = (L = S.readLine().split(' ', QString::SkipEmptyParts)).count() / 2) == 0) return false;
+    if ((nChan = (L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() / 2) == 0) return false;
     for (n=0, SC = new int[nChan], States = new ElState*[nChan]; n < nChan; n++)
     {
         States[n] = Mol->getState(L[2*n]);
         SC[n] = L[2*n+1].toInt();
     }
-    if ((nI = (L = S.readLine().split(' ', QString::SkipEmptyParts)).count()) == 0) return false;
+    if ((nI = (L = S.readLine().split(' ', Qt::SkipEmptyParts)).count()) == 0) return false;
     for (n=0, Iso = new int[nI]; n < nI; n++) Iso[n] = L[n].toInt();
-    if ((nCoeff = (L = S.readLine().split(' ', QString::SkipEmptyParts)).count()) == 0) return false;
+    if ((nCoeff = (L = S.readLine().split(' ', Qt::SkipEmptyParts)).count()) == 0) return false;
     for (n=0, R = new double[nCoeff], points = new SplinePoint[nCoeff]; n < nCoeff; n++) 
     {
         points[n].y = double(n);
@@ -464,7 +464,7 @@ bool CoupledSineWaveFunc::readData(QString FN)
     }
     if (MapFuncs == 0) MapFuncs = new NaturalSpline(points, nCoeff);
     else MapFuncs->setPoints(points, nCoeff);
-    if ((L = S.readLine().split(' ', QString::SkipEmptyParts)).count() < 3) return false;
+    if ((L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() < 3) return false;
     if ((nJ = L[0].toInt()) < 0 || (nv = L[1].toInt()) < 0) return false;
     for (I=0, Data = new double****[nI], MC = new double***[nI], E = new double**[nI]; I < nI; I++)
         for (J=0, Data[I] = new double***[nJ], MC[I] = new double**[nJ], E[I] = new double*[nJ]; J < nJ; J++)
@@ -473,11 +473,11 @@ bool CoupledSineWaveFunc::readData(QString FN)
     for (n=0, N = L[2].toInt(); n<N; n++)
     {
         if (S.atEnd()) break;
-        if ((L = S.readLine().split(' ', QString::SkipEmptyParts)).count() < 4) break;
+        if ((L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() < 4) break;
         if ((I = L[0].toInt()) >= nI || (J = L[1].toInt()) >= nJ || (v = L[2].toInt()) >= nv) break;
         if (I < 0 || J < 0 || v < 0) break;
         E[I][J][v] = L[3].toDouble();
-        if ((L = S.readLine().split(' ', QString::SkipEmptyParts)).count() < nChan) break;
+        if ((L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() < nChan) break;
         for (c=0, MC[I][J][v] = new double[nChan], Data[I][J][v] = new double*[nChan]; c < nChan; c++)
         {
             MC[I][J][v][c] = L[c].toDouble();
@@ -485,7 +485,7 @@ bool CoupledSineWaveFunc::readData(QString FN)
         }
         for (m=0; m < nCoeff; m++)
         {
-            if ((L = S.readLine().split(' ', QString::SkipEmptyParts)).count() < nChan) break;
+            if ((L = S.readLine().split(' ', Qt::SkipEmptyParts)).count() < nChan) break;
             for (c=0; c < nChan; c++) Data[I][J][v][c][m] = L[c].toDouble();
         }
         if (m < nCoeff) break;

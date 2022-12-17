@@ -409,7 +409,7 @@ void DiagWindow::Print(QPrinter &P)
     if (!PD->exec()) return;
     QRect R(0, 0, P.width(), P.height());
 	QPainter Pt(&P);
-    for (i=0; i < P.numCopies(); i++)
+    for (i=0; i < P.copyCount(); i++)
     {
 		if (i>0) while (!P.newPage()) 
 		{
@@ -558,8 +558,8 @@ void DiagWindow::PaintScale(QPainter &P, const QRect &R)
 		else nd *= -1;
 		for (i=0; i < nly; i++)
 			YST[i] = QString::number(yls[i], 'f', nd);
-		ScaleYWidth = SFM.width(YST[0]);
-		if (ScaleYWidth < SFM.width(YST[nly - 1])) ScaleYWidth = SFM.width(YST[nly - 1]);
+        ScaleYWidth = SFM.horizontalAdvance(YST[0]);
+        if (ScaleYWidth < SFM.horizontalAdvance(YST[nly - 1])) ScaleYWidth = SFM.horizontalAdvance(YST[nly - 1]);
 		ScaleYWidth += 15 + 2 * TextHeight(UnitFont, YUnit);
 		if (ScaleYWidth < ScaleMinYWidth) ScaleYWidth = ScaleMinYWidth;
 		XSF = (R.width() - ScaleYWidth) / XWidth;
@@ -573,8 +573,8 @@ void DiagWindow::PaintScale(QPainter &P, const QRect &R)
 			//printf("W=%f, xls[0]=%f, xls[1]=%f\n", W, xls[0], xls[1]);
 			//printf("XST[0]=%s, XST[1]=%s, XST[%d]=%s, XST[%d]=%s\n", XST[0].ascii(), XST[1].ascii(),
 				//   nlx-2, XST[nlx-2].ascii(), nlx-1, XST[nlx-1].ascii());
-			if ((W < 0.5 * (SFM.width(XST[0]) + SFM.width(XST[1])) 
-					  || W < 0.5 * (SFM.width(XST[nlx - 2]) + SFM.width(XST[nlx - 1]))) && XMLS > 1)
+            if ((W < 0.5 * (SFM.horizontalAdvance(XST[0]) + SFM.horizontalAdvance(XST[1]))
+                      || W < 0.5 * (SFM.horizontalAdvance(XST[nlx - 2]) + SFM.horizontalAdvance(XST[nlx - 1]))) && XMLS > 1)
 				XMLS--;
 			else
 			{
@@ -628,12 +628,12 @@ void DiagWindow::PaintScale(QPainter &P, const QRect &R)
 		{
 			x = int(XO + XSF * xls[j]);
 			P.drawLine(x, h, x, le);
-			x -= (w = SFM.width(XST[j])) / 2;
-			if (x<=l ? (nlx > 1 ? l + w + 20 < XO + XSF * xls[1] - SFM.width(XST[1]) / 2 : true) 
+            x -= (w = SFM.horizontalAdvance(XST[j])) / 2;
+            if (x<=l ? (nlx > 1 ? l + w + 20 < XO + XSF * xls[1] - SFM.horizontalAdvance(XST[1]) / 2 : true)
 					: false) 
 				x = l + 10;
 			else if (x + w >= rw ? (nlx > 1 ?
-							rw - w - 20 > XO + XSF * xls[nlx - 2] + SFM.width(XST[nlx - 2]) / 2 
+                            rw - w - 20 > XO + XSF * xls[nlx - 2] + SFM.horizontalAdvance(XST[nlx - 2]) / 2
 							: true) : false)
 								 x = rw - w - 10;
 			if (x > l && x + w < rw) P.drawText(x, fe, XST[j]);
@@ -652,7 +652,7 @@ void DiagWindow::PaintScale(QPainter &P, const QRect &R)
 			y += fh/2;
 			if (y <= fh ? (nly > 1 ? fh < yls[nly - 2] * YSF - fh / 2 : true) : false) y = fh;
 			else if (y>=h ? (nly > 1 ? h - fh > yls[1] + fh / 2 : true) : false) y=h;
-			if (y<h && y > fh) P.drawText(fe - SFM.width(YST[j]), y, YST[j]);
+            if (y<h && y > fh) P.drawText(fe - SFM.horizontalAdvance(YST[j]), y, YST[j]);
 		}
 		WriteText(P, l + (rw - l - TextWidth(UnitFont, XUnit)) / 2, 
 				  R.height() - TextHeight(UnitFont, XUnit) / 2, XUnit, UnitFont, 0);
@@ -709,7 +709,7 @@ void DiagWindow::MouseMovedOverPicture(int x, int y)
 		return;
 	}
 	double X = double(x - XO) / XSF, Y = -double(y - YO) / YSF;
-	MW->showStatusText(getType() + " " + getName() + ": " + XUnit + " = " + QString::number(X, 'g', 9)
+    MW->showStatusText(getName() + ": " + XUnit + " = " + QString::number(X, 'g', 9)
 			+ ", " + YUnit + " = " + QString::number(Y, 'g', 6));
 }
 

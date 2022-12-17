@@ -535,7 +535,7 @@ QList< int > FitData::getaFC()
         for (j=0; (j < R.count() ? FC[i] != R[j] : false); j++) ;
         if (j == R.count()) R.append(FC[i]);
     }
-    for (i=0; i < R.count() - 1; i++) for (j=i+1; j < R.count(); j++) if (R[i] > R[j]) R.swap(i, j);
+    for (i=0; i < R.count() - 1; i++) for (j=i+1; j < R.count(); j++) if (R[i] > R[j]) R.swapItemsAt(i, j);
     return R;
 }
 
@@ -969,7 +969,7 @@ bool FitData::readData(QString Filename)
                 Tab->blockSignals(true);
                 for (r=0; r < NR && !S.atEnd(); ++r)
                 {
-                    QStringList Buffer = S.readLine().split(' ', QString::SkipEmptyParts);
+                    QStringList Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
                     if (Buffer.size() < 12) break;
                     Tab->setItem(r, fdcIso, new QTableWidgetItem(QString::number(Iso->getIsoIndex(Buffer[0].toInt(), Buffer[1].toInt()))));
                     Tab->setItem(r, fdcv, new QTableWidgetItem(Buffer[2]));
@@ -980,7 +980,7 @@ bool FitData::readData(QString Filename)
                     Tab->setItem(r, fdcJs, new QTableWidgetItem(Buffer[5]));
                     if (S.atEnd()) break;
                     vs = Buffer[4].toInt();
-                    Buffer = S.readLine().split(' ', QString::SkipEmptyParts);
+                    Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
                     if (Buffer.size() < 3) break;
                     Tab->setItem(r, fdcSource, new QTableWidgetItem());
                     Tab->setItem(r, fdcProg, new QTableWidgetItem());
@@ -1035,7 +1035,7 @@ bool FitData::readData(QString Filename)
         }
         else
         {
-            QStringList Buffer = S.readLine().split(' ', QString::SkipEmptyParts);
+            QStringList Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
             if (Buffer.count() >= 2)
             {
                 setName("FitData" + ((r = Buffer[1].lastIndexOf('.')) != -1 ? Buffer[1].left(r) : Buffer[1]));
@@ -1059,7 +1059,7 @@ bool FitData::readData(QString Filename)
                     Error = true;
                     break;
                 }
-                Buffer = S.readLine().split(' ', QString::SkipEmptyParts);
+                Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
                 if (Buffer.count() < 7)
                 {
                     Error = true;

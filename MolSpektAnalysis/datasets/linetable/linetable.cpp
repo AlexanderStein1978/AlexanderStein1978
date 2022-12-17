@@ -646,7 +646,7 @@ bool LineTable::readData(QString Filename)
 		for (i=0; i < TableNormCols; i++) if (Tab->item(n, i) == 0) 
 				Tab->setItem(n, i, new QTableWidgetItem(""));
 		B = S2.readLine();
-		L = B.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        L = B.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
 		if ((s = L.size()) < 8) 
 		{
 			for (i=0; i < TableNormCols; i++) Tab->item(n, i)->setText("");

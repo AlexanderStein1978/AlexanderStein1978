@@ -148,7 +148,7 @@ void AIPSIDialog::openFile(QString FileName, bool &GF, int &anRow, int &anCol, d
 	QTextStream S(&Datei);
 	//printf("Vor split\n");
 	for (l=0; l < 100000 && !S.atEnd(); l++) //{ printf("l=%d\n", l);
-		BL[l] = S.readLine().split(" ", QString::SkipEmptyParts);//}
+        BL[l] = S.readLine().split(" ", Qt::SkipEmptyParts);//}
 	//printf("Nach split\n");
 	if (l == 100000) printf("File %s is too long!", FileName.toLatin1().data());
 	for (j=cc=c=0, aV = 0.0; j<l; j++)
