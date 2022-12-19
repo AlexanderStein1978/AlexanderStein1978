@@ -353,13 +353,14 @@ void Calculation::removeBinding(Particle *const part, const int index) const
 void Calculation::addCandidate(Particle *const currPart, Particle *const candidate, const double dist) const
 {
     int n, m;
-    if (currPart->NB == Particle::NBound)
+    if (currPart->NB == currPart->MNB)
     {
-        for (n=0; n < Particle::NBound; ++n) if (currPart->bound[n].lastDist > dist) break;
-        if (n == Particle::NBound) return;
+        for (n=0; n < currPart->MNB; ++n) if (currPart->bound[n].lastDist > dist) break;
+        if (n == currPart->MNB) return;
     }
     for (n = currPart->NC - 1; n >= 0; n--) if (currPart->candidates[n].lastDist < dist) break;
     if (n+1 == Particle::NCandidates) return;
+    for (m=n+1; m < currPart->NC && currPart->candidates[m].lastDist == dist; ++m) if (currPart->candidates[m].p == candidate) return;
     if (currPart->NC < Particle::NCandidates) ++(currPart->NC);
     for (m = currPart->NC - 2; m > n; --m) currPart->candidates[m+1] = currPart->candidates[m];
     currPart->candidates[n+1].p = candidate;
@@ -603,11 +604,16 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
 	{
 		Fixed[n] = true;
+        cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
         Vector delta = P[x].R - Vector(0.5 * MaxX, 0.0, 0.5 * MaxZ);
         R = 1.0 / delta.length();
         P[x].v = delta * Vector(R, 0.0, R);
 	}
-	else Fixed[n] = false;
+    else
+    {
+        Fixed[n] = false;
+        cP.MNB = Particle::BoundAL;
+    }
 }
 
 void Calculation::setLayerDistance(double newDistance)
@@ -857,9 +863,9 @@ bool Calculation::updateBindings()
             Particle* CanP = CP->candidates[m].p;
             if (isNotBound(CP, CanP))
             {
-                if (CP->NB < Particle::NBound)
+                if (CP->NB < CP->MNB)
                 {
-                    if (CanP->NB < Particle::NBound)
+                    if (CanP->NB < CanP->MNB)
                     {
                         CP->bound[CP->NB++] = CP->candidates[m];
                         CanP->bound[CanP->NB].p = CP;
@@ -869,7 +875,7 @@ bool Calculation::updateBindings()
                 }
                 else
                 {
-                    if (CanP->NB < Particle::NBound) bindToRadical(CanP, CP, CP->candidates[m]);
+                    if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m]);
                     else
                     {
                         for (int i=0; i < CanP->NB; ++i)
@@ -888,8 +894,10 @@ bool Calculation::updateBindings()
                                     for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
                                     if (l < P3->NB && o < P4->NB)
                                     {
-                                        std::swap(CP->bound[k], P3->bound[l]);
-                                        std::swap(CanP->bound[i], P4->bound[o]);
+                                        CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
+                                        P3->bound[l].lastDist = P4->bound[o].lastDist = P3->candidates[j].lastDist;
+                                        std::swap(CP->bound[k].p, P3->bound[l].p);
+                                        std::swap(CanP->bound[i].p, P4->bound[o].p);
                                         break;
                                     }
                                 }
@@ -909,8 +917,10 @@ bool Calculation::updateBindings()
                                     for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
                                     if (l < P3->NB && o < P4->NB)
                                     {
-                                        std::swap(CP->bound[j], P3->bound[l]);
-                                        std::swap(CanP->bound[i], P4->bound[o]);
+                                        CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
+                                        P3->bound[l].lastDist = P4->bound[o].lastDist = P4->candidates[k].lastDist;
+                                        std::swap(CP->bound[j].p, P3->bound[l].p);
+                                        std::swap(CanP->bound[i].p, P4->bound[o].p);
                                         break;
                                     }
                                 }
@@ -944,9 +954,16 @@ void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, Partic
 
 int* Calculation::createRandomParticleOrder()
 {
-    double randArray[N];
-    for (int n=0; n<N; ++n) randArray[n] = rand();
-    return utils::heapSort(RandomSortFunctor(randArray), N);
+    static const double randF1 = static_cast<double>(N) / (static_cast<double>(RAND_MAX) + 1.0), randF2 = static_cast<double>(N-1) / (static_cast<double>(RAND_MAX) + 1.0);
+    int *randArray = new int[N];
+    for (int n=0; n<N; ++n) randArray[n] = n;
+    for (int n=0; n<N; ++n)
+    {
+        int n1 = static_cast<int>(randF1 * rand()), n2 = static_cast<int>(randF2 * rand());
+        if (n1 == n2) n2 = N-1;
+        std::swap(randArray[n1], randArray[n2]);
+    }
+    return randArray;
 }
 
 

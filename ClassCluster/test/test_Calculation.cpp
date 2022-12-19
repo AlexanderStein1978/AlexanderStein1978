@@ -145,7 +145,7 @@ TEST_F(CalculationTest, CheckParticleBindingUpdates)
     swapParticlePositions(indexRowLength + 2, indexRowLength + 4);
     swapParticlePositions(10 * indexRowLength + 2, 11 * indexRowLength + 2);
     updateBindings();
-    
+
     for (int i=0; i < getNumParticles(); ++i)
     {
         EXPECT_TRUE(isNoBindingDoubled(i));

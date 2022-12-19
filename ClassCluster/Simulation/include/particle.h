@@ -12,10 +12,10 @@ struct Particle
         double lastDist;
     };
     
-    enum boundParticles{NBound = 4, NCandidates = 10};
+    enum boundParticles{BoundAL = 4, NCandidates = 10};
     Particle *next, *prev;
-    Binding bound[NBound], candidates[NCandidates];
-    int xp, yp, zp, NB, NC;
+    Binding bound[BoundAL], candidates[NCandidates];
+    int xp, yp, zp, NB, NC, MNB;
     double E, deltaE, T, deltaT, U, deltaU;
     Vector R, v, lR, lv, aa, corr;
 };
