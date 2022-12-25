@@ -28,9 +28,10 @@ public:
 private slots:
     void ShowFileDialog();
     void WriteLogFileChanged(int state);
+    void MaxRowsCanged();
 
 private:
-    QLineEdit* mFilenameEdit;
+    QLineEdit *mFilenameEdit, *mMaxTableSize;
     QPushButton* mFileDialogButton;
     QCheckBox* mWriteLogFileCheckBox;
 
