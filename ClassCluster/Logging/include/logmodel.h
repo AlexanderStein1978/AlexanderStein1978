@@ -16,6 +16,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void AddLogMessage(QStringList& message);
+    void SetMaxRows(const int maxValue);
     void SetMessageBuffer(QList<QStringList>& messageBuffer);
 
     inline const QList<QStringList>& GetMessageBuffer() const
@@ -25,6 +26,7 @@ public:
 
 private:
     QList<QStringList> mMessageBuffer;
+    int mMaxRowCount;
 };
 
 #endif // LOGMODEL_H

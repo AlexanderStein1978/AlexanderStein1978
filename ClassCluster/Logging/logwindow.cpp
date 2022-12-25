@@ -10,7 +10,7 @@
 #include <QMutex>
 
 
-LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mFileDialogButton(new QPushButton("...", this)),
+LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mMaxTableSize(new QLineEdit(this)), mFileDialogButton(new QPushButton("...", this)),
     mWriteLogFileCheckBox(new QCheckBox("Write messages to file", this)), mModel(), mLoggerMutex(nullptr), mLogStream(nullptr), mLogFile(nullptr), mWriteToFile(false)
 {
     QGridLayout* L = new QGridLayout(this);
@@ -18,6 +18,8 @@ LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr
     L->addWidget(new QLabel("Filename:", this), 0, 1);
     L->addWidget(mFilenameEdit, 0, 2);
     L->addWidget(mFileDialogButton, 0, 3);
+    L->addWidget(new QLabel("Max table rows: ", this), 0, 4);
+    L->addWidget(mMaxTableSize, 0, 5);
     L->setColumnMinimumWidth(3, 15);
     L->setColumnStretch(0, 10);
     L->setColumnStretch(1, 10);
@@ -25,9 +27,11 @@ LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr
     L->addWidget(table = new MTable(this), 1, 0, 1, 4);
     L->setRowMinimumHeight(0, 20);
     L->setRowStretch(1, 10);
+    mMaxTableSize->setValidator(new QIntValidator(0, 2147483647, mMaxTableSize));
     table->setModel(&mModel);
     connect(mWriteLogFileCheckBox, SIGNAL(stateChanged(int)), this, SLOT(WriteLogFileChanged(int)));
     connect(mFileDialogButton, SIGNAL(clicked()), this, SLOT(ShowFileDialog()));
+    connect(mMaxTableSize, SIGNAL(editingFinished()), this, SLOT(MaxRowsCanged()));
 }
 
 LogWindow::~LogWindow()
@@ -45,6 +49,12 @@ void LogWindow::LogMessage(QStringList &message)
         mLogStream->flush();
     }
 }
+
+void LogWindow::MaxRowsCanged()
+{
+    mModel.SetMaxRows(mMaxTableSize->text().toInt());
+}
+
 
 void LogWindow::SetMessageBuffer(QMutex &loggerMutex, QList<QStringList> buffer)
 {
