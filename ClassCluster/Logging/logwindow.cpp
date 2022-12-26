@@ -9,6 +9,8 @@
 #include <QTextStream>
 #include <QMutex>
 
+#include "loglist.h"
+
 
 LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mMaxTableSize(new QLineEdit(this)), mFileDialogButton(new QPushButton("...", this)),
     mWriteLogFileCheckBox(new QCheckBox("Write messages to file", this)), mModel(), mLoggerMutex(nullptr), mLogStream(nullptr), mLogFile(nullptr), mWriteToFile(false)
@@ -56,7 +58,7 @@ void LogWindow::MaxRowsCanged()
 }
 
 
-void LogWindow::SetMessageBuffer(QMutex &loggerMutex, QList<QStringList> buffer)
+void LogWindow::SetMessageBuffer(QMutex &loggerMutex, LogList &buffer)
 {
     mModel.SetMessageBuffer(buffer);
     mLoggerMutex = &loggerMutex;
@@ -95,17 +97,15 @@ void LogWindow::WriteLogFileChanged(int state)
             mWriteLogFileCheckBox->setChecked(false);
             return;
         }
+        mLoggerMutex->lock();
         if (nullptr == mLogStream) mLogStream = new QTextStream(mLogFile);
         (*mLogStream) << "Time\tSeverity\tFunction\tFile\tMessage\n";
-        const QList<QStringList>& messageBuffer = mModel.GetMessageBuffer();
-        int currentMessageCount = messageBuffer.size();
-        for (int i=0; i < currentMessageCount; ++i) (*mLogStream) << messageBuffer[i].join('\t') << '\n';
-        mLoggerMutex->lock();
-        for (int i = currentMessageCount; i < messageBuffer.size(); ++i) (*mLogStream) << messageBuffer[i].join('\t') << '\n';
+        const LogList& messageBuffer = mModel.GetMessageBuffer();
+        for (int i = messageBuffer.size() - 1; i>=0; --i) (*mLogStream) << messageBuffer.getElement(i).join('\t') << '\n';
         mLogStream->flush();
         mWriteToFile = true;
-        mLoggerMutex->unlock();
         mFilenameEdit->setReadOnly(true);
         mFileDialogButton->setEnabled(false);
+        mLoggerMutex->unlock();
     }
 }

@@ -9,10 +9,13 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_library(Logging STATIC
     include/logfunction.h
     include/logger.h
+    include/loglistitem.h
+    include/loglist.h
     include/logmodel.h
     include/logwindow.h
     logfunction.cpp
     logger.cpp
+    loglist.cpp
     logmodel.cpp
     logwindow.cpp
 )

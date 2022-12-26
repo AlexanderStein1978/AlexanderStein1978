@@ -14,7 +14,8 @@ void LogFunction(QtMsgType type, const QMessageLogContext &context, const QStrin
     QDateTime dateTime(QDateTime::currentDateTime());
     Logger& logger(Logger::getLogger());
     QString timeString(dateTime.toString("dd.MM.yyyy hh:mm:ss.zzz"));
-
-    logger.LogMessage(QStringList() << timeString << logger.getTypeMap().value(type) << function << file << msg);
+    QStringList message;
+    message << timeString << logger.getTypeMap().value(type) << function << file << msg;
+    logger.LogMessage(message);
     logger.SendLogMessageToClient(type, timeString, function, file, msg);
 }

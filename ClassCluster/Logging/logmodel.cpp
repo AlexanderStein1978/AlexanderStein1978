@@ -1,10 +1,16 @@
 #include "logmodel.h"
+#include "loglist.h"
 
 
-LogModel::LogModel(QObject *parent) : mMaxRowCount(2147483647)
+LogModel::LogModel(QObject *parent) : mMessageBuffer(nullptr)
 {
-
 }
+
+LogModel::~LogModel()
+{
+    if (nullptr != mMessageBuffer) mMessageBuffer->clear();
+}
+
 
 int LogModel::columnCount(const QModelIndex &parent) const
 {
@@ -13,15 +19,15 @@ int LogModel::columnCount(const QModelIndex &parent) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    return (parent.isValid() ? 0 : mMessageBuffer.size());
+    return (parent.isValid() || nullptr == mMessageBuffer ? 0 : mMessageBuffer->size());
 }
 
 QVariant LogModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || mMessageBuffer.size() == 0) return QVariant();
+    if (!index.isValid() || nullptr == mMessageBuffer || mMessageBuffer->size() == 0) return QVariant();
     if (role == Qt::TextAlignmentRole) return Qt::AlignLeft;
     if (role != Qt::DisplayRole) return QVariant();
-    return mMessageBuffer[index.row()][index.column()];
+    return mMessageBuffer->getElement(index.row())[index.column()];
 }
 
 QVariant LogModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -44,35 +50,31 @@ QVariant LogModel::headerData(int section, Qt::Orientation orientation, int role
     }
 }
 
-void LogModel::AddLogMessage(QStringList &message)
+void LogModel::AddLogMessage(const QStringList& message)
 {
-    if (mMessageBuffer.size() == mMaxRowCount)
-    {
-        beginRemoveRows(QModelIndex(), 0, 0);
-        mMessageBuffer.pop_front();
-        endInsertRows();
-    }
-    beginInsertRows(QModelIndex(), mMessageBuffer.size(), mMessageBuffer.size());
-    mMessageBuffer.append(message);
+    bool maxReached = mMessageBuffer->isMaxReached();
+    beginInsertRows(QModelIndex(), 0, 0);
+    if (maxReached) beginRemoveRows(QModelIndex(), mMessageBuffer->size() - 1, mMessageBuffer->size() - 1);
+    mMessageBuffer->addElement(message);
+    if (maxReached) endRemoveRows();
     endInsertRows();
 }
 
-void LogModel::SetMessageBuffer(QList<QStringList> &messageBuffer)
+void LogModel::SetMessageBuffer(LogList& messageBuffer)
 {
     beginInsertRows(QModelIndex(), 0, messageBuffer.size() - 1);
-    mMessageBuffer = messageBuffer;
+    mMessageBuffer = &messageBuffer;
     endInsertRows();
 }
 
 void LogModel::SetMaxRows(const int maxValue)
 {
-    if (mMessageBuffer.size() > maxValue)
+    if (mMessageBuffer->size() > maxValue)
     {
-        mMaxRowCount = maxValue;
-        int mR = mMessageBuffer.size() - maxValue - 1;
-        beginRemoveRows(QModelIndex(), 0, mR);
-        for (int n = mR; n>=0; n--) mMessageBuffer.removeAt(n);
+        beginRemoveRows(QModelIndex(), maxValue, mMessageBuffer->size());
+        mMessageBuffer->SetMaxSize(maxValue);
         endRemoveRows();
     }
+    else mMessageBuffer->SetMaxSize(maxValue);
 }
 

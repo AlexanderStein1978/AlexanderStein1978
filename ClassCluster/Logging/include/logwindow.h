@@ -23,7 +23,7 @@ public:
     ~LogWindow();
 
     void LogMessage(QStringList& message);
-    void SetMessageBuffer(QMutex& loggerMutex, QList<QStringList> buffer);
+    void SetMessageBuffer(QMutex& loggerMutex, LogList &buffer);
 
 private slots:
     void ShowFileDialog();

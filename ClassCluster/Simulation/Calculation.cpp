@@ -864,9 +864,9 @@ bool Calculation::updateBindings()
             Particle* CanP = CP->candidates[m].p;
             if (isNotBound(CP, CanP))
             {
-                //qInfo() << "CP=" << CP-P << ", CanP=" << CanP-P << ", CP->NB=" << CP->NB << ", CanP->NB=" << CanP->NB << ", CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P
-                  //      << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P << ", CanP->bound[0]=" << CanP->bound[0].p-P << ", CanP->bound[1]=" << CanP->bound[1].p-P
-                    //    << "CanP->bound[2]=" << CanP->bound[2].p-P << "CanP->bound[3]=" << CanP->bound[3].p-P;
+                qInfo() << "CP=" << CP-P << ", CanP=" << CanP-P << ", CP->NB=" << CP->NB << ", CanP->NB=" << CanP->NB << ", CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P
+                        << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P << ", CanP->bound[0]=" << CanP->bound[0].p-P << ", CanP->bound[1]=" << CanP->bound[1].p-P
+                        << "CanP->bound[2]=" << CanP->bound[2].p-P << "CanP->bound[3]=" << CanP->bound[3].p-P;
                 if (CP->NB < CP->MNB)
                 {
                     if (CanP->NB < CanP->MNB)
@@ -882,102 +882,102 @@ bool Calculation::updateBindings()
                 }
                 else
                 {
-                    //qInfo() << "1_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                      //                    CP->bound[3].p-P;
+                    qInfo() << "1_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                          CP->bound[3].p-P;
                     if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m]);
                     else
                     {
-                        //qInfo() << "2_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                          //                CP->bound[3].p-P;
+                        qInfo() << "2_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                          CP->bound[3].p-P;
                         for (int i=0; i < CanP->NB; ++i)
                         {
-                            //qInfo() << "3_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                              //            CP->bound[3].p-P;
+                            qInfo() << "3_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                          CP->bound[3].p-P;
                             int j;
                             for (j=0; j < CanP->bound[i].p->NC; ++j) if (isNotBound(CanP->bound[i].p, CanP->bound[i].p->candidates[j].p))
                             {
-                                //qInfo() << "4_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << ", CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                  //          CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                qInfo() << "4_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << ", CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                 int k;
                                 for (k=0; k < CP->NB; ++k)
                                     if (CP->bound[k].p == CanP->bound[i].p->candidates[j].p
                                         && CP->bound[k].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CanP->bound[i].p->candidates[j].lastDist)
                                 {
-                                    //qInfo() << "5_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                      //    CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                    qInfo() << "5_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                          CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                     Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[k].p;
                                     int l, o;
                                     for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
                                     for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
                                     if (l < P3->NB && o < P4->NB)
                                     {
-                                        //qInfo() << "6_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          //  CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                        qInfo() << "6_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                         CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
                                         P3->bound[l].lastDist = P4->bound[o].lastDist = P3->candidates[j].lastDist;
-                                        //qInfo() << "7_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          //  CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                        qInfo() << "7_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                         std::swap(CP->bound[k].p, P3->bound[l].p);
                                         std::swap(CanP->bound[i].p, P4->bound[o].p);
                                         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
-                                        //qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                        qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                         break;
                                     }
                                 }
                                 if (k < CP->NB)
                                 {
-                                    //qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
+                                    qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
                                     break;
                                 }
                             }
                             if (j < CanP->bound[i].p->NC)
                             {
-                                //qInfo() << "Break i, j=" << j;
+                                qInfo() << "Break i, j=" << j;
                                 break;
                             }
                             for (j=0; j < CP->NB; ++j)
                             {
-                                //qInfo() << "8_j=" << j << ", NB=" << CP->NB;
+                                qInfo() << "8_j=" << j << ", NB=" << CP->NB;
                                 int k;
                                 for (k=0; k < CP->bound[j].p->NC; ++k)
                                     if (CP->bound[j].p->candidates[k].p == CanP->bound[i].p && isNotBound(CP->bound[j].p, CP->bound[j].p->candidates[k].p)
                                         && CP->bound[j].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CP->bound[j].p->candidates[k].lastDist)
                                 {
-                                    //qInfo() << "9_j=" << j << ", NB=" << CP->NB;
+                                    qInfo() << "9_j=" << j << ", NB=" << CP->NB;
                                     Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[j].p;
                                     int l, o;
                                     for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
                                     for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
-                                    //qInfo() << "10_j=" << j << ", NB=" << CP->NB;
+                                    qInfo() << "10_j=" << j << ", NB=" << CP->NB;
                                     if (l < P3->NB && o < P4->NB)
                                     {
-                                        //qInfo() << "11_j=" << j << ", NB=" << CP->NB;
+                                        qInfo() << "11_j=" << j << ", NB=" << CP->NB;
                                         CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
                                         P3->bound[l].lastDist = P4->bound[o].lastDist = P4->candidates[k].lastDist;
-                                        //qInfo() << "12_j=" << j << ", NB=" << CP->NB;
+                                        qInfo() << "12_j=" << j << ", NB=" << CP->NB;
                                         std::swap(CP->bound[j].p, P3->bound[l].p);
                                         std::swap(CanP->bound[i].p, P4->bound[o].p);
-                                        //qInfo() << "13_j=" << j << ", NB=" << CP->NB;
+                                        qInfo() << "13_j=" << j << ", NB=" << CP->NB;
                                         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
                                         if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
-                                        //qInfo() << "Break k, j=" << j << ", NB=" << CP->NB;
+                                        qInfo() << "Break k, j=" << j << ", NB=" << CP->NB;
                                         break;
                                     }
                                 }
                                 if (k < CP->bound[j].p->NC)
                                 {
-                                    //qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CP->NB;
+                                    qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CP->NB;
                                     break;
                                 }
                             }
                             if (j < CP->NB)
                             {
-                                //qInfo() << "Break i, j=" << j;
+                                qInfo() << "Break i, j=" << j;
                                 break;
                             }
                         }

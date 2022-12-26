@@ -4,29 +4,31 @@
 
 #include <QAbstractTableModel>
 
+class LogList;
+
 
 class LogModel : public QAbstractTableModel
 {
 public:
     LogModel(QObject *parent = 0);
+    virtual ~LogModel();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    void AddLogMessage(QStringList& message);
+    void AddLogMessage(const QStringList& message);
     void SetMaxRows(const int maxValue);
-    void SetMessageBuffer(QList<QStringList>& messageBuffer);
+    void SetMessageBuffer(LogList& messageBuffer);
 
-    inline const QList<QStringList>& GetMessageBuffer() const
+    inline const LogList& GetMessageBuffer() const
     {
-        return mMessageBuffer;
+        return *mMessageBuffer;
     }
 
 private:
-    QList<QStringList> mMessageBuffer;
-    int mMaxRowCount;
+    LogList* mMessageBuffer;
 };
 
 #endif // LOGMODEL_H
