@@ -6,6 +6,7 @@
 #include <QMutex>
 #include <QMap>
 #include <QObject>
+#include "loglist.h"
 
 
 class LogWindow;
@@ -39,9 +40,10 @@ signals:
 
 private:
     Logger();
+    virtual ~Logger();
 
     const QMap<QtMsgType, QString> mTypeMap;
-    QList<QStringList> mMessageBuffer;
+    LogList mMessageBuffer;
     QMutex mMutex;
     LogWindow* mLogWindow;
 };

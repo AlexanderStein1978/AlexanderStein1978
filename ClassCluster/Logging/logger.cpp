@@ -10,17 +10,22 @@ Logger::Logger()
 {
 }
 
+Logger::~Logger()
+{
+    if (nullptr == mLogWindow) mMessageBuffer.clear();
+}
+
 Logger& Logger::getLogger()
 {
     static Logger instance;
     return instance;
 }
 
-void Logger::LogMessage(QStringList &message)
+void Logger::LogMessage(QStringList& message)
 {
     QMutexLocker lock(&mMutex);
     if (nullptr != mLogWindow) mLogWindow->LogMessage(message);
-    else mMessageBuffer << message;
+    else mMessageBuffer.addElement(message);
 }
 
 void Logger::LogRemoteMessage(const QtMsgType type, const QString &time, const QString &function, const QString &file, const QString &message)
