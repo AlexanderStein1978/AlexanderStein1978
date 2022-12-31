@@ -853,8 +853,8 @@ bool Calculation::UpdateBindings()
 
 bool Calculation::updateBindings()
 {
-    bool rValue = true;
     int *debugNullPtr = nullptr;
+    bool rValue = true;
     int* randomOrder = createRandomParticleOrder();
     for (int n=0; n<N; ++n)
     {
@@ -864,9 +864,9 @@ bool Calculation::updateBindings()
             Particle* CanP = CP->candidates[m].p;
             if (isNotBound(CP, CanP))
             {
-                qInfo() << "CP=" << CP-P << ", CanP=" << CanP-P << ", CP->NB=" << CP->NB << ", CanP->NB=" << CanP->NB << ", CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P
-                        << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P << ", CanP->bound[0]=" << CanP->bound[0].p-P << ", CanP->bound[1]=" << CanP->bound[1].p-P
-                        << "CanP->bound[2]=" << CanP->bound[2].p-P << "CanP->bound[3]=" << CanP->bound[3].p-P;
+                //qInfo() << "CP=" << CP-P << ", CanP=" << CanP-P << ", CP->NB=" << CP->NB << ", CanP->NB=" << CanP->NB << ", CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P
+                  //      << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P << ", CanP->bound[0]=" << CanP->bound[0].p-P << ", CanP->bound[1]=" << CanP->bound[1].p-P
+                    //    << "CanP->bound[2]=" << CanP->bound[2].p-P << "CanP->bound[3]=" << CanP->bound[3].p-P;
                 if (CP->NB < CP->MNB)
                 {
                     if (CanP->NB < CanP->MNB)
@@ -878,109 +878,18 @@ bool Calculation::updateBindings()
                         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                     }
-                    else bindToRadical(CP, CanP, CP->candidates[m]);
+                    else bindToRadical(CP, CanP, CP->candidates[m].lastDist);
                 }
                 else
                 {
-                    qInfo() << "1_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          CP->bound[3].p-P;
-                    if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m]);
+                    //qInfo() << "1_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                      //                    CP->bound[3].p-P;
+                    if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m].lastDist);
                     else
                     {
-                        qInfo() << "2_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          CP->bound[3].p-P;
-                        for (int i=0; i < CanP->NB; ++i)
-                        {
-                            qInfo() << "3_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          CP->bound[3].p-P;
-                            int j;
-                            for (j=0; j < CanP->bound[i].p->NC; ++j) if (isNotBound(CanP->bound[i].p, CanP->bound[i].p->candidates[j].p))
-                            {
-                                qInfo() << "4_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << ", CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                int k;
-                                for (k=0; k < CP->NB; ++k)
-                                    if (CP->bound[k].p == CanP->bound[i].p->candidates[j].p
-                                        && CP->bound[k].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CanP->bound[i].p->candidates[j].lastDist)
-                                {
-                                    qInfo() << "5_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                          CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                    Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[k].p;
-                                    int l, o;
-                                    for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
-                                    for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
-                                    if (l < P3->NB && o < P4->NB)
-                                    {
-                                        qInfo() << "6_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                        CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
-                                        P3->bound[l].lastDist = P4->bound[o].lastDist = P3->candidates[j].lastDist;
-                                        qInfo() << "7_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
-                                            CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                        std::swap(CP->bound[k].p, P3->bound[l].p);
-                                        std::swap(CanP->bound[i].p, P4->bound[o].p);
-                                        if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
-                                        qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                        break;
-                                    }
-                                }
-                                if (k < CP->NB)
-                                {
-                                    qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CanP->bound[i].p->NC;
-                                    break;
-                                }
-                            }
-                            if (j < CanP->bound[i].p->NC)
-                            {
-                                qInfo() << "Break i, j=" << j;
-                                break;
-                            }
-                            for (j=0; j < CP->NB; ++j)
-                            {
-                                qInfo() << "8_j=" << j << ", NB=" << CP->NB;
-                                int k;
-                                for (k=0; k < CP->bound[j].p->NC; ++k)
-                                    if (CP->bound[j].p->candidates[k].p == CanP->bound[i].p && isNotBound(CP->bound[j].p, CP->bound[j].p->candidates[k].p)
-                                        && CP->bound[j].lastDist + CanP->bound[i].lastDist > CP->candidates[m].lastDist + CP->bound[j].p->candidates[k].lastDist)
-                                {
-                                    qInfo() << "9_j=" << j << ", NB=" << CP->NB;
-                                    Particle *P3 = CanP->bound[i].p, *P4 = CP->bound[j].p;
-                                    int l, o;
-                                    for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
-                                    for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
-                                    qInfo() << "10_j=" << j << ", NB=" << CP->NB;
-                                    if (l < P3->NB && o < P4->NB)
-                                    {
-                                        qInfo() << "11_j=" << j << ", NB=" << CP->NB;
-                                        CP->bound[k].lastDist = CanP->bound[i].lastDist = CP->candidates[m].lastDist;
-                                        P3->bound[l].lastDist = P4->bound[o].lastDist = P4->candidates[k].lastDist;
-                                        qInfo() << "12_j=" << j << ", NB=" << CP->NB;
-                                        std::swap(CP->bound[j].p, P3->bound[l].p);
-                                        std::swap(CanP->bound[i].p, P4->bound[o].p);
-                                        qInfo() << "13_j=" << j << ", NB=" << CP->NB;
-                                        if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
-                                        if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
-                                        qInfo() << "Break k, j=" << j << ", NB=" << CP->NB;
-                                        break;
-                                    }
-                                }
-                                if (k < CP->bound[j].p->NC)
-                                {
-                                    qInfo() << "Break j, k=" << k << ", j=" << j << ", NC=" << CP->NB;
-                                    break;
-                                }
-                            }
-                            if (j < CP->NB)
-                            {
-                                qInfo() << "Break i, j=" << j;
-                                break;
-                            }
-                        }
+                        //qInfo() << "2_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                          //                CP->bound[3].p-P;
+                        for (int i=0; i < CanP->NB; ++i) if (goRight(CP, CanP, m, i) || goLeft(CP, CanP, m, i)) break;
                     }
                 }
             }
@@ -990,21 +899,102 @@ bool Calculation::updateBindings()
     return rValue;
 }
 
-void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, Particle::Binding& CanB) const
+bool Calculation::goLeft(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
+{
+    int *debugNullPtr = nullptr;
+    for (int j=0; j < CP->NB; ++j)
+    {
+        //qInfo() << "8_j=" << j << ", NB=" << CP->NB;
+        for (int k=0; k < CP->bound[j].p->NC; ++k)
+            if (CP->bound[j].p->candidates[k].p == CanP->bound[CanPBIndex].p && isNotBound(CP->bound[j].p, CP->bound[j].p->candidates[k].p)
+                                        && CP->bound[j].lastDist + CanP->bound[CanPBIndex].lastDist > CP->candidates[CPCanIndex].lastDist + CP->bound[j].p->candidates[k].lastDist)
+        {
+            //qInfo() << "9_j=" << j << ", NB=" << CP->NB;
+            Particle *P3 = CanP->bound[CanPBIndex].p, *P4 = CP->bound[j].p;
+            int l, o;
+            for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
+            for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
+            //qInfo() << "10_j=" << j << ", NB=" << CP->NB;
+            if (l < P3->NB && o < P4->NB)
+            {
+                //qInfo() << "11_j=" << j << ", NB=" << CP->NB;
+                CP->bound[k].lastDist = CanP->bound[CanPBIndex].lastDist = CP->candidates[CPCanIndex].lastDist;
+                P3->bound[l].lastDist = P4->bound[o].lastDist = P4->candidates[k].lastDist;
+                //qInfo() << "12_j=" << j << ", NB=" << CP->NB;
+                std::swap(CP->bound[j].p, P3->bound[l].p);
+                std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                //qInfo() << "13_j=" << j << ", NB=" << CP->NB;
+                if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
+                //qInfo() << "Break k=" << k << ", j=" << j << ", NB=" << CP->NB;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
+{
+    int *debugNullPtr = nullptr;
+    //qInfo() << "3_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P;
+    for (int j=0; j < CanP->bound[CanPBIndex].p->NC; ++j) if (isNotBound(CanP->bound[CanPBIndex].p, CanP->bound[CanPBIndex].p->candidates[j].p))
+    {
+        //qInfo() << "4_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << ", CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+          //                                  CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
+        for (int k=0; k < CP->NB; ++k)
+            if (CP->bound[k].p == CanP->bound[CanPBIndex].p->candidates[j].p
+                 && CP->bound[k].lastDist + CanP->bound[CanPBIndex].lastDist > CP->candidates[CPCanIndex].lastDist + CanP->bound[CanPBIndex].p->candidates[j].lastDist)
+        {
+            //qInfo() << "5_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+              //             CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
+            Particle *P3 = CanP->bound[CanPBIndex].p, *P4 = CP->bound[k].p;
+            int l, o;
+            for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
+            for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
+            if (l < P3->NB && o < P4->NB)
+            {
+                //qInfo() << "6_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                  //                      CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
+                CP->bound[k].lastDist = CanP->bound[CanPBIndex].lastDist = CP->candidates[CPCanIndex].lastDist;
+                P3->bound[l].lastDist = P4->bound[o].lastDist = P3->candidates[j].lastDist;
+                //qInfo() << "7_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
+                  //                      CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
+                std::swap(CP->bound[k].p, P3->bound[l].p);
+                std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
+                if (isBindingDoubled(P4 - P)) *debugNullPtr = 5;
+                //qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist) const
 {
     int leastBound = 0;
+    int *debugNullPtr = nullptr;
     for (int i=1; i < CanP->NB; ++i) if (CanP->bound[i].lastDist > CanP->bound[leastBound].lastDist) leastBound = i;
-    if (CanP->bound[leastBound].lastDist > CanB.lastDist)
+    if (CanP->bound[leastBound].lastDist > lastDist)
     {
         Particle* LBP = CanP->bound[leastBound].p;
         int i;
         for (i=0; i < LBP->NB; ++i) if (LBP->bound[i].p == CanP) break;
         if (i < LBP->NB) removeBinding(LBP, i);
         CanP->bound[leastBound].p = CP;
-        CanP->bound[leastBound].lastDist = CanB.lastDist;
-        CP->bound[CP->NB++] = CanB;
-        if (isBindingDoubled(CP - P)) throw("CP binding doubled");
-        if (isBindingDoubled(CanP - P)) throw("CanP binding doubled");
+        CanP->bound[leastBound].lastDist = lastDist;
+        CP->bound[CP->NB].p = CanP;
+        CP->bound[CP->NB++].lastDist = lastDist;
+        if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
+        if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
     }
 }
 
@@ -1284,6 +1274,13 @@ void Calculation::verifyNoBindingDoubled() const
 bool Calculation::isBindingDoubled(const int n) const
 {
     for (int i=0; i < P[n].NB - 1; ++i) for (int j=i+1; j < P[n].NB; ++j) if (P[n].bound[i].p == P[n].bound[j].p) return true;
+    for (int i=0; i < P[n].NB; ++i) if (P[n].bound[i].p == P+n) return true;
+    for (int i=0; i < P[n].NB; ++i)
+    {
+        int j;
+        for (j=0; j < P[n].bound[i].p->NB; ++j) if (P[n].bound[i].p->bound[j].p == P+n) break;
+        if (j == P[n].bound[i].p->NB) return true;
+    }
     return false;
 }
 
