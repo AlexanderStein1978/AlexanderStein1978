@@ -131,7 +131,7 @@ class Calculation : public QThread
         Result geta(Vector *t0, Vector *a, const bool collectCandidates);
         void addCandidate(Particle* const currPart, Particle *const candidate, const double dist) const;
         void removeBinding(Particle *const part, const int index) const;
-        void bindToRadical(Particle *const CP, Particle *const CanP, Particle::Binding& CanB) const;
+        void bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist) const;
         bool wasStepOK() const;
         double getE(Particle * const P, const Vector& R, const bool lastPos, const bool collectCandidates) const;
         void correctLocalE();
@@ -141,6 +141,8 @@ class Calculation : public QThread
         void calcMAR();
         bool updateBindings();
         bool UpdateBindings();
+        bool goRight(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex);
+        bool goLeft(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex);
         static double dist(const Particle *const P1, const Particle *const P2);
         static bool isNotBound(const Particle *const P1, const Particle *const P2);
         void checkPotentials();
