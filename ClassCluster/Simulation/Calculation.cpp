@@ -567,9 +567,9 @@ void Calculation::initialize()
         if (y<2 && MAR[z][y].index == n)
         {
             P[n].bound[P[n].NB].p = P+z;
-            P[n].bound[P[n].NB++].lastDist = 0.0;
+            P[n].bound[P[n].NB++].lastDist = MAR[n][x].R;
             P[z].bound[P[z].NB].p = P+n;
-            P[z].bound[P[z].NB++].lastDist = 0.0;
+            P[z].bound[P[z].NB++].lastDist = MAR[n][x].R;
         }
     }
     for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
@@ -580,11 +580,12 @@ void Calculation::initialize()
         if (y<4 && MAR[z][y].index == n && P[n].bound[0].p != P+z && P[n].bound[1].p != P+z)
         {
             P[n].bound[P[n].NB].p = P+z;
-            P[n].bound[P[n].NB++].lastDist = 0.0;
+            P[n].bound[P[n].NB++].lastDist = MAR[n][x].R;;
             P[z].bound[P[z].NB].p = P+n;
-            P[z].bound[P[z].NB++].lastDist = 0.0;
+            P[z].bound[P[z].NB++].lastDist = MAR[n][x].R;;
         }
     }
+    updateBindingPairs();
 }
 
 void Calculation::initializeParticle(Particle &cP, const int x, const int z, const Vector &iR, const Vector &Fact) const
@@ -896,6 +897,7 @@ bool Calculation::updateBindings()
         }
     }
     verifyNoBindingDoubled();
+    updateBindingPairs();
     return rValue;
 }
 
@@ -997,6 +999,42 @@ void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
     }
 }
+
+void Calculation::updateBindingPairs()
+{
+    Vector unit[Particle::BoundAL];
+    for (int n=0; n<N; ++n) if (P[n].NB > 2)
+    {
+        for (int i=0; i < P[n].NB; ++i) unit[i] = (P[n].bound[i].p->R - P[n].R) / P[n].bound[i].lastDist;
+        int bp1, bp2;
+        double minValue = 1.0, value;
+        for (int i=0; i < P[n].NB - 1; ++i) for (int j=i+1; j < P[n].NB; ++j) if ((value = unit[i].dot(unit[j])) < minValue)
+        {
+            value = minValue;
+            bp1 = i;
+            bp2 = j;
+        }
+        if (bp1 != 0 && bp2 != 0)
+        {
+            if (bp1 > 2)
+            {
+                std::swap(P[n].bound[0], P[n].bound[bp1]);
+                bp1 = 0;
+            }
+            else
+            {
+                std::swap(P[n].bound[0], P[n].bound[bp2]);
+                bp2 = 0;
+            }
+        }
+        if (bp1 != 1 && bp2 != 1)
+        {
+            if (bp1 > 2) std::swap(P[n].bound[1], P[n].bound[bp1]);
+            else std::swap(P[n].bound[1], P[n].bound[bp2]);
+        }
+    }
+}
+
 
 int* Calculation::createRandomParticleOrder()
 {
