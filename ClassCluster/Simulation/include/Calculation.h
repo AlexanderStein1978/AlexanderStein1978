@@ -151,6 +151,7 @@ class Calculation : public QThread
         int* createRandomParticleOrder();
         void verifyNoBindingDoubled() const;
         bool isBindingDoubled(const int particleIndex) const;
+        void updateBindingPairs();
 
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
