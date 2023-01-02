@@ -100,3 +100,8 @@ double Vector::dot(const Vector &other) const
 {
     return other.x * x + other.y * y + other.z * z;
 }
+
+Vector Vector::cross(const Vector& other) const
+{
+    return Vector(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+}

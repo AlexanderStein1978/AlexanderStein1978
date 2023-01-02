@@ -27,7 +27,7 @@ class Calculation : public QThread
 	Q_OBJECT
 	
 	public:
-        enum PotRole{ClosestTwo, NextTwo, SecondOrder, Remaining, NumPot};
+        enum PotRole{ClosestTwo, NextTwo, SecondOrder, Remaining, Angular, NumPot};
 
         Calculation(PotStruct* PotSs = nullptr, QObject* parent = 0);
 		~Calculation();
@@ -152,6 +152,7 @@ class Calculation : public QThread
         void verifyNoBindingDoubled() const;
         bool isBindingDoubled(const int particleIndex) const;
         void updateBindingPairs();
+        static int getPartnerBindingIndex(const Particle* const P, const int index);
 
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;

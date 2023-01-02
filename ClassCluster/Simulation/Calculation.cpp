@@ -235,9 +235,9 @@ bool Calculation::wasStepOK() const
 Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, double& U, const Vector *const t0, Positions pos, Vector* a, const bool collectCandidates) const
 {
     double r, amp(0.0);
-    Vector d, b;
+    Vector d, b, d1, d2;
     bool calcA = (NULL != a);
-    int i1 = P1 - P, i2 = P2 - P, p, bi1=N, bi2=N;
+    int i1 = P1 - P, i2 = P2 - P, p, ap1 = -1, ap2 = - 1, bi1=N, bi2=N;
     //printf("i1=%d, i2=%d\n", i1, i2);
     switch (pos)
     {
@@ -295,6 +295,37 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             P1->bound[bi1].lastDist = r;
             P2->bound[bi2].lastDist = r;
         }
+        int bi1_2 = getPartnerBindingIndex(P1, bi1), bi2_2 = getPartnerBindingIndex(P2, bi2);
+        int idi1 = (bi1_2 >= 0 ? P1->bound[bi1_2].p - P : -1), idi2 = (bi2_2 >= 0 ? P2->bound[bi2_2].p - P : -1);
+        switch (pos)
+        {
+        case temporaryPos:
+            d1 = (idi1 >= 0 ? t0[idi1] - t0[i1] : Vector());
+            d2 = (idi2 >= 0 ? t0[i2] - t0[idi2] : Vector());
+            break;
+        case lastPos:
+            d1 = (idi1 >= 0 ? P[idi1].lR - *t0 : Vector());
+            d2 = (idi2 >= 0 ? P2->lR - P[idi2].lR : Vector());
+            break;
+        case currentPos:
+            d1 = (idi1 >= 0 ? P[idi1].R - *t0 : Vector());
+            d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
+            break;
+        case particles:
+            d1 = (idi1 >= 0 ? P[idi1].R - P1->R : Vector());
+            d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
+            break;
+        }
+        if (idi1 >= 0)
+        {
+            ap1 = static_cast<int>((1.0 + d.dot(d1)) * (NPot - 1));
+            U += Pot[Angular][ap1] / r;
+        }
+        if (idi2 >= 0)
+        {
+            ap2 = static_cast<int>((1.0 + d.dot(d2)) * (NPot - 1));
+            U += Pot[Angular][ap2] / r;
+        }
     }
     else
     {
@@ -323,7 +354,6 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
-        
     }
     if (abs(amp * r) > UaMax)
     {
@@ -334,6 +364,19 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     {
         a[i1] += (b = amp * d);
         a[i2] -= b;
+        if (ap1 > 0)
+        {
+            Vector dir = d.cross(d1).cross(d).unit();
+            a[i1] += (b = dPdR[Angular][ap1] * dir);
+            a[i2] -= b;
+        }
+        if (ap2 > 0)
+        {
+            Vector dir = d.cross(d2).cross(d).unit();
+            a[i1] += (b = dPdR[Angular][ap2] * dir);
+            a[i2] -= b;
+        }
+        if (ap2 > 0)
         if (particleWatchStep >= 0)
         {
             if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, amp * d);
@@ -341,6 +384,26 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         }
     }
     return Success;
+}
+
+int Calculation::getPartnerBindingIndex(const Particle* const P, const int index)
+{
+    switch (index)
+    {
+        case 0:
+            if (P->NB > 1) return 1;
+            break;
+        case 1:
+            return 0;
+        case 2:
+            if (P->NB > 3) return 3;
+            break;
+        case 3:
+            return 2;
+        default:
+            return -1;
+    }
+    return -1;
 }
 
 void Calculation::removeBinding(Particle *const part, const int index) const
@@ -1133,13 +1196,25 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 {
     if (Pot[role] != nullptr) delete[] Pot[role];
     if (dPdR[role] != nullptr) delete[] dPdR[role];
-    const double dRScale = 1.0 / PotS.RZoom, Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.VZoom * dRScale;
+    double dRScale = 1.0 / PotS.RZoom, Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.VZoom * dRScale;
+    if (role == Angular)
+    {
+        Rmin = -1.0;
+        Rmax = 1.0;
+        devF = PotS.VZoom;
+    }
     Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NPot);
     dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NPot);
     if (PotS.RZoom != 1.0 || PotS.VZoom != 1.0) for (int n=0; n < NPot; ++n)
     {
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;
+        if (role == Angular && n>0 && n < NPot - 1) dPdR[role][n] *= (-sin(acos(static_cast<double>(n) * 2.0 / (NPot - 1) - 1.0)));
+    }
+    if (role == Angular)
+    {
+        dPdR[role][0] = 0.0;
+        dPdR[role][NPot - 1] = 0.0;
     }
     checkPotential(role);
     return potentialOK[role];
@@ -1147,6 +1222,7 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 
 void Calculation::checkPotential(const PotRole role)
 {
+    if (role == Angular) return;
     if (role == ClosestTwo)
     {
         if (Pot[ClosestTwo] != nullptr) potentialOK[role] = true;
