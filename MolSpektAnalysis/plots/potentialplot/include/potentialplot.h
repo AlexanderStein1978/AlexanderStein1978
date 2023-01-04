@@ -27,7 +27,7 @@ public:
     ~PotentialPlot();
 	void plotPotential(Potential *potential = 0);
 	void SetBoundaries();
-    void PSpektrum(QPainter &P, const QRect & A, bool PrintFN );
+    void PSpektrum(QPainter &P, const QRect & A, bool PrintFN ) override;
 	void ResetZoom();
 	void clearHistory();
 	void addPotential(Potential *pot);
@@ -37,6 +37,7 @@ public:
 	void PotSnapShot();
 	bool getShowDiagFuncs();
 	void setShowDiagFuncs(bool show);
+    void setRRange(const double RMin, const double RMax);
 	
 public slots:
 	void PotentialChanged();
@@ -48,16 +49,16 @@ signals:
     void closing();
 	
 private slots:
-	void addPoint();
-	void removePoint();
+	void addPoint() override;
+	void removePoint() override;
 	
 private:
-    void SetPoints();
-    void MovePoint();
-    void MovePoint(int i_pointIndex, double i_newX, double i_newY);
-    void ShowPopupMenu(const QPoint &i_point);
-    void HandleHistoryWhileMoving();
-    void HandleHistoryAfterMoving();
+    void SetPoints() override;
+    void MovePoint() override;
+    void MovePoint(int i_pointIndex, double i_newX, double i_newY) override;
+    void ShowPopupMenu(const QPoint &i_point) override;
+    void HandleHistoryWhileMoving() override;
+    void HandleHistoryAfterMoving() override;
 
 	Potential *pot, **potCopies;
     int NCopies, copyP;

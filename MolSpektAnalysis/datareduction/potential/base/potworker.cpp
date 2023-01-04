@@ -26,7 +26,7 @@
 #include <QMutex>
 
 
-PotWorker::PotWorker(PotFit *fit, PotentialType PotType)
+PotWorker::PotWorker(PotFit *fit, PotentialType PotType) : noExtensions(false)
 {
     Type = PotType;
     SMap = 0;
@@ -1777,6 +1777,18 @@ void PotWorker::updatePotential(double* C)
     Lock->unlock();
 }
 
+void PotWorker::setNoExtensions(bool value)
+{
+    bool changed = (noExtensions != value);
+    if (changed)
+    {
+        noExtensions = value;
+        if (L!=0) Destroy(L, numSplinePoints);
+        L = nullptr;
+        calcyss(false);
+    }
+}
+
 void PotWorker::calcyss(const bool movingPoints)
 {
     double ED, Rb, ys, Ra = points[numSplinePoints - 1].x;
@@ -1790,7 +1802,7 @@ void PotWorker::calcyss(const bool movingPoints)
             ys += double(PLRC[i]) / Ra * Rb;
         }
         ED -= Uinf;
-        if (movingPoints)
+        if (movingPoints && !noExtensions)
         {
             double deltaLRC = ED * pow(Ra, PLRC[NLRC - 1]);
             LRC[NLRC - 1] -= deltaLRC;
@@ -2530,7 +2542,7 @@ void PotWorker::setSpinRGamma(int nNSpinRGamma, double* nSpinRGamma, double nSpi
 
 void PotWorker::cdConnectLR1C()
 {
-    if (Fit->isRunning()) return;
+    if (Fit->isRunning() || NLRC == 0) return;
     if (points != 0)
     {
         if (numSplinePoints > 1)
@@ -2551,6 +2563,7 @@ void PotWorker::cdConnectLR1C()
 
 void PotWorker::cdConnectLRWithSR()
 {
+    if (0 == NLRC) return;
     double ED, Rb, ys, Ra = points[numSplinePoints - 1].x;
     int i;
     for (i=0, ED = points[numSplinePoints - 1].y, ys = 0.0; i < NLRC; i++)
@@ -2639,7 +2652,7 @@ void PotWorker::calcLMatrix()
     int N = numSplinePoints;
     //printf("calcLMatrix: numSplinePoints=%d\n", N);
     int st = N - 1, M;
-    if (st==0)
+    if (st <= 0)
     {
         printf("Potential::calcLMatrix: error, not enough spline points defined!\n");
         return;
@@ -2647,7 +2660,7 @@ void PotWorker::calcLMatrix()
     if (L!=0) Destroy(L, numSplinePoints);
     L = Create(N, M=st+3);
     
-    CalcLMatrix(L, points, iExp, N, Ro != 0.0);
+    CalcLMatrix(L, points, iExp, N, Ro != 0.0 || noExtensions);
         
     /*int i, n;  // Uncomment this block and comment the previous line if you don't want to use code from Numerical Recipes
     double B[st], F, dx[st];

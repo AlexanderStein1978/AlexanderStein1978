@@ -349,6 +349,7 @@ void TableWindow::AddRow()
 {
 	if (Tab == 0) return;
 	int r, c, nr = Tab->rowCount(), nc = Tab->columnCount(), cr = Tab->currentRow();
+    if (cr == -1) cr = 0;
 	Tab->blockSignals(true);
 	Tab->setRowCount(nr + 1);
 	for (r = nr; r > cr; r--) for (c=0; c < nc; c++) Tab->setItem(r, c, Tab->takeItem(r-1, c));

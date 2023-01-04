@@ -26,9 +26,9 @@ public:
     PotControl(ControlWindow* parent, MainWindow* mw);
     virtual ~PotControl();
 
-    void Init(const QString& data);
+    void Init(const QString& data, const int role);
     void Serialize(QTextStream& stream, const QString& programPath);
-    void FillLayout(QGridLayout* layout, const int row) const;
+    void FillLayout(QGridLayout* layout);
     void FillStruct(PotStruct& potStruct) const;
     void UpdatePotentialBox();
     void PLotCloses();
@@ -70,6 +70,7 @@ private:
     QCheckBox *showBox;
     MainWindow* MW;
     bool changed, changing;
+    int mRole;
 };
 
 #endif // POTCONTROL_H

@@ -129,6 +129,7 @@ public:
     virtual double getOuterConnectionRadius() const;
     double getSplineSlope(const int p, const double A, const double B);
     void calcIWallByTwoSplinePoints();
+    void setNoExtensions(bool value);
 	
 	inline void setSFQSU(bool ****nSFQSU)
 	{
@@ -347,7 +348,7 @@ public:
 	{
 		Ro = R_o;
 	}
-	
+
 public slots:
 	
 	void stopFit(bool Stop);
@@ -419,7 +420,7 @@ private:
 	WantedCoeffValue *WantedValues;
 	int NumWantedValues;
 	double SFQS;
-	bool ****SFQSU;
+	bool ****SFQSU, noExtensions;
 };
 
 #endif

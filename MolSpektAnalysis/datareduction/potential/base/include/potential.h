@@ -355,6 +355,12 @@ public:
     {
         return Worker->getSplineSlope(p, A, B);
     }
+
+    inline void setNoExtensions(bool value)
+    {
+        Worker->setNoExtensions(value);
+        UpdateTab();
+    }
 	
 signals:
 	void FitFinished(int ThreadNum, double FQS);

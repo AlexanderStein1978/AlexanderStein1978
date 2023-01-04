@@ -10,6 +10,8 @@ LogList::LogList() : mMutex(new QMutex), mFirst(nullptr), mLast(nullptr), mCurre
 LogList::~LogList()
 {
     clear();
+    delete mCurrent;
+    delete mCurrentPos;
     delete mMutex;
 }
 
@@ -21,8 +23,6 @@ void LogList::clear()
         mFirst = mFirst->next;
         delete toDel;
     }
-    delete mCurrent;
-    delete mCurrentPos;
     (*mCurrent) = mFirst = mLast = nullptr;
     mSize = 0;
     *mCurrentPos = -1;

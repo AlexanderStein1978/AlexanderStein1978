@@ -2930,6 +2930,7 @@ bool Potential::readData(QString Filename)
 bool Potential::testIfSplinePot()
 {
     bool E1, E2;
+    if (nullptr == Tab->item(0, 0) || nullptr == Tab->item(1, 0)) return true;
     double D1 = Tab->item(0, 0)->text().toDouble(&E1), D2 = Tab->item(1, 0)->text().toDouble(&E2);
     return E1 && E2 && D1 < D2;
 }
@@ -5067,7 +5068,7 @@ void Potential::UpdatePot(PreliminaryPotentialType type)
         for (n = NAdCorr = numSplinePoints = NLRC = 0; n<N; n++) 
         {
             Buffer[n] = Tab->item(n, 0)->text();
-            if (Buffer[n].toDouble() > 0.0) numSplinePoints++;
+            if (Buffer[n].toDouble() != 0.0) numSplinePoints++;
             else if (Buffer[n].indexOf("C_") != -1) NLRC++;
             else if (Buffer[n].indexOf("iA") != -1) iA = Tab->item(n, 1)->text().toDouble();
             else if (Buffer[n].indexOf("iO") != -1) iO = Tab->item(n, 1)->text().toDouble();
@@ -5107,7 +5108,7 @@ void Potential::UpdatePot(PreliminaryPotentialType type)
         }
         for (n = numSplinePoints = NLRC = 0; n<N; n++)
         {
-            if ((x = Buffer[n].toDouble()) > 0.0)
+            if ((x = Buffer[n].toDouble()) != 0.0)
             {
                 points[numSplinePoints].x = x;
                 points[numSplinePoints].y = Tab->item(n, 1)->text().toDouble();

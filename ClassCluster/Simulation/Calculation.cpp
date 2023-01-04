@@ -316,14 +316,15 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
             break;
         }
+        Vector ed(d/r);
         if (idi1 >= 0)
         {
-            ap1 = static_cast<int>((1.0 + d.dot(d1)) * (NPot - 1));
+            ap1 = static_cast<int>((1.0 + ed.dot(d1.unit())) * (NPot - 1));
             U += Pot[Angular][ap1] / r;
         }
         if (idi2 >= 0)
         {
-            ap2 = static_cast<int>((1.0 + d.dot(d2)) * (NPot - 1));
+            ap2 = static_cast<int>((1.0 + ed.dot(d2.unit())) * (NPot - 1));
             U += Pot[Angular][ap2] / r;
         }
     }
@@ -1222,7 +1223,6 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 
 void Calculation::checkPotential(const PotRole role)
 {
-    if (role == Angular) return;
     if (role == ClosestTwo)
     {
         if (Pot[ClosestTwo] != nullptr) potentialOK[role] = true;
@@ -1231,7 +1231,7 @@ void Calculation::checkPotential(const PotRole role)
     else if (Pot[role] != nullptr)
     {
         potentialOK[role] = true;
-        if (Pot[ClosestTwo]  != nullptr) for (int n=0; n < NPot && Pot[ClosestTwo][n] > 0.0; ++n) if (Pot[role][n] < Pot[ClosestTwo][n])
+        if (Pot[ClosestTwo]  != nullptr && role != Angular) for (int n=0; n < NPot && Pot[ClosestTwo][n] > 0.0; ++n) if (Pot[role][n] < Pot[ClosestTwo][n])
         {
             potentialOK[role] = false;
             break;

@@ -406,6 +406,14 @@ void PotentialPlot::SetPoints()
     if (pot != 0) points = pot->getSplinePoints(numPoints);
 }
 
+void PotentialPlot::setRRange(const double RMin, const double RMax)
+{
+    XMin = RMin;
+    XMax = RMax;
+    xStart->setText(QString::number(RMin, 'g', 4));
+    xStop->setText(QString::number(RMax, 'g', 4));
+}
+
 void PotentialPlot::setShowDiagFuncs(bool show)
 {
 	if (pot != 0) 
