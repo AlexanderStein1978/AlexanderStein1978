@@ -90,7 +90,8 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     PotLayout->addWidget(new QLabel("Next 2:", this), Calculation::NextTwo, 0);
     PotLayout->addWidget(new QLabel("Second order:", this), Calculation::SecondOrder, 0);
     PotLayout->addWidget(new QLabel("Remaining:", this), Calculation::Remaining, 0);
-    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->FillLayout(PotLayout, n);
+    PotLayout->addWidget(new QLabel("Angular:", this), Calculation::Angular, 0);
+    for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->FillLayout(PotLayout);
     connect(Start, SIGNAL(clicked()), this, SLOT(run()));
     connect(Restart, SIGNAL(clicked()), this, SLOT(restart()));
     connect(Rotate, SIGNAL(clicked()), this, SLOT(rotate()));
@@ -142,7 +143,7 @@ void ControlWindow::Init(QTextStream& inStream)
         for (int n=0; n < Calculation::NumPot && !inStream.atEnd(); ++n)
         {
             const QString data = inStream.readLine();
-            PotControls[n]->Init(data);
+            PotControls[n]->Init(data, n);
         }
     }
 }
@@ -343,13 +344,14 @@ void ControlWindow::rotate()
     window->rotate();
 }
 
-void ControlWindow::showPotential(Potential * const pot, const bool plot)
+void ControlWindow::showPotential(Potential * const pot, const bool plot, const int potRole)
 {
     if (nullptr == Plot)
     {
         Plot = new PotentialPlot;
         Plot->setShowHistory(false);
         Plot->setShowPoints(true);
+        if (potRole == Calculation::Angular) Plot->setRRange(-1.0, 1.0);
         MW->showMDIChild(Plot);
         connect(Plot, SIGNAL(closing()), this, SLOT(plotClosing()));
     }

@@ -28,7 +28,7 @@ public:
     ControlWindow(MainWindow *const mw);
     ~ControlWindow();
     double getRe() const;
-    void showPotential(Potential* const pot, const bool plot);
+    void showPotential(Potential* const pot, const bool plot, const int potRole);
     
     inline const QString& getProgramPath() const
     {

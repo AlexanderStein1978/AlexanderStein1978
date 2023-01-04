@@ -26,7 +26,7 @@ LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr
     L->setColumnStretch(0, 10);
     L->setColumnStretch(1, 10);
     L->setColumnStretch(2, 10);
-    L->addWidget(table = new MTable(this), 1, 0, 1, 4);
+    L->addWidget(table = new MTable(this), 1, 0, 1, 6);
     L->setRowMinimumHeight(0, 20);
     L->setRowStretch(1, 10);
     mMaxTableSize->setValidator(new QIntValidator(0, 2147483647, mMaxTableSize));

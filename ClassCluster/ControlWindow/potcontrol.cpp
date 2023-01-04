@@ -3,6 +3,7 @@
 #include "potential.h"
 #include "potentialplot.h"
 #include "controlwindow.h"
+#include "Calculation.h"
 #include "MainWindow.h"
 
 #include <QLineEdit>
@@ -26,6 +27,7 @@ PotControl::PotControl(ControlWindow *i_parent, MainWindow *mw)
     , MW(mw)
     , changed(true)
     , changing(false)
+    , mRole(-1)
 {
     VScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, VScale));
     RScale->setValidator(new QDoubleValidator(1e-5, 1e5, 1000, RScale));
@@ -44,8 +46,9 @@ PotControl::~PotControl()
 {
 }
 
-void PotControl::Init(const QString& data)
+void PotControl::Init(const QString& data, const int role)
 {
+    mRole = role;
     if (data.isEmpty()) return;
     QStringList list = data.split('\t');
     exchangePotential(MW->getPotential(list[0], nullptr));
@@ -68,16 +71,16 @@ void PotControl::Serialize(QTextStream& stream, const QString &programPath)
     stream << (pot != nullptr ? pot->getRelativePath(programPath + "/DummyString.dat") : "") << '\t' << VScale->text() << '\t' << RScale->text() << '\n';
 }
 
-void PotControl::FillLayout(QGridLayout* layout, const int row) const
+void PotControl::FillLayout(QGridLayout* layout)
 {
-    layout->addWidget(new QLabel("Potential:", parent), row, 1);
-    layout->addWidget(PotentialBox, row, 2);
-    layout->addWidget(new QLabel("VS:", parent), row, 3);
-    layout->addWidget(VScale, row, 4);
-    layout->addWidget(new QLabel("RS:", parent), row, 5);
-    layout->addWidget(RScale, row, 6);
-    layout->addWidget(adjustReB, row, 7);
-    layout->addWidget(showBox, row, 8);
+    layout->addWidget(new QLabel("Potential:", parent), mRole, 1);
+    layout->addWidget(PotentialBox, mRole, 2);
+    layout->addWidget(new QLabel("VS:", parent), mRole, 3);
+    layout->addWidget(VScale, mRole, 4);
+    layout->addWidget(new QLabel("RS:", parent), mRole, 5);
+    layout->addWidget(RScale, mRole, 6);
+    layout->addWidget(adjustReB, mRole, 7);
+    layout->addWidget(showBox, mRole, 8);
 }
 
 void PotControl::FillStruct(PotStruct& potStruct) const
@@ -97,7 +100,8 @@ void PotControl::exchangePotential(Potential *const newPot)
         Plot(true);
     }
     else pot = newPot;
-    connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
+    if (mRole == Calculation::Angular) pot->setNoExtensions(true);
+    else connect(pot, SIGNAL(propertiesChanged()), this, SLOT(RecalcExtensions()));
 }
 
 void PotControl::PotentialBoxIndexChanged(const int newIndex)
@@ -107,7 +111,7 @@ void PotControl::PotentialBoxIndexChanged(const int newIndex)
 
 void PotControl::Plot(const bool show)
 {
-    parent->showPotential(pot, show);
+    parent->showPotential(pot, show, mRole);
 }
 
 void PotControl::PLotCloses()
@@ -119,7 +123,7 @@ void PotControl::PLotCloses()
 
 void PotControl::RecalcExtensions()
 {
-    if (nullptr == pot || changing) return;
+    if (nullptr == pot || changing || mRole == Calculation::Angular) return;
     changing = true;
     pot->cdConnectSR();
     pot->cdConnectLR1C();

@@ -126,6 +126,11 @@ protected:
         return Calc->P[particleIndex].NB;
     }
     
+    int getParticleMNB(const int particleIndex) const
+    {
+        return Calc->P[particleIndex].MNB;
+    }
+
     Calculation* Calc;
 };
 
@@ -137,6 +142,7 @@ TEST_F(CalculationTest, CheckParticleBindingInitialisation)
         EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index)) << "index = " << index;
         EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index + 1)) << "index + 1 = " << (index + 1);
     }
+    for (int n=0; n < getNumParticles(); ++n) EXPECT_EQ(getParticleNB(n), getParticleMNB(n)) << "index = " << n;
 }
 
 TEST_F(CalculationTest, CheckParticleBindingUpdates)
