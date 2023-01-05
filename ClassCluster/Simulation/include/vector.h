@@ -25,6 +25,7 @@ public:
     double lengthSquared() const;
     double dot(const Vector& other) const;
     Vector cross(const Vector& other) const;
+    Vector unit() const;
 
     inline bool operator==(const Vector& other) const
     {
@@ -64,11 +65,6 @@ public:
     inline void clear()
     {
         x = y = z = 0.0;
-    }
-
-    inline Vector unit()
-    {
-        return *this / length();
     }
 
 private:

@@ -105,3 +105,10 @@ Vector Vector::cross(const Vector& other) const
 {
     return Vector(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
 }
+
+Vector Vector::unit() const
+{
+    const double l = length();
+    if (l == 0.0) return Vector();
+    return *this / l;
+}
