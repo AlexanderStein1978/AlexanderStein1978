@@ -234,6 +234,7 @@ bool Calculation::wasStepOK() const
 
 Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, double& U, const Vector *const t0, Positions pos, Vector* a, const bool collectCandidates) const
 {
+    int *debugnullptr = nullptr;
     double r, amp(0.0);
     Vector d, b, d1, d2;
     bool calcA = (NULL != a);
@@ -319,12 +320,12 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         Vector ed(d/r);
         if (idi1 >= 0)
         {
-            ap1 = static_cast<int>((1.0 + ed.dot(d1.unit())) * (NPot - 1));
+            ap1 = static_cast<int>((1.0 + ed.dot(d1.unit())) * 0.5 * (NPot - 1));
             U += Pot[Angular][ap1] / r;
         }
         if (idi2 >= 0)
         {
-            ap2 = static_cast<int>((1.0 + ed.dot(d2.unit())) * (NPot - 1));
+            ap2 = static_cast<int>((1.0 + ed.dot(d2.unit())) * 0.5 * (NPot - 1));
             U += Pot[Angular][ap2] / r;
         }
     }
@@ -377,7 +378,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             a[i1] += (b = dPdR[Angular][ap2] * dir);
             a[i2] -= b;
         }
-        if (ap2 > 0)
+        if (isnan(a[i1].X()) || isnan(a[i1].Y()) || isnan(a[i1].Z()) || isnan(a[i2].X()) || isnan(a[i2].Y()) || isnan(a[i2].Z())) *debugnullptr = 5;
         if (particleWatchStep >= 0)
         {
             if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, amp * d);
