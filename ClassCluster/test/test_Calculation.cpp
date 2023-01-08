@@ -35,16 +35,18 @@ public:
     void SetUp()
     {
         PotStruct struc[Calculation::NumPot];
-        Potential closestTwo, nextTwo, remaining, secondOrder;
+        Potential closestTwo, nextTwo, remaining, secondOrder, angular;
         QString dataDir(DATA_DIRECTORY);
         closestTwo.readData(dataDir + "/ClosestTwo.pot");
         nextTwo.readData(dataDir + "/NextTwo.pot");
         remaining.readData(dataDir + "/Remaining.pot");
         secondOrder.readData(dataDir + "/SecondOrder.pot");
+        angular.readData(dataDir + "/Angular.pot");
         struc[Calculation::ClosestTwo].pot = &closestTwo;
         struc[Calculation::NextTwo].pot = &nextTwo;
         struc[Calculation::Remaining].pot = &remaining;
         struc[Calculation::SecondOrder].pot = &secondOrder;
+        struc[Calculation::Angular].pot = &angular;
         Calc = new Calculation(struc);
     }
 
