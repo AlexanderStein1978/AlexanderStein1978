@@ -22,6 +22,7 @@ struct Particle
     Binding bound[BoundAL], candidates[NCandidates];
     int xp, yp, zp, NB, NC, MNB;
     double E, deltaE, T, deltaT, U, deltaU;
+    bool Fixed;
     Vector R, v, lR, lv, aa, corr;
 };
 

@@ -77,8 +77,7 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
 	}
     for (n=0; n < N; n++) MAR[n] = new MARStruct[4];
     Pos = new Vector[N];
-	Fixed = new bool[N];
-	
+
 	initialize();
 
     DebugLogFile = new QFile("DebugLog.txt");
@@ -110,7 +109,6 @@ Calculation::~Calculation()
 		delete[] G[x];
 	}
 	delete[] G;
-	delete[] Fixed;
 }
 
 void Calculation::calcMAR()
@@ -669,7 +667,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	if (cP.next != 0) cP.next->prev = D[n];
 	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
 	{
-		Fixed[n] = true;
+		P->Fixed = true;
         cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
         Vector delta = P[x].R - Vector(0.5 * MaxX, 0.0, 0.5 * MaxZ);
         R = 1.0 / delta.length();
@@ -677,7 +675,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	}
     else
     {
-        Fixed[n] = false;
+        P->Fixed = false;
         cP.MNB = Particle::BoundAL;
     }
 }
@@ -820,7 +818,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         }
         if (Move)
         {
-            for (n=0; n<N; n++) if (Fixed[n])
+            for (n=0; n<N; n++) if (P[n].Fixed)
             {
                 dX = XMid - P[n].R.X();
                 dZ = ZMid - P[n].R.Z();
@@ -842,7 +840,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             break;
         }
         if (E == 0.0 || T == 0.0 || Move) E = T + U;
-        for (n=0; n<N; n++) if (!Fixed[n])
+        for (n=0; n<N; n++) if (!P[n].Fixed)
         {
             t0[n] = P[n].R + hh * P[n].v;
             dt[n] = P[n].v + hh * a[n];
@@ -851,7 +849,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, a[watchParticle]);
         result = geta(t0, dvt, false);
         if (result == Error) break;
-        for (n=0; n<N; n++) if (!Fixed[n])
+        for (n=0; n<N; n++) if (!P[n].Fixed)
         {
             P[n].aa = dvt[n];
             t0[n] = P[n].R + hh * dt[n];
@@ -861,7 +859,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvt[watchParticle]);
         result = geta(t0, dvm, false);
         if (result == Error) break;
-        for (n=0; n<N; n++) if (!Fixed[n])
+        for (n=0; n<N; n++) if (!P[n].Fixed)
         {
             P[n].aa += 2.0 * dvm[n];
             t0[n] = P[n].R + lh * dm[n];
@@ -877,7 +875,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
         result = geta(t0, dvt, true);
         if (result == Error) break;
-        for (n=0; n<N; n++) if (!Fixed[n])
+        for (n=0; n<N; n++) if (!P[n].Fixed)
         {
             P[n].lR = P[n].R;
             P[n].lv = P[n].v;

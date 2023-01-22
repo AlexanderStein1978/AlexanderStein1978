@@ -163,7 +163,7 @@ class Calculation : public QThread
 		Particle *P, ****G, **D;
         WatchPoint* ParticleWatchPoint;
         MARStruct **MAR;
-        bool Run, rotated, *Fixed, Move, writeSnapShot, mRotationChanged;
+        bool Run, rotated, Move, writeSnapShot, mRotationChanged;
         QFile* DebugLogFile;
         QTextStream* DebugLog;
 };
