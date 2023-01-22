@@ -816,6 +816,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         {
             for (n=0; n<N; n++) if (P[n].Fixed)
             {
+                P[n].lR = P[n].R;
                 dX = XMid - P[n].R.X();
                 dZ = ZMid - P[n].R.Z();
                 R = lh * Speed / (dX * dX + dZ * dZ);
