@@ -654,7 +654,6 @@ void Calculation::initialize()
 void Calculation::initializeParticle(Particle &cP, const int x, const int z, const Vector &iR, const Vector &Fact) const
 {
     int n = &cP - P, b;
-    double R;
     cP.lR = cP.R = iR;
     cP.xp = ((b = int(Fact.X() * iR.X())) >= 0 ? (b < XS ? b : XS - 1) : 0);
     cP.yp = ((b = int(Fact.Y() * iR.Y())) >= 0 ? (b < YS ? b : YS - 1) : 0);
@@ -667,15 +666,12 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	if (cP.next != 0) cP.next->prev = D[n];
 	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
 	{
-		P->Fixed = true;
+		cP.Fixed = true;
         cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
-        Vector delta = P[x].R - Vector(0.5 * MaxX, 0.0, 0.5 * MaxZ);
-        R = 1.0 / delta.length();
-        P[x].v = delta * Vector(R, 0.0, R);
 	}
     else
     {
-        P->Fixed = false;
+        cP.Fixed = false;
         cP.MNB = Particle::BoundAL;
     }
 }
