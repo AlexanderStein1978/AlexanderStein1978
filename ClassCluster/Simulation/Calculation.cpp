@@ -208,6 +208,39 @@ Calculation::Result Calculation::geta(Vector* t0, Vector *a, const bool collectC
     return Success;
 }
 
+Particle* Calculation::getFixedParticleAtAxis(const Vector& Pos, const double maxDev) const
+{
+    const Vector CP(0.5 * MaxX, Pos.Y(), 0.5 * MaxZ);
+    int mx, mz, x, y, z;
+	Particle *PP1;
+    Vector Delta = CP - Pos;
+    bool SWX;
+    if (abs(Delta.X()) > abs(Delta.Z()))
+    {
+        SWX = true;
+        if (Delta.X() > 0.0) Delta *= (CP.X() / Delta.X());
+        else Delta *= ((CP.X() - MaxX) / Delta.X());
+    }
+    else
+    {
+        SWX = false;
+        if (Delta.Z() > 0.0) Delta *= (CP.Z() / Delta.Z());
+        else Delta *= ((CP.Z() - MaxZ) / Delta.Z());
+    }
+    for (Vector cP = CP - 0.95 * Delta; cP.dot(Delta) > 0.0; cP += 0.1 * Delta)
+    {
+        getGridAtPos(cP, x, y, z);
+        if (SWX)
+        {
+            for (mz = z - 1; mz <= z + 1; mz++) if (mz >= 0 & mz < ZS) for (PP1 = G[x][y][mz]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
+                return PP1;
+        }
+        else for (mx = x - 1; mx <= x + 1; mx++) if (mx >= 0 & mx < ZS) for (PP1 = G[mx][y][z]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
+                return PP1;
+    }
+    return nullptr;
+}
+
 bool Calculation::wasStepOK() const
 {
     int mx, my, mz, lx, ly, lz;
@@ -607,9 +640,10 @@ void Calculation::initialize()
 {
 	//printf("Calculation::initialize\n");
 	int n, x, y, z;
-	double rx, rz, rys = sqrt(0.5) * MaxY / double(PYS), rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
-	double y1 = 0.5 * MaxY - rys;
-	double y2 = 0.5 * MaxY + rys;
+	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
+    mLayerDistance = sqrt(0.5) * MaxY / double(PYS);
+	double y1 = 0.5 * MaxY - mLayerDistance;
+	double y2 = 0.5 * MaxY + mLayerDistance;
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
 	for (x=0; x < XS; x++) for (y=0; y < YS; y++) for (z=0; z < ZS; z++) G[x][y][z] = 0;
 	for (n=z=0, rz = 0.5 * rzs; z < PZS; z++, rz += rzs) 
@@ -678,13 +712,13 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 
 void Calculation::setLayerDistance(double newDistance)
 {
-    const double cDist(P[1].R.Y() - P[0].R.Y());
-    const Vector diff(0.0, 0.5 * (newDistance - cDist), 0.0);
+    const Vector diff(0.0, 0.5 * (newDistance - mLayerDistance), 0.0);
     for (int n=0; n < N-1; n+=2)
     {
         P[n].R -= diff;
         P[n+1].R += diff;
     }
+    mLayerDistance = newDistance;
 }
 
 void Calculation::move()
@@ -777,11 +811,8 @@ void Calculation::run()
 
 void Calculation::updateBlock(int n)
 {
-    static const Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ);
     int x, y, z;
-    x = ((x = int(F.X() * P[n].R.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
-    y = ((y = int(F.Y() * P[n].R.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
-    z = ((z = int(F.Z() * P[n].R.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
+    getGridAtPos(P[n].R, x, y, z);
     if (P[n].xp != x || P[n].yp != y || P[n].zp != z)
     {
         if (P[n].next != 0) P[n].next->prev = P[n].prev;
@@ -798,31 +829,26 @@ void Calculation::updateBlock(int n)
     }
 }
 
+void Calculation::getGridAtPos(const Vector& Pos, int& x, int& y, int& z) const
+{
+    static const Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ);
+    x = ((x = int(F.X() * Pos.X())) >= 0 ? (x < XS ? x : XS - 1) : 0);
+    y = ((y = int(F.Y() * Pos.Y())) >= 0 ? (y < YS ? y : YS - 1) : 0);
+    z = ((z = int(F.Z() * Pos.Z())) >= 0 ? (z < ZS ? z : ZS - 1) : 0);
+}
+
 void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm, Vector* dvm, const double lh)
 {
-
-    double hh = 0.5 * lh, h6 = lh / 6.0, R, dX, dZ, ZMid = 0.5 * MaxZ;
-    double XMid = 0.5 * MaxX;
+    double hh = 0.5 * lh, h6 = lh / 6.0;
     int n;
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
+        if (Move) applyMove(lh);
         for (n=0; n<N; n++)
         {
             updateBlock(n);
             t0[n] = P[n].R;
-        }
-        if (Move)
-        {
-            for (n=0; n<N; n++) if (P[n].Fixed)
-            {
-                P[n].lR = P[n].R;
-                dX = XMid - P[n].R.X();
-                dZ = ZMid - P[n].R.Z();
-                R = lh * Speed / (dX * dX + dZ * dZ);
-                if (P[n].R.Y() > YMid) P[n].R += Vector(dX * R, 0.0, dZ * R);
-                else P[n].R -= Vector(dX * R, 0.0, dZ * R);
-            }
         }
         for (n=0, U = T = 0.0; n<N; n++) T += P[n].v.lengthSquared();
         if (watchParticle >= 0) particleWatchStep = 0;
@@ -904,6 +930,111 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     }
 }
 
+void Calculation::applyMove(const double lh)
+{
+
+    double XMid = 0.5 * MaxX, R, dX, dZ, ZMid = 0.5 * MaxZ, dist = MaxX / double(PXS);
+    for (int n=0; n<N; n++) if (P[n].Fixed)
+    {
+        P[n].lR = P[n].R;
+        dX = XMid - P[n].R.X();
+        dZ = ZMid - P[n].R.Z();
+        R = lh * Speed / (dX * dX + dZ * dZ);
+        Vector step(dX * R, 0.0, dZ * R);
+        if (P[n].R.Y() > YMid) P[n].R += step;
+        else P[n].R -= step;
+        if (P[n].R.X() < 0.0) doParticleLayerSwitch(P+n, step * (dist / step.X()));
+        else if (P[n].R.Z() < 0.0) doParticleLayerSwitch(P+n, step * (dist / step.Z()));
+        else if (P[n].R.X() > MaxX) doParticleLayerSwitch(P+n, step * (-dist / step.X()));
+        else if (P[n].R.Z() > MaxZ) doParticleLayerSwitch(P+n, step * (-dist / step.Z()));
+    }
+}
+
+void Calculation::doParticleLayerSwitch(Particle *const cP, const Vector& Dist)
+{
+    Vector Pos = cP->R + Dist, LD = Vector(0.0, mLayerDistance, 0.0), newPos = Pos + LD;
+    double dist = Dist.length(), cDist;
+    Particle* newF = getClosestBound(cP, Pos);
+    if (nullptr != newF)
+    {
+        newF->R = Pos;
+        newF->Fixed = true;
+    }
+    for (int m=0; m < cP->NB; ++m)
+    {
+        if (cP->bound[m].p->Fixed) --(cP->bound[m].p->MNB);
+        removeBinding(cP->bound[m].p, getBindingIndexAtBound(cP, m));
+        removeBinding(cP, m);
+    }
+    Particle* newFree = getFixedParticleAtAxis(newPos, 1e-2);
+    newFree->Fixed = false;
+    if (Particle::BoundAL == newFree->NB) bindToRadical(cP, newFree, dist, true);
+    else
+    {
+        newFree->MNB = Particle::BoundAL;
+        newFree->bound[newFree->NB++].p = cP;
+        cP->bound[0].p = newFree;
+    }
+    cP->R = newFree->R - Dist;
+    cP->NB = cP->MNB = 1;
+    const double MaxDev = 2.0 * dist;
+    for (int i=0; i < newFree->NB - 1; ++i) for (int j=0; j < newFree->bound[i].p->NB; ++j)
+        if (newFree->bound[i].p->bound[j].p->Fixed && (cDist = (cP->R - newFree->bound[i].p->bound[j].p->R).length()) < MaxDev)
+    {
+        Particle* newBound = newFree->bound[i].p->bound[j].p;
+        if (Particle::BoundAL > newBound->NB)
+        {
+            cP->bound[cP->NB].p = newBound;
+            newBound->bound[newBound->NB].p = cP;
+            newBound->MNB = ++(newBound->NB);
+        }
+        else if (!bindToRadical(cP, newBound, cDist, false)) continue;
+        cP->MNB = ++(cP->NB);
+    }
+}
+
+int Calculation::getBindingIndexAtBound(const Particle *const P1, const int index)
+{
+    for (int n=0; n < P1->bound[index].p->NB; ++n) if (P1->bound[index].p->bound[n].p == P1) return n;
+    return -1;
+}
+
+Particle* Calculation::getClosestBound(const Particle *const P1, const Vector& Pos)
+{
+    Particle* Res = nullptr;
+    double minD = -1.0;
+    for (int n=0; n < P1->NB; ++n) if (!P1->bound[n].p->Fixed)
+    {
+        if (Res == nullptr) Res = P1->bound[n].p;
+        else
+        {
+            if (minD < 0.0) minD = (Res->R - Pos).lengthSquared();
+            double D = (P1->bound[n].p->R - Pos).lengthSquared();
+            if (D < minD)
+            {
+                minD = D;
+                Res = P1->bound[n].p;
+            }
+        }
+    }
+    if (Res == nullptr) for (int n=0; n < P1->NB; ++n) for (int m=0; m < P1->bound[n].p->NB; ++m) if (!P1->bound[n].p->bound[m].p->Fixed)
+    {
+        if (Res == nullptr) Res = P1->bound[n].p->bound[m].p;
+        else
+        {
+            if (minD < 0.0) minD = (Res->R - Pos).lengthSquared();
+            double D = (P1->bound[n].p->bound[m].p->R - Pos).lengthSquared();
+            if (D < minD)
+            {
+                minD = D;
+                Res = P1->bound[n].p->bound[m].p;
+            }
+        }
+    }
+    return Res;
+}
+
+
 bool Calculation::UpdateBindings()
 {
     for (int n=0; n<N; ++n) P[n].NC = 0;
@@ -939,13 +1070,13 @@ bool Calculation::updateBindings()
                         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                     }
-                    else bindToRadical(CP, CanP, CP->candidates[m].lastDist);
+                    else bindToRadical(CP, CanP, CP->candidates[m].lastDist, false);
                 }
                 else
                 {
                     //qInfo() << "1_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
                       //                    CP->bound[3].p-P;
-                    if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m].lastDist);
+                    if (CanP->NB < CanP->MNB) bindToRadical(CanP, CP, CP->candidates[m].lastDist, false);
                     else
                     {
                         //qInfo() << "2_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" <<
@@ -1039,13 +1170,12 @@ bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CP
     return false;
 }
 
-
-void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist) const
+bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force) const
 {
     int leastBound = 0;
     int *debugNullPtr = nullptr;
     for (int i=1; i < CanP->NB; ++i) if (CanP->bound[i].lastDist > CanP->bound[leastBound].lastDist) leastBound = i;
-    if (CanP->bound[leastBound].lastDist > lastDist)
+    if (CanP->bound[leastBound].lastDist > lastDist || force)
     {
         Particle* LBP = CanP->bound[leastBound].p;
         int i;
@@ -1057,7 +1187,9 @@ void Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
         CP->bound[CP->NB++].lastDist = lastDist;
         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
+        return true;
     }
+    return false;
 }
 
 void Calculation::updateBindingPairs()
