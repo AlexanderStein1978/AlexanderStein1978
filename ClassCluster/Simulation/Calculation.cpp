@@ -227,15 +227,15 @@ Particle* Calculation::getFixedParticleAtAxis(const Vector& Pos, const double ma
         if (Delta.Z() > 0.0) Delta *= (CP.Z() / Delta.Z());
         else Delta *= ((CP.Z() - MaxZ) / Delta.Z());
     }
-    for (Vector cP = CP - 0.95 * Delta; cP.dot(Delta) > 0.0; cP += 0.1 * Delta)
+    for (Vector cP = CP - 0.95 * Delta; (CP-cP).dot(Delta) > 0.0; cP += 0.1 * Delta)
     {
         getGridAtPos(cP, x, y, z);
         if (SWX)
         {
-            for (mz = z - 1; mz <= z + 1; mz++) if (mz >= 0 & mz < ZS) for (PP1 = G[x][y][mz]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
+            for (mz = z - 1; mz <= z + 1; mz++) if (mz >= 0 && mz < ZS) for (PP1 = G[x][y][mz]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
                 return PP1;
         }
-        else for (mx = x - 1; mx <= x + 1; mx++) if (mx >= 0 & mx < ZS) for (PP1 = G[mx][y][z]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
+        else for (mx = x - 1; mx <= x + 1; mx++) if (mx >= 0 && mx < ZS) for (PP1 = G[mx][y][z]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
                 return PP1;
     }
     return nullptr;
@@ -642,8 +642,8 @@ void Calculation::initialize()
 	int n, x, y, z;
 	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
     mLayerDistance = sqrt(0.5) * MaxY / double(PYS);
-	double y1 = 0.5 * MaxY - mLayerDistance;
-	double y2 = 0.5 * MaxY + mLayerDistance;
+	double y1 = 0.5 * (MaxY - mLayerDistance);
+	double y2 = 0.5 * (MaxY + mLayerDistance);
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
 	for (x=0; x < XS; x++) for (y=0; y < YS; y++) for (z=0; z < ZS; z++) G[x][y][z] = 0;
 	for (n=z=0, rz = 0.5 * rzs; z < PZS; z++, rz += rzs) 
