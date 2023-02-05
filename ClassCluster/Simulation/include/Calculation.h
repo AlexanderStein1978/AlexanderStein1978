@@ -39,7 +39,7 @@ class Calculation : public QThread
         double getKineticEnergy() const;
         double setKineticEnergy(const double newT);
 		void getSize(int &width, int &height);
-		void getScales(double &ScF, int &MaxZ);
+		void getScales(double& rScF, int& rMaxX, int&rMaxY, int& rMaxZ);
 		void move();
 		void setSpeed(double S);
 		double getSpeed();
