@@ -582,16 +582,18 @@ double Calculation::getPotentialEnergy() const
     return U;
 }
 
-void Calculation::getScales(double& rScF, int& rMaxZ)
+void Calculation::getScales(double& rScF, int& rMaxX, int&rMaxY, int& rMaxZ)
 {
 	rScF = ScF;
+    rMaxX = MaxX;
+    rMaxY = MaxY;
 	rMaxZ = MaxZ;
 }
 
 void Calculation::getSize(int& width, int& height)
 {
-	width = int(MaxX * ScF) + 10;
-	height = int(MaxY * ScF) + 40;
+	width = int(MaxX * ScF) + 20;
+	height = int(MaxY * ScF) + 50;
 }
 
 double Calculation::getSpeed()

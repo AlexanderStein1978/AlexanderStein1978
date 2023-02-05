@@ -234,14 +234,15 @@ void Window::paintEvent(QPaintEvent *e)
 {
     if (0 != mN)
     {
-        int w = Pict->width(), he = Pict->height(), col, n, z, MaxZ, markedX = -10, markedY = -10;
+        int w = Pict->width(), he = Pict->height(), col, n, z, MaxX, MaxY, MaxZ, markedX = -10, markedY = -10;
         double ScF;
-        Calc->getScales(ScF, MaxZ);
+        Calc->getScales(ScF, MaxX, MaxY, MaxZ);
         double zSc = 255.0 / MaxZ, xc, yc;
         QPainter Paint(Pict->getPixmap());
         Paint.eraseRect(0, 0, w, he);
         for (n=0, z=-100; n < mN; n++)
         {
+            if (mPos[n].X() <= 0 || mPos[n].X() >= MaxX || mPos[n].Y() <= 0 || mPos[n].Y() >= MaxY) continue;
             if (int(mPos[n].Z() * zSc) != z || n-1 == mMarkedParticle)
             {
                 col = 254 - (z = int(mPos[n].Z() * zSc));
@@ -250,8 +251,8 @@ void Window::paintEvent(QPaintEvent *e)
                 Paint.setPen(QColor(col, col, col));
                 Paint.setBrush(QColor(col, col, col));
             }
-            xc = mPos[n].X() * ScF;
-            yc = mPos[n].Y() * ScF;
+            xc = 5 + mPos[n].X() * ScF;
+            yc = 5 + mPos[n].Y() * ScF;
             if (n == mMarkedParticle)
             {
                 Paint.setPen(QColor(255, 0, 0));
@@ -267,13 +268,13 @@ void Window::paintEvent(QPaintEvent *e)
             Vector start, stop;
             if (Calc->IsRotated())
             {
-                start = Vector(mAxisStart.X() * ScF, mAxisStart.Z() * ScF, 0.0);
-                stop = Vector(mAxisEnd.X() * ScF, mAxisEnd.Z() * ScF, 0.0);
+                start = Vector(5 + mAxisStart.X() * ScF, 5 + mAxisStart.Z() * ScF, 0.0);
+                stop = Vector(5 + mAxisEnd.X() * ScF, 5 + mAxisEnd.Z() * ScF, 0.0);
             }
             else
             {
-                start = Vector(mAxisStart.X() * ScF, mAxisStart.Y() * ScF, 0.0);
-                stop = Vector(mAxisEnd.X() * ScF, mAxisEnd.Y() * ScF, 0.0);
+                start = Vector(5 + mAxisStart.X() * ScF, 5 + mAxisStart.Y() * ScF, 0.0);
+                stop = Vector(5 + mAxisEnd.X() * ScF, 5 + mAxisEnd.Y() * ScF, 0.0);
             }
             Paint.drawLine(start.X(), start.Y(), stop.X(), stop.Y());
             Vector step(0.1 * (stop - start));
