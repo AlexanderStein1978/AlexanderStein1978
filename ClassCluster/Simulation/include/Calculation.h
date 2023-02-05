@@ -156,7 +156,6 @@ class Calculation : public QThread
         void applyMove(const double lh);
         static Particle* getClosestBound(const Particle *const P1, const Vector& Pos);
         static int getBindingIndexAtBound(const Particle *const P1, const int index);
-        Particle* getFixedParticleAtAxis(const Vector& Pos, const double maxDev) const;
         void getGridAtPos(const Vector& Pos, int& x, int& y, int& z) const;
         void doParticleLayerSwitch(Particle *const cP, const Vector& dist);
 
@@ -166,7 +165,7 @@ class Calculation : public QThread
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
         double Speed, YMid, potRangeScale, mLayerDistance;
         Vector *Pos;
-		Particle *P, ****G, **D;
+		Particle *P, ****G, **D, **FixedWallPos;
         WatchPoint* ParticleWatchPoint;
         MARStruct **MAR;
         bool Run, rotated, Move, writeSnapShot, mRotationChanged;

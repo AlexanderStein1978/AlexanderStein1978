@@ -29,7 +29,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), writeSnapShot(false), mRotationChanged(false)
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), FixedWallPos(new Particle*[78]), writeSnapShot(false), mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
     double IntDist = 20.0, st;
@@ -109,6 +109,7 @@ Calculation::~Calculation()
 		delete[] G[x];
 	}
 	delete[] G;
+    delete[] FixedWallPos;
 }
 
 void Calculation::calcMAR()
@@ -206,39 +207,6 @@ Calculation::Result Calculation::geta(Vector* t0, Vector *a, const bool collectC
 	//printf("U=%f, T=%f, U+T=%f, E=%f\n", U, T, U+T, E);
 	//printf("End geta\n");
     return Success;
-}
-
-Particle* Calculation::getFixedParticleAtAxis(const Vector& Pos, const double maxDev) const
-{
-    const Vector CP(0.5 * MaxX, Pos.Y(), 0.5 * MaxZ);
-    int mx, mz, x, y, z;
-	Particle *PP1;
-    Vector Delta = CP - Pos;
-    bool SWX;
-    if (abs(Delta.X()) > abs(Delta.Z()))
-    {
-        SWX = true;
-        if (Delta.X() > 0.0) Delta *= (CP.X() / Delta.X());
-        else Delta *= ((CP.X() - MaxX) / Delta.X());
-    }
-    else
-    {
-        SWX = false;
-        if (Delta.Z() > 0.0) Delta *= (CP.Z() / Delta.Z());
-        else Delta *= ((CP.Z() - MaxZ) / Delta.Z());
-    }
-    for (Vector cP = CP - 0.95 * Delta; (CP-cP).dot(Delta) > 0.0; cP += 0.1 * Delta)
-    {
-        getGridAtPos(cP, x, y, z);
-        if (SWX)
-        {
-            for (mz = z - 1; mz <= z + 1; mz++) if (mz >= 0 && mz < ZS) for (PP1 = G[x][y][mz]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
-                return PP1;
-        }
-        else for (mx = x - 1; mx <= x + 1; mx++) if (mx >= 0 && mx < ZS) for (PP1 = G[mx][y][z]; PP1 != nullptr; PP1 = PP1->next) if (PP1->Fixed && (PP1->R - CP).cross(Delta).lengthSquared() < maxDev)
-                return PP1;
-    }
-    return nullptr;
 }
 
 bool Calculation::wasStepOK() const
@@ -639,7 +607,7 @@ double Calculation::getStepSize()
 void Calculation::initialize()
 {
 	//printf("Calculation::initialize\n");
-	int n, x, y, z;
+	int n, x, y, z, nwp=0;
 	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
     mLayerDistance = sqrt(0.5) * MaxY / double(PYS);
 	double y1 = 0.5 * (MaxY - mLayerDistance);
@@ -653,6 +621,11 @@ void Calculation::initialize()
             Vector r1(rx, y1, rz), r2(rx, y2, rz);
             initializeParticle(P[n++], x, z, r1, F);
             initializeParticle(P[n++], x, z, r2, F);
+            if (P[n-1].Fixed)
+            {
+                P[n-2].WallPosIndex = nwp;
+                FixedWallPos[nwp++] = P + n - 1;
+            }
 		}
 	}
     calcMAR();
@@ -952,21 +925,24 @@ void Calculation::applyMove(const double lh)
 
 void Calculation::doParticleLayerSwitch(Particle *const cP, const Vector& Dist)
 {
-    Vector Pos = cP->R + Dist, LD = Vector(0.0, mLayerDistance, 0.0), newPos = Pos + LD;
+    int *debugNullPtr = nullptr;
+    Vector Pos = cP->R + Dist;
     double dist = Dist.length(), cDist;
     Particle* newF = getClosestBound(cP, Pos);
     if (nullptr != newF)
     {
         newF->R = Pos;
         newF->Fixed = true;
+        newF->WallPosIndex = cP->WallPosIndex;
     }
-    for (int m=0; m < cP->NB; ++m)
+    for (int m = cP->NB - 1; m >= 0; --m)
     {
         if (cP->bound[m].p->Fixed) --(cP->bound[m].p->MNB);
         removeBinding(cP->bound[m].p, getBindingIndexAtBound(cP, m));
         removeBinding(cP, m);
     }
-    Particle* newFree = getFixedParticleAtAxis(newPos, 1e-2);
+    if (-1 == cP->WallPosIndex) *debugNullPtr = 5;
+    Particle* newFree = FixedWallPos[cP->WallPosIndex];
     newFree->Fixed = false;
     if (Particle::BoundAL == newFree->NB) bindToRadical(cP, newFree, dist, true);
     else
@@ -974,23 +950,29 @@ void Calculation::doParticleLayerSwitch(Particle *const cP, const Vector& Dist)
         newFree->MNB = Particle::BoundAL;
         newFree->bound[newFree->NB++].p = cP;
         cP->bound[0].p = newFree;
+        newFree->WallPosIndex = -1;
     }
     cP->R = newFree->R - Dist;
     cP->NB = cP->MNB = 1;
+    if (isBindingDoubled(newFree - P)) *debugNullPtr = 5;
     const double MaxDev = 2.0 * dist;
-    for (int i=0; i < newFree->NB - 1; ++i) for (int j=0; j < newFree->bound[i].p->NB; ++j)
-        if (newFree->bound[i].p->bound[j].p->Fixed && (cDist = (cP->R - newFree->bound[i].p->bound[j].p->R).length()) < MaxDev)
+    for (int i=0; i < newFree->NB; ++i) if (cP != newFree->bound[i].p) for (int j=0; j < newFree->bound[i].p->NB; ++j)
+        if (newFree->bound[i].p->bound[j].p->Fixed && cP != newFree->bound[i].p->bound[j].p && isNotBound(cP, newFree->bound[i].p->bound[j].p)
+            && (cDist = (cP->R - newFree->bound[i].p->bound[j].p->R).length()) < MaxDev)
     {
+        if (Particle::BoundAL == cP->MNB) break;
         Particle* newBound = newFree->bound[i].p->bound[j].p;
         if (Particle::BoundAL > newBound->NB)
         {
             cP->bound[cP->NB].p = newBound;
             newBound->bound[newBound->NB].p = cP;
             newBound->MNB = ++(newBound->NB);
+            cP->MNB = ++(cP->NB);
         }
-        else if (!bindToRadical(cP, newBound, cDist, false)) continue;
-        cP->MNB = ++(cP->NB);
+        else if (bindToRadical(cP, newBound, cDist, false)) ++(cP->MNB);
+        if (isBindingDoubled(newBound - P)) *debugNullPtr = 5;
     }
+    if (isBindingDoubled(cP - P)) *debugNullPtr = 5;
 }
 
 int Calculation::getBindingIndexAtBound(const Particle *const P1, const int index)
@@ -1515,6 +1497,7 @@ void Calculation::verifyNoBindingDoubled() const
 
 bool Calculation::isBindingDoubled(const int n) const
 {
+    if (Particle::BoundAL < P[n].NB || Particle::BoundAL < P[n].MNB) return true;
     for (int i=0; i < P[n].NB - 1; ++i) for (int j=i+1; j < P[n].NB; ++j) if (P[n].bound[i].p == P[n].bound[j].p) return true;
     for (int i=0; i < P[n].NB; ++i) if (P[n].bound[i].p == P+n) return true;
     for (int i=0; i < P[n].NB; ++i)
