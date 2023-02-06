@@ -394,10 +394,10 @@ double Window::getKineticEnergy() const
     return (nullptr != mNetworkClient ? mRemoteKineticEnergy : Calc->getKineticEnergy());
 }
 
-double Window::setKineticEnergy(const double T)
+double Window::setEnergy(const double deltaE)
 {
     if (nullptr != mNetworkClient) return mRemoteKineticEnergy;
-    return Calc->setKineticEnergy(T);
+    return Calc->setEnergy(deltaE);
 }
 
 void Window::setParticleWatchPoint(WatchPoint *point)

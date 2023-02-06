@@ -664,6 +664,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 {
     int n = &cP - P, b;
     cP.lR = cP.R = iR;
+    cP.lv = cP.v = Vector();
     cP.xp = ((b = int(Fact.X() * iR.X())) >= 0 ? (b < XS ? b : XS - 1) : 0);
     cP.yp = ((b = int(Fact.Y() * iR.Y())) >= 0 ? (b < YS ? b : YS - 1) : 0);
     cP.zp = ((b = int(Fact.Z() * iR.Z())) >= 0 ? (b < ZS ? b : ZS - 1) : 0);
@@ -895,7 +896,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         const double nh = 0.5 * lh;
         if (nh < 1e-10)
         {
-            printf("Break!");
+            int *debugNullPtr = nullptr;
+            *debugNullPtr = 5;
         }
         else
         {
@@ -1252,20 +1254,20 @@ void Calculation::rotate()
     mRotationChanged = true;
 }
 
-double Calculation::setKineticEnergy(const double newT)
+double Calculation::setEnergy(const double deltaEnergy)
 {
 	int n;
-    double nE = getPotentialEnergy() + newT, ParE, ParV;
-	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (nE - Energy) / double(N);
+    double ParE, ParV;
+	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (deltaEnergy) / double(N), T = getKineticEnergy(), V = getPotentialEnergy();
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
-    qInfo() << "SetKineticEnergy: newT=" << newT << " nE=" << nE << " Energy=" << Energy;
-    if (nE > Energy)
+    Energy = E = T + V;
+    if (deltaEnergy > 0.0)
 	{
-		Energy = nE;
+		Energy += deltaEnergy;
 		VC = sqrt(EnDiff);
 		for (n=0; n<N; n++)
 		{
-            if (P[n].v == Vector(0.0, 0.0, 0.0))
+            if (P[n].v == Vector())
 			{
 				A1 = 2.0 * RD * rand();
 				A2 = RD * rand();
@@ -1279,30 +1281,35 @@ double Calculation::setKineticEnergy(const double newT)
 			}
 		}
 	}
-	else
+	else if (-deltaEnergy >= T)
+    {
+        for (int n=0; n<N; ++n) P[n].v.clear();
+        Energy = V;
+    }
+    else
 	{
         int *Sort = utils::heapSort(VSortFunctor(P), N), EOrder[N];
         for (n=0; n<N; ++n) EOrder[Sort[n]] = n;
         delete[] Sort;
-        for (n=0; Energy > nE && n<N; ++n)
+        for (n=N-1; n>=0; --n)
         {
-            double T = 0.5 * P[EOrder[n]].v.lengthSquared();
-            if (T <= Energy - nE)
-            {
-                P[EOrder[n]].v.clear();
-                Energy -= T;
-            }
-            else
-            {
-                const double vF = sqrt((T - Energy + nE) / T);
-                P[EOrder[n]].v *= vF;
-                Energy = nE;
-            }
+            double lT = 0.5 * P[EOrder[n]].v.lengthSquared();
+            if (lT > -EnDiff) EnDiff = 2.0 * (deltaEnergy - Energy + E) / double(n);
+            if (lT > -EnDiff) break;
+            P[EOrder[n]].v.clear();
+            Energy -= lT;
         }
-        Energy = nE;
+        for (; n>=0; --n)
+        {
+            ParE = P[n].v.lengthSquared();
+			ParV = sqrt((ParE + EnDiff) / ParE);
+            P[EOrder[n]].v *= ParV;
+        }
+        Energy = E - deltaEnergy;
 	}
+	qInfo() << "SetEnergy: wanted Delta=" << deltaEnergy << ", current E=" << E << ", new Energy=" << Energy;
 	E = Energy;
-	return Energy;
+    return Energy;
 }
 
 bool Calculation::setPotential(const PotRole role, PotStruct &PotS)

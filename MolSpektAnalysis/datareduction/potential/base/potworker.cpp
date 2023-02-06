@@ -2658,7 +2658,7 @@ void PotWorker::calcLMatrix()
         return;
     }
     if (L!=0) Destroy(L, numSplinePoints);
-    L = Create(N, M=st+3);
+    L = Create(N, M=st+3, true);
     
     CalcLMatrix(L, points, iExp, N, Ro != 0.0 || noExtensions);
         
