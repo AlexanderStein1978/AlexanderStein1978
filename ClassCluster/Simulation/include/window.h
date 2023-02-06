@@ -38,7 +38,7 @@ class Window : public QWidget
         void restoreSnapShot(bool &isMoving, const QString& filename);
         double getPotentialEnergy() const;
         double getKineticEnergy() const;
-        double setKineticEnergy(const double newT);
+        double setEnergy(const double deltaE);
         void setPotentialRangeScale(const double newScale);
         void setSpeed(const double newSpeed);
         void setStepSize(const double size);

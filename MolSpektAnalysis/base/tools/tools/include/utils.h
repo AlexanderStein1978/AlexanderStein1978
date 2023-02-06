@@ -11,6 +11,8 @@
 #ifndef UTILS
 #define UTILS
 
+#include <cstring>
+
 #define sqr(x) ((x)*(x))
 
 class QString;
@@ -19,11 +21,15 @@ class QString;
 QString **CreateQString(const int &i, const int &j);
 void Destroy(QString **v, const int &i);
 
-inline double **Create(const int &I, const int &J)
+inline double **Create(const int &I, const int &J, bool initialize = false)
 {
 	double **R = new double*[I];
 	int i;
-	for (i=0; i<I; i++) R[i] = new double[J];
+	for (i=0; i<I; i++)
+    {
+        R[i] = new double[J];
+        if (initialize) memset(R[i], 0, J * sizeof(double));
+    }
 	return R;
 }
 

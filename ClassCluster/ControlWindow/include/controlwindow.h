@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <QTimer>
 
 class QLineEdit;
 class QLabel;
@@ -48,7 +49,7 @@ private slots:
     void saveSettings();
     void plotClosing();
     void EChanged();
-    void TChanged();
+    void DEChanged();
     void ValueChanged();
     void EnergyRelevantValueChanged();
     void UpdateEnergies(double kinteticEnergy, double totalEnergy);
@@ -85,14 +86,16 @@ private:
     void setConnectionStatus(bool connected);
 
     Window* window;
-    QLineEdit *StepE, *EnE, *TEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit, *IpAddressEdit;
+    QLineEdit *StepE, *EnE, *DEEdit, *Speed, *PotRangeScaleEdit, *LayerDistanceEdit, *IpAddressEdit;
     QLabel *KineticEnergyLabel, *PotentialEnergyLabel, *TotalEnergyLabel, *ConnectionStatus;
     QComboBox *NetworkSelection;
     QPushButton *Start, *Restart, *WriteSnapShot, *RestoreSnapShot, *ShowParticleWatchWindow, *Rotate, *Move, *Connect, *GetSettings, *ShowPotentialDefinitionWindow;
+    QTimer mTimer;
     PotControl** PotControls;
     PotentialPlot* Plot;
     PotentialDefiner* definitionWindow;
     MainWindow *MW;
+    double mMinimumEnergy;
     const QString SettingsFileName, ProgramPath;
 };
 

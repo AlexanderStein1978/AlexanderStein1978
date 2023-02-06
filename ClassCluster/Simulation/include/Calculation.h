@@ -37,7 +37,7 @@ class Calculation : public QThread
 		double getStepSize();
         double getPotentialEnergy() const;
         double getKineticEnergy() const;
-        double setKineticEnergy(const double newT);
+        double setEnergy(const double deltaEnergy);
 		void getSize(int &width, int &height);
 		void getScales(double& rScF, int& rMaxX, int&rMaxY, int& rMaxZ);
 		void move();

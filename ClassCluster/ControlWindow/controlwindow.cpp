@@ -18,7 +18,7 @@
 #include <QDir>
 
 
-ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), TEdit(new QLineEdit("-1.0", this)),
+ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), DEEdit(new QLineEdit("-1.0", this)),
     Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
     IpAddressEdit(new QLineEdit("192.168.1.1", this)), ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
     GetSettings(new QPushButton("Get settings", this)), ShowPotentialDefinitionWindow(new QPushButton("Show potential definer", this)), PotControls(new PotControl*[Calculation::NumPot]),
@@ -33,7 +33,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
         Init(S);
     }
     prepareWindow();
-    const double cEnergy = window->getPotentialEnergy() + TEdit->text().toDouble();
+    const double cEnergy = (mMinimumEnergy = window->getPotentialEnergy()) + DEEdit->text().toDouble();
     QGridLayout *L = new QGridLayout(this), *SettingsLayout = new QGridLayout, *PotLayout = new QGridLayout, *CornerLayout = new QGridLayout;
     L->setColumnStretch(0, 1);
     L->setColumnStretch(1, 1);
@@ -56,8 +56,8 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     SettingsLayout->addWidget(PotRangeScaleEdit, 0, 5);
     SettingsLayout->addWidget(new QLabel("Layer distance:", this), 1, 0);
     SettingsLayout->addWidget(LayerDistanceEdit, 1, 1);
-    SettingsLayout->addWidget(new QLabel("Kintetic energy:", this), 1, 2);
-    SettingsLayout->addWidget(TEdit, 1, 3);
+    SettingsLayout->addWidget(new QLabel("Delta energy:", this), 1, 2);
+    SettingsLayout->addWidget(DEEdit, 1, 3);
     SettingsLayout->addWidget(new QLabel("Total energy:", this), 1, 4);
     SettingsLayout->addWidget(EnE, 1, 5);
     EnE->setText(QString::number(cEnergy, 'g', 6));
@@ -92,6 +92,8 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     PotLayout->addWidget(new QLabel("Remaining:", this), Calculation::Remaining, 0);
     PotLayout->addWidget(new QLabel("Angular:", this), Calculation::Angular, 0);
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->FillLayout(PotLayout);
+    mTimer.setSingleShot(true);
+    mTimer.setInterval(1000);
     connect(Start, SIGNAL(clicked()), this, SLOT(run()));
     connect(Restart, SIGNAL(clicked()), this, SLOT(restart()));
     connect(Rotate, SIGNAL(clicked()), this, SLOT(rotate()));
@@ -103,7 +105,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(ShowParticleWatchWindow, SIGNAL(clicked()), this, SLOT(showParticleWatchWindow()));
     connect(StepE, SIGNAL(editingFinished()), this, SLOT(ValueChanged()));
     connect(EnE, SIGNAL(editingFinished()), this, SLOT(EChanged()));
-    connect(TEdit, SIGNAL(editingFinished()), this, SLOT(TChanged()));
+    connect(DEEdit, SIGNAL(editingFinished()), this, SLOT(DEChanged()));
     connect(PotRangeScaleEdit, SIGNAL(editingFinished()), this, SLOT(EnergyRelevantValueChanged()));
     connect(LayerDistanceEdit, SIGNAL(editingFinished()), this, SLOT(EnergyRelevantValueChanged()));
     connect(MW, SIGNAL(MainWindowCloses()), this, SLOT(saveSettings()));
@@ -118,6 +120,7 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
     connect(window, SIGNAL(ReceivedSetting(const QByteArray&)), this, SLOT(setSettings(const QByteArray&)));
     connect(window, SIGNAL(ReceivedPotential(const QByteArray&)), this, SLOT(setPotentialData(const QByteArray&)));
     connect(window, SIGNAL(ReceivedStartCommand()), this, SLOT(run()));
+    connect(&mTimer, SIGNAL(timeout()), this, SLOT(ValueChanged()));
     for (int n=0; n < Calculation::NumPot; ++n) connect(PotControls[n], SIGNAL(Change()), this, SLOT(EnergyRelevantValueChanged()));
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -135,9 +138,9 @@ void ControlWindow::Init(QTextStream& inStream)
     {
         Speed->setText(settings[0]);
         StepE->setText(settings[1]);
-        QString kineticEnergy = settings[2];
-        if (kineticEnergy.toDouble() < 0.0) kineticEnergy = "0.0";
-        TEdit->setText(kineticEnergy);
+        QString deltaEnergy = settings[2];
+        if (deltaEnergy.toDouble() < 0.0) deltaEnergy = "0.0";
+        DEEdit->setText(deltaEnergy);
         PotRangeScaleEdit->setText(settings[3]);
         if (settings.size() >= 5) LayerDistanceEdit->setText(settings[4]);
         for (int n=0; n < Calculation::NumPot && !inStream.atEnd(); ++n)
@@ -293,8 +296,10 @@ void ControlWindow::start()
             PotStruct Pots;
             PotControls[n]->FillStruct(Pots);
             window->setPotential(static_cast<Calculation::PotRole>(n), Pots);
+
         }
-        EnE->setText(QString::number(window->setKineticEnergy(TEdit->text().toDouble()), 'g', 3));
+        double setEnergy = EnE->text().toDouble();
+        if (window->setEnergy(setEnergy - window->getPotentialEnergy() - window->getKineticEnergy()) > 1e-7 + setEnergy) mTimer.start();
         window->setStepSize(StepE->text().toDouble());
     }
     window->start();
@@ -409,26 +414,33 @@ void ControlWindow::saveSettings()
 
 void ControlWindow::Serialize(QTextStream& outStream)
 {
-    outStream << Speed->text() << '\t' << StepE->text() << '\t' << TEdit->text() << '\t' << PotRangeScaleEdit->text() << '\t' << LayerDistanceEdit->text() << '\n';
+    outStream << Speed->text() << '\t' << StepE->text() << '\t' << DEEdit->text() << '\t' << PotRangeScaleEdit->text() << '\t' << LayerDistanceEdit->text() << '\n';
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n]->Serialize(outStream, ProgramPath);
 }
 
 void ControlWindow::EChanged()
 {
-    bool wasWindowRunning(stopIfItsRunning());
-    double V = window->getPotentialEnergy(), T(EnE->text().toDouble() - V);
-    if (T < 0.0)
+    double E(EnE->text().toDouble()), D;
+    if (E < mMinimumEnergy)
     {
-        T = 0.0;
-        EnE->setText(QString::number(T));
+        EnE->setText(QString::number(mMinimumEnergy));
+        D = 0.0;
     }
-    TEdit->setText(QString::number(T));
-    if (wasWindowRunning) start();
+    else D = E - mMinimumEnergy;
+    DEEdit->setText(QString::number(D));
+    ValueChanged();
 }
 
-void ControlWindow::TChanged()
+void ControlWindow::DEChanged()
 {
-    EnergyRelevantValueChanged();
+    double D = DEEdit->text().toDouble();
+    if (D < 0.0)
+    {
+        D = 0.0;
+        DEEdit->setText("0.0");
+    }
+    EnE->setText(QString::number(mMinimumEnergy + D));
+    ValueChanged();
 }
 
 void ControlWindow::ValueChanged()
@@ -442,9 +454,10 @@ void ControlWindow::ValueChanged()
 
 void ControlWindow::EnergyRelevantValueChanged()
 {
-    bool wasWindowRunning(stopIfItsRunning());
-    EnE->setText(QString::number(TEdit->text().toDouble() + window->getPotentialEnergy()));
-    if (wasWindowRunning) start();
+    bool wasRunning = stopIfItsRunning();
+    window->reset();
+    EnE->setText(QString::number(mMinimumEnergy + DEEdit->text().toDouble(), 'g', 3));
+    if (wasRunning) start();
 }
 
 bool ControlWindow::stopIfItsRunning()
