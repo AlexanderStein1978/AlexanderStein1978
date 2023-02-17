@@ -2,7 +2,6 @@
 
 #include "Calculation.h"
 #include "heapsort.h"
-#include "deltaesortfunctor.h"
 #include "random_sortfunctor.h"
 #include "yz_sortfunctor.h"
 #include "vsortfunctor.h"
@@ -431,107 +430,15 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
     currPart->candidates[n+1].lastDist = dist;
 }
 
-void Calculation::correctLocalE()
+void Calculation::correctEnergy()
 {
-    int mx, my, mz, n;
-    Particle *PP1;
-    double currSumE = 0.0, currT(0.0), EStart[N], TStart[N];
-    int M[N];
-    for (mz = 0; mz < ZS; ++mz) for (my = 0; my < YS; ++my) for (mx = 0; mx < XS; ++mx)
+    double T = getKineticEnergy(), V = getPotentialEnergy(), delta = Energy - T - V;
+    if (abs(delta / Energy) > 0.01)
     {
-        for (PP1 = G[mx][my][mz]; PP1 != 0; PP1 = PP1->next)
-        {
-            updateDelta(PP1->T, PP1->deltaT, 0.5 * (PP1->v.lengthSquared()));
-            updateDelta(PP1->U, PP1->deltaU, getE(PP1, PP1->R, false, false));
-            updateDelta(PP1->E, PP1->deltaE, PP1->T + PP1->U);
-            currT += PP1->T;
-            currSumE += PP1->E;
-            /*if (isnan(currSumE))
-			{
-				printf("After calc delta and sum energies: Particle %ld is nan!\n", PP1 - P);
-				Run = false;
-            }*/
-        }
+        setEnergy(T, V, delta);
+        T = getKineticEnergy();
     }
-    emit EnergiesChanged(currT, currSumE);
-    for (n=0; n<N; ++n)
-    {
-        EStart[n] = P[n].E;
-        TStart[n] = P[n].T;
-        M[n] = 0;
-    }
-    printf("current temporary energy = %g\n", currSumE);
-    if (currSumE > Energy)
-    {
-        int *Sort = utils::heapSort(DeltaESortFunctor(P), N), EOrder[N];
-        for (n=0; n<N; ++n) EOrder[Sort[n]] = n;
-        delete[] Sort;
-        for (n=0; n<N && currSumE > Energy; ++n)
-        {
-            Particle* curPar = P + EOrder[n];
-            if (curPar->deltaE <= 0.0) break;
-            const double EDelta = (curPar->deltaE > currSumE - Energy ? currSumE - Energy : curPar->deltaE);
-            if (EDelta >= curPar->T)
-            {
-                if (curPar->U > 0.0)
-                {
-                    const double TMin = 25e4;
-                    if (curPar->T > TMin)
-                    {
-                        curPar->v *= sqrt(TMin / curPar->T);
-                        currSumE -= curPar->T + TMin;
-                        M[EOrder[n]] = 4;
-                    }
-                    else M[EOrder[n]] = 5;
-                    curPar->E -= curPar->deltaE;
-                    curPar->U -= curPar->deltaU;
-                    curPar->T -= curPar->deltaT;
-                }
-                else
-                {
-                    curPar->v.clear();
-                    currSumE -= curPar->T;
-                    if (EDelta > curPar->T)
-                    {
-                        curPar->E -= curPar->deltaE;
-                        curPar->U -= curPar->deltaU;
-                        curPar->T -= curPar->deltaT;
-                        M[EOrder[n]] = 1;
-                    }
-                    else
-                    {
-                        curPar->E -= curPar->T;
-                        curPar->T = 0.0;
-                        M[EOrder[n]] = 2;
-                    }
-                }
-
-            }
-            else
-            {
-                curPar->v *= sqrt((curPar->T - EDelta) / curPar->T);
-                curPar->T -= EDelta;
-                curPar->E -= EDelta;
-                currSumE -= EDelta;
-                M[EOrder[n]] = 3;
-                /*if (isnan(vF))
-                {
-                    printf("After T reduction: Particle %d is nan!\n", n);
-                    Run = false;
-                }*/
-            }
-        }
-    }
-    for (n=0; n<N; ++n)
-        *DebugLog << "\t" << QString::number(EStart[n], 'g') << '\t' << QString::number(TStart[n], 'g')
-                  << '\t' << QString::number(P[n].deltaE, 'g') << '\t' << QString::number(P[n].E, 'g') << '\t' << M[n];
-    *DebugLog << '\n';
-}
-
-void Calculation::updateDelta(double &toUpdate, double &delta, const double newValue)
-{
-    delta = newValue - toUpdate;
-    toUpdate = newValue;
+    emit EnergiesChanged(T, T+V);
 }
 
 double Calculation::getE(Particle * const cP, const Vector &R, const bool useLastPos, const bool collectCandidates) const
@@ -611,7 +518,7 @@ void Calculation::initialize()
 	//printf("Calculation::initialize\n");
 	int n, x, y, z, nwp=0;
 	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
-    mLayerDistance = sqrt(0.5) * MaxY / double(PYS);
+    mLayerDistance = 2 * MaxY / double(PYS);
 	double y1 = 0.5 * (MaxY - mLayerDistance);
 	double y2 = 0.5 * (MaxY + mLayerDistance);
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
@@ -725,7 +632,6 @@ void Calculation::run()
         }
     }
     int n, i;
-    bool isNotFirstIt(false);
     Vector *a = new Vector[N], *dm = new Vector[N], *dvm = new Vector[N], *dt = new Vector[N], *t0 = new Vector[N];
     Vector *dvt = new Vector[N];
 	Particle *PB;
@@ -752,8 +658,7 @@ void Calculation::run()
         printf("iteration=%d, ", i);
         updateBindings();
         *DebugLog << i;
-        if (isNotFirstIt) correctLocalE();
-        else isNotFirstIt = true;
+        correctEnergy();
         if (mRotationChanged)
         {
             int *Sort = utils::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
@@ -850,7 +755,6 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (result == Error) break;
         for (n=0; n<N; n++) if (!P[n].Fixed)
         {
-            P[n].aa = dvt[n];
             t0[n] = P[n].R + hh * dt[n];
             dm[n] = P[n].v + hh * dvt[n];
         }
@@ -860,7 +764,6 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (result == Error) break;
         for (n=0; n<N; n++) if (!P[n].Fixed)
         {
-            P[n].aa += 2.0 * dvm[n];
             t0[n] = P[n].R + lh * dm[n];
             dm[n] += dt[n];
             dt[n] = P[n].v + lh * dvm[n];
@@ -878,7 +781,6 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         {
             P[n].lR = P[n].R;
             P[n].lv = P[n].v;
-            P[n].aa += dvt[n];
             P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
             P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
             if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
@@ -1254,13 +1156,20 @@ void Calculation::rotate()
     mRotationChanged = true;
 }
 
+
+
 double Calculation::setEnergy(const double deltaEnergy)
+{
+    return Energy = setEnergy(getKineticEnergy(), getPotentialEnergy(), deltaEnergy);
+}
+
+double Calculation::setEnergy(const double T, const double V, const double deltaEnergy)
 {
 	int n;
     double ParE, ParV;
-	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (deltaEnergy) / double(N), T = getKineticEnergy(), V = getPotentialEnergy();
+	double VC, A1, A2, RD = M_PI / RAND_MAX, EnDiff = 2.0 * (deltaEnergy) / double(N);
     for (n=0; n < NumPot; ++n) if (Pot[n] == nullptr || dPdR[n] == nullptr) return -1.0;
-    Energy = E = T + V;
+    double Energy = E = T + V;
     if (deltaEnergy > 0.0)
 	{
 		Energy += deltaEnergy;

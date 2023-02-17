@@ -13,7 +13,6 @@ add_library(Simulation STATIC
     include/particle.h
     include/potstruct.h
     Calculation.cpp
-    deltaesortfunctor.h
     vector.cpp
     vsortfunctor.h
     window.cpp
