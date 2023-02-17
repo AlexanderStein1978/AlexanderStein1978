@@ -504,12 +504,11 @@ void Window::writeSnapShot(Particle *P, int N, QString &fileName)
     S << "Speed:\t" << QString::number(Calc->getSpeed(), 'f', 12) << "\n";
     S << "StepSize:\t" << QString::number(Calc->getStepSize(), 'f', 12) << "\n";
     S << (Calc->getMove() ? "is moving\n" : "is not moving\n");
-    S << " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t aaX \t aaY \t aaZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ \n";
+    S << " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ \n";
     for (int n=0; n<N; ++n)
         S << P[n].xp << "\t" << P[n].yp << "\t" << P[n].zp << "\t" << QString::number(P[n].R.X(), 'f', 12) << "\t" << QString::number(P[n].R.Y(), 'f', 12) << "\t"
           << QString::number(P[n].R.Z(), 'f', 12) << "\t" << QString::number(P[n].v.X(), 'f', 12) << "\t" << QString::number(P[n].v.Y(), 'f', 12) << "\t"
-          << QString::number(P[n].v.Z(), 'f', 12) << "\t" << QString::number(P[n].aa.X(), 'f', 12) << "\t" << QString::number(P[n].aa.Y(), 'f', 12) << "\t"
-          << QString::number(P[n].aa.Z(), 'f', 12) << "\t" << QString::number(P[n].lR.X(), 'f', 12) << "\t" << QString::number(P[n].lR.Y(), 'f', 12) << "\t"
+          << QString::number(P[n].v.Z(), 'f', 12) << "\t" << QString::number(P[n].lR.X(), 'f', 12) << "\t" << QString::number(P[n].lR.Y(), 'f', 12) << "\t"
           << QString::number(P[n].lR.Z(), 'f', 12) << "\t" << QString::number(P[n].lv.X(), 'f', 12) << "\t" << QString::number(P[n].lv.Y(), 'f', 12) << "\t"
           << QString::number(P[n].lv.Z(), 'f', 12) << "\n";
 }
@@ -543,7 +542,7 @@ void Window::restoreSnapShot(bool &isMoving, const QString& FileN)
     if (Buffer == "is moving") isMoving = true;
     else if (Buffer == "is not moving") isMoving = false;
     else error = true;
-    if ((Buffer = S.readLine()) != " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t aaX \t aaY \t aaZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ ") error = true;
+    if ((Buffer = S.readLine()) != " xp \t yp \t zp \t X \t Y \t Z \t vX \t vY \t vZ \t lX \t lY \t lZ \t lvX \t lvY \t lvZ ") error = true;
     Particle* part = Calc->getParticles(N);
     for (n=0; n<N && (!error); ++n)
     {
@@ -556,9 +555,6 @@ void Window::restoreSnapShot(bool &isMoving, const QString& FileN)
             part[n].v.setX(L[6].toDouble());
             part[n].v.setY(L[7].toDouble());
             part[n].v.setZ(L[8].toDouble());
-            part[n].aa.setX(L[9].toDouble());
-            part[n].aa.setY(L[10].toDouble());
-            part[n].aa.setZ(L[11].toDouble());
             part[n].lR.setX(L[12].toDouble());
             part[n].lR.setY(L[13].toDouble());
             part[n].lR.setZ(L[14].toDouble());

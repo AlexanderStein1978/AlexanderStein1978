@@ -134,10 +134,10 @@ class Calculation : public QThread
         bool bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force) const;
         bool wasStepOK() const;
         double getE(Particle * const P, const Vector& R, const bool lastPos, const bool collectCandidates) const;
-        void correctLocalE();
+        void correctEnergy();
+        double setEnergy(const double T, const double V, const double delta); 
         void initializeParticle(Particle &cP, const int x, const int z, const Vector& R, const Vector& Fact) const;
         void WriteSnapshot();
-        static void updateDelta(double& tuUpdate, double& delta, const double newValue);
         void calcMAR();
         bool updateBindings();
         bool UpdateBindings();
