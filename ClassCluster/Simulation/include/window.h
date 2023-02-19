@@ -91,6 +91,7 @@ class Window : public QWidget
         void draw(Vector* Pos, int N);
         void writeSnapShot(Particle* P, int N);
         void newClientConnection();
+        void calculationStopped();
 
     protected:
         void closeEvent(QCloseEvent *event) override;
