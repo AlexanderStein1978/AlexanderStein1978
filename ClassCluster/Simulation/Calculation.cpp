@@ -722,6 +722,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
 {
     double hh = 0.5 * lh, h6 = lh / 6.0;
     int n;
+    int *debugNullPtr = nullptr;
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
@@ -786,21 +787,18 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
             if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
             if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
             if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
-            /*if (isnan(P[n].X) || isnan(P[n].Y) || isnan(P[n].Z) || isnan(P[n].vX) || isnan(P[n].vY) || isnan(P[n].vZ))
+            if (isnan(P[n].R.X()) || isnan(P[n].R.Y()) || isnan(P[n].R.Z()) || isnan(P[n].v.X()) || isnan(P[n].v.Y()) || isnan(P[n].v.Z()))
             {
+                *debugNullPtr = 5;
                 printf("After calculation of new position and v: Particel %d is nan!\n", n);
                 Run = false;
-            }*/
+            }
         }
     }
     if (result == Error)
     {
         const double nh = 0.5 * lh;
-        if (nh < 1e-10)
-        {
-            int *debugNullPtr = nullptr;
-            *debugNullPtr = 5;
-        }
+        if (nh < 1e-10) *debugNullPtr = 5;
         else
         {
             rk4(t0, dvt, a, dt, dm, dvm, nh);
@@ -1202,15 +1200,15 @@ double Calculation::setEnergy(const double T, const double V, const double delta
         delete[] Sort;
         for (n=N-1; n>=0; --n)
         {
-            double lT = 0.5 * P[EOrder[n]].v.lengthSquared();
-            if (lT > -EnDiff) EnDiff = 2.0 * (deltaEnergy - Energy + E) / double(n);
+            double lT = P[EOrder[n]].v.lengthSquared();
+            if (lT > -EnDiff) EnDiff = 2.0 * (deltaEnergy - Energy + E) / double(n+1);
             if (lT > -EnDiff) break;
             P[EOrder[n]].v.clear();
-            Energy -= lT;
+            Energy -= 0.5 * lT;
         }
         for (; n>=0; --n)
         {
-            ParE = P[n].v.lengthSquared();
+            ParE = P[EOrder[n]].v.lengthSquared();
 			ParV = sqrt((ParE + EnDiff) / ParE);
             P[EOrder[n]].v *= ParV;
         }
@@ -1218,6 +1216,11 @@ double Calculation::setEnergy(const double T, const double V, const double delta
 	}
 	qInfo() << "SetEnergy: wanted Delta=" << deltaEnergy << ", current E=" << E << ", new Energy=" << Energy;
 	E = Energy;
+    if (isnan(E))
+    {
+        int *debugNullPtr = nullptr;
+        *debugNullPtr = 5;
+    }
     return Energy;
 }
 

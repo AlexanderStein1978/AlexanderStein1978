@@ -132,6 +132,25 @@ protected:
     {
         return Calc->P[particleIndex].MNB;
     }
+    
+    static double getRandom()
+    {
+        return static_cast<double>(rand()) / RAND_MAX;
+    }
+    
+    double createRandomSpeedDistribution()
+    {
+        double energy = 0.0;
+        for (int n=0; n < Calc->N; ++n)
+        {
+            Calc->P[n].v.setX(0.5 - getRandom());
+            Calc->P[n].v.setY(0.5 - getRandom());
+            Calc->P[n].v.setZ(0.5 - getRandom());
+            Calc->P[n].v *= (1e4 * getRandom());
+            energy += Calc->P[n].v.lengthSquared();
+        }
+        return 0.5 * energy;
+    }
 
     Calculation* Calc;
 };
@@ -179,4 +198,24 @@ TEST_F(CalculationTest, CalcEndpointsOfEnergyDefinitionAxis)
     EXPECT_NEAR(64.8284, end2.X(), 1e-4);
     EXPECT_EQ(80.0, end2.Y());
     EXPECT_NEAR(64.8284, end2.Z(), 1e-4);
+}
+
+TEST_F(CalculationTest, SetEnergy_equalDistrib)
+{
+    EXPECT_EQ(0.0, Calc->getKineticEnergy());
+    Calc->setEnergy(1e6);
+    EXPECT_NEAR(1e6, Calc->getKineticEnergy(), 1e-7);
+    Calc->setEnergy(1e6);
+    EXPECT_NEAR(2e6, Calc->getKineticEnergy(), 1e-7);
+    Calc->setEnergy(-1e6);
+    EXPECT_NEAR(1e6, Calc->getKineticEnergy(), 1e-7);
+    Calc->setEnergy(-1e6 - 1);
+    EXPECT_NEAR(0.0, Calc->getKineticEnergy(), 1e-7);
+}
+
+TEST_F(CalculationTest, SetEnergy_randomDistrib)
+{
+    double kinEnergy = createRandomSpeedDistribution();
+    Calc->setEnergy(-0.7 * kinEnergy);
+    EXPECT_NEAR(0.3 * kinEnergy, Calc->getKineticEnergy(), 1e-5);
 }

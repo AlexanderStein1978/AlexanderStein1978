@@ -299,7 +299,7 @@ void ControlWindow::start()
 
         }
         double setEnergy = EnE->text().toDouble();
-        if (window->setEnergy(setEnergy - window->getPotentialEnergy() - window->getKineticEnergy()) > 1e-7 + setEnergy) mTimer.start();
+        if (window->setEnergy(setEnergy - window->getPotentialEnergy() - window->getKineticEnergy()) > 1e-5 + setEnergy) mTimer.start();
         window->setStepSize(StepE->text().toDouble());
     }
     window->start();
