@@ -28,6 +28,7 @@ class Calculation : public QThread
 	
 	public:
         enum PotRole{ClosestTwo, NextTwo, SecondOrder, Remaining, Angular, NumPot};
+        enum ErrorCode{ECSuccess, ECParticlesTooClose, ECPotentialNotAvailable, ECGradientNotAvailable, ECPotentialNotOK};
 
         Calculation(PotStruct* PotSs = nullptr, QObject* parent = 0);
 		~Calculation();
@@ -103,6 +104,11 @@ class Calculation : public QThread
         {
             return rotated;
         }
+        
+        inline ErrorCode getErrorCode()
+        {
+            return mErrorCode;
+        }
 		
 		QMutex mutex;
 		
@@ -171,6 +177,7 @@ class Calculation : public QThread
         bool Run, rotated, Move, writeSnapShot, mRotationChanged;
         QFile* DebugLogFile;
         QTextStream* DebugLog;
+        ErrorCode mErrorCode;
 };
 
 #endif // CALCULATION_H

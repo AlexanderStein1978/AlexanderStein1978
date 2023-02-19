@@ -317,6 +317,7 @@ void Window::start()
     else
     {
         Calc->start();
+        connect(Calc, SIGNAL(finished()), this, SLOT(calculationStopped()));
         if (nullptr != mNetworkServer) mNetworkServer->SendFlags(0x80);
     }
     emit IsRunning(true);
@@ -336,11 +337,42 @@ void Window::stop()
     }
     else
     {
+        disconnect(Calc, SIGNAL(finished()), this, SLOT(calculationStopped()));
         Calc->stop();
         if (nullptr != mNetworkServer) mNetworkServer->SendFlags(0x00);
     }
     emit IsRunning(false);
 }
+
+void Window::calculationStopped()
+{
+    disconnect(Calc, SIGNAL(finished()), this, SLOT(calculationStopped()));
+    Calculation::ErrorCode ec = Calc->getErrorCode();
+    QString errorMsg;
+    switch (ec)
+    {
+        case Calculation::ECPotentialNotAvailable:
+            errorMsg = "The simulation stopped because a potential is missing!";
+            break;
+        case Calculation::ECGradientNotAvailable:
+            errorMsg = "The simulation stopped because for a potential the gradients are missing!";
+            break;
+        case Calculation::ECPotentialNotOK:
+            errorMsg = "The simulation stopped because the potential did not pass the checks!";
+            break;
+        case Calculation::ECParticlesTooClose:
+            errorMsg = "The simulation stopped because two particles got too close to each other!";
+            break;
+        case Calculation::ECSuccess:
+            return;
+        default:
+            errorMsg = "The simulation stopped out of an unknown reason!";
+            break;
+    }
+    QMessageBox::information(this, "ClassCluster", errorMsg);
+    emit IsRunning(false);
+}
+
 
 bool Window::isRunning() const
 {

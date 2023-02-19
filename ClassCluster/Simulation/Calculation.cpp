@@ -613,20 +613,24 @@ void Calculation::move()
 void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
+    mErrorCode = ECSuccess;
     for (int n=0; n < NumPot; ++n)
     {
         if (Pot[n] == nullptr)
         {
+            mErrorCode = ECPotentialNotAvailable;
             qCritical() << "Pot[" << n << "] == NULL!";
             return;
         }
         if (dPdR[n] == nullptr)
         {
+            mErrorCode = ECGradientNotAvailable;
             qCritical() << "dPdR[" << n << "] == NULL!";
             return;
         }
         if (!potentialOK[n])
         {
+            mErrorCode =  ECPotentialNotOK;
             qCritical() << "Pot[" << n << "] is not OK!";
             return;
         }
@@ -643,6 +647,7 @@ void Calculation::run()
         }
 
         rk4(t0, dvt, a, dt, dm, dvm, h);
+        if (mErrorCode != ECSuccess) return;
 
         if (writeSnapShot)
         {
@@ -798,11 +803,11 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     if (result == Error)
     {
         const double nh = 0.5 * lh;
-        if (nh < 1e-10) *debugNullPtr = 5;
+        if (nh < 1e-10) mErrorCode = ECParticlesTooClose;
         else
         {
             rk4(t0, dvt, a, dt, dm, dvm, nh);
-            rk4(t0, dvt, a, dt, dm, dvm, nh);
+            if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
         }
     }
 }
