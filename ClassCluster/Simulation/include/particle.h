@@ -16,12 +16,12 @@ struct Particle
     
     enum boundParticles{BoundAL = 4, NCandidates = 10};
 
-    Particle() : next(nullptr), prev(nullptr), xp(0), yp(0), zp(0), NB(0), NC(0), MNB(0), WallPosIndex(-1) {}
+    Particle() : next(nullptr), prev(nullptr), xp(0), yp(0), zp(0), NB(0), NC(0), MNB(0), WallPosIndex(-1), Fixed(false), WaveParticle(false) {}
 
     Particle *next, *prev;
     Binding bound[BoundAL], candidates[NCandidates];
     int xp, yp, zp, NB, NC, MNB, WallPosIndex;
-    bool Fixed;
+    bool Fixed, WaveParticle;
     Vector R, v, lR, lv;
 };
 
