@@ -131,7 +131,6 @@ class Calculation : public QThread
 
         enum Positions{temporaryPos, lastPos, currentPos, particles};
         enum Result{Success, Error};
-        enum WaveState{Start, Up, Middle, Down};
 
         void rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector *dm, Vector *dvm, const double lh);
         Result getU(Particle* const P1, Particle* const P2, double &U, const Vector* const t0, Positions pos, Vector *a, const bool collectCandidates) const;
@@ -161,7 +160,7 @@ class Calculation : public QThread
         void updateBindingPairs();
         static int getPartnerBindingIndex(const Particle* const P, const int index);
         void applyMove(const double lh);
-        void applyWave();
+        void applyWave(const double lh);
         static bool isBoundToWaveParticle(const Particle* const P);
         static Particle* getClosestBound(const Particle *const P1, const Vector& Pos);
         static int getBindingIndexAtBound(const Particle *const P1, const int index);
@@ -171,9 +170,8 @@ class Calculation : public QThread
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
         const double PS;
-        double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re;
-        double Speed, YMid, potRangeScale, mLayerDistance, mLastNextWavePosition;
-        WaveState mWaveState;
+        double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re, waveStep, waveAmp, mWavePhase, mLastWavePhase;
+        double Speed, YMid, potRangeScale, mLayerDistance;
         Vector *Pos;
 		Particle *P, ****G, **D, **FixedWallPos;
         WatchPoint* ParticleWatchPoint;
