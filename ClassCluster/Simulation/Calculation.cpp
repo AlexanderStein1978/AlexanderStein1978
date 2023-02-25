@@ -585,6 +585,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	{
 		cP.Fixed = true;
         cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
+        if (x==0) cP.WaveParticle = true;
 	}
     else
     {
@@ -614,6 +615,8 @@ void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
     mErrorCode = ECSuccess;
+    mLastNextWavePosition = 0.0;
+    mWaveState = Start;
     for (int n=0; n < NumPot; ++n)
     {
         if (Pot[n] == nullptr)
@@ -731,7 +734,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
-        if (Move) applyMove(lh);
+        if (Move) /*applyMove(lh);*/ applyWave();
         for (n=0; n<N; n++)
         {
             updateBlock(n);
@@ -830,6 +833,57 @@ void Calculation::applyMove(const double lh)
         else if (P[n].R.X() > MaxX) doParticleLayerSwitch(P+n, step * (-dist / step.X()));
         else if (P[n].R.Z() > MaxZ) doParticleLayerSwitch(P+n, step * (-dist / step.Z()));
     }
+}
+
+void Calculation::applyWave()
+{
+    double WaveHeight = 0.0;
+    int nWP = 0;
+    for (int n=0; n<N; ++n) if (isBoundToWaveParticle(P+n))
+    {
+        WaveHeight += P[n].R.Y();
+        ++nWP;
+    }
+    WaveHeight /= nWP;
+    switch (mWaveState)
+    {
+        case Start:
+            if (mLastNextWavePosition == 0.0 || WaveHeight > 0.0)
+            {
+                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += Vector(0.0, 4.0, 0.0);
+                mWaveState = Up;
+            }
+            break;
+        case Up:
+            if (WaveHeight <= mLastNextWavePosition)
+            {
+                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R -= Vector(0.0, 4.0, 0.0);
+                mWaveState = Middle;
+            }
+            break;
+        case Middle:
+            if (WaveHeight < 0.0)
+            {
+                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R -= Vector(0.0, 4.0, 0.0);
+                mWaveState = Down;
+            }
+            break;
+        case Down:
+            if (WaveHeight >= mLastNextWavePosition)
+            {
+                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += Vector(0.0, 4.0, 0.0);
+                mWaveState = Start;
+            }
+            break;
+    }
+    mLastNextWavePosition = WaveHeight;
+}
+
+bool Calculation::isBoundToWaveParticle(const Particle *const P)
+{
+    if (P->Fixed) return false;
+    for (int n=0; n < P->NB; ++n) if (P->bound[n].p->WaveParticle) return true;
+    return false;
 }
 
 void Calculation::doParticleLayerSwitch(Particle *const cP, const Vector& Dist)
