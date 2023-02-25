@@ -28,7 +28,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), potRangeScale(PS), FixedWallPos(new Particle*[78]), writeSnapShot(false), mRotationChanged(false)
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(100.0), waveAmp(4.0), potRangeScale(PS), FixedWallPos(new Particle*[78]), writeSnapShot(false), mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
     double IntDist = 20.0, st;
@@ -519,6 +519,7 @@ void Calculation::initialize()
 	int n, x, y, z, nwp=0;
 	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
     mLayerDistance = 2 * MaxY / double(PYS);
+    mWavePhase = 0.0;
 	double y1 = 0.5 * (MaxY - mLayerDistance);
 	double y2 = 0.5 * (MaxY + mLayerDistance);
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
@@ -615,8 +616,6 @@ void Calculation::run()
 {
     // Contains the rk4 algorithm from Numerical Recipes, Third Edition
     mErrorCode = ECSuccess;
-    mLastNextWavePosition = 0.0;
-    mWaveState = Start;
     for (int n=0; n < NumPot; ++n)
     {
         if (Pot[n] == nullptr)
@@ -734,7 +733,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
-        if (Move) /*applyMove(lh);*/ applyWave();
+        if (Move) /*applyMove(lh);*/ applyWave(lh);
         for (n=0; n<N; n++)
         {
             updateBlock(n);
@@ -786,20 +785,23 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (watchParticle >= 0) ParticleWatchPoint->setSum(particleWatchStep++, dvm[watchParticle]);
         result = geta(t0, dvt, true);
         if (result == Error) break;
-        for (n=0; n<N; n++) if (!P[n].Fixed)
+        for (n=0; n<N; n++)
         {
             P[n].lR = P[n].R;
-            P[n].lv = P[n].v;
-            P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
-            P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
-            if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
-            if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
-            if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
-            if (isnan(P[n].R.X()) || isnan(P[n].R.Y()) || isnan(P[n].R.Z()) || isnan(P[n].v.X()) || isnan(P[n].v.Y()) || isnan(P[n].v.Z()))
+            if (!P[n].Fixed)
             {
-                *debugNullPtr = 5;
-                printf("After calculation of new position and v: Particel %d is nan!\n", n);
-                Run = false;
+                P[n].lv = P[n].v;
+                P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
+                P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
+                if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
+                if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
+                if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
+                if (isnan(P[n].R.X()) || isnan(P[n].R.Y()) || isnan(P[n].R.Z()) || isnan(P[n].v.X()) || isnan(P[n].v.Y()) || isnan(P[n].v.Z()))
+                {
+                    *debugNullPtr = 5;
+                    printf("After calculation of new position and v: Particel %d is nan!\n", n);
+                    Run = false;
+                }
             }
         }
     }
@@ -809,6 +811,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (nh < 1e-10) mErrorCode = ECParticlesTooClose;
         else
         {
+            for (int n=0; n<N; ++n) if (P[n].Fixed) P[n].R = P[n].lR;
+            mWavePhase = mLastWavePhase;
             rk4(t0, dvt, a, dt, dm, dvm, nh);
             if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
         }
@@ -835,48 +839,13 @@ void Calculation::applyMove(const double lh)
     }
 }
 
-void Calculation::applyWave()
+void Calculation::applyWave(const double lh)
 {
-    double WaveHeight = 0.0;
-    int nWP = 0;
-    for (int n=0; n<N; ++n) if (isBoundToWaveParticle(P+n))
-    {
-        WaveHeight += P[n].R.Y();
-        ++nWP;
-    }
-    WaveHeight /= nWP;
-    switch (mWaveState)
-    {
-        case Start:
-            if (mLastNextWavePosition == 0.0 || WaveHeight > 0.0)
-            {
-                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += Vector(0.0, 4.0, 0.0);
-                mWaveState = Up;
-            }
-            break;
-        case Up:
-            if (WaveHeight <= mLastNextWavePosition)
-            {
-                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R -= Vector(0.0, 4.0, 0.0);
-                mWaveState = Middle;
-            }
-            break;
-        case Middle:
-            if (WaveHeight < 0.0)
-            {
-                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R -= Vector(0.0, 4.0, 0.0);
-                mWaveState = Down;
-            }
-            break;
-        case Down:
-            if (WaveHeight >= mLastNextWavePosition)
-            {
-                for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += Vector(0.0, 4.0, 0.0);
-                mWaveState = Start;
-            }
-            break;
-    }
-    mLastNextWavePosition = WaveHeight;
+    const double newWavePhase = mWavePhase + waveStep * lh;
+    const Vector cAmp(0.0, waveAmp * (sin(newWavePhase) - sin(mWavePhase)), 0.0);
+    for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += cAmp;
+    mLastWavePhase = mWavePhase;
+    mWavePhase = newWavePhase;
 }
 
 bool Calculation::isBoundToWaveParticle(const Particle *const P)
