@@ -1,4 +1,5 @@
 add_subdirectory(Main)
+add_subdirectory(FitExecMain)
 add_subdirectory(Simulation)
 add_subdirectory(ControlWindow)
 add_subdirectory(ParticleWatch)
