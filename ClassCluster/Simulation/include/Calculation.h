@@ -109,6 +109,16 @@ class Calculation : public QThread
         {
             return mErrorCode;
         }
+
+        inline void setInstanceId(const int ID)
+        {
+            mInstanceId = ID;
+        }
+
+        inline void setWaveStep(const double Step)
+        {
+            waveStep = Step;
+        }
 		
 		QMutex mutex;
 		
@@ -116,6 +126,7 @@ class Calculation : public QThread
         void PictureChanged(Vector* Pos, int N);
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void WriteSnapShot(Particle* P, int N);
+        void CalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev);
 		
 	private:
 
@@ -166,12 +177,13 @@ class Calculation : public QThread
         static int getBindingIndexAtBound(const Particle *const P1, const int index);
         void getGridAtPos(const Vector& Pos, int& x, int& y, int& z) const;
         void doParticleLayerSwitch(Particle *const cP, const Vector& dist);
+        void sendCalcResult(const int iteration);
 
         bool potentialOK[NumPot];
-        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep;
+        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep, mInstanceId;
         const double PS;
-        double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re, waveStep, waveAmp, mWavePhase, mLastWavePhase;
-        double Speed, YMid, potRangeScale, mLayerDistance;
+        double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re, waveStep, waveAmp, mWavePhase, mLastWavePhase, mSecondToLastWavePhase;
+        double Speed, YMid, potRangeScale, mLayerDistance, mLSH, mMaxCalcResult;
         Vector *Pos;
 		Particle *P, ****G, **D, **FixedWallPos;
         WatchPoint* ParticleWatchPoint;

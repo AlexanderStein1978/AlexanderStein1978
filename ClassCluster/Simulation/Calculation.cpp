@@ -27,8 +27,9 @@
 const double UaMax = 1e6;
 
 
-Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(100.0), waveAmp(4.0), potRangeScale(PS), FixedWallPos(new Particle*[78]), writeSnapShot(false), mRotationChanged(false)
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(10.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[78]), writeSnapShot(false),
+    mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
     double IntDist = 20.0, st;
@@ -237,7 +238,8 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     Vector d, b, d1, d2;
     bool calcA = (NULL != a);
     int i1 = P1 - P, i2 = P2 - P, p, ap1 = -1, ap2 = - 1, bi1=N, bi2=N;
-    //printf("i1=%d, i2=%d\n", i1, i2);
+    static Particle *errorP1(nullptr), *errorP2(nullptr);
+    if (errorP1 == P1 && errorP2 == P2) printf("i1=%d, i2=%d, P1->x=%g, P1->y=%g, P1->z=%g, P2->x=%g, P2->y=%g, P2->z=%g\n", i1, i2, P1->R.X(), P1->R.Y(), P1->R.Z(), P2->R.X(), P2->R.Y(), P2->R.Z());
     switch (pos)
     {
     case temporaryPos:
@@ -257,7 +259,11 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
     r = d.length();
     p = int((r - Rm) * potRangeScale);
-    if (p < 0) return Success;
+    if (p < 0)
+    {
+        *debugnullptr = 5;
+        //return Success;
+    }
     for (int n=0; n<4; ++n)
     {
         if (n < P1->NB && P1->bound[n].p == P2) bi1=n;
@@ -277,15 +283,15 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     {
         if (bi1 <= 1 || bi2 <= 1)
         {
-            if (Pot[ClosestTwo][p] > UaMax)
-                return Error;
+            //if (Pot[ClosestTwo][p] > UaMax)
+              //  return Error;
             if (calcA) amp = dPdR[ClosestTwo][p] / r;
             U += Pot[ClosestTwo][p];
         }
         else 
         {
-            if (Pot[NextTwo][p] > UaMax)
-                return Error;
+            //if (Pot[NextTwo][p] > UaMax)
+              //  return Error;
             if (calcA) amp = dPdR[NextTwo][p] / r;
             U += Pot[NextTwo][p];
         }
@@ -342,26 +348,29 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         }
         if (SecondOrderBound)
         {
-            if (Pot[SecondOrder][p] > UaMax)
-                return Error;
+            //if (Pot[SecondOrder][p] > UaMax)
+              //  return Error;
             if (calcA) amp = dPdR[SecondOrder][p] / r;
             U += Pot[SecondOrder][p];
         }
         else
         {
-            if (Pot[Remaining][p] > UaMax)
-                return Error;
+            //if (Pot[Remaining][p] > UaMax)
+              //  return Error;
             if (calcA) amp = dPdR[Remaining][p] / r;
             U += Pot[Remaining][p];
         }
     }
-    if (abs(amp * r) > UaMax)
+    /*if (abs(amp * r) > UaMax)
     {
         //printf("i1=%d, i2=%d, a=%f: Stepsize gets reduced!\n", i1, i2, amp*r);
+        errorP1 = P1;
+        errorP2 = P2;
         return Error;
-    }
+    }*/
     if (calcA)
     {
+        if (P1->Fixed || P2->Fixed) amp *= 2.0;
         a[i1] += (b = amp * d);
         a[i2] -= b;
         if (ap1 > 0)
@@ -520,6 +529,7 @@ void Calculation::initialize()
 	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
     mLayerDistance = 2 * MaxY / double(PYS);
     mWavePhase = 0.0;
+    mLSH = h;
 	double y1 = 0.5 * (MaxY - mLayerDistance);
 	double y2 = 0.5 * (MaxY + mLayerDistance);
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
@@ -586,7 +596,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	{
 		cP.Fixed = true;
         cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
-        if (x==0) cP.WaveParticle = true;
+        cP.WaveParticle = true;
 	}
     else
     {
@@ -666,23 +676,27 @@ void Calculation::run()
         updateBindings();
         *DebugLog << i;
         correctEnergy();
-        if (mRotationChanged)
+        if (mInstanceId == -1)
         {
-            int *Sort = utils::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
-            for (n=0; n<N; ++n) D[Sort[n]] = P + n;
-            mRotationChanged = false;
+            if (mRotationChanged)
+            {
+                int *Sort = utils::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
+                for (n=0; n<N; ++n) D[Sort[n]] = P + n;
+                mRotationChanged = false;
+            }
+            else for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (rotated ? D[n]->R.Y() < D[n-1]->R.Y() : D[n]->R.Z() < D[n-1]->R.Z())
+            {
+                PB = D[n];
+                D[n] = D[n-1];
+                D[n-1] = PB;
+            }
+            mutex.lock();
+            if (rotated) for (n=0; n < N; n++) Pos[n] = Vector(D[n]->R.X(), D[n]->R.Z(), D[n]->R.Y());
+            else for (n=0; n < N; n++) Pos[n] = D[n]->R;
+            mutex.unlock();
+            emit PictureChanged(Pos, N);
         }
-        else for (PB = P; PB != 0; ) for (n=1, PB = 0; n<N; n++) if (rotated ? D[n]->R.Y() < D[n-1]->R.Y() : D[n]->R.Z() < D[n-1]->R.Z())
-		{
-			PB = D[n];
-			D[n] = D[n-1];
-            D[n-1] = PB;
-		}
-		mutex.lock();
-        if (rotated) for (n=0; n < N; n++) Pos[n] = Vector(D[n]->R.X(), D[n]->R.Z(), D[n]->R.Y());
-        else for (n=0; n < N; n++) Pos[n] = D[n]->R;
-		mutex.unlock();
-        emit PictureChanged(Pos, N);
+        else sendCalcResult(i);
         if (watchParticle >= 0)
         {
             particleWatchStep = -1;
@@ -695,6 +709,18 @@ void Calculation::run()
     delete[] dt;
     delete[] dvt;
     delete[] t0;
+}
+
+void Calculation::sendCalcResult(const int iteration)
+{
+    static const int CPI[8] = {378, 379, 380, 381, 418, 419, 420, 421};
+    static const double y1 = 0.5 * (MaxY - mLayerDistance), y2 = 0.5 * (MaxY + mLayerDistance);
+    double currentDev = 0.0;
+    for (int i=0; i<8; i+=2) currentDev += (P[CPI[i]].R.Y() - y1);
+    for (int i=1; i<8; i+=2) currentDev += (P[CPI[i]].R.Y() - y2);
+    currentDev *= 0.125;
+    if (abs(currentDev) > abs(mMaxCalcResult)) mMaxCalcResult = currentDev;
+    emit CalcState(mInstanceId, iteration, currentDev, mMaxCalcResult);
 }
 
 void Calculation::updateBlock(int n)
@@ -733,7 +759,11 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
-        if (Move) /*applyMove(lh);*/ applyWave(lh);
+        if (Move)
+        {
+            //applyMove(lh);
+            applyWave(lh);
+        }
         for (n=0; n<N; n++)
         {
             updateBlock(n);
@@ -787,6 +817,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
         if (result == Error) break;
         for (n=0; n<N; n++)
         {
+            if (P[n].Fixed) P[n].lv = P[n].lR;
             P[n].lR = P[n].R;
             if (!P[n].Fixed)
             {
@@ -804,17 +835,43 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
                 }
             }
         }
+        mLSH = lh;
     }
     if (result == Error)
     {
         const double nh = 0.5 * lh;
-        if (nh < 1e-10) mErrorCode = ECParticlesTooClose;
+        if (nh < 1e-10)
+        {
+            mErrorCode = ECParticlesTooClose;
+            //printf("break!");
+        }
         else
         {
             for (int n=0; n<N; ++n) if (P[n].Fixed) P[n].R = P[n].lR;
             mWavePhase = mLastWavePhase;
             rk4(t0, dvt, a, dt, dm, dvm, nh);
             if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
+            if (mErrorCode != ECSuccess && mLSH == lh)
+            {
+                qInfo() << "Second stage of error correction!";
+                printf("Second stage\n");
+                mErrorCode = ECSuccess;
+                mWavePhase = mSecondToLastWavePhase;
+                for (int n=0; n<N; ++n)
+                {
+                    if (P[n].Fixed) P[n].R = P[n].lv;
+                    else
+                    {
+                        P[n].R = P[n].lR;
+                        P[n].v = P[n].lv;
+                    }
+
+                }
+                rk4(t0, dvt, a, dt, dm, dvm, nh);
+                if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
+                if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
+                if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
+            }
         }
     }
 }
@@ -844,6 +901,7 @@ void Calculation::applyWave(const double lh)
     const double newWavePhase = mWavePhase + waveStep * lh;
     const Vector cAmp(0.0, waveAmp * (sin(newWavePhase) - sin(mWavePhase)), 0.0);
     for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += cAmp;
+    mSecondToLastWavePhase = mLastWavePhase;
     mLastWavePhase = mWavePhase;
     mWavePhase = newWavePhase;
 }
@@ -1316,7 +1374,7 @@ void Calculation::setSpeed(double S)
 
 void Calculation::setStepSize(double nh)
 {
-	h = nh;
+	mLSH = h = nh;
 }
 
 void Calculation::stop()
