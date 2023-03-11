@@ -28,7 +28,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(10.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[78]), writeSnapShot(false),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[78]), writeSnapShot(false),
     mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
@@ -441,12 +441,12 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
 
 void Calculation::correctEnergy()
 {
-    double T = getKineticEnergy(), V = getPotentialEnergy(), delta = Energy - T - V;
-    if (abs(delta / Energy) > 0.01)
+    double T = getKineticEnergy(), V = getPotentialEnergy();// delta = Energy - T - V;
+    /*if (abs(delta / Energy) > 0.01)
     {
         setEnergy(T, V, delta);
         T = getKineticEnergy();
-    }
+    }*/
     emit EnergiesChanged(T, T+V);
 }
 
@@ -596,7 +596,7 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	{
 		cP.Fixed = true;
         cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
-        cP.WaveParticle = true;
+        if (x==0) cP.WaveParticle = true;
 	}
     else
     {
@@ -898,8 +898,13 @@ void Calculation::applyMove(const double lh)
 
 void Calculation::applyWave(const double lh)
 {
-    const double newWavePhase = mWavePhase + waveStep * lh;
-    const Vector cAmp(0.0, waveAmp * (sin(newWavePhase) - sin(mWavePhase)), 0.0);
+    const double newWavePhase = mWavePhase + waveStep * lh, sinNWP = sin(newWavePhase), sinWP = sin(mWavePhase);
+    if (newWavePhase > M_PI)
+    {
+        Move = false;
+        return;
+    }
+    const Vector cAmp(0.0, waveAmp * (sinNWP * sinNWP - sinWP * sinWP), waveAmp * sinNWP * sinNWP /  M_PI);
     for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += cAmp;
     mSecondToLastWavePhase = mLastWavePhase;
     mLastWavePhase = mWavePhase;
