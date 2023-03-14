@@ -59,7 +59,7 @@ protected:
 
     bool bindsParticleTo(Particle* P1, Particle* P2) const
     {
-        for (int n=0; n<4; ++n) if (P1->bound[n].p == P2) return true;
+        for (int n=0; n < P1->NB; ++n) if (P1->bound[n].p == P2) return true;
         return false;
     }
 
@@ -77,8 +77,10 @@ protected:
     {
         return (areParticlesBound(Calc->P + index, Calc->P + index - 2)
              && areParticlesBound(Calc->P + index, Calc->P + index + 2)
-             && areParticlesBound(Calc->P + index, Calc->P + index - 2 * Calc->PXS)
-             && areParticlesBound(Calc->P + index, Calc->P + index + 2 * Calc->PXS));
+             && areParticlesBound(Calc->P + index, Calc->P + index - 40)
+             && areParticlesBound(Calc->P + index, Calc->P + index - 38)
+             && areParticlesBound(Calc->P + index, Calc->P + index + 38)
+             && areParticlesBound(Calc->P + index, Calc->P + index + 40));
     }
 
     void swapParticlePositions(const int index1, const int index2)
@@ -157,11 +159,17 @@ protected:
 
 TEST_F(CalculationTest, CheckParticleBindingInitialisation)
 {
-    for (int z=1; z < getPZS() - 1; ++z) for (int x=1; x < getPXS() - 1; ++x)
+    bool even = true;
+    int start = 0;
+    for (int z=1; z < getPZS() - 1; ++z)
     {
-        int index = 2 * (getPXS() * z + x);
-        EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index)) << "index = " << index;
-        EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index + 1)) << "index + 1 = " << (index + 1);
+        even = (even ? false : true);
+        start += (even ? 38 : 40);
+        for (int x=2; x < (even ? getPXS() - 2 : getPXS() - 4); ++x)
+        {
+            int index = start + x;
+            EXPECT_TRUE(areParticleBindingsCorrectlyInitialized(index)) << "index = " << index;
+        }
     }
     for (int n=0; n < getNumParticles(); ++n) EXPECT_EQ(getParticleNB(n), getParticleMNB(n)) << "index = " << n;
 }

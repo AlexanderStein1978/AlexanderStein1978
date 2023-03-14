@@ -153,7 +153,7 @@ class Calculation : public QThread
         double getE(Particle * const P, const Vector& R, const bool lastPos, const bool collectCandidates) const;
         void correctEnergy();
         double setEnergy(const double T, const double V, const double delta); 
-        void initializeParticle(Particle &cP, const int x, const int z, const Vector& R, const Vector& Fact) const;
+        void initializeParticle(Particle &cP, const int x, const int z, const Vector& R, const Vector& Fact, const bool even) const;
         void WriteSnapshot();
         void calcMAR();
         bool updateBindings();

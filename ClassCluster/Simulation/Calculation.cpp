@@ -28,7 +28,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[78]), writeSnapShot(false),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[86]), writeSnapShot(false),
     mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
@@ -62,10 +62,10 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
         potentialOK[n] = false;
     }
     if (nullptr != PotSs) for (n=0; n < NumPot; ++n) if (nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
-	PZS = int(round(MaxZ / Re));
+	PZS = 23;
 	PYS = int(round(MaxY / Re)); 
 	PXS = int(round(MaxX / Re));
-    N = 2 * PXS * PZS;
+    N = 898;
 	P = new Particle[N];
 	D = new Particle*[N];
 	G = new Particle***[XS];
@@ -75,7 +75,7 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
 		G[x] = new Particle**[YS];
 		for (y=0; y < YS; y++) G[x][y] = new Particle*[ZS];
 	}
-    for (n=0; n < N; n++) MAR[n] = new MARStruct[4];
+    for (n=0; n < N; n++) MAR[n] = new MARStruct[Particle::BoundAL];
     Pos = new Vector[N];
 
 	initialize();
@@ -117,7 +117,7 @@ void Calculation::calcMAR()
     int n, p, mx, my, mz, lx, ly, lz, i1, i2;
     double r;
     Particle *PP1, *PP2;
-    for (n=0; n<N; n++) for (p=0; p<4; p++) MAR[n][p].R = RM;
+    for (n=0; n<N; n++) for (p=0; p < Particle::BoundAL; p++) MAR[n][p].R = RM;
     for (mz = 0; mz < ZS; mz++) for (my = 0; my < YS; my++) for (mx = 0; mx < XS; mx++)
     {
         if (G[mx][my][mz] != 0)
@@ -128,16 +128,16 @@ void Calculation::calcMAR()
                 i1 = PP1 - P;
                 i2 = PP2 - P;
                 r = (PP2->R - PP1->R).length();
-                for (n=0; (n<4 ? r > MAR[i1][n].R : false); n++) ;
-                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-                if (n<4)
+                for (n=0; (n < Particle::BoundAL ? r > MAR[i1][n].R : false); n++) ;
+                for (p = Particle::BoundAL - 1; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n < Particle::BoundAL)
                 {
                     MAR[i1][n].R = r;
                     MAR[i1][n].index = i2;
                 }
-                for (n=0; (n<4 ? r > MAR[i2][n].R : false); n++) ;
-                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-                if (n<4)
+                for (n=0; (n < Particle::BoundAL ? r > MAR[i2][n].R : false); n++) ;
+                for (p = Particle::BoundAL - 1; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n < Particle::BoundAL)
                 {
                     MAR[i2][n].R = r;
                     MAR[i2][n].index = i1;
@@ -154,16 +154,16 @@ void Calculation::calcMAR()
                 i1 = PP1 - P;
                 i2 = PP2 - P;
                 r = (PP2->R - PP1->R).length();
-                for (n=0; (n<4 ? r > MAR[i1][n].R : false); n++) ;
-                for (p=3; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
-                if (n<4)
+                for (n=0; (n < Particle::BoundAL ? r > MAR[i1][n].R : false); n++) ;
+                for (p = Particle::BoundAL - 1; p>n; p--) MAR[i1][p] = MAR[i1][p-1];
+                if (n < Particle::BoundAL)
                 {
                     MAR[i1][n].R = r;
                     MAR[i1][n].index = i2;
                 }
-                for (n=0; (n<4 ? r > MAR[i2][n].R : false); n++) ;
-                for (p=3; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
-                if (n<4)
+                for (n=0; (n < Particle::BoundAL ? r > MAR[i2][n].R : false); n++) ;
+                for (p = Particle::BoundAL - 1; p>n; p--) MAR[i2][p] = MAR[i2][p-1];
+                if (n < Particle::BoundAL)
                 {
                     MAR[i2][n].R = r;
                     MAR[i2][n].index = i1;
@@ -526,21 +526,23 @@ void Calculation::initialize()
 {
 	//printf("Calculation::initialize\n");
 	int n, x, y, z, nwp=0;
-	double rx, rz, rxs = MaxX / double(PXS), rzs = MaxZ / double(PZS);
+	double rx, rz, rxs = MaxX / double(PXS), rzs = rxs * sin(M_PI / 3.0);
     mLayerDistance = 2 * MaxY / double(PYS);
     mWavePhase = 0.0;
     mLSH = h;
 	double y1 = 0.5 * (MaxY - mLayerDistance);
 	double y2 = 0.5 * (MaxY + mLayerDistance);
     Vector F(double(XS) / MaxX, double(YS) / MaxY, double(ZS) / MaxZ * 1.001);
+    bool even = false;
 	for (x=0; x < XS; x++) for (y=0; y < YS; y++) for (z=0; z < ZS; z++) G[x][y][z] = 0;
 	for (n=z=0, rz = 0.5 * rzs; z < PZS; z++, rz += rzs) 
 	{
-		for (x=0, rx = 0.5 * rxs; x < PXS; x++, rx += rxs)
+        even = (even ? false : true);
+		for (x=0, rx = (even ? 0.5 * rxs : rxs); x < (even ? PXS: PXS - 1); x++, rx += rxs)
 		{
             Vector r1(rx, y1, rz), r2(rx, y2, rz);
-            initializeParticle(P[n++], x, z, r1, F);
-            initializeParticle(P[n++], x, z, r2, F);
+            initializeParticle(P[n++], x, z, r1, F, even);
+            initializeParticle(P[n++], x, z, r2, F, even);
             if (P[n-1].Fixed)
             {
                 P[n-2].WallPosIndex = nwp;
@@ -562,23 +564,23 @@ void Calculation::initialize()
             P[z].bound[P[z].NB++].lastDist = MAR[n][x].R;
         }
     }
-    for (n=0; n<N; ++n) for (x=0; x<4 && MAR[n][x].R != RM; ++x)
+    for (n=0; n<N; ++n) for (x=0; x < Particle::BoundAL && MAR[n][x].R != RM; ++x)
     {
         z = MAR[n][x].index;
         if (z <= n || MAR[n][x].R > 1.01 * rxs) continue;
-        for (y=0; y<4 && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
-        if (y<4 && MAR[z][y].index == n && P[n].bound[0].p != P+z && P[n].bound[1].p != P+z)
+        for (y=0; y < Particle::BoundAL && MAR[z][y].R != RM && MAR[z][y].index != n; ++y) ;
+        if (y < Particle::BoundAL && MAR[z][y].index == n && P[n].bound[0].p != P+z && P[n].bound[1].p != P+z)
         {
             P[n].bound[P[n].NB].p = P+z;
-            P[n].bound[P[n].NB++].lastDist = MAR[n][x].R;;
+            P[n].bound[P[n].NB++].lastDist = MAR[n][x].R;
             P[z].bound[P[z].NB].p = P+n;
-            P[z].bound[P[z].NB++].lastDist = MAR[n][x].R;;
+            P[z].bound[P[z].NB++].lastDist = MAR[n][x].R;
         }
     }
     updateBindingPairs();
 }
 
-void Calculation::initializeParticle(Particle &cP, const int x, const int z, const Vector &iR, const Vector &Fact) const
+void Calculation::initializeParticle(Particle &cP, const int x, const int z, const Vector &iR, const Vector &Fact, const bool even) const
 {
     int n = &cP - P, b;
     cP.lR = cP.R = iR;
@@ -589,13 +591,13 @@ void Calculation::initializeParticle(Particle &cP, const int x, const int z, con
 	cP.prev = 0;
 	cP.next = G[cP.xp][cP.yp][cP.zp];
     cP.NB = 0;
-    memset(cP.bound, 0, 4u * sizeof(Particle*));
+    memset(cP.bound, 0, Particle::BoundAL * sizeof(Particle*));
 	G[cP.xp][cP.yp][cP.zp] = D[n] = &cP;
 	if (cP.next != 0) cP.next->prev = D[n];
-	if (z == 0 || x == 0 || z == PZS - 1 || x == PXS - 1) 
+	if (z == 0 || x == 0 || z == PZS - 1 || x == (even ? PXS - 1 : PXS - 2))
 	{
 		cP.Fixed = true;
-        cP.MNB = ((z==0 || z == PXS - 1) && (x==0 || x == PXS - 1) ? Particle::BoundAL - 2 : Particle::BoundAL - 1);
+        cP.MNB = (z==0 || z == PZS - 1 ? (x==0 || x == PXS - 1 ? Particle::BoundAL - 4 : Particle::BoundAL - 2) : (even ? Particle::BoundAL - 3 : Particle::BoundAL - 1));
         if (x==0) cP.WaveParticle = true;
 	}
     else
