@@ -1074,6 +1074,7 @@ bool Calculation::updateBindings()
 bool Calculation::goLeft(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
 {
     int *debugNullPtr = nullptr;
+    printf("goLeft: CP=%ld, CanP=%ld, CPCanIndex=%d, CanP->bound[CanPBIndex]=%ld\n", CP-P, CanP-P, CPCanIndex, CanP->bound[CanPBIndex].p-P);
     for (int j=0; j < CP->NB; ++j)
     {
         //qInfo() << "8_j=" << j << ", NB=" << CP->NB;
@@ -1095,6 +1096,9 @@ bool Calculation::goLeft(Particle *const CP, Particle *const CanP, const int CPC
                 //qInfo() << "12_j=" << j << ", NB=" << CP->NB;
                 std::swap(CP->bound[j].p, P3->bound[l].p);
                 std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                printf("goLeft: %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld to %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld\n",
+                       CP-P, CP->bound[j].p-P, CanP-P, CanP->bound[CanPBIndex].p-P, P3-P, P3->bound[l].p-P, P4-P, P4->bound[o].p-P,
+                       CP-P, P3->bound[l].p-P, CanP-P, P4->bound[o].p-P, P3-P, CP->bound[j].p-P, P4-P, CanP->bound[CanPBIndex].p-P);  
                 //qInfo() << "13_j=" << j << ", NB=" << CP->NB;
                 if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
@@ -1103,6 +1107,7 @@ bool Calculation::goLeft(Particle *const CP, Particle *const CanP, const int CPC
                 //qInfo() << "Break k=" << k << ", j=" << j << ", NB=" << CP->NB;
                 return true;
             }
+            else printf("P3=%ld, P4=%ld, l=%d, o=%d\n", P3-P, P4-P, l, o);
         }
     }
     return false;
@@ -1112,6 +1117,7 @@ bool Calculation::goLeft(Particle *const CP, Particle *const CanP, const int CPC
 bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
 {
     int *debugNullPtr = nullptr;
+    printf("goRight: CP=%ld, CanP=%ld, CPCanIndex=%d, CanP->bound[CanPBIndex]=%ld\n", CP-P, CanP-P, CPCanIndex, CanP->bound[CanPBIndex].p-P);
     //qInfo() << "3_CP->bound[0]=" << CP->bound[0].p-P << ", CP->bound[1]=" << CP->bound[1].p-P << "CP->bound[2]=" << CP->bound[2].p-P << ", CP->bound[3]=" << CP->bound[3].p-P;
     for (int j=0; j < CanP->bound[CanPBIndex].p->NC; ++j) if (isNotBound(CanP->bound[CanPBIndex].p, CanP->bound[CanPBIndex].p->candidates[j].p))
     {
@@ -1137,6 +1143,9 @@ bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CP
                   //                      CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
                 std::swap(CP->bound[k].p, P3->bound[l].p);
                 std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                printf("goRight: %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld to %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld\n",
+                       CP-P, CP->bound[k].p-P, CanP-P, CanP->bound[CanPBIndex].p-P, P3-P, P3->bound[l].p-P, P4-P, P4->bound[o].p-P,
+                       CP-P, P3->bound[l].p-P, CanP-P, P4->bound[o].p-P, P3-P, CP->bound[k].p-P, P4-P, CanP->bound[CanPBIndex].p-P);  
                 if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
@@ -1144,6 +1153,7 @@ bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CP
                 //qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
                 return true;
             }
+            else printf("P3=%ld, P4=%ld, l=%d, o=%d\n", P3-P, P4-P, l, o);
         }
     }
     return false;
@@ -1152,10 +1162,12 @@ bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CP
 bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
 {
     int *debugNullPtr = nullptr, n;
+    printf("goCentral: CP=%ld, CanP=%ld, CPCanIndex=%d, CanP->bound[CanPBIndex]=%ld\n", CP-P, CanP-P, CPCanIndex, CanP->bound[CanPBIndex].p-P);
     for (n=0; n < CP->NB; ++n) if (CP->bound[n].p == CanP->bound[CanPBIndex].p) break;
     if (n < CP->NB)
     {
         Particle *P3 = CP->bound[n].p; 
+        printf("P3=%ld\n", P3-P);
         int i, j, k=-1;
         double candidatesDist;
         for (i=0; i < CP->NB; ++i)
@@ -1184,6 +1196,9 @@ bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int 
                   //                      CP->bound[3].p-P << ", j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
                 std::swap(CP->bound[i].p, P3->bound[l].p);
                 std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                printf("goCentral: %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld to %ld-%ld, %ld-%ld, %ld-%ld and %ld-%ld\n",
+                       CP-P, CP->bound[i].p-P, CanP-P, CanP->bound[CanPBIndex].p-P, P3-P, P3->bound[l].p-P, P4-P, P4->bound[o].p-P,
+                       CP-P, P3->bound[l].p-P, CanP-P, P4->bound[o].p-P, P3-P, CP->bound[i].p-P, P4-P, CanP->bound[CanPBIndex].p-P);  
                 if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
@@ -1191,6 +1206,7 @@ bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int 
                 //qInfo() << "Break k, j=" << j << ", NC=" << CanP->bound[CanPBIndex].p->NC;
                 return true;
             }
+            else if (P4 != nullptr) printf("P4=%ld, candidatesDist=%g, boundDist=%g\n", P4-P, candidatesDist, CP->bound[n].lastDist + CanP->bound[CanPBIndex].lastDist);
         }
     }
     return false;
