@@ -1151,14 +1151,16 @@ bool Calculation::goRight(Particle *const CP, Particle *const CanP, const int CP
 
 bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex)
 {
-    int *debugNullPtr = nullptr;
-    for (int n=0; n < CP->NB; ++n) if (CP->bound[n].p == CanP->bound[CanPBIndex].p)
+    int *debugNullPtr = nullptr, n;
+    for (n=0; n < CP->NB; ++n) if (CP->bound[n].p == CanP->bound[CanPBIndex].p) break;
+    if (n < CP->NB)
     {
-        Particle *P3 = CP->bound[n].p, *P4 = nullptr;
+        Particle *P3 = CP->bound[n].p; 
         int i, j, k=-1;
         double candidatesDist;
         for (i=0; i < CP->NB; ++i)
         {
+            Particle *P4 = nullptr;
             for (j=0; j < P3->NC; ++j) if (CP->bound[i].p == P3->candidates[j].p && isNotBound(P3, P3->candidates[j].p))
             {
                 P4 = CP->bound[i].p;
