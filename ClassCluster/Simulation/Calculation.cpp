@@ -279,7 +279,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
-    if (bi1 <= 3 && bi2 <= 3)
+    if (bi1 < P1->NB && bi2 < P2->NB)
     {
         if (bi1 <= 1 || bi2 <= 1)
         {
