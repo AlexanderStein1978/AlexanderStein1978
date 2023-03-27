@@ -264,7 +264,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         *debugnullptr = 5;
         //return Success;
     }
-    for (int n=0; n<4; ++n)
+    for (int n=0; n < Particle::BoundAL; ++n)
     {
         if (n < P1->NB && P1->bound[n].p == P2) bi1=n;
         if (n < P2->NB && P2->bound[n].p == P1) bi2=n;
