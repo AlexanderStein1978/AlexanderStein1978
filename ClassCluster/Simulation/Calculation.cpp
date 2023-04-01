@@ -28,8 +28,8 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), FixedWallPos(new Particle*[86]), writeSnapShot(false),
-    mRotationChanged(false)
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), FixedWallPos(new Particle*[86]),
+    writeSnapShot(false), mRotationChanged(false)
 {
 	//printf("Calculation::Calculation\n");
     double IntDist = 20.0, st;
@@ -441,7 +441,9 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
 
 void Calculation::correctEnergy()
 {
-    double T = getKineticEnergy(), V = getPotentialEnergy();// delta = Energy - T - V;
+    double T = getKineticEnergy(), V = getPotentialEnergy(), curEnergy = T + V;// delta = Energy - T - V;
+    printf("OverallDeltaE=%g, lastDeltaE=%g, overallByUpdateBinding=%g, lastByUpdateBinding=%g\n", curEnergy - Energy, curEnergy - mLastEnergy, mAbsEDevUB += mCurEDevUB, mCurEDevUB);
+    mLastEnergy = curEnergy;
     /*if (abs(delta / Energy) > 0.01)
     {
         setEnergy(T, V, delta);
@@ -906,7 +908,7 @@ void Calculation::applyWave(const double lh)
         Move = false;
         return;
     }
-    const Vector cAmp(0.0, waveAmp * (sinNWP * sinNWP - sinWP * sinWP), waveAmp * sinNWP * sinNWP /  M_PI);
+    const Vector cAmp(0.0, waveAmp * (sinNWP * sinNWP - sinWP * sinWP), 0.0 /*waveAmp * sinNWP * sinNWP /  M_PI*/);
     for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += cAmp;
     mSecondToLastWavePhase = mLastWavePhase;
     mLastWavePhase = mWavePhase;
@@ -1042,10 +1044,13 @@ bool Calculation::updateBindings()
                 {
                     if (CanP->NB < CanP->MNB)
                     {
+                        double oldBE = 0.0, newBE = 0.0;
+                        getU(CP, CanP, oldBE, nullptr, particles, nullptr, false);
                         CP->bound[CP->NB++] = CP->candidates[m];
                         CanP->bound[CanP->NB].p = CP;
                         CanP->bound[CanP->NB++].lastDist = CP->candidates[m].lastDist;
-
+                        getU(CP, CanP, newBE, nullptr, particles, nullptr, false);
+                        mCurEDevUB += newBE - oldBE;
                         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                     }
@@ -1115,6 +1120,11 @@ bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int 
             if (P4 != nullptr && candidatesDist < CP->bound[n].lastDist + CanP->bound[CanPBIndex].lastDist)
             {
                 int l, o;
+                double oldBE = 0.0, newBE = 0.0;
+                getU(CP, CanP, oldBE, nullptr, particles, nullptr, false);
+                getU(CP, P4, oldBE, nullptr, particles, nullptr, false);
+                getU(CanP, P3, oldBE, nullptr, particles, nullptr, false);
+                getU(P3, P4, oldBE, nullptr, particles, nullptr, false);
                 for (l=0; l < P3->NB; ++l) if (P3->bound[l].p == CanP) break;
                 for (o=0; o < P4->NB; ++o) if (P4->bound[o].p == CP) break;
                 CP->bound[i].lastDist = CanP->bound[CanPBIndex].lastDist = CP->candidates[CPCanIndex].lastDist;
@@ -1126,6 +1136,11 @@ bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int 
                     //   CP-P, P3->bound[l].p-P, CanP-P, P4->bound[o].p-P, P3-P, CP->bound[i].p-P, P4-P, CanP->bound[CanPBIndex].p-P);
                 std::swap(CP->bound[i].p, P3->bound[l].p);
                 std::swap(CanP->bound[CanPBIndex].p, P4->bound[o].p);
+                getU(CP, CanP, newBE, nullptr, particles, nullptr, false);
+                getU(CP, P4, newBE, nullptr, particles, nullptr, false);
+                getU(CanP, P3, newBE, nullptr, particles, nullptr, false);
+                getU(P3, P4, newBE, nullptr, particles, nullptr, false);
+                mCurEDevUB += newBE - oldBE;
                 if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
                 if (isBindingDoubled(P3 - P)) *debugNullPtr = 5;
@@ -1139,7 +1154,7 @@ bool Calculation::goCentral(Particle *const CP, Particle *const CanP, const int 
     return false;
 }
 
-bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force) const
+bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force)
 {
     int leastBound = 0;
     int *debugNullPtr = nullptr;
@@ -1148,12 +1163,18 @@ bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
     {
         Particle* LBP = CanP->bound[leastBound].p;
         int i;
+        double oldBE = 0.0, newBE = 0.0;
+        getU(CP, CanP, oldBE, nullptr, particles, nullptr, false);
+        getU(CanP, LBP, oldBE, nullptr, particles, nullptr, false);
         for (i=0; i < LBP->NB; ++i) if (LBP->bound[i].p == CanP) break;
         if (i < LBP->NB) removeBinding(LBP, i);
         CanP->bound[leastBound].p = CP;
         CanP->bound[leastBound].lastDist = lastDist;
         CP->bound[CP->NB].p = CanP;
         CP->bound[CP->NB++].lastDist = lastDist;
+        getU(CP, CanP, newBE, nullptr, particles, nullptr, false);
+        getU(CanP, LBP, newBE, nullptr, particles, nullptr, false);
+        mCurEDevUB += newBE - oldBE;
         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
         return true;
