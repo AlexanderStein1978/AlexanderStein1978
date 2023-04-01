@@ -148,7 +148,7 @@ class Calculation : public QThread
         Result geta(Vector *t0, Vector *a, const bool collectCandidates);
         void addCandidate(Particle* const currPart, Particle *const candidate, const double dist) const;
         void removeBinding(Particle *const part, const int index) const;
-        bool bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force) const;
+        bool bindToRadical(Particle *const CP, Particle *const CanP, const double lastDist, const bool force);
         bool wasStepOK() const;
         double getE(Particle * const P, const Vector& R, const bool lastPos, const bool collectCandidates) const;
         void correctEnergy();
@@ -182,7 +182,7 @@ class Calculation : public QThread
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep, mInstanceId;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re, waveStep, waveAmp, mWavePhase, mLastWavePhase, mSecondToLastWavePhase;
-        double Speed, YMid, potRangeScale, mLayerDistance, mLSH, mMaxCalcResult;
+        double Speed, YMid, potRangeScale, mLayerDistance, mLSH, mMaxCalcResult, mCurEDevUB, mAbsEDevUB, mLastEnergy;
         Vector *Pos;
 		Particle *P, ****G, **D, **FixedWallPos;
         WatchPoint* ParticleWatchPoint;
