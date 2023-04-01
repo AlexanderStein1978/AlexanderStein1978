@@ -158,8 +158,6 @@ class Calculation : public QThread
         void calcMAR();
         bool updateBindings();
         bool UpdateBindings();
-        bool goRight(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex);
-        bool goLeft(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex);
         bool goCentral(Particle *const CP, Particle *const CanP, const int CPCanIndex, const int CanPBIndex);
         static double dist(const Particle *const P1, const Particle *const P2);
         static bool isNotBound(const Particle *const P1, const Particle *const P2);
