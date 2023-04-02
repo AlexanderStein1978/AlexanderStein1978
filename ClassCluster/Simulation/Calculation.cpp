@@ -340,26 +340,10 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             addCandidate(P1, P2, r);
             addCandidate(P2, P1, r);
         }
-        bool SecondOrderBound(false);
-        for (int n=0; !SecondOrderBound && n < P1->NB; ++n) for (int m=0; m < P2->NB; ++m) if (P1->bound[n].p == P2->bound[m].p)
-        {
-            SecondOrderBound = true;
-            break;
-        }
-        if (SecondOrderBound)
-        {
-            //if (Pot[SecondOrder][p] > UaMax)
+        //if (Pot[Remaining][p] > UaMax)
               //  return Error;
-            if (calcA) amp = dPdR[SecondOrder][p] / r;
-            U += Pot[SecondOrder][p];
-        }
-        else
-        {
-            //if (Pot[Remaining][p] > UaMax)
-              //  return Error;
-            if (calcA) amp = dPdR[Remaining][p] / r;
-            U += Pot[Remaining][p];
-        }
+        if (calcA) amp = dPdR[Remaining][p] / r;
+        U += Pot[Remaining][p];
     }
     /*if (abs(amp * r) > UaMax)
     {
@@ -1453,7 +1437,7 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
         updateBlock(particleIndex);
         if (UpdateBindings()) data.addBoundChange(n);
         const Particle* P2;
-        double SecondOrderSum = 0.0, UnboundSum = 0.0;
+        double UnboundSum = 0.0;
         int lx, ly, lz;
         for (lz = ((lz = currentParticle.zp - GridSizeDiv) >= 0 ? lz : 0); lz < ZS && lz <= currentParticle.zp + GridSizeDiv; lz++)
             for (ly = ((ly = currentParticle.yp - GridSizeDiv) >= 0 ? ly : 0); ly < YS && ly <= currentParticle.yp + GridSizeDiv; ly++)
@@ -1470,7 +1454,7 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
                 if (currentParticle.bound[m].p == P2) bi1=m;
                 if (P2->bound[m].p == &currentParticle) bi2=m;
             }
-            if (bi1 <= 3 && bi2 <= 3)
+            if (bi1 < Particle::BoundAL && bi2 < Particle::BoundAL)
             {
                 switch (bi1)
                 {
@@ -1483,24 +1467,19 @@ void Calculation::GetAxisEnergies(PotentialDefinerInputData &data)
                 case 2:
                     data.SetThirdBound(n, Pot[NextTwo][p]);
                     break;
-                default:
+                case 3:
                     data.SetFourthBound(n, Pot[NextTwo][p]);
                     break;
-                }
-            }
-            else
-            {
-                bool SecondOrderBound(false);
-                for (int n=0; !SecondOrderBound && n<4; ++n) for (int m=0; m<4; ++m) if (currentParticle.bound[n].p == P2->bound[m].p)
-                {
-                    SecondOrderBound = true;
+                case 4:
+                    data.SetFifthBound(n, Pot[NextTwo][p]);
+                    break;
+                default:
+                    data.SetSixthBound(n, Pot[NextTwo][p]);
                     break;
                 }
-                if (SecondOrderBound) SecondOrderSum += Pot[SecondOrder][p];
-                else UnboundSum += Pot[Remaining][p];
             }
+            else UnboundSum += Pot[Remaining][p];
         }
-        data.SetSecondOrderBound(n, SecondOrderSum);
         data.SetUnbound(n, UnboundSum);
     }
     currentParticle.R = particlePos;

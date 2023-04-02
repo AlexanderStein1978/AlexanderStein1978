@@ -21,7 +21,6 @@ FitExecControl::FitExecControl()
     struc[Calculation::ClosestTwo].pot = &closestTwo;
     struc[Calculation::NextTwo].pot = &nextTwo;
     struc[Calculation::Remaining].pot = &remaining;
-    struc[Calculation::SecondOrder].pot = &secondOrder;
     struc[Calculation::Angular].pot = &angular;
     for (int i=0; i<6; ++i)
     {

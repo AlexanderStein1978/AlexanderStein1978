@@ -40,9 +40,14 @@ public:
         return mFourthBound[index];
     }
 
-    inline double GetSecondOrderBound(int index) const
+    inline double GetFifthBound(int index) const
     {
-        return mSecondOrderBound[index];
+        return mFifthBound[index];
+    }
+
+    inline double GetSixthBound(int index) const
+    {
+        return mSixthBound[index];
     }
 
     inline double GetUnbound(int index) const
@@ -70,9 +75,14 @@ public:
         mFourthBound[index] = energy;
     }
 
-    inline void SetSecondOrderBound(int index, double energy)
+    inline void SetFifthBound(int index, double energy)
     {
-        mSecondOrderBound[index] = energy;
+        mFifthBound[index] = energy;
+    }
+
+    inline void SetSixthBound(int index, double energy)
+    {
+        mSixthBound[index] = energy;
     }
 
     inline void SetUnbound(int index, double energy)
@@ -109,7 +119,7 @@ private:
     void Destroy();
 
     int mNumPoints, mParticleIndex;
-    double *mFirstBound, *mSecondBound, *mThirdBound, *mFourthBound, *mSecondOrderBound, *mUnbound;
+    double *mFirstBound, *mSecondBound, *mThirdBound, *mFourthBound, *mFifthBound, *mSixthBound, *mUnbound;
     Vector mEnd1, mEnd2;
     std::vector<int> mBoundChanges;
 };

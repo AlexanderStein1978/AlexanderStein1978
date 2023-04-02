@@ -71,9 +71,9 @@ void PotentialDefiner::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ 
     int nStart = (minR > dataStart ? (minR - dataStart) / step : 0);
     step *= 100.0 / length;
     for (n=0; n<N; ++n) Data[n] = 0.0;
-    for (n=0; n<6; n++)
+    for (n=0; n<7; n++)
     {
-        if (n<5) P.setPen(CopyColor[n+1]);
+        if (n<6) P.setPen(CopyColor[n+1]);
         else P.setPen(CopyColor[0]);
         startLine(lastR = R = dataStart + nStart * step, Data[nStart]);
         for (di = nStart + 1; di < N && lastR < maxR; di++)
@@ -94,9 +94,12 @@ void PotentialDefiner::PSpektrum(QPainter &P, const QRect & A, bool /*PrintFN*/ 
                 Data[di] += mData.GetFourthBound(di);
                 break;
             case 4:
-                Data[di] += mData.GetSecondOrderBound(di);
+                Data[di] += mData.GetFifthBound(di);
                 break;
             case 5:
+                Data[di] += mData.GetSixthBound(di);
+                break;
+            case 6:
                 Data[di] += mData.GetUnbound(di);
                 break;
             }

@@ -27,7 +27,7 @@ class Calculation : public QThread
 	Q_OBJECT
 	
 	public:
-        enum PotRole{ClosestTwo, NextTwo, SecondOrder, Remaining, Angular, NumPot};
+        enum PotRole{ClosestTwo, NextTwo, Remaining, Angular, NumPot};
         enum ErrorCode{ECSuccess, ECParticlesTooClose, ECPotentialNotAvailable, ECGradientNotAvailable, ECPotentialNotOK};
 
         Calculation(PotStruct* PotSs = nullptr, QObject* parent = 0);
