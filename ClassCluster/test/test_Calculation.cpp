@@ -45,7 +45,6 @@ public:
         struc[Calculation::ClosestTwo].pot = &closestTwo;
         struc[Calculation::NextTwo].pot = &nextTwo;
         struc[Calculation::Remaining].pot = &remaining;
-        struc[Calculation::SecondOrder].pot = &secondOrder;
         struc[Calculation::Angular].pot = &angular;
         Calc = new Calculation(struc);
     }
