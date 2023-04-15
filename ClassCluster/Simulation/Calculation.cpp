@@ -28,10 +28,11 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), FixedWallPos(new Particle*[86]),
-    writeSnapShot(false), mRotationChanged(false)
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), mLastEnergy(0.0),
+    FixedWallPos(new Particle*[86]), writeSnapShot(false), mRotationChanged(false), mEnergyCsvLogFile(nullptr), mEnergyCsvLog(nullptr)
 {
 	//printf("Calculation::Calculation\n");
+    mEnergyCsvLogFilename = "test.csv";
     double IntDist = 20.0, st;
     int n, x, y;
     st = 1/PS;
@@ -80,12 +81,12 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
 
 	initialize();
 
-    DebugLogFile = new QFile("DebugLog.txt");
+    /*DebugLogFile = new QFile("DebugLog.txt");
     DebugLogFile->open(QIODevice::WriteOnly);
     DebugLog = new QTextStream(DebugLogFile);
     *DebugLog << "It\t";
     for (n=0; n<N; ++n) *DebugLog << "E[" << n << "]    \tT    \tdeltaE\tnew E  \tM\t";
-    *DebugLog << "\n";
+    *DebugLog << "\n";*/
 }
 
 Calculation::~Calculation()
@@ -271,11 +272,14 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     }
     if (p >= NPot)
     {
-        if (bi1 <= P1->NB || bi2 <= P2->NB)
+        if (bi1 <= P1->NB && bi2 <= P2->NB)
         {
             removeBinding(P1, bi1);
             removeBinding(P2, bi2);
+            if (isBindingDoubled(P1 - P)) *debugnullptr = 5;
+            if (isBindingDoubled(P2 - P)) *debugnullptr = 5;
         }
+        else if (bi1 <= P1->NB || bi2 <= P2->NB) *debugnullptr = 5;
         return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
@@ -426,7 +430,8 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
 void Calculation::correctEnergy()
 {
     double T = getKineticEnergy(), V = getPotentialEnergy(), curEnergy = T + V;// delta = Energy - T - V;
-    printf("OverallDeltaE=%g, lastDeltaE=%g, overallByUpdateBinding=%g, lastByUpdateBinding=%g\n", curEnergy - Energy, curEnergy - mLastEnergy, mAbsEDevUB += mCurEDevUB, mCurEDevUB);
+    //printf("OverallDeltaE=%g, lastDeltaE=%g, overallByUpdateBinding=%g, lastByUpdateBinding=%g\n", curEnergy - Energy, curEnergy - mLastEnergy, mAbsEDevUB += mCurEDevUB, mCurEDevUB);
+    if (nullptr != mEnergyCsvLog) *mEnergyCsvLog << "\t" << (curEnergy - Energy) << "\t" << (curEnergy - mLastEnergy) << "\t" << (mAbsEDevUB += mCurEDevUB) << "\t" << mCurEDevUB << "\n";
     mLastEnergy = curEnergy;
     /*if (abs(delta / Energy) > 0.01)
     {
@@ -639,6 +644,13 @@ void Calculation::run()
     Vector *a = new Vector[N], *dm = new Vector[N], *dvm = new Vector[N], *dt = new Vector[N], *t0 = new Vector[N];
     Vector *dvt = new Vector[N];
 	Particle *PB;
+    if (!mEnergyCsvLogFilename.isEmpty())
+    {
+        mEnergyCsvLogFile = new QFile(mEnergyCsvLogFilename);
+        mEnergyCsvLogFile->open(QIODevice::WriteOnly);
+        mEnergyCsvLog = new QTextStream(mEnergyCsvLogFile);
+        *mEnergyCsvLog << "Iteration\tOverallDeltaE\tlastDeltaE\toverallByUpdateBinding\tlastByUpdateBinding\n";
+    }
 	for (i=0, Run = true; Run; i++)
 	{
 		if (i==30178)
@@ -662,7 +674,8 @@ void Calculation::run()
         }
         printf("iteration=%d, ", i);
         updateBindings();
-        *DebugLog << i;
+        //*DebugLog << i;
+        if (nullptr != mEnergyCsvLog) *mEnergyCsvLog << i;
         correctEnergy();
         if (mInstanceId == -1)
         {
@@ -1152,6 +1165,7 @@ bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
         getU(CanP, LBP, oldBE, nullptr, particles, nullptr, false);
         for (i=0; i < LBP->NB; ++i) if (LBP->bound[i].p == CanP) break;
         if (i < LBP->NB) removeBinding(LBP, i);
+        else *debugNullPtr = 5;
         CanP->bound[leastBound].p = CP;
         CanP->bound[leastBound].lastDist = lastDist;
         CP->bound[CP->NB].p = CanP;
@@ -1161,6 +1175,7 @@ bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
         mCurEDevUB += newBE - oldBE;
         if (isBindingDoubled(CP - P)) *debugNullPtr = 5;
         if (isBindingDoubled(CanP - P)) *debugNullPtr = 5;
+        if (isBindingDoubled(LBP - P)) *debugNullPtr = 5;
         return true;
     }
     return false;
