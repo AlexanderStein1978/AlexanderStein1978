@@ -119,6 +119,11 @@ class Calculation : public QThread
         {
             waveStep = Step;
         }
+
+        inline void setEnergyCsvLogFilename(const QString filename)
+        {
+            mEnergyCsvLogFilename = filename;
+        }
 		
 		QMutex mutex;
 		
@@ -188,8 +193,9 @@ class Calculation : public QThread
         WatchPoint* ParticleWatchPoint;
         MARStruct **MAR;
         bool Run, rotated, Move, writeSnapShot, mRotationChanged;
-        QFile* DebugLogFile;
-        QTextStream* DebugLog;
+        QFile *DebugLogFile, *mEnergyCsvLogFile;
+        QTextStream *DebugLog, *mEnergyCsvLog;
+        QString mEnergyCsvLogFilename;
         ErrorCode mErrorCode;
 };
 
