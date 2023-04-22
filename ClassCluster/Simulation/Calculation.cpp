@@ -1165,7 +1165,7 @@ bool Calculation::bindToRadical(Particle *const CP, Particle *const CanP, const 
         getU(CanP, LBP, oldBE, nullptr, particles, nullptr, false);
         for (i=0; i < LBP->NB; ++i) if (LBP->bound[i].p == CanP) break;
         if (i < LBP->NB) removeBinding(LBP, i);
-        else *debugNullPtr = 5;
+        else leastBound = CanP->NB++;
         CanP->bound[leastBound].p = CP;
         CanP->bound[leastBound].lastDist = lastDist;
         CP->bound[CP->NB].p = CanP;
