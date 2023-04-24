@@ -21,11 +21,11 @@ FitExecControl::FitExecControl()
     struc[Calculation::NextTwo].pot = &nextTwo;
     struc[Calculation::Remaining].pot = &remaining;
     struc[Calculation::Angular].pot = &angular;
-    for (int i=0; i<6; ++i)
+    for (int i=0; i<4; ++i)
     {
         Calc[i] = new Calculation(struc);
         Calc[i]->setLayerDistance(20.0);
-        Calc[i]->setEnergy(400000.0);
+        Calc[i]->setEnergy(200000.0);
         Calc[i]->move();
         Calc[i]->setInstanceId(i);
         /*switch(i)
@@ -53,19 +53,19 @@ FitExecControl::FitExecControl()
         {
             case 0:
                 Calc[i]->setStepSize(5e-4);
-                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE1.csv");
+                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE1_200KE.csv");
                 break;
             case 1:
                 Calc[i]->setStepSize(2e-4);
-                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE2.csv");
+                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE2_200KE.csv");
                 break;
             case 2:
                 Calc[i]->setStepSize(1e-4);
-                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE3.csv");
+                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE3_200KE.csv");
                 break;
             case 3:
                 Calc[i]->setStepSize(5e-5);
-                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE4.csv");
+                Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE4_200KE.csv");
                 break;
             case 4:
                 Calc[i]->setStepSize(2e-5);
