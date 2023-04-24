@@ -1517,6 +1517,7 @@ void Calculation::verifyNoBindingDoubled() const
 bool Calculation::isBindingDoubled(const int n) const
 {
     if (Particle::BoundAL < P[n].NB || Particle::BoundAL < P[n].MNB) return true;
+    for (int i=0; i < P[n].NB; ++i) if (nullptr == P[n].bound[i].p) return true;
     for (int i=0; i < P[n].NB - 1; ++i) for (int j=i+1; j < P[n].NB; ++j) if (P[n].bound[i].p == P[n].bound[j].p) return true;
     for (int i=0; i < P[n].NB; ++i) if (P[n].bound[i].p == P+n) return true;
     for (int i=0; i < P[n].NB; ++i)
