@@ -825,9 +825,9 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
                 P[n].lv = P[n].v;
                 P[n].R += h6 * (P[n].v + dt[n] + 2.0 * dm[n]);
                 P[n].v += h6 * (a[n] + dvt[n] + 2.0 * dvm[n]);
-                if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 0.0, 0.0);
-                if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(0.0, -1.0, 0.0);
-                if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(0.0, 0.0, -1.0);
+                if ((P[n].R.X() < 0.0 && P[n].v.X() < 0.0) || (P[n].R.X() > MaxX && P[n].v.X() > 0.0)) P[n].v *= Vector(-1.0, 1.0, 1.0);
+                if ((P[n].R.Y() < 0.0 && P[n].v.Y() < 0.0) || (P[n].R.Y() > MaxY && P[n].v.Y() > 0.0)) P[n].v *= Vector(1.0, -1.0, 1.0);
+                if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(1.0, 1.0, -1.0);
                 if (isnan(P[n].R.X()) || isnan(P[n].R.Y()) || isnan(P[n].R.Z()) || isnan(P[n].v.X()) || isnan(P[n].v.Y()) || isnan(P[n].v.Z()))
                 {
                     *debugNullPtr = 5;
