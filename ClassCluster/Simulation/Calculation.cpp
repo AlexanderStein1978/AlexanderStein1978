@@ -358,7 +358,6 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     }*/
     if (calcA)
     {
-        if (P1->Fixed || P2->Fixed) amp *= 2.0;
         a[i1] += (b = amp * d);
         a[i2] -= b;
         if (ap1 > 0)
