@@ -260,6 +260,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         //   tx[i1], tx[i2], ty[i1], ty[i2], tz[i1], tz[i2]);
     r = d.length();
     p = int((r - Rm) * potRangeScale);
+    const double dR = 1.0 / r;
     if (p < 0)
     {
         *debugnullptr = 5;
@@ -289,14 +290,14 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         {
             //if (Pot[ClosestTwo][p] > UaMax)
               //  return Error;
-            if (calcA) amp = dPdR[ClosestTwo][p] / r;
+            if (calcA) amp = dPdR[ClosestTwo][p] * dR;
             U += Pot[ClosestTwo][p];
         }
         else 
         {
             //if (Pot[NextTwo][p] > UaMax)
               //  return Error;
-            if (calcA) amp = dPdR[NextTwo][p] / r;
+            if (calcA) amp = dPdR[NextTwo][p] * dR;
             U += Pot[NextTwo][p];
         }
         if (collectCandidates)
@@ -325,16 +326,16 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
             break;
         }
-        Vector ed(d/r);
+        Vector ed(d * dR);
         if (idi1 >= 0)
         {
             ap1 = static_cast<int>((1.0 + ed.dot(d1.unit())) * 0.5 * (NPot - 1));
-            U += Pot[Angular][ap1] / r;
+            U += Pot[Angular][ap1] * dR;
         }
         if (idi2 >= 0)
         {
             ap2 = static_cast<int>((1.0 + ed.dot(d2.unit())) * 0.5 * (NPot - 1));
-            U += Pot[Angular][ap2] / r;
+            U += Pot[Angular][ap2] * dR;
         }
     }
     else
@@ -346,7 +347,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         }
         //if (Pot[Remaining][p] > UaMax)
               //  return Error;
-        if (calcA) amp = dPdR[Remaining][p] / r;
+        if (calcA) amp = dPdR[Remaining][p] * dR;
         U += Pot[Remaining][p];
     }
     /*if (abs(amp * r) > UaMax)
