@@ -27,14 +27,15 @@
 const double UaMax = 1e6;
 
 
-Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), mLastEnergy(0.0),
-    FixedWallPos(new Particle*[86]), writeSnapShot(false), mRotationChanged(false), mEnergyCsvLogFile(nullptr), mEnergyCsvLog(nullptr)
+Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), N(898), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), mMaxIt(-1), PS(1e3),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), U(0.0), T(0.0), E(0.0), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), mLastEnergy(0.0),
+    mRandPOF1(static_cast<double>(N) / (static_cast<double>(RAND_MAX) + 1.0)), mRandPOF2(static_cast<double>(N-1) / (static_cast<double>(RAND_MAX) + 1.0)), FixedWallPos(new Particle*[86]),
+    writeSnapShot(false), mRotationChanged(false), mEnergyCsvLogFile(nullptr), mEnergyCsvLog(nullptr)
 {
 	//printf("Calculation::Calculation\n");
     mEnergyCsvLogFilename = "test.csv";
     double IntDist = 20.0, st;
-    int n, x, y;
+    int n, x, y, z;
     st = 1/PS;
 	Re = 4.0;
     nx = ny = nz = 10;
@@ -66,7 +67,6 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
 	PZS = 23;
 	PYS = int(round(MaxY / Re)); 
 	PXS = int(round(MaxX / Re));
-    N = 898;
 	P = new Particle[N];
 	D = new Particle*[N];
 	G = new Particle***[XS];
@@ -74,7 +74,11 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
 	for (x=0; x < XS; x++)
 	{
 		G[x] = new Particle**[YS];
-		for (y=0; y < YS; y++) G[x][y] = new Particle*[ZS];
+		for (y=0; y < YS; y++)
+        {
+            G[x][y] = new Particle*[ZS];
+            for (z=0; z < ZS; ++z) G[x][y][z] = nullptr;
+        }
 	}
     for (n=0; n < N; n++) MAR[n] = new MARStruct[Particle::BoundAL];
     Pos = new Vector[N];
@@ -651,7 +655,7 @@ void Calculation::run()
         mEnergyCsvLog = new QTextStream(mEnergyCsvLogFile);
         *mEnergyCsvLog << "Iteration\tOverallDeltaE\tlastDeltaE\toverallByUpdateBinding\tlastByUpdateBinding\n";
     }
-	for (i=0, Run = true; Run; i++)
+	for (i=0, Run = true; Run && i != mMaxIt; i++)
 	{
 		if (i==30178)
         {
@@ -1216,21 +1220,18 @@ void Calculation::updateBindingPairs()
     }
 }
 
-
 int* Calculation::createRandomParticleOrder()
 {
-    static const double randF1 = static_cast<double>(N) / (static_cast<double>(RAND_MAX) + 1.0), randF2 = static_cast<double>(N-1) / (static_cast<double>(RAND_MAX) + 1.0);
     int *randArray = new int[N];
     for (int n=0; n<N; ++n) randArray[n] = n;
     for (int n=0; n<N; ++n)
     {
-        int n1 = static_cast<int>(randF1 * rand()), n2 = static_cast<int>(randF2 * rand());
+        int n1 = static_cast<int>(mRandPOF1 * rand()), n2 = static_cast<int>(mRandPOF2 * rand());
         if (n1 == n2) n2 = N-1;
         std::swap(randArray[n1], randArray[n2]);
     }
     return randArray;
 }
-
 
 double Calculation::dist(const Particle * const P1, const Particle * const P2)
 {

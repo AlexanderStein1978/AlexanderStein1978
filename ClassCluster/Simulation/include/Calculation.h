@@ -184,10 +184,10 @@ class Calculation : public QThread
         void sendCalcResult(const int iteration);
 
         bool potentialOK[NumPot];
-        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep, mInstanceId;
+        int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep, mInstanceId, mMaxIt;
         const double PS;
         double Energy, **Pot, **dPdR, Rm, RM, MaxX, MaxY, MaxZ, ScF, U, T, E, h, Re, waveStep, waveAmp, mWavePhase, mLastWavePhase, mSecondToLastWavePhase;
-        double Speed, YMid, potRangeScale, mLayerDistance, mLSH, mMaxCalcResult, mCurEDevUB, mAbsEDevUB, mLastEnergy;
+        double Speed, YMid, potRangeScale, mLayerDistance, mLSH, mMaxCalcResult, mCurEDevUB, mAbsEDevUB, mLastEnergy, mRandPOF1, mRandPOF2;
         Vector *Pos;
 		Particle *P, ****G, **D, **FixedWallPos;
         WatchPoint* ParticleWatchPoint;

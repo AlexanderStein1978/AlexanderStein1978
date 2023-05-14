@@ -35,12 +35,11 @@ public:
     void SetUp()
     {
         PotStruct struc[Calculation::NumPot];
-        Potential closestTwo, nextTwo, remaining, secondOrder, angular;
+        Potential closestTwo, nextTwo, remaining, angular;
         QString dataDir(DATA_DIRECTORY);
         closestTwo.readData(dataDir + "/ClosestTwo.pot");
         nextTwo.readData(dataDir + "/NextTwo.pot");
         remaining.readData(dataDir + "/Remaining.pot");
-        secondOrder.readData(dataDir + "/SecondOrder.pot");
         angular.readData(dataDir + "/Angular.pot");
         struc[Calculation::ClosestTwo].pot = &closestTwo;
         struc[Calculation::NextTwo].pot = &nextTwo;
@@ -153,8 +152,59 @@ protected:
         return 0.5 * energy;
     }
 
+    void setParticles(const int N, const Vector* const R, const Vector* const v, const int* const MNB)
+    {
+        for (int x=0; x < Calc->XS; x++) for (int y=0; y < Calc->YS; y++) for (int z=0; z < Calc->ZS; ++z) Calc->G[x][y][z] = nullptr;
+        Calc->N = N;
+        Calc->mRandPOF1 = static_cast<double>(N) / (static_cast<double>(RAND_MAX) + 1.0);
+        Calc->mRandPOF2 = static_cast<double>(N-1) / (static_cast<double>(RAND_MAX) + 1.0);
+        Vector F(double(Calc->XS) / Calc->MaxX, double(Calc->YS) / Calc->MaxY, double(Calc->ZS) / Calc->MaxZ * 1.001);
+        for (int n=0; n<N; ++n)
+        {
+            Calc->initializeParticle(Calc->P[n], 5, 5, R[n], F, true);
+            Calc->P[n].v = v[n];
+            Calc->P[n].MNB = MNB[n];
+        }
+    }
+
+    void addParticleBinding(const int n1, const int n2)
+    {
+        Calc->P[n1].bound[Calc->P[n1].NB].p = Calc->P + n2;
+        Calc->P[n2].bound[Calc->P[n2].NB].p = Calc->P + n1;
+        Calc->P[n1].bound[Calc->P[n1].NB++].lastDist = Calc->P[n2].bound[Calc->P[n2].NB++].lastDist = (Calc->P[n1].R - Calc->P[n2].R).length();
+    }
+
+    Vector getCenterOfMass()
+    {
+        Vector C;
+        for (int n=0; n < Calc->N; ++n) C += Calc->P[n].R;
+        return (C / Calc->N);
+    }
+
+    Vector getAverageV()
+    {
+        Vector v;
+        for (int n=0; n < Calc->N; ++n) v += Calc->P[n].v;
+        return (v / Calc->N);
+    }
+
+    Vector getAngularMomentum(const Vector& C)
+    {
+        Vector L;
+        for (int n=0; n < Calc->N; ++n) L += (Calc->P[n].R - C).cross(Calc->P[n].v);
+        return L;
+    }
+
+    void run(const int maxIteration)
+    {
+        Calc->mMaxIt = maxIteration;
+        Calc->start();
+        Calc->wait();
+    }
+
     Calculation* Calc;
 };
+
 
 TEST_F(CalculationTest, CheckParticleBindingInitialisation)
 {
@@ -225,4 +275,28 @@ TEST_F(CalculationTest, SetEnergy_randomDistrib)
     double kinEnergy = createRandomSpeedDistribution();
     Calc->setEnergy(-0.7 * kinEnergy);
     EXPECT_NEAR(0.3 * kinEnergy, Calc->getKineticEnergy(), 1e-5);
+}
+
+TEST_F(CalculationTest, Triple)
+{
+    Vector R[3] = {Vector(32.0, 40.0, 40.0), Vector(40.0, 41.0, 40.0), Vector(48.0, 40.0, 40.0)}, v[3];
+    int MNB[3] = {1, 2, 1};
+    setParticles(3, R, v, MNB);
+    addParticleBinding(0, 1);
+    addParticleBinding(1, 2);
+    double EB = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
+    Vector CB = getCenterOfMass(), vB = getAverageV(), LB = getAngularMomentum(CB);
+    run(1000);
+    double EA = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
+    Vector CA = getCenterOfMass(), vA = getAverageV(), LA = getAngularMomentum(CA);
+    EXPECT_NEAR(EA, EB, 1e-2);
+    EXPECT_NEAR(CA.X(), CB.X(), 1e-2);
+    EXPECT_NEAR(CA.Y(), CB.Y(), 1e-2);
+    EXPECT_NEAR(CA.Z(), CB.Z(), 1e-2);
+    EXPECT_NEAR(vA.X(), vB.X(), 1e-2);
+    EXPECT_NEAR(vA.Y(), vB.Y(), 1e-2);
+    EXPECT_NEAR(vA.Z(), vB.Z(), 1e-2);
+    EXPECT_NEAR(LA.X(), LB.X(), 1e-2);
+    EXPECT_NEAR(LA.Y(), LB.Y(), 1e-2);
+    EXPECT_NEAR(LA.Z(), LB.Z(), 1e-2);
 }
