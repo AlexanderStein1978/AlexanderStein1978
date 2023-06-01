@@ -182,6 +182,7 @@ class Calculation : public QThread
         void getGridAtPos(const Vector& Pos, int& x, int& y, int& z) const;
         void doParticleLayerSwitch(Particle *const cP, const Vector& dist);
         void sendCalcResult(const int iteration);
+        //static Vector calcF2(const Vector& d1, const Vector& d2, Vector& F1);
 
         bool potentialOK[NumPot];
         int N, XS, YS, ZS, GridSizeDiv, nx, ny, nz, **MG, *MD, MXS, MZS, PXS, PYS, PZS, NPot, watchParticle, particleWatchStep, mInstanceId, mMaxIt;

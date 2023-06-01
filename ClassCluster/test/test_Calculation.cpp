@@ -118,9 +118,7 @@ protected:
     
     bool isNoBindingDoubled(const int particleIndex) const
     {
-       for (int i=0; i < Calc->P[particleIndex].NB - 1; ++i) for (int j=i+1; j < Calc->P[particleIndex].NB; ++j)
-           if (Calc->P[particleIndex].bound[i].p == Calc->P[particleIndex].bound[j].p) return false;
-        return true;
+        return !(Calc->isBindingDoubled(particleIndex));
     }
     
     int getParticleNB(const int particleIndex) const

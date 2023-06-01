@@ -242,7 +242,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     double r, amp(0.0);
     Vector d, b, d1, d2;
     bool calcA = (NULL != a);
-    int i1 = P1 - P, i2 = P2 - P, p, ap1 = -1, ap2 = - 1, bi1=N, bi2=N;
+    int i1 = P1 - P, i2 = P2 - P, p, bi1=N, bi2=N;
     static Particle *errorP1(nullptr), *errorP2(nullptr);
     if (errorP1 == P1 && errorP2 == P2) printf("i1=%d, i2=%d, P1->x=%g, P1->y=%g, P1->z=%g, P2->x=%g, P2->y=%g, P2->z=%g\n", i1, i2, P1->R.X(), P1->R.Y(), P1->R.Z(), P2->R.X(), P2->R.Y(), P2->R.Z());
     switch (pos)
@@ -285,7 +285,6 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             if (isBindingDoubled(P2 - P)) *debugnullptr = 5;
         }
         else if (bi1 <= P1->NB || bi2 <= P2->NB) *debugnullptr = 5;
-        return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (bi1 < P1->NB && bi2 < P2->NB)
@@ -309,38 +308,6 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             P1->bound[bi1].lastDist = r;
             P2->bound[bi2].lastDist = r;
         }
-        int bi1_2 = getPartnerBindingIndex(P1, bi1), bi2_2 = getPartnerBindingIndex(P2, bi2);
-        int idi1 = (bi1_2 >= 0 ? P1->bound[bi1_2].p - P : -1), idi2 = (bi2_2 >= 0 ? P2->bound[bi2_2].p - P : -1);
-        switch (pos)
-        {
-        case temporaryPos:
-            d1 = (idi1 >= 0 ? t0[idi1] - t0[i1] : Vector());
-            d2 = (idi2 >= 0 ? t0[i2] - t0[idi2] : Vector());
-            break;
-        case lastPos:
-            d1 = (idi1 >= 0 ? P[idi1].lR - *t0 : Vector());
-            d2 = (idi2 >= 0 ? P2->lR - P[idi2].lR : Vector());
-            break;
-        case currentPos:
-            d1 = (idi1 >= 0 ? P[idi1].R - *t0 : Vector());
-            d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
-            break;
-        case particles:
-            d1 = (idi1 >= 0 ? P[idi1].R - P1->R : Vector());
-            d2 = (idi2 >= 0 ? P2->R - P[idi2].R : Vector());
-            break;
-        }
-        Vector ed(d * dR);
-        if (idi1 >= 0)
-        {
-            ap1 = static_cast<int>((1.0 + ed.dot(d1.unit())) * 0.5 * (NPot - 1));
-            U += Pot[Angular][ap1] * dR;
-        }
-        if (idi2 >= 0)
-        {
-            ap2 = static_cast<int>((1.0 + ed.dot(d2.unit())) * 0.5 * (NPot - 1));
-            U += Pot[Angular][ap2] * dR;
-        }
     }
     else
     {
@@ -353,6 +320,46 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
               //  return Error;
         if (calcA) amp = dPdR[Remaining][p] * dR;
         U += Pot[Remaining][p];
+        for (int n=0; n < P1->NB; ++n) if (n != bi1) for (int m=0; m < P1->bound[n].p->NB; ++m) if (P1->bound[n].p->bound[m].p == P1)
+        {
+            int i = getPartnerBindingIndex(P1->bound[n].p, m);
+            if (i != -1 && P1->bound[n].p->bound[i].p == P2)
+            {
+                int im = P1->bound[n].p - P;
+                switch (pos)
+                {
+                case temporaryPos:
+                    d1 = t0[i1] - t0[im];
+                    d2 = t0[i2] - t0[im];
+                    break;
+                case lastPos:
+                    d1 = *t0 - P[im].lR;
+                    d2 = P2->lR - P[im].lR;
+                    break;
+                case currentPos:
+                    d1 = *t0 - P[im].R;
+                    d2 = P2->R - P[im].R;
+                    break;
+                case particles:
+                    d1 = P1->R - P1->bound[n].p->R;
+                    d2 = P2->R - P1->bound[n].p->R;
+                    break;
+                }
+                int ap = static_cast<int>((1.0 + d1.unit().dot(d2.unit())) * 0.5 * (NPot - 1));
+                U += Pot[Angular][ap];
+                if (calcA)
+                {
+                    Vector dir1 = d1.cross(d1.cross(d2)).unit();
+                    Vector dir2 = d2.cross(d2.cross(d1)).unit();
+                    double r1t2 = d1.length() / d2.length();
+                    Vector dirm = -r1t2 * dir2 - dir1;
+                    double F = 2.0 / (1.0 + r1t2 + dirm.length()) * dPdR[Angular][ap];
+                    a[i1] += F * dir1;
+                    a[i2] += F * r1t2 * dir2;
+                    a[im] += F * dirm;
+                }
+            }
+        }
     }
     /*if (abs(amp * r) > UaMax)
     {
@@ -365,18 +372,6 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     {
         a[i1] += (b = amp * d);
         a[i2] -= b;
-        if (ap1 > 0)
-        {
-            Vector dir = d.cross(d1).cross(d).unit();
-            a[i1] += (b = dPdR[Angular][ap1] * dir);
-            a[i2] -= b;
-        }
-        if (ap2 > 0)
-        {
-            Vector dir = d.cross(d2).cross(d).unit();
-            a[i1] += (b = dPdR[Angular][ap2] * dir);
-            a[i2] -= b;
-        }
         if (isnan(a[i1].X()) || isnan(a[i1].Y()) || isnan(a[i1].Z()) || isnan(a[i2].X()) || isnan(a[i2].Y()) || isnan(a[i2].Z())) *debugnullptr = 5;
         if (particleWatchStep >= 0)
         {
@@ -386,6 +381,13 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     }
     return Success;
 }
+
+/*Vector Calculation::calcF2(const Vector& d1, const Vector& d2, Vector& F1)
+{
+    int sortOrder[Vector::dimension];
+    d2.getSortOrder(sortOrder);
+
+}*/
 
 int Calculation::getPartnerBindingIndex(const Particle* const P, const int index)
 {
@@ -401,6 +403,11 @@ int Calculation::getPartnerBindingIndex(const Particle* const P, const int index
             break;
         case 3:
             return 2;
+        case 4:
+            if (P->NB > 5) return 5;
+            break;
+        case 5:
+            return 4;
         default:
             return -1;
     }
