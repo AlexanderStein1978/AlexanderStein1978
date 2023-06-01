@@ -1,16 +1,23 @@
 #include "vector.h"
 #include <cmath>
+#include <array>
 
-Vector::Vector() : x(0.0), y(0.0), z(0.0)
+
+Vector::Vector()
 {
+    memset(val, 0, sizeof(double[3]));
 }
 
-Vector::Vector(const Vector &other) : x(other.x), y(other.y), z(other.z)
+Vector::Vector(const Vector &other)
 {
+    memcpy(val, other.val, sizeof(double[3]));
 }
 
-Vector::Vector(const double X, const double Y, const double Z) : x(X), y(Y), z(Z)
+Vector::Vector(const double X, const double Y, const double Z)
 {
+    val[x] = X;
+    val[y] = Y;
+    val[z] = Z;
 }
 
 double Vector::length() const
@@ -20,90 +27,92 @@ double Vector::length() const
 
 double Vector::lengthSquared() const
 {
-    return x*x + y*y + z*z;
+    double result(0.0);
+    for (int i=0; i < dimension; ++i) result += val[i] * val[i];
+    return result;
 }
 
 Vector Vector::operator *(const double right) const
 {
-    return Vector(x*right, y*right, z*right);
+    Vector result;
+    for (int i=0; i < dimension; ++i) result.val[i] = val[i] * right;
+    return result;
 }
 
 Vector Vector::operator *(const Vector& right) const
 {
-    return Vector(x*right.x, y*right.y, z*right.z);
+    Vector result;
+    for (int i=0; i < dimension; ++i) result.val[i] = val[i] * right.val[i];
+    return result;
 }
 
 Vector& Vector::operator *=(const double factor)
 {
-    x *= factor;
-    y *= factor;
-    z *= factor;
+    for (int i=0; i < dimension; ++i) val[i] *= factor;
     return *this;
 }
 
 Vector& Vector::operator *=(const Vector& other)
 {
-    x *= other.x;
-    y *= other.y;
-    z *= other.z;
+    for (int i=0; i < dimension; ++i) val[i] *= other.val[i];
     return *this;
 }
 
 Vector Vector::operator +(const Vector& other) const
 {
-    return Vector(x + other.x, y + other.y, z + other.z);
+    Vector result;
+    for (int i=0; i < dimension; ++i) result.val[i] = val[i] + other.val[i];
+    return result;
 }
 
 Vector& Vector::operator +=(const Vector& other)
 {
-    x += other.x;
-    y += other.y;
-    z += other.z;
+    for (int i=0; i < dimension; ++i) val[i] += other.val[i];
     return *this;
 }
 
 Vector Vector::operator -(const Vector& other) const
 {
-    return Vector(x - other.x, y - other.y, z - other.z);
+    Vector result;
+    for (int i=0; i < dimension; ++i) result.val[i] = val[i] - other.val[i];
+    return result;
 }
 
 Vector& Vector::operator -=(const Vector& other)
 {
-    x -= other.x;
-    y -= other.y;
-    z -= other.z;
+    for (int i=0; i < dimension; ++i) val[i] -= other.val[i];
     return *this;
 }
 
 Vector Vector::operator /(const double right) const
 {
-    return Vector(x / right, y / right, z / right);
+    Vector result;
+    for (int i=0; i < dimension; ++i) result.val[i] = val[i] / right;
+    return result;
 }
 
 Vector& Vector::operator /=(const double right)
 {
-    x /= right;
-    y /= right;
-    z /= right;
+    for (int i=0; i < dimension; ++i) val[i] /= right;
     return *this;
 }
 
 Vector& Vector::operator =(const Vector& right)
 {
-    x = right.x;
-    y = right.y;
-    z = right.z;
+    memcpy(val, right.val, sizeof(double[dimension]));
     return *this;
 }
 
 double Vector::dot(const Vector &other) const
 {
-    return other.x * x + other.y * y + other.z * z;
+    double result(0.0);
+    for (int i=0; i < dimension; ++i) result += val[i] * other.val[i];
+    return result;
 }
 
 Vector Vector::cross(const Vector& other) const
 {
-    return Vector(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+    return Vector(val[y] * other.val[z] - val[z] * other.val[y], val[z] * other.val[x] - val[x] * other.val[z], val[x] * other.val[y] - val[y] * other.val[x]);
 }
 
 Vector Vector::unit() const
@@ -111,4 +120,12 @@ Vector Vector::unit() const
     const double l = length();
     if (l == 0.0) return Vector();
     return *this / l;
+}
+
+void Vector::getSortOrder(int order[3]) const
+{
+    for (int i=0; i < dimension; ++i) order[i] = i;
+    if (std::abs(val[0]) < std::abs(val[1])) std::swap(order[0], order[1]);
+    if (std::abs(val[order[1]]) < std::abs(val[2])) std::swap(order[1], order[2]);
+    if (std::abs(val[order[0]]) < std::abs(val[order[1]])) std::swap(order[0], order[1]);
 }

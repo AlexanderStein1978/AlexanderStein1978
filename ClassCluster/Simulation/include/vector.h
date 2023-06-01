@@ -1,22 +1,27 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <string.h>
+
 
 class Vector
 {
 public:
+    enum Dimension{x, y, z, dimension};
+    enum SortOrder{largest, mid, smallest};
+
     Vector();
     Vector(const Vector& other);
     Vector(const double X, const double Y, const double Z);
 
     Vector& operator=(const Vector& other);
-    Vector operator +(const Vector& other) const;
+    Vector operator+(const Vector& other) const;
     Vector& operator+=(const Vector& other);
-    Vector operator -(const Vector& other) const;
+    Vector operator-(const Vector& other) const;
     Vector& operator-=(const Vector& other);
-    Vector operator *(const double factor) const;
+    Vector operator*(const double factor) const;
     Vector& operator*=(const double factor);
-    Vector operator /(const double factor) const;
+    Vector operator/(const double factor) const;
     Vector& operator/=(const double factor);
     Vector operator*(const Vector& other) const;
     Vector& operator*=(const Vector& other);
@@ -26,49 +31,60 @@ public:
     double dot(const Vector& other) const;
     Vector cross(const Vector& other) const;
     Vector unit() const;
+    void getSortOrder(int order[dimension]) const;
 
     inline bool operator==(const Vector& other) const
     {
-        return x == other.x && y == other.y && z == other.z;
+        return (memcmp(val, other.val, sizeof(double[dimension])) == 0);
     }
 
     inline double X() const
     {
-        return x;
+        return val[x];
     }
 
     inline double Y() const
     {
-        return y;
+        return val[y];
     }
 
     inline double Z() const
     {
-        return z;
+        return val[z];
     }
 
     inline void setX(double X)
     {
-        x = X;
+        val[x] = X;
     }
 
     inline void setY(double Y)
     {
-        y = Y;
+        val[y] = Y;
     }
 
     inline void setZ(double Z)
     {
-        z = Z;
+        val[z] = Z;
     }
 
     inline void clear()
     {
-        x = y = z = 0.0;
+        memset(val, 0, sizeof(double[dimension]));
+    }
+
+    inline double& operator[](int i)
+    {
+        return val[i];
+    }
+
+    inline const double& operator[](const int i) const
+    {
+        return val[i];
     }
 
 private:
-    double x, y, z;
+    double val[dimension];
 };
 
 inline Vector operator*(const double left, const Vector& right)
