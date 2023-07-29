@@ -285,6 +285,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
             if (isBindingDoubled(P2 - P)) *debugnullptr = 5;
         }
         else if (bi1 <= P1->NB || bi2 <= P2->NB) *debugnullptr = 5;
+        return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
     if (bi1 < P1->NB && bi2 < P2->NB)
@@ -295,6 +296,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
               //  return Error;
             if (calcA) amp = dPdR[ClosestTwo][p] * dR;
             U += Pot[ClosestTwo][p];
+            //printf("Amp=%g, dR=%g, dPdR[ClosestTwo][%d]=%g\n", amp, dR, p, dPdR[ClosestTwo][p]);
         }
         else 
         {
@@ -302,6 +304,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
               //  return Error;
             if (calcA) amp = dPdR[NextTwo][p] * dR;
             U += Pot[NextTwo][p];
+            //printf("Amp=%g, dR=%g, dPdR[NextTwo][%d]=%g\n", amp, dR, p, dPdR[NextTwo][p]);
         }
         if (collectCandidates)
         {
@@ -320,7 +323,8 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
               //  return Error;
         if (calcA) amp = dPdR[Remaining][p] * dR;
         U += Pot[Remaining][p];
-        for (int n=0; n < P1->NB; ++n) if (n != bi1) for (int m=0; m < P1->bound[n].p->NB; ++m) if (P1->bound[n].p->bound[m].p == P1)
+        //printf("Amp=%g, dR=%g, dPdR[Remaining][%d]=%g\n", amp, dR, p, dPdR[Remaining][p]);
+        /*for (int n=0; n < P1->NB; ++n) if (n != bi1) for (int m=0; m < P1->bound[n].p->NB; ++m) if (P1->bound[n].p->bound[m].p == P1)
         {
             int i = getPartnerBindingIndex(P1->bound[n].p, m);
             if (i != -1 && P1->bound[n].p->bound[i].p == P2)
@@ -359,7 +363,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
                     a[im] += F * dirm;
                 }
             }
-        }
+        }*/
     }
     /*if (abs(amp * r) > UaMax)
     {
