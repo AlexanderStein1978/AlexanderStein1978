@@ -28,7 +28,7 @@ const double UaMax = 1e6;
 
 
 Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Error_Double(0.0/0.0), N(898), NPot(30000), watchParticle(-1), particleWatchStep(-1), mInstanceId(-1), mMaxIt(-1), PS(1e3),
-    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), U(0.0), T(0.0), E(0.0), waveStep(1.0), waveAmp(4.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), mLastEnergy(0.0),
+    Pot(new double*[NumPot]), dPdR(new double*[NumPot]), U(0.0), T(0.0), E(0.0), waveStep(10.0), waveAmp(10.0), potRangeScale(PS), mMaxCalcResult(0.0), mCurEDevUB(0.0), mAbsEDevUB(0.0), mLastEnergy(0.0),
     mRandPOF1(static_cast<double>(N) / (static_cast<double>(RAND_MAX) + 1.0)), mRandPOF2(static_cast<double>(N-1) / (static_cast<double>(RAND_MAX) + 1.0)), FixedWallPos(new Particle*[86]),
     writeSnapShot(false), mRotationChanged(false), mEnergyCsvLogFile(nullptr), mEnergyCsvLog(nullptr)
 {
@@ -324,7 +324,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         if (calcA) amp = dPdR[Remaining][p] * dR;
         U += Pot[Remaining][p];
         //printf("Amp=%g, dR=%g, dPdR[Remaining][%d]=%g\n", amp, dR, p, dPdR[Remaining][p]);
-        /*for (int n=0; n < P1->NB; ++n) if (n != bi1) for (int m=0; m < P1->bound[n].p->NB; ++m) if (P1->bound[n].p->bound[m].p == P1)
+        for (int n=0; n < P1->NB; ++n) for (int m=0; m < P1->bound[n].p->NB; ++m) if (P1->bound[n].p->bound[m].p == P1)
         {
             int i = getPartnerBindingIndex(P1->bound[n].p, m);
             if (i != -1 && P1->bound[n].p->bound[i].p == P2)
@@ -349,21 +349,19 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
                     d2 = P2->R - P1->bound[n].p->R;
                     break;
                 }
-                int ap = static_cast<int>((1.0 + d1.unit().dot(d2.unit())) * 0.5 * (NPot - 1));
+                double dr1 = 1.0 / d1.length(), dr2 = 1.0 / d2.length();         
+                int ap = static_cast<int>((1.0 + d1.dot(d2)*dr1*dr2) * 0.5 * (NPot - 1));
                 U += Pot[Angular][ap];
                 if (calcA)
                 {
-                    Vector dir1 = d1.cross(d1.cross(d2)).unit();
-                    Vector dir2 = d2.cross(d2.cross(d1)).unit();
-                    double r1t2 = d1.length() / d2.length();
-                    Vector dirm = -r1t2 * dir2 - dir1;
-                    double F = 2.0 / (1.0 + r1t2 + dirm.length()) * dPdR[Angular][ap];
-                    a[i1] += F * dir1;
-                    a[i2] += F * r1t2 * dir2;
-                    a[im] += F * dirm;
+                    Vector a1 = d1.cross(d1.cross(d2)).unit() * dr1 * dPdR[Angular][ap];
+                    Vector a2 = d2.cross(d2.cross(d1)).unit() * dr2 * dPdR[Angular][ap];
+                    a[i1] += a1;
+                    a[i2] += a2;
+                    a[im] -= a1 + a2;
                 }
             }
-        }*/
+        }
     }
     /*if (abs(amp * r) > UaMax)
     {
@@ -920,7 +918,7 @@ void Calculation::applyWave(const double lh)
         Move = false;
         return;
     }
-    const Vector cAmp(0.0, waveAmp * (sinNWP * sinNWP - sinWP * sinWP), 0.0 /*waveAmp * sinNWP * sinNWP /  M_PI*/);
+    const Vector cAmp(0.0, waveAmp * (sinNWP * sinNWP - sinWP * sinWP), 0.0 /* waveAmp * sinNWP * sinNWP /  M_PI */);
     for (int n=0; n<N; ++n) if (P[n].WaveParticle) P[n].R += cAmp;
     mSecondToLastWavePhase = mLastWavePhase;
     mLastWavePhase = mWavePhase;
