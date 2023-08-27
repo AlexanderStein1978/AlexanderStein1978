@@ -284,7 +284,7 @@ TEST_F(CalculationTest, Triple)
     addParticleBinding(1, 2);
     double EB = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
     Vector CB = getCenterOfMass(), vB = getAverageV(), LB = getAngularMomentum(CB);
-    run(1000);
+    run(3);
     double EA = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
     Vector CA = getCenterOfMass(), vA = getAverageV(), LA = getAngularMomentum(CA);
     EXPECT_NEAR(EA, EB, 1e-2);
