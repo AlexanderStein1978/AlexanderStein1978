@@ -1350,14 +1350,14 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
     }
     Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NPot);
     dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NPot);
-    if (PotS.RZoom != 1.0 || PotS.VZoom != 1.0) for (int n=0; n < NPot; ++n)
+    for (int n=0; n < NPot; ++n)
     {
         Pot[role][n] *= PotS.VZoom;
         dPdR[role][n] *= devF;
         if (role == Angular && n>0 && n < NPot - 1)
         {
             double cosP = static_cast<double>(n) * 2.0 / (NPot - 1) - 1.0;
-            dPdR[role][n] *= (-sin(acos(cosP)) * (1 + cosP * cosP));
+            dPdR[role][n] *= (-sin(acos(cosP)) * (1 + cosP * cosP) * 2.0);
         }
     }
     if (role == Angular)
