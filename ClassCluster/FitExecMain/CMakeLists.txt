@@ -21,5 +21,6 @@ target_link_libraries(FitExecMain
     MolSpektAnalysisMainWindow
     ParticleWatch
     Simulation
+    TestHelper
     Qt5::Widgets
 )

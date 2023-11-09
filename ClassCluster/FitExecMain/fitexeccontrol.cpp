@@ -120,3 +120,8 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         QCoreApplication::exit(0);
     }
 }
+
+void FitExecControl::SaveEnergies(double T, double E)
+{
+
+}
