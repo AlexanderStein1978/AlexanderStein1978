@@ -137,7 +137,7 @@ class Calculation : public QThread
 
         const double Error_Double;
 
-        friend class CalculationTest;
+        friend class CalculationTestHelper;
 
         struct MARStruct
         {

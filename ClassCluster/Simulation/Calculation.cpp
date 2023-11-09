@@ -442,7 +442,8 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
 
 void Calculation::correctEnergy()
 {
-    double T = getKineticEnergy(), V = getPotentialEnergy(), curEnergy = T + V;// delta = Energy - T - V;
+    double T = getKineticEnergy(), V = getPotentialEnergy(), curEnergy = T + V, delta = Energy - curEnergy;
+    printf("Energy=%g, delta=%g\n", curEnergy, delta);
     //printf("OverallDeltaE=%g, lastDeltaE=%g, overallByUpdateBinding=%g, lastByUpdateBinding=%g\n", curEnergy - Energy, curEnergy - mLastEnergy, mAbsEDevUB += mCurEDevUB, mCurEDevUB);
     if (nullptr != mEnergyCsvLog) *mEnergyCsvLog << "\t" << (curEnergy - Energy) << "\t" << (curEnergy - mLastEnergy) << "\t" << (mAbsEDevUB += mCurEDevUB) << "\t" << mCurEDevUB << "\n";
     mLastEnergy = curEnergy;
@@ -664,12 +665,13 @@ void Calculation::run()
         mEnergyCsvLog = new QTextStream(mEnergyCsvLogFile);
         *mEnergyCsvLog << "Iteration\tOverallDeltaE\tlastDeltaE\toverallByUpdateBinding\tlastByUpdateBinding\n";
     }
+    Energy = getKineticEnergy() + getPotentialEnergy();
 	for (i=0, Run = true; Run && i != mMaxIt; i++)
 	{
-		if (i==30178)
+		/*if (i==30178)
         {
             printf("Break!");
-        }
+        }*/
 
         rk4(t0, dvt, a, dt, dm, dvm, h);
         if (mErrorCode != ECSuccess) return;
@@ -681,10 +683,10 @@ void Calculation::run()
         }
         if (watchParticle >= 0)
             ParticleWatchPoint->setSum(particleWatchStep, dvt[watchParticle] - Vector(ParticleWatchPoint->getSumX(1), ParticleWatchPoint->getSumY(1), ParticleWatchPoint->getSumZ(1)));
-        if (i==147)
+        /*if (i==147)
         {
             printf("Break!");
-        }
+        }*/
         printf("iteration=%d, ", i);
         updateBindings();
         //*DebugLog << i;

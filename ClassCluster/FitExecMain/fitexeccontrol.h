@@ -16,6 +16,7 @@ public:
 
 private slots:
     void printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev);
+    void SaveEnergies(double T, double E);
 
 private:
     bool stopped[6] = {false, false, false, false, false, false};
