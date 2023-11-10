@@ -2,15 +2,14 @@
 
 #include <QCoreApplication>
 
-#include "Calculation.h"
 #include "particle.h"
-#include "potstruct.h"
 #include "potential.h"
+#include "CalculationTestHelper.h"
+#include "utils.h"
 
 
 FitExecControl::FitExecControl()
 {
-    PotStruct struc[Calculation::NumPot];
     Potential closestTwo, nextTwo, remaining, angular;
     QString dataDir(DATA_DIRECTORY);
     closestTwo.readData(dataDir + "/ClosestTwo.pot");
@@ -21,13 +20,15 @@ FitExecControl::FitExecControl()
     struc[Calculation::NextTwo].pot = &nextTwo;
     struc[Calculation::Remaining].pot = &remaining;
     struc[Calculation::Angular].pot = &angular;
-    for (int i=0; i<4; ++i)
+    for (int i=0; i<100; ++i) angles[i] = M_PI * (i+1) / 101;
+    results = Create(100, 1000);
+    for (int i=0; i<6; ++i)
     {
-        Calc[i] = new Calculation(struc);
-        Calc[i]->setLayerDistance(20.0);
+        Calc[i] = nullptr;
+        /*Calc[i]->setLayerDistance(20.0);
         Calc[i]->setEnergy(200000.0);
         Calc[i]->move();
-        Calc[i]->setInstanceId(i);
+        Calc[i]->setInstanceId(i);*/
         /*switch(i)
         {
             case 0:
@@ -49,7 +50,7 @@ FitExecControl::FitExecControl()
                 Calc[i]->setWaveStep(50);
                 break;
         }*/
-        switch(i)
+        /*switch(i)
         {
             case 0:
                 Calc[i]->setStepSize(5e-4);
@@ -75,18 +76,48 @@ FitExecControl::FitExecControl()
                 Calc[i]->setStepSize(1e-5);
                 Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE6.csv");
                 break;
-        }
-
-        connect(Calc[i], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
-        Calc[i]->start();
+        }*/
+        initInstance(i);
     }
 }
 
+void FitExecControl::initInstance(int instanceId)
+{
+    if (nullptr != Calc[instanceId])
+    {
+        disconnect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
+        delete Calc[instanceId];
+    }
+    mutex.lock();
+    instanceIndex[instanceId] = ++currentIndex;
+    mutex.unlock();
+    if (currentIndex >= 100)
+    {
+        stopped[instanceId] = true;
+        return;
+    }
+    Calc[instanceId] = new Calculation(struc);
+    CalculationTestHelper helper(Calc[instanceId]);
+    double currentAngle = 0.5 * angles[instanceIndex[instanceId]];
+    static const double radius = 8.0, center = 40.0;
+    double sinAngR = radius * sin(currentAngle), cosAngR = radius * cos(currentAngle);
+    Vector R[3] = {Vector(center - sinAngR, center + cosAngR, center), Vector(center, center, center), Vector(center + sinAngR, center + cosAngR, center)};
+    Vector v[3] = {Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, 0.0)};
+    int MNB[3] = {1, 2, 1};
+    helper.setParticles(3, R, v, MNB);
+    helper.addParticleBinding(0, 1);
+    helper.addParticleBinding(1, 2);
+    startE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+    connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
+    Calc[instanceId]->start();
+}
+
+
 void FitExecControl::printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev)
 {
-    printf("instance%d: it=%d, currentDev=%g, maxDev=%g\n", instanceId, iteration, currentYCenterDev, maxYCenterDev);
-    int maxIt;
-    switch(instanceId)
+    //printf("instance%d: it=%d, currentDev=%g, maxDev=%g\n", instanceId, iteration, currentYCenterDev, maxYCenterDev);
+    static const int maxIt = 1000;
+    /*switch(instanceId)
     {
         case 0:
             maxIt = 2000;
@@ -106,22 +137,26 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         case 5:
             maxIt = 100000;
             break;
-    }
-    if (iteration >= maxIt)
+    }*/
+    if (iteration  < maxIt) results[instanceIndex[instanceId]][iteration] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy() - startE[instanceId];
+    else
     {
-        max[instanceId] = maxYCenterDev;
+        //max[instanceId] = maxYCenterDev;
         if (!stopped[instanceId])
         {
             Calc[instanceId]->stop();
-            stopped[instanceId] = true;
+            Calc[instanceId]->wait();
+            initInstance(instanceId);
         }
         for (int i=0; i<6; ++i) if (!stopped[i]) return;
-        for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
+        // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
+        saveResults();
+        Destroy(results, 100);
         QCoreApplication::exit(0);
     }
 }
 
-void FitExecControl::SaveEnergies(double T, double E)
+void FitExecControl::saveResults()
 {
 
 }
