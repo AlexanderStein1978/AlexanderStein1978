@@ -379,7 +379,7 @@ protected:
 	PotentialType Type;
 	SplinePoint *points;
 	int numSplinePoints; 
-	QMutex *Lock, *BLLock;
+	QMutex *Lock = nullptr, *BLLock = nullptr;
 	int *SMap;
 	int TAdCorr, NAdCorr, PAdCorr, NumFreePar, NumFreeLRC, NumFreeAdCorr, NSpinRGamma, NFitCoeff;
 	double *adCorr, RIso1AdCorr, RIso2AdCorr, AdCorr_b, AdCorr_Rm, *AdCorrWF, *SpinRGamma, SpinRR1, SpinRR2, SpinRb, SpinRRm;

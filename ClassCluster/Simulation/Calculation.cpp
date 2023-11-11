@@ -443,7 +443,7 @@ void Calculation::addCandidate(Particle *const currPart, Particle *const candida
 void Calculation::correctEnergy()
 {
     double T = getKineticEnergy(), V = getPotentialEnergy(), curEnergy = T + V, delta = Energy - curEnergy;
-    printf("Energy=%g, delta=%g\n", curEnergy, delta);
+    // printf("Energy=%g, delta=%g\n", curEnergy, delta);
     //printf("OverallDeltaE=%g, lastDeltaE=%g, overallByUpdateBinding=%g, lastByUpdateBinding=%g\n", curEnergy - Energy, curEnergy - mLastEnergy, mAbsEDevUB += mCurEDevUB, mCurEDevUB);
     if (nullptr != mEnergyCsvLog) *mEnergyCsvLog << "\t" << (curEnergy - Energy) << "\t" << (curEnergy - mLastEnergy) << "\t" << (mAbsEDevUB += mCurEDevUB) << "\t" << mCurEDevUB << "\n";
     mLastEnergy = curEnergy;
@@ -687,7 +687,7 @@ void Calculation::run()
         {
             printf("Break!");
         }*/
-        printf("iteration=%d, ", i);
+        // printf("iteration=%d, ", i);
         updateBindings();
         //*DebugLog << i;
         if (nullptr != mEnergyCsvLog) *mEnergyCsvLog << i;
