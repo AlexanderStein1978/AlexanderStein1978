@@ -1,6 +1,7 @@
 #include "fitexeccontrol.h"
 
 #include <QCoreApplication>
+#include <QTextStream>
 
 #include "particle.h"
 #include "potential.h"
@@ -28,7 +29,7 @@ FitExecControl::FitExecControl()
         /*Calc[i]->setLayerDistance(20.0);
         Calc[i]->setEnergy(200000.0);
         Calc[i]->move();
-        Calc[i]->setInstanceId(i);*/
+        */
         /*switch(i)
         {
             case 0:
@@ -97,6 +98,7 @@ void FitExecControl::initInstance(int instanceId)
         return;
     }
     Calc[instanceId] = new Calculation(struc);
+    Calc[instanceId]->setInstanceId(instanceId);
     CalculationTestHelper helper(Calc[instanceId]);
     double currentAngle = 0.5 * angles[instanceIndex[instanceId]];
     static const double radius = 8.0, center = 40.0;
@@ -146,6 +148,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         {
             Calc[instanceId]->stop();
             Calc[instanceId]->wait();
+            printf("Calculation with instanceIndex[%d]=%d finished.", instanceId, instanceIndex[instanceId]);
             initInstance(instanceId);
         }
         for (int i=0; i<6; ++i) if (!stopped[i]) return;
@@ -158,5 +161,16 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
 
 void FitExecControl::saveResults()
 {
-
+    QFile resultsFile("AngularDeviations.CSV");
+    resultsFile.open(QIODevice::WriteOnly);
+    QTextStream S(&resultsFile);
+    double AF = 180.0 / M_PI;
+    for (int i=0; i<100; ++i) S << '\t' << QString::number(AF * angles[i], 'f', 2);
+    S << '\n';
+    for (int i=0; i < 1000; ++i)
+    {
+        S << QString::number(i);
+        for (int j=0; j < 100; ++j) S << '\t' << QString::number(results[j][i]);
+        S << '\n';
+    }
 }
