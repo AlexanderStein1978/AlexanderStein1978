@@ -11,16 +11,11 @@
 
 FitExecControl::FitExecControl()
 {
-    Potential closestTwo, nextTwo, remaining, angular;
     QString dataDir(DATA_DIRECTORY);
-    closestTwo.readData(dataDir + "/ClosestTwo.pot");
-    nextTwo.readData(dataDir + "/NextTwo.pot");
-    remaining.readData(dataDir + "/Remaining.pot");
-    angular.readData(dataDir + "/Angular.pot");
-    struc[Calculation::ClosestTwo].pot = &closestTwo;
-    struc[Calculation::NextTwo].pot = &nextTwo;
-    struc[Calculation::Remaining].pot = &remaining;
-    struc[Calculation::Angular].pot = &angular;
+    struc[Calculation::ClosestTwo].InitAsOwner(dataDir + "/ClosestTwo.pot");
+    struc[Calculation::NextTwo].InitAsOwner(dataDir + "/NextTwo.pot");
+    struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
+    struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
     for (int i=0; i<100; ++i) angles[i] = M_PI * (i+1) / 101;
     results = Create(100, 1000);
     for (int i=0; i<6; ++i)

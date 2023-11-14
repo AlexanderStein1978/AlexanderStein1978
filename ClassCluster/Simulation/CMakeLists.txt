@@ -16,6 +16,7 @@ add_library(Simulation STATIC
     vector.cpp
     vsortfunctor.h
     window.cpp
+    potstruct.cpp
 	yz_sortfunctor.h
 	random_sortfunctor.h
 )

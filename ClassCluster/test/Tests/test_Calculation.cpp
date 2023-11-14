@@ -37,16 +37,11 @@ public:
     void SetUp()
     {
         PotStruct struc[Calculation::NumPot];
-        Potential closestTwo, nextTwo, remaining, angular;
         QString dataDir(DATA_DIRECTORY);
-        closestTwo.readData(dataDir + "/ClosestTwo.pot");
-        nextTwo.readData(dataDir + "/NextTwo.pot");
-        remaining.readData(dataDir + "/Remaining.pot");
-        angular.readData(dataDir + "/Angular.pot");
-        struc[Calculation::ClosestTwo].pot = &closestTwo;
-        struc[Calculation::NextTwo].pot = &nextTwo;
-        struc[Calculation::Remaining].pot = &remaining;
-        struc[Calculation::Angular].pot = &angular;
+        struc[Calculation::ClosestTwo].InitAsOwner(dataDir + "/ClosestTwo.pot");
+        struc[Calculation::NextTwo].InitAsOwner(dataDir + "/NextTwo.pot");
+        struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
+        struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
         Calc = new Calculation(struc);
         cth = new CalculationTestHelper(Calc);
     }

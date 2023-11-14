@@ -85,9 +85,7 @@ void PotControl::FillLayout(QGridLayout* layout)
 
 void PotControl::FillStruct(PotStruct& potStruct) const
 {
-    potStruct.pot = pot;
-    potStruct.VZoom = VScale->text().toDouble();
-    potStruct.RZoom = RScale->text().toDouble();
+    potStruct.set(pot, VScale->text().toDouble(), RScale->text().toDouble());
 }
 
 void PotControl::exchangePotential(Potential *const newPot)
