@@ -63,7 +63,7 @@ Calculation::Calculation(PotStruct* PotSs, QObject* parent): QThread(parent), Er
         dPdR[n] = nullptr;
         potentialOK[n] = false;
     }
-    if (nullptr != PotSs) for (n=0; n < NumPot; ++n) if (nullptr != PotSs[n].pot) setPotential(static_cast<PotRole>(n), PotSs[n]);
+    if (nullptr != PotSs) for (n=0; n < NumPot; ++n) setPotential(static_cast<PotRole>(n), PotSs[n]);
 	PZS = 23;
 	PYS = int(round(MaxY / Re)); 
 	PXS = int(round(MaxX / Re));
@@ -1343,18 +1343,18 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
 {
     if (Pot[role] != nullptr) delete[] Pot[role];
     if (dPdR[role] != nullptr) delete[] dPdR[role];
-    double dRScale = 1.0 / PotS.RZoom, Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.VZoom * dRScale;
+    double dRScale = 1.0 / PotS.getRZoom(), Rmin = Rm * dRScale, Rmax = RM * dRScale, devF = PotS.getVZoom() * dRScale;
     if (role == Angular)
     {
         Rmin = -1.0;
         Rmax = 1.0;
-        devF = PotS.VZoom;
+        devF = PotS.getVZoom();
     }
-    Pot[role] = PotS.pot->getPoints(Rmin, Rmax, NPot);
-    dPdR[role] = PotS.pot->get_dVdR(Rmin, Rmax, NPot);
+    Pot[role] = PotS.getPotential().getPoints(Rmin, Rmax, NPot);
+    dPdR[role] = PotS.getPotential().get_dVdR(Rmin, Rmax, NPot);
     for (int n=0; n < NPot; ++n)
     {
-        Pot[role][n] *= PotS.VZoom;
+        Pot[role][n] *= PotS.getVZoom();
         dPdR[role][n] *= devF;
         if (role == Angular && n>0 && n < NPot - 1)
         {

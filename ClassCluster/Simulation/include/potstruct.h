@@ -2,18 +2,38 @@
 #define POTSTRUCT_H
 
 
+#include <QString>
+
+
 class Potential;
 
 
-struct PotStruct
+class PotStruct
 {
-    PotStruct()
-        : pot(nullptr), VZoom(1.0), RZoom(1.0)
+public:
+    PotStruct();
+    ~PotStruct();
+    PotStruct(const PotStruct&) = delete;
+    PotStruct operator=(const PotStruct&) = delete;
+
+    Potential& getPotential();
+    void set(Potential* const pot, const double vZoom, const double rZoom);
+    void InitAsOwner(const QString fileName);
+
+    inline double getVZoom() const
     {
+        return mVZoom;
     }
 
-    Potential *pot;
-    double VZoom, RZoom;
+    inline double getRZoom() const
+    {
+        return mRZoom;
+    }
+
+private:
+    bool mIOwner;
+    Potential *mPot;
+    double mVZoom, mRZoom;
 };
 
 #endif // POTSTRUCT_H
