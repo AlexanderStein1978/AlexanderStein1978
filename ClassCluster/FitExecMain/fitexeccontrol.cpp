@@ -79,9 +79,11 @@ FitExecControl::FitExecControl()
 
 void FitExecControl::initInstance(int instanceId)
 {
+    maxIteration[instanceId] = -1;
     if (nullptr != Calc[instanceId])
     {
         disconnect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
+        disconnect(Calc[instanceId], SIGNAL(Stopped(int)), this, SLOT(calculationStopped(int)));
         delete Calc[instanceId];
     }
     mutex.lock();
@@ -106,6 +108,8 @@ void FitExecControl::initInstance(int instanceId)
     helper.addParticleBinding(1, 2);
     startE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
     connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
+    connect(Calc[instanceId], SIGNAL(finished()), Calc[instanceId], SLOT(emitStopped()));
+    connect(Calc[instanceId], SIGNAL(Stopped(int)), this, SLOT(calculationStopped(int)));
     Calc[instanceId]->start();
 }
 
@@ -135,6 +139,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
             maxIt = 100000;
             break;
     }*/
+    maxIteration[instanceId] = iteration;
     if (iteration  < maxIt) results[instanceIndex[instanceId]][iteration] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy() - startE[instanceId];
     else
     {
@@ -142,16 +147,23 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         if (!stopped[instanceId])
         {
             Calc[instanceId]->stop();
-            Calc[instanceId]->wait();
+            // Calc[instanceId]->wait();
             printf("Calculation with instanceIndex[%d]=%d finished.", instanceId, instanceIndex[instanceId]);
-            initInstance(instanceId);
+            // initInstance(instanceId);
         }
-        for (int i=0; i<6; ++i) if (!stopped[i]) return;
-        // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
-        saveResults();
-        Destroy(results, 100);
-        QCoreApplication::exit(0);
+
     }
+}
+
+void FitExecControl::calculationStopped(int instanceId)
+{
+    for (int n = maxIteration[instanceId]; n < 1000; ++n) results[instanceIndex[instanceId]][n] = 0.0;
+    initInstance(instanceId);
+    for (int i=0; i<6; ++i) if (!stopped[i]) return;
+    // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
+    saveResults();
+    Destroy(results, 100);
+    QCoreApplication::exit(0);
 }
 
 void FitExecControl::saveResults()

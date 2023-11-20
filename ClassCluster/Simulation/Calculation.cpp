@@ -238,7 +238,7 @@ bool Calculation::wasStepOK() const
 
 Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, double& U, const Vector *const t0, Positions pos, Vector* a, const bool collectCandidates) const
 {
-    int *debugnullptr = nullptr;
+    // int *debugnullptr = nullptr;
     double r, amp(0.0);
     Vector d, b, d1, d2;
     bool calcA = (NULL != a);
@@ -267,8 +267,8 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     const double dR = 1.0 / r;
     if (p < 0)
     {
-        *debugnullptr = 5;
-        //return Success;
+        //*debugnullptr = 5;
+        return Error;
     }
     for (int n=0; n < Particle::BoundAL; ++n)
     {
@@ -281,10 +281,10 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
         {
             removeBinding(P1, bi1);
             removeBinding(P2, bi2);
-            if (isBindingDoubled(P1 - P)) *debugnullptr = 5;
-            if (isBindingDoubled(P2 - P)) *debugnullptr = 5;
+            if (isBindingDoubled(P1 - P)) return Error; // *debugnullptr = 5;
+            if (isBindingDoubled(P2 - P)) return Error;  // *debugnullptr = 5;
         }
-        else if (bi1 <= P1->NB || bi2 <= P2->NB) *debugnullptr = 5;
+        else if (bi1 <= P1->NB || bi2 <= P2->NB) return Error; // *debugnullptr = 5;
         return Success;
     }
     //printf("p=%d, r=%f, Rm=%f, PS=%f\n", p, r, Rm, PS);
@@ -374,7 +374,7 @@ Calculation::Result Calculation::getU(Particle *const P1, Particle *const P2, do
     {
         a[i1] += (b = amp * d);
         a[i2] -= b;
-        if (isnan(a[i1].X()) || isnan(a[i1].Y()) || isnan(a[i1].Z()) || isnan(a[i2].X()) || isnan(a[i2].Y()) || isnan(a[i2].Z())) *debugnullptr = 5;
+        if (isnan(a[i1].X()) || isnan(a[i1].Y()) || isnan(a[i1].Z()) || isnan(a[i2].X()) || isnan(a[i2].Y()) || isnan(a[i2].Z())) return Error; // *debugnullptr = 5;
         if (particleWatchStep >= 0)
         {
             if (watchParticle == i1) ParticleWatchPoint->set(particleWatchStep, i2, amp * d);
@@ -771,7 +771,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
 {
     double hh = 0.5 * lh, h6 = lh / 6.0;
     int n;
-    int *debugNullPtr = nullptr;
+    // int *debugNullPtr = nullptr;
     Result result = Success;
     for (int i=1; i==1; ++i)
     {
@@ -845,7 +845,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
                 if ((P[n].R.Z() < 0.0 && P[n].v.Z() < 0.0) || (P[n].R.Z() > MaxZ && P[n].v.Z() > 0.0)) P[n].v *= Vector(1.0, 1.0, -1.0);
                 if (isnan(P[n].R.X()) || isnan(P[n].R.Y()) || isnan(P[n].R.Z()) || isnan(P[n].v.X()) || isnan(P[n].v.Y()) || isnan(P[n].v.Z()))
                 {
-                    *debugNullPtr = 5;
+                    //*debugNullPtr = 5;
                     printf("After calculation of new position and v: Particel %d is nan!\n", n);
                     Run = false;
                 }
@@ -855,7 +855,8 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
     }
     if (result == Error)
     {
-        const double nh = 0.5 * lh;
+        Run = false;
+        /* const double nh = 0.5 * lh;
         if (nh < 1e-10)
         {
             mErrorCode = ECParticlesTooClose;
@@ -888,7 +889,7 @@ void Calculation::rk4(Vector *t0, Vector *dvt, Vector *a, Vector *dt, Vector* dm
                 if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
                 if (mErrorCode == ECSuccess) rk4(t0, dvt, a, dt, dm, dvm, nh);
             }
-        }
+        }*/
     }
 }
 
