@@ -127,11 +127,19 @@ class Calculation : public QThread
 		
 		QMutex mutex;
 		
+    public slots:
+
+        inline void emitStopped()
+        {
+            emit Stopped(mInstanceId);
+        }
+
 	signals:
         void PictureChanged(Vector* Pos, int N);
         void EnergiesChanged(double kineticEnergy, double totalEnergy);
         void WriteSnapShot(Particle* P, int N);
         void CalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev);
+        void Stopped(int instanceId);
 		
 	private:
 

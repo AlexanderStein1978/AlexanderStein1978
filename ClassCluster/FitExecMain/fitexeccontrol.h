@@ -22,6 +22,7 @@ public:
 private slots:
     void printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev);
     void initInstance(int instanceId);
+    void calculationStopped(int instanceId);
 
 private:
     void saveResults();
@@ -30,7 +31,7 @@ private:
     //double max[6];
     PotStruct struc[Calculation::NumPot];
     double angles[100], **results, startE[6];
-    int currentIndex = -1, instanceIndex[6];
+    int currentIndex = -1, instanceIndex[6], maxIteration[6];
     Calculation* Calc[6];
     QMutex mutex;
 };
