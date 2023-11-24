@@ -20,6 +20,9 @@ FitExecControl::FitExecControl()
     results = Create(100, 1000);
     for (int i=0; i<6; ++i)
     {
+        /*int i = 0;
+        currentIndex = 98;*/
+
         Calc[i] = nullptr;
         /*Calc[i]->setLayerDistance(20.0);
         Calc[i]->setEnergy(200000.0);
@@ -100,6 +103,7 @@ void FitExecControl::initInstance(int instanceId)
     double currentAngle = 0.5 * angles[instanceIndex[instanceId]];
     static const double radius = 8.0, center = 40.0;
     double sinAngR = radius * sin(currentAngle), cosAngR = radius * cos(currentAngle);
+    printf("Starting Calc[%d] with index=%d and sinAngR=%f, cosAngR=%f\n", instanceId, instanceIndex[instanceId], sinAngR, cosAngR);
     Vector R[3] = {Vector(center - sinAngR, center + cosAngR, center), Vector(center, center, center), Vector(center + sinAngR, center + cosAngR, center)};
     Vector v[3] = {Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, 0.0)};
     int MNB[3] = {1, 2, 1};
@@ -107,7 +111,7 @@ void FitExecControl::initInstance(int instanceId)
     helper.addParticleBinding(0, 1);
     helper.addParticleBinding(1, 2);
     startE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
-    connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)));
+    connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)), Qt::DirectConnection);
     connect(Calc[instanceId], SIGNAL(finished()), Calc[instanceId], SLOT(emitStopped()));
     connect(Calc[instanceId], SIGNAL(Stopped(int)), this, SLOT(calculationStopped(int)));
     Calc[instanceId]->start();
@@ -148,7 +152,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         {
             Calc[instanceId]->stop();
             // Calc[instanceId]->wait();
-            printf("Calculation with instanceIndex[%d]=%d finished.", instanceId, instanceIndex[instanceId]);
+            // printf("Calculation with instanceIndex[%d]=%d finished.", instanceId, instanceIndex[instanceId]);
             // initInstance(instanceId);
         }
 
