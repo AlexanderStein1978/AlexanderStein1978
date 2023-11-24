@@ -152,3 +152,27 @@ TEST_F(CalculationTest, Triple)
     EXPECT_NEAR(LA.Y(), LB.Y(), 1e-2);
     EXPECT_NEAR(LA.Z(), LB.Z(), 1e-2);
 }
+
+TEST_F(CalculationTest, Triple_FT)
+{
+    Vector R[3] = {Vector(32.000967, 40.124414, 40.0), Vector(40.0, 40.0, 40.0), Vector(47.999033, 40.124414, 40.0)}, v[3];
+    int MNB[3] = {1, 2, 1};
+    cth->setParticles(3, R, v, MNB);
+    cth->addParticleBinding(0, 1);
+    cth->addParticleBinding(1, 2);
+    double EB = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
+    Vector CB = cth->getCenterOfMass(), vB = cth->getAverageV(), LB = cth->getAngularMomentum(CB);
+    cth->run(3);
+    double EA = Calc->getKineticEnergy() + Calc->getPotentialEnergy();
+    Vector CA = cth->getCenterOfMass(), vA = cth->getAverageV(), LA = cth->getAngularMomentum(CA);
+    EXPECT_NEAR(EA, EB, 1e-2);
+    EXPECT_NEAR(CA.X(), CB.X(), 1e-2);
+    EXPECT_NEAR(CA.Y(), CB.Y(), 1e-2);
+    EXPECT_NEAR(CA.Z(), CB.Z(), 1e-2);
+    EXPECT_NEAR(vA.X(), vB.X(), 1e-2);
+    EXPECT_NEAR(vA.Y(), vB.Y(), 1e-2);
+    EXPECT_NEAR(vA.Z(), vB.Z(), 1e-2);
+    EXPECT_NEAR(LA.X(), LB.X(), 1e-2);
+    EXPECT_NEAR(LA.Y(), LB.Y(), 1e-2);
+    EXPECT_NEAR(LA.Z(), LB.Z(), 1e-2);
+}

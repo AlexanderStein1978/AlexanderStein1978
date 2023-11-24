@@ -1270,8 +1270,6 @@ void Calculation::rotate()
     mRotationChanged = true;
 }
 
-
-
 double Calculation::setEnergy(const double deltaEnergy)
 {
     return Energy = setEnergy(getKineticEnergy(), getPotentialEnergy(), deltaEnergy);
