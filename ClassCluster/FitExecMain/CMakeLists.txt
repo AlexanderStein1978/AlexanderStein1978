@@ -9,6 +9,8 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(FitExecMain
+    datasortfunctor.h
+    datasortfunctor.cpp
     fitexeccontrol.h
     fitexeccontrol.cpp
     main.cpp

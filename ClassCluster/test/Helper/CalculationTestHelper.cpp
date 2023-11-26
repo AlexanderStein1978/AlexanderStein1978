@@ -145,6 +145,12 @@ Vector CalculationTestHelper::getAngularMomentum(const Vector& C)
     return L;
 }
 
+double CalculationTestHelper::getBindingAngle(const int leftIndex, const int centerIndex, const int rightIndex) const
+{
+    const Vector leftDiff = mCalc->P[leftIndex].R - mCalc->P[centerIndex].R, rightDiff = mCalc->P[rightIndex].R - mCalc->P[centerIndex].R;
+    return leftDiff.dot(rightDiff) / (leftDiff.length() * rightDiff.length());
+}
+
 void CalculationTestHelper::run(const int maxIteration)
 {
     mCalc->mMaxIt = maxIteration;
