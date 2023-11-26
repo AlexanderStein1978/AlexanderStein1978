@@ -5,8 +5,11 @@
 
 #include "particle.h"
 #include "potential.h"
+#include "DiagWindow.h"
 #include "CalculationTestHelper.h"
+#include "datasortfunctor.h"
 #include "utils.h"
+#include "heapsort.h"
 
 
 FitExecControl::FitExecControl()
@@ -16,8 +19,9 @@ FitExecControl::FitExecControl()
     struc[Calculation::NextTwo].InitAsOwner(dataDir + "/NextTwo.pot");
     struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
     struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
-    for (int i=0; i<100; ++i) angles[i] = M_PI * (i+1) / 101;
-    results = Create(100, 1000);
+    for (int i=0; i<100; ++i) startAngles[i] = M_PI * (i+1) / 101;
+    angles = Create(100, 1000);
+    energyDiffs = Create(100, 1000);
     for (int i=0; i<6; ++i)
     {
         /*int i = 0;
@@ -51,7 +55,7 @@ FitExecControl::FitExecControl()
         }*/
         /*switch(i)
         {
-            case 0:
+            case 0:Destroy
                 Calc[i]->setStepSize(5e-4);
                 Calc[i]->setEnergyCsvLogFilename("CSVEnergyLogFE1_200KE.csv");
                 break;
@@ -100,7 +104,7 @@ void FitExecControl::initInstance(int instanceId)
     Calc[instanceId] = new Calculation(struc);
     Calc[instanceId]->setInstanceId(instanceId);
     CalculationTestHelper helper(Calc[instanceId]);
-    double currentAngle = 0.5 * angles[instanceIndex[instanceId]];
+    double currentAngle = 0.5 * startAngles[instanceIndex[instanceId]];
     static const double radius = 8.0, center = 40.0;
     double sinAngR = radius * sin(currentAngle), cosAngR = radius * cos(currentAngle);
     printf("Starting Calc[%d] with index=%d and sinAngR=%f, cosAngR=%f\n", instanceId, instanceIndex[instanceId], sinAngR, cosAngR);
@@ -110,7 +114,7 @@ void FitExecControl::initInstance(int instanceId)
     helper.setParticles(3, R, v, MNB);
     helper.addParticleBinding(0, 1);
     helper.addParticleBinding(1, 2);
-    startE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+    lastE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
     connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)), Qt::DirectConnection);
     connect(Calc[instanceId], SIGNAL(finished()), Calc[instanceId], SLOT(emitStopped()));
     connect(Calc[instanceId], SIGNAL(Stopped(int)), this, SLOT(calculationStopped(int)));
@@ -144,7 +148,14 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
             break;
     }*/
     maxIteration[instanceId] = iteration;
-    if (iteration  < maxIt) results[instanceIndex[instanceId]][iteration] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy() - startE[instanceId];
+    if (iteration  < maxIt)
+    {
+        const double currentEnergy = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+        energyDiffs[instanceIndex[instanceId]][iteration] = currentEnergy - lastE[instanceId];
+        lastE[instanceId] = currentEnergy;
+        CalculationTestHelper helper(Calc[instanceId]);
+        angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
+    }
     else
     {
         //max[instanceId] = maxYCenterDev;
@@ -161,18 +172,37 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
 
 void FitExecControl::calculationStopped(int instanceId)
 {
-    for (int n = maxIteration[instanceId]; n < 1000; ++n) results[instanceIndex[instanceId]][n] = 0.0;
+    for (int n = maxIteration[instanceId]; n < 1000; ++n)
+    {
+        energyDiffs[instanceIndex[instanceId]][n] = 0.0;
+        angles[instanceIndex[instanceId]][n] = 0.0;
+    }
     initInstance(instanceId);
     for (int i=0; i<6; ++i) if (!stopped[i]) return;
     // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
     saveResults();
-    Destroy(results, 100);
-    QCoreApplication::exit(0);
+    Destroy(energyDiffs, 100);
+    Destroy(angles, 100);
+    // QCoreApplication::exit(0);
 }
 
 void FitExecControl::saveResults()
 {
-    QFile resultsFile("AngularDeviations.CSV");
+    double **drawData = Create(100000, 2);
+    DataSortFunctor sorter(angles, 100, 1000);
+    int *sort = utils::heapSort(sorter, 100000);
+    int **sortData = sorter.getResult(sort);
+    DiagWindow* resultWindow = new DiagWindow;
+    for (int n=0; n<100000; ++n)
+    {
+        drawData[n][0] = angles[sortData[n][0]][sortData[n][1]];
+        drawData[n][1] = energyDiffs[sortData[n][0]][sortData[n][1]];
+    }
+    Destroy(sortData, 100000);
+    resultWindow->setData(drawData, 100000);
+    resultWindow->show();
+
+    /*QFile resultsFile("AngularDeviations.CSV");
     resultsFile.open(QIODevice::WriteOnly);
     QTextStream S(&resultsFile);
     double AF = 180.0 / M_PI;
@@ -183,5 +213,5 @@ void FitExecControl::saveResults()
         S << QString::number(i);
         for (int j=0; j < 100; ++j) S << '\t' << QString::number(results[j][i]);
         S << '\n';
-    }
+    }*/
 }

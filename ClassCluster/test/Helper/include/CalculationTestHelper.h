@@ -36,6 +36,7 @@ public:
     Vector getAverageV();
     Vector getAngularMomentum(const Vector& C);
     void run(const int maxIteration);
+    double getBindingAngle(const int leftIndex, const int centerIndex, const int rightIndex) const;
 
 private:
     Calculation* mCalc;
