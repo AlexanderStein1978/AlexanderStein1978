@@ -30,7 +30,7 @@ private:
     bool stopped[6] = {false, false, false, false, false, false};
     //double max[6];
     PotStruct struc[Calculation::NumPot];
-    double startAngles[100], **angles, **energyDiffs, lastE[6];
+    double startAngles[93], /* **angles,*/ **energyDiffs, lastE[6];
     int currentIndex = -1, instanceIndex[6], maxIteration[6];
     Calculation* Calc[6];
     QMutex mutex;

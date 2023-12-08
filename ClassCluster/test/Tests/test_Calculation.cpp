@@ -176,3 +176,22 @@ TEST_F(CalculationTest, Triple_FT)
     EXPECT_NEAR(LA.Y(), LB.Y(), 1e-2);
     EXPECT_NEAR(LA.Z(), LB.Z(), 1e-2);
 }
+
+TEST_F(CalculationTest, Triple_GetU)
+{
+    Vector R[3] = {Vector(34.343146, 45.656854, 40.0), Vector(40.0, 40.0, 40.0), Vector(45.656854, 45.656854, 40.0)}, v[3], a[3];
+    int MNB[3] = {1, 2, 1};
+    cth->setParticles(3, R, v, MNB);
+    cth->addParticleBinding(0, 1);
+    cth->addParticleBinding(1, 2);
+    double U(0.0);
+    EXPECT_TRUE(cth->getU(0, 2, U, nullptr, 3, a, false));
+    EXPECT_NEAR(a[0].X(), a[0].Y(), 1.5e-5);
+    EXPECT_NEAR(a[2].X(), -1.0 * a[2].Y(), 1.5e-5);
+    EXPECT_NEAR(a[0].Y(), a[2].Y(), 1.5e-5);
+    EXPECT_NEAR(0.0, a[0].Z(), 1.5e-5);
+    EXPECT_NEAR(0.0, a[1].X(), 1.5e-5);
+    EXPECT_NEAR(a[0].Y() + a[2].Y(), -1.0 * a[1].Y(), 1.5e-5);
+    EXPECT_NEAR(0.0, a[1].Z(), 1.5e-5);
+    EXPECT_NEAR(0.0, a[2].Z(), 1.5e-5);
+}

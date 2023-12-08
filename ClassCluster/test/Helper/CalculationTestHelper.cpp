@@ -2,6 +2,8 @@
 #include "Calculation.h"
 #include "particle.h"
 
+#include <cmath>
+
 
 CalculationTestHelper::CalculationTestHelper(Calculation* calc) : mCalc(calc)
 {
@@ -148,7 +150,14 @@ Vector CalculationTestHelper::getAngularMomentum(const Vector& C)
 double CalculationTestHelper::getBindingAngle(const int leftIndex, const int centerIndex, const int rightIndex) const
 {
     const Vector leftDiff = mCalc->P[leftIndex].R - mCalc->P[centerIndex].R, rightDiff = mCalc->P[rightIndex].R - mCalc->P[centerIndex].R;
-    return leftDiff.dot(rightDiff) / (leftDiff.length() * rightDiff.length());
+    return acos(leftDiff.dot(rightDiff) / (leftDiff.length() * rightDiff.length()));
+}
+
+double CalculationTestHelper::getSpeedSum() const
+{
+    double result = 0.0;
+    for (int n=0; n < mCalc->N; ++n) result += mCalc->P[n].v.length();
+    return result;
 }
 
 void CalculationTestHelper::run(const int maxIteration)
@@ -156,4 +165,9 @@ void CalculationTestHelper::run(const int maxIteration)
     mCalc->mMaxIt = maxIteration;
     mCalc->start();
     mCalc->wait();
+}
+
+bool CalculationTestHelper::getU(const int n1, const int n2, double& U, const Vector *const t0, int pos, Vector* a, const bool collectCandidates) const
+{
+    return Calculation::Success == mCalc->getU(mCalc->P + n1, mCalc->P + n2, U, t0, static_cast<Calculation::Positions>(pos), a, collectCandidates);
 }

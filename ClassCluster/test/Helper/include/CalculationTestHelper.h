@@ -37,6 +37,8 @@ public:
     Vector getAngularMomentum(const Vector& C);
     void run(const int maxIteration);
     double getBindingAngle(const int leftIndex, const int centerIndex, const int rightIndex) const;
+    double getSpeedSum() const;
+    bool getU(const int n1, const int n2, double &U, const Vector* const t0, int pos, Vector *a, const bool collectCandidates) const;
 
 private:
     Calculation* mCalc;
