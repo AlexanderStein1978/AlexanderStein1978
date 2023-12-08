@@ -19,9 +19,9 @@ FitExecControl::FitExecControl()
     struc[Calculation::NextTwo].InitAsOwner(dataDir + "/NextTwo.pot");
     struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
     struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
-    for (int i=0; i<100; ++i) startAngles[i] = M_PI * (i+1) / 101;
-    angles = Create(100, 1000);
-    energyDiffs = Create(100, 1000);
+    for (int i=0; i < 93; ++i) startAngles[i] = M_PI * (i+8) / 101;
+    // angles = Create(93, 1000);
+    energyDiffs = Create(93, 1000);
     for (int i=0; i<6; ++i)
     {
         /*int i = 0;
@@ -96,7 +96,7 @@ void FitExecControl::initInstance(int instanceId)
     mutex.lock();
     instanceIndex[instanceId] = ++currentIndex;
     mutex.unlock();
-    if (currentIndex >= 100)
+    if (currentIndex >= 93)
     {
         stopped[instanceId] = true;
         return;
@@ -150,11 +150,11 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
     maxIteration[instanceId] = iteration;
     if (iteration  < maxIt)
     {
-        const double currentEnergy = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
-        energyDiffs[instanceIndex[instanceId]][iteration] = currentEnergy - lastE[instanceId];
-        lastE[instanceId] = currentEnergy;
         CalculationTestHelper helper(Calc[instanceId]);
-        angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
+        const double currentEnergy = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+        energyDiffs[instanceIndex[instanceId]][iteration] = (currentEnergy - lastE[instanceId]); // / helper.getSpeedSum();
+        lastE[instanceId] = currentEnergy;
+        // angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
     }
     else
     {
@@ -175,21 +175,25 @@ void FitExecControl::calculationStopped(int instanceId)
     for (int n = maxIteration[instanceId]; n < 1000; ++n)
     {
         energyDiffs[instanceIndex[instanceId]][n] = 0.0;
-        angles[instanceIndex[instanceId]][n] = 0.0;
+        // angles[instanceIndex[instanceId]][n] = 0.0;
     }
     initInstance(instanceId);
     for (int i=0; i<6; ++i) if (!stopped[i]) return;
     // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
     saveResults();
-    Destroy(energyDiffs, 100);
-    Destroy(angles, 100);
-    // QCoreApplication::exit(0);
+    Destroy(energyDiffs, 93);
+    // Destroy(angles, 93);
+    QCoreApplication::exit(0);
 }
 
 void FitExecControl::saveResults()
 {
-    double **drawData = Create(100000, 2);
-    DataSortFunctor sorter(angles, 100, 1000);
+    double FQS = 0.0;
+    for (int n=0; n<93; ++n) for (int i=0; i<1000; ++i) FQS += energyDiffs[n][i] * energyDiffs[n][i];
+    printf("FQS=%g\n", FQS);
+
+    /*double **drawData = Create(100000, 2);
+    DataSortFunctor sorter(angles, 93, 1000);
     int *sort = utils::heapSort(sorter, 100000);
     int **sortData = sorter.getResult(sort);
     DiagWindow* resultWindow = new DiagWindow;
@@ -200,7 +204,7 @@ void FitExecControl::saveResults()
     }
     Destroy(sortData, 100000);
     resultWindow->setData(drawData, 100000);
-    resultWindow->show();
+    resultWindow->show();*/
 
     /*QFile resultsFile("AngularDeviations.CSV");
     resultsFile.open(QIODevice::WriteOnly);

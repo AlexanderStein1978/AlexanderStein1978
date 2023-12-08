@@ -1358,7 +1358,7 @@ bool Calculation::setPotential(const PotRole role, PotStruct &PotS)
         if (role == Angular && n>0 && n < NPot - 1)
         {
             double cosP = static_cast<double>(n) * 2.0 / (NPot - 1) - 1.0;
-            dPdR[role][n] *= (-sin(acos(cosP)) * (1 + cosP * cosP) * 2.0);
+            dPdR[role][n] *= sin(acos(cosP)) * cosP * -2.0;
         }
     }
     if (role == Angular)
