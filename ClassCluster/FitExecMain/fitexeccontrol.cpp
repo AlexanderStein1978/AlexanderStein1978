@@ -3,6 +3,8 @@
 #include <QCoreApplication>
 #include <QTextStream>
 
+#include <algorithm>
+
 #include "particle.h"
 #include "potential.h"
 #include "DiagWindow.h"
@@ -84,6 +86,11 @@ FitExecControl::FitExecControl()
     }
 }
 
+FitExecControl::~FitExecControl()
+{
+    if (nullptr != nullPot) delete[] nullPot;
+}
+
 void FitExecControl::initInstance(int instanceId)
 {
     maxIteration[instanceId] = -1;
@@ -104,6 +111,12 @@ void FitExecControl::initInstance(int instanceId)
     Calc[instanceId] = new Calculation(struc);
     Calc[instanceId]->setInstanceId(instanceId);
     CalculationTestHelper helper(Calc[instanceId]);
+    if (nullptr == nullPot)
+    {
+        const int numPoints = helper.getNumPotentialPoints();
+        nullPot = new double[numPoints];
+        std::fill(nullPot, nullPot + numPoints, 0.0);
+    }
     double currentAngle = 0.5 * startAngles[instanceIndex[instanceId]];
     static const double radius = 8.0, center = 40.0;
     double sinAngR = radius * sin(currentAngle), cosAngR = radius * cos(currentAngle);
@@ -121,6 +134,21 @@ void FitExecControl::initInstance(int instanceId)
     Calc[instanceId]->start();
 }
 
+void FitExecControl::addToNullDiff(const double value)
+{
+    const double diff = abs(value);
+    if (diff > maxNullDiff) maxNullDiff = diff;
+    nullDiffSum += diff;
+    ++numNullDiff;
+}
+
+void FitExecControl::addToPairDiff(const double value1, const double value2)
+{
+    const double pairDiff = abs(value2 - value1);
+    if (pairDiff > maxPairDiff) maxPairDiff = pairDiff;
+    pairDiffSum += pairDiff;
+    ++numPairDiff;
+}
 
 void FitExecControl::printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev)
 {
@@ -155,6 +183,23 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         energyDiffs[instanceIndex[instanceId]][iteration] = (currentEnergy - lastE[instanceId]); // / helper.getSpeedSum();
         lastE[instanceId] = currentEnergy;
         // angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
+        double U(0.0);
+        Vector a[3];
+        helper.replacePotential(Calculation::Remaining, nullPot, nullPot);
+        if (true == helper.getU(0, 2, U, nullptr, 3, a, false))
+        {
+            addToNullDiff(helper.getPositionDifference(0, 1).dot(a[0]));
+            addToNullDiff(helper.getPositionDifference(2, 1).dot(a[2]));
+            addToPairDiff(a[2].X(), -1.0 * a[2].Y());
+            addToPairDiff(a[0].Y(), a[2].Y());
+            addToNullDiff(a[0].Z());
+            addToNullDiff(a[1].X());
+            addToPairDiff(a[0].Y() + a[2].Y(), -1.0 * a[1].Y());
+            addToNullDiff(a[1].Z());
+            addToNullDiff(a[2].Z());
+        }
+        else ++errorCount;
+        helper.resetPotential(Calculation::Remaining);
     }
     else
     {
@@ -190,6 +235,8 @@ void FitExecControl::saveResults()
 {
     double FQS = 0.0;
     for (int n=0; n<93; ++n) for (int i=0; i<1000; ++i) FQS += energyDiffs[n][i] * energyDiffs[n][i];
+    printf("numError=%d, numPairDiff=%d, numNullDiff=%d, maxPairDiff=%g, avPairDiff=%g, maxNullDiff=%g, avNullDiff=%g\n", errorCount, numPairDiff, numNullDiff, maxPairDiff,
+           pairDiffSum / numPairDiff, maxNullDiff, nullDiffSum / numNullDiff);
     printf("FQS=%g\n", FQS);
 
     /*double **drawData = Create(100000, 2);

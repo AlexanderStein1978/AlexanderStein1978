@@ -18,6 +18,7 @@ class FitExecControl : public QObject
 
 public:
     FitExecControl();
+    ~FitExecControl();
 
 private slots:
     void printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev);
@@ -26,12 +27,14 @@ private slots:
 
 private:
     void saveResults();
+    void addToNullDiff(const double value);
+    void addToPairDiff(const double value1, const double value2);
 
     bool stopped[6] = {false, false, false, false, false, false};
     //double max[6];
     PotStruct struc[Calculation::NumPot];
-    double startAngles[93], /* **angles,*/ **energyDiffs, lastE[6];
-    int currentIndex = -1, instanceIndex[6], maxIteration[6];
+    double startAngles[93], /* **angles,*/ **energyDiffs, lastE[6], pairDiffSum = 0.0, maxPairDiff = 0.0, nullDiffSum = 0.0, maxNullDiff = 0.0, *nullPot = nullptr;
+    int currentIndex = -1, instanceIndex[6], maxIteration[6], numPairDiff = 0, numNullDiff = 0, errorCount = 0;
     Calculation* Calc[6];
     QMutex mutex;
 };

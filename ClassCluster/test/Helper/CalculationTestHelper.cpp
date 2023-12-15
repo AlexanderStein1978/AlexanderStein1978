@@ -5,8 +5,19 @@
 #include <cmath>
 
 
-CalculationTestHelper::CalculationTestHelper(Calculation* calc) : mCalc(calc)
+CalculationTestHelper::CalculationTestHelper(Calculation* calc) : mCalc(calc), Pot(new double*[Calculation::NumPot]), dPdR(new double*[Calculation::NumPot])
 {
+    for (int n=0; n < Calculation::NumPot; ++n)
+    {
+        Pot[n] = calc->Pot[n];
+        dPdR[n] = calc->dPdR[n];
+    }
+}
+
+CalculationTestHelper::~CalculationTestHelper()
+{
+    delete[] Pot;
+    delete[] dPdR;
 }
 
 bool CalculationTestHelper::bindsParticleTo(Particle* P1, Particle* P2) const
@@ -170,4 +181,21 @@ void CalculationTestHelper::run(const int maxIteration)
 bool CalculationTestHelper::getU(const int n1, const int n2, double& U, const Vector *const t0, int pos, Vector* a, const bool collectCandidates) const
 {
     return Calculation::Success == mCalc->getU(mCalc->P + n1, mCalc->P + n2, U, t0, static_cast<Calculation::Positions>(pos), a, collectCandidates);
+}
+
+Vector CalculationTestHelper::getPositionDifference(const int index1, const int index2) const
+{
+    return mCalc->P[index2].R - mCalc->P[index1].R;
+}
+
+void CalculationTestHelper::replacePotential(const Calculation::PotRole role, double *const newPot, double *const newdPdR)
+{
+    mCalc->Pot[role] = newPot;
+    mCalc->dPdR[role] = newdPdR;
+}
+
+void CalculationTestHelper::resetPotential(const Calculation::PotRole role)
+{
+    mCalc->Pot[role] = Pot[role];
+    mCalc->dPdR[role] = dPdR[role];
 }
