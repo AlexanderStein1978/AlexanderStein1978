@@ -2,17 +2,17 @@
 
 
 #include "vector.h"
+#include "Calculation.h"
 
 
 struct Particle;
-
-class Calculation;
 
 
 class CalculationTestHelper
 {
 public:
     CalculationTestHelper(Calculation* calc);
+    ~CalculationTestHelper();
 
     bool bindsParticleTo(Particle* P1, Particle* P2) const;
     bool areParticlesBound(Particle* P1, Particle* P2) const;
@@ -35,11 +35,20 @@ public:
     Vector getCenterOfMass();
     Vector getAverageV();
     Vector getAngularMomentum(const Vector& C);
+    Vector getPositionDifference(const int index1, const int index2) const;
     void run(const int maxIteration);
     double getBindingAngle(const int leftIndex, const int centerIndex, const int rightIndex) const;
     double getSpeedSum() const;
     bool getU(const int n1, const int n2, double &U, const Vector* const t0, int pos, Vector *a, const bool collectCandidates) const;
+    void replacePotential(const Calculation::PotRole role, double* const newPot, double* const newdPdR);
+    void resetPotential(const Calculation::PotRole role);
+
+    inline int getNumPotentialPoints()
+    {
+        return mCalc->NPot;
+    }
 
 private:
     Calculation* mCalc;
+    double **Pot, **dPdR;
 };
