@@ -43,9 +43,29 @@ public:
     void replacePotential(const Calculation::PotRole role, double* const newPot, double* const newdPdR);
     void resetPotential(const Calculation::PotRole role);
 
-    inline int getNumPotentialPoints()
+    inline int getNumPotentialPoints() const
     {
         return mCalc->NPot;
+    }
+
+    inline const Particle* getParticles() const
+    {
+        return mCalc->P;
+    }
+
+    inline double getPotentialPoint(const Calculation::PotRole role, const int pos) const
+    {
+        return mCalc->Pot[role][pos];
+    }
+
+    inline double getdPdRPoint(const Calculation::PotRole role, const int pos) const
+    {
+        return mCalc->dPdR[role][pos];
+    }
+
+    inline double geth() const
+    {
+        return mCalc->h;
     }
 
 private:
