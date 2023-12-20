@@ -22,7 +22,8 @@ FitExecControl::FitExecControl()
     struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
     struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
     for (int i=0; i < 93; ++i) startAngles[i] = M_PI * (i+8) / 101;
-    // angles = Create(93, 1000);
+    angles = Create(93, 1000);
+    dPdRErrorRatio = Create(93, 1000);
     energyDiffs = Create(93, 1000);
     for (int i=0; i<6; ++i)
     {
@@ -150,6 +151,21 @@ void FitExecControl::addToPairDiff(const double value1, const double value2)
     ++numPairDiff;
 }
 
+void FitExecControl::adddPdRErrorRatio(const int instanceId, const int iteration, const CalculationTestHelper& helper, const Vector* const a)
+{
+    const Particle* P = helper.getParticles();
+    const Vector d1 = P[0].R - P[1].R, d2 = P[2].R - P[1].R, ld1 = P[0].lR - P[1].lR, ld2 = P[2].lR - P[1].lR;
+    const double dr1 = 1.0 / d1.length(), dr2 = 1.0 / d2.length(), ldr1 = 1.0 / ld1.length(), ldr2 = 1.0 / ld2.length(), coslP = ld1.dot(ld2) * ldr1 * ldr2, cosP = d1.dot(d2) * dr1 * dr2;
+    const int NPot = helper.getNumPotentialPoints(), ap = static_cast<int>((1.0 + cosP) * 0.5 * (NPot - 1));
+    const int lap = static_cast<int>((1.0 + coslP) * 0.5 * (NPot - 1));
+    const double T = 0.5 * (P[0].v.lengthSquared() + P[1].v.lengthSquared() + P[2].v.lengthSquared()), lT = 0.5 * (P[0].lv.lengthSquared() + P[1].lv.lengthSquared() + P[2].lv.lengthSquared());
+    const double ava = 0.5 * (helper.getdPdRPoint(Calculation::Angular, ap) + helper.getdPdRPoint(Calculation::Angular, lap));
+    const double U = Calc[instanceId]->getPotentialEnergy(), lU = lastE[instanceId] - lT, EE = U + T - lU - lT;
+    const double h = helper.geth(), deltaA = EE / (h * (a[0].unit().dot(0.5 * (P[0].v + P[0].lv)) + (coslP + cosP) * 0.5 * (P[1].v + P[1].lv).length() + a[2].unit().dot(0.5 * (P[2].v + P[2].lv))));
+    const double aErrorRatio = (ava + deltaA) / ava;
+
+}
+
 void FitExecControl::printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev)
 {
     //printf("instance%d: it=%d, currentDev=%g, maxDev=%g\n", instanceId, iteration, currentYCenterDev, maxYCenterDev);
@@ -182,7 +198,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         const double currentEnergy = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
         energyDiffs[instanceIndex[instanceId]][iteration] = (currentEnergy - lastE[instanceId]); // / helper.getSpeedSum();
         lastE[instanceId] = currentEnergy;
-        // angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
+        angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
         double U(0.0);
         Vector a[3];
         helper.replacePotential(Calculation::Remaining, nullPot, nullPot);
@@ -190,7 +206,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         {
             addToNullDiff(helper.getPositionDifference(0, 1).dot(a[0]));
             addToNullDiff(helper.getPositionDifference(2, 1).dot(a[2]));
-            addToPairDiff(a[2].X(), -1.0 * a[2].Y());
+            addToPairDiff(a[2].X(), -1.0 * a[0].X());
             addToPairDiff(a[0].Y(), a[2].Y());
             addToNullDiff(a[0].Z());
             addToNullDiff(a[1].X());
@@ -200,6 +216,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         }
         else ++errorCount;
         helper.resetPotential(Calculation::Remaining);
+        adddPdRErrorRatio(instanceId, iteration, helper, a);
     }
     else
     {

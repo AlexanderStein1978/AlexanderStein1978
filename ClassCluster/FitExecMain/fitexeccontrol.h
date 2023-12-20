@@ -10,6 +10,8 @@
 
 
 class Calculation;
+class CalculationTestHelper;
+class Vector;
 
 
 class FitExecControl : public QObject
@@ -29,11 +31,12 @@ private:
     void saveResults();
     void addToNullDiff(const double value);
     void addToPairDiff(const double value1, const double value2);
+    void adddPdRErrorRatio(const int instanceId, const int iteration, const CalculationTestHelper& helper, const Vector* const a);
 
     bool stopped[6] = {false, false, false, false, false, false};
     //double max[6];
     PotStruct struc[Calculation::NumPot];
-    double startAngles[93], /* **angles,*/ **energyDiffs, lastE[6], pairDiffSum = 0.0, maxPairDiff = 0.0, nullDiffSum = 0.0, maxNullDiff = 0.0, *nullPot = nullptr;
+    double startAngles[93], **angles, **dPdRErrorRatio, **energyDiffs, lastE[6], pairDiffSum = 0.0, maxPairDiff = 0.0, nullDiffSum = 0.0, maxNullDiff = 0.0, *nullPot = nullptr;
     int currentIndex = -1, instanceIndex[6], maxIteration[6], numPairDiff = 0, numNullDiff = 0, errorCount = 0;
     Calculation* Calc[6];
     QMutex mutex;
