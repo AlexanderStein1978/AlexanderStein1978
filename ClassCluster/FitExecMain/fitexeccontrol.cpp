@@ -21,10 +21,10 @@ FitExecControl::FitExecControl()
     struc[Calculation::NextTwo].InitAsOwner(dataDir + "/NextTwo.pot");
     struc[Calculation::Remaining].InitAsOwner(dataDir + "/Remaining.pot");
     struc[Calculation::Angular].InitAsOwner(dataDir + "/Angular.pot");
-    for (int i=0; i < 93; ++i) startAngles[i] = M_PI * (i+8) / 101;
-    angles = Create(93, 1000);
-    dPdRErrorRatio = Create(93, 1000);
-    energyDiffs = Create(93, 1000);
+    for (int i=0; i < 92; ++i) startAngles[i] = M_PI * (i+9) / 101;
+    angles = Create(92, 1000);
+    dPdRErrorRatio = Create(92, 1000);
+    energyDiffs = Create(92, 1000);
     for (int i=0; i<6; ++i)
     {
         /*int i = 0;
@@ -104,7 +104,7 @@ void FitExecControl::initInstance(int instanceId)
     mutex.lock();
     instanceIndex[instanceId] = ++currentIndex;
     mutex.unlock();
-    if (currentIndex >= 93)
+    if (currentIndex >= 92)
     {
         stopped[instanceId] = true;
         return;
@@ -128,7 +128,9 @@ void FitExecControl::initInstance(int instanceId)
     helper.setParticles(3, R, v, MNB);
     helper.addParticleBinding(0, 1);
     helper.addParticleBinding(1, 2);
-    lastE[instanceId] = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+    double U = Calc[instanceId]->getPotentialEnergy(), T = Calc[instanceId]->getKineticEnergy();
+    printf("Start instanceId=%d, U=%g, T=%g\n", instanceId, U, T);
+    lastE[instanceId] = U + T;
     connect(Calc[instanceId], SIGNAL(CalcState(int, int, double, double)), this, SLOT(printCalcState(int, int, double, double)), Qt::DirectConnection);
     connect(Calc[instanceId], SIGNAL(finished()), Calc[instanceId], SLOT(emitStopped()));
     connect(Calc[instanceId], SIGNAL(Stopped(int)), this, SLOT(calculationStopped(int)));
@@ -151,22 +153,30 @@ void FitExecControl::addToPairDiff(const double value1, const double value2)
     ++numPairDiff;
 }
 
-void FitExecControl::adddPdRErrorRatio(const int instanceId, const int iteration, const CalculationTestHelper& helper, const Vector* const a)
+void FitExecControl::adddPdRErrorRatio(const int instanceId, const int iteration, const CalculationTestHelper& helper, const Vector* const a, const double lastOE)
 {
     const Particle* P = helper.getParticles();
     const Vector d1 = P[0].R - P[1].R, d2 = P[2].R - P[1].R, ld1 = P[0].lR - P[1].lR, ld2 = P[2].lR - P[1].lR;
-    const double dr1 = 1.0 / d1.length(), dr2 = 1.0 / d2.length(), ldr1 = 1.0 / ld1.length(), ldr2 = 1.0 / ld2.length(), coslP = ld1.dot(ld2) * ldr1 * ldr2, cosP = d1.dot(d2) * dr1 * dr2;
+    const double dr1 = 1.0 / d1.length(), dr2 = 1.0 / d2.length(), ldr1 = 1.0 / ld1.length(), ldr2 = 1.0 / ld2.length(), coslP = ld1.dot(ld2) * ldr1 * ldr2;
+    const double cosP = d1.dot(d2) * dr1 * dr2;
     const int NPot = helper.getNumPotentialPoints(), ap = static_cast<int>((1.0 + cosP) * 0.5 * (NPot - 1));
     const int lap = static_cast<int>((1.0 + coslP) * 0.5 * (NPot - 1));
-    const double T = 0.5 * (P[0].v.lengthSquared() + P[1].v.lengthSquared() + P[2].v.lengthSquared()), lT = 0.5 * (P[0].lv.lengthSquared() + P[1].lv.lengthSquared() + P[2].lv.lengthSquared());
+    const double T = 0.5 * (P[0].v.lengthSquared() + P[1].v.lengthSquared() + P[2].v.lengthSquared());
+    const double lT = 0.5 * (P[0].lv.lengthSquared() + P[1].lv.lengthSquared() + P[2].lv.lengthSquared());
     const double ava = 0.5 * (helper.getdPdRPoint(Calculation::Angular, ap) + helper.getdPdRPoint(Calculation::Angular, lap));
-    const double U = Calc[instanceId]->getPotentialEnergy(), lU = lastE[instanceId] - lT, EE = U + T - lU - lT;
-    const double h = helper.geth(), deltaA = EE / (h * (a[0].unit().dot(0.5 * (P[0].v + P[0].lv)) + (coslP + cosP) * 0.5 * (P[1].v + P[1].lv).length() + a[2].unit().dot(0.5 * (P[2].v + P[2].lv))));
+    const double U = Calc[instanceId]->getPotentialEnergy(), lU = lastOE - lT, EE = U + T - lU - lT;
+    const double h = helper.geth(), eCalcDiff = EE - energyDiffs[instanceIndex[instanceId]][iteration];
+    const double deltaA = EE / (h * (a[0].unit().dot(0.5 * (P[0].v + P[0].lv)) + (coslP + cosP) * 0.5 * a[1].unit().dot(P[1].v + P[1].lv) + a[2].unit().dot(0.5 * (P[2].v + P[2].lv))));
     const double aErrorRatio = (ava + deltaA) / ava;
-
+    ecalcFQS += eCalcDiff * eCalcDiff;
+    if (isnan(aErrorRatio) || isinf(aErrorRatio))
+    {
+        dPdRErrorRatio[instanceIndex[instanceId]][iteration] = 1.0;
+    }
+    else dPdRErrorRatio[instanceIndex[instanceId]][iteration] = aErrorRatio;
 }
 
-void FitExecControl::printCalcState(int instanceId, int iteration, double currentYCenterDev, double maxYCenterDev)
+void FitExecControl::printCalcState(int instanceId, int iteration, double /*currentYCenterDev*/, double /*maxYCenterDev*/)
 {
     //printf("instance%d: it=%d, currentDev=%g, maxDev=%g\n", instanceId, iteration, currentYCenterDev, maxYCenterDev);
     static const int maxIt = 1000;
@@ -195,14 +205,16 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
     if (iteration  < maxIt)
     {
         CalculationTestHelper helper(Calc[instanceId]);
-        const double currentEnergy = Calc[instanceId]->getPotentialEnergy() + Calc[instanceId]->getKineticEnergy();
+        double U = Calc[instanceId]->getPotentialEnergy(), T = Calc[instanceId]->getKineticEnergy();
+        // printf("iteration=%d, instanceId=%d, U=%g, T=%g\n", iteration, instanceId, U, T);
+        const double currentEnergy = U + T, lastOE = lastE[instanceId];
         energyDiffs[instanceIndex[instanceId]][iteration] = (currentEnergy - lastE[instanceId]); // / helper.getSpeedSum();
         lastE[instanceId] = currentEnergy;
         angles[instanceIndex[instanceId]][iteration] = helper.getBindingAngle(0, 1, 2);
-        double U(0.0);
+        double UB(0.0);
         Vector a[3];
         helper.replacePotential(Calculation::Remaining, nullPot, nullPot);
-        if (true == helper.getU(0, 2, U, nullptr, 3, a, false))
+        if (true == helper.getU(0, 2, UB, nullptr, 3, a, false))
         {
             addToNullDiff(helper.getPositionDifference(0, 1).dot(a[0]));
             addToNullDiff(helper.getPositionDifference(2, 1).dot(a[2]));
@@ -216,7 +228,7 @@ void FitExecControl::printCalcState(int instanceId, int iteration, double curren
         }
         else ++errorCount;
         helper.resetPotential(Calculation::Remaining);
-        adddPdRErrorRatio(instanceId, iteration, helper, a);
+        adddPdRErrorRatio(instanceId, iteration, helper, a, lastOE);
     }
     else
     {
@@ -237,38 +249,42 @@ void FitExecControl::calculationStopped(int instanceId)
     for (int n = maxIteration[instanceId]; n < 1000; ++n)
     {
         energyDiffs[instanceIndex[instanceId]][n] = 0.0;
-        // angles[instanceIndex[instanceId]][n] = 0.0;
+        angles[instanceIndex[instanceId]][n] = 0.0;
     }
     initInstance(instanceId);
     for (int i=0; i<6; ++i) if (!stopped[i]) return;
     // for (int i=0; i<6; ++i) printf("instance%d: max=%g\n", i, max[i]);
     saveResults();
-    Destroy(energyDiffs, 93);
-    // Destroy(angles, 93);
-    QCoreApplication::exit(0);
+    Destroy(energyDiffs, 92);
+    Destroy(angles, 92);
+    Destroy(dPdRErrorRatio, 92);
+    // QCoreApplication::exit(0);
 }
 
 void FitExecControl::saveResults()
 {
     double FQS = 0.0;
-    for (int n=0; n<93; ++n) for (int i=0; i<1000; ++i) FQS += energyDiffs[n][i] * energyDiffs[n][i];
+    for (int n=0; n<92; ++n) for (int i=0; i<1000; ++i)
+    {
+        FQS += energyDiffs[n][i] * energyDiffs[n][i];
+    }
     printf("numError=%d, numPairDiff=%d, numNullDiff=%d, maxPairDiff=%g, avPairDiff=%g, maxNullDiff=%g, avNullDiff=%g\n", errorCount, numPairDiff, numNullDiff, maxPairDiff,
            pairDiffSum / numPairDiff, maxNullDiff, nullDiffSum / numNullDiff);
-    printf("FQS=%g\n", FQS);
+    printf("FQS=%g, eCalcFQS=%g\n", FQS, ecalcFQS);
 
-    /*double **drawData = Create(100000, 2);
-    DataSortFunctor sorter(angles, 93, 1000);
-    int *sort = utils::heapSort(sorter, 100000);
+    double **drawData = Create(92000, 2);
+    DataSortFunctor sorter(angles, 92, 1000);
+    int *sort = utils::heapSort(sorter, 92000);
     int **sortData = sorter.getResult(sort);
     DiagWindow* resultWindow = new DiagWindow;
-    for (int n=0; n<100000; ++n)
+    for (int n=0; n<92000; ++n)
     {
         drawData[n][0] = angles[sortData[n][0]][sortData[n][1]];
-        drawData[n][1] = energyDiffs[sortData[n][0]][sortData[n][1]];
+        drawData[n][1] = dPdRErrorRatio[sortData[n][0]][sortData[n][1]];
     }
-    Destroy(sortData, 100000);
-    resultWindow->setData(drawData, 100000);
-    resultWindow->show();*/
+    Destroy(sortData, 92000);
+    resultWindow->setData(drawData, 92000);
+    resultWindow->show();
 
     /*QFile resultsFile("AngularDeviations.CSV");
     resultsFile.open(QIODevice::WriteOnly);
