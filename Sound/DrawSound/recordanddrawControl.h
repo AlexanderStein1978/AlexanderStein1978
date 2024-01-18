@@ -8,7 +8,7 @@ class QPushButton;
 class QLabel;
 class QComboBox;
 class QAudioInput;
-class QBuffer;
+class QFile;
 
 
 class SoundRecordAndDrawControl : public QWidget
@@ -21,14 +21,19 @@ public:
 
 private slots:
     void StartRecording();
-    void StopAndDraw();
+    void Stop();
+    void Draw();
 
 private:
+    void VerifyFileExists(QString deviceName);
+    bool DetermineSampleTypeAndSize();
+
     QComboBox *mInputSelectorBox;
-    QPushButton *mStartButton, *mStopAndDrawButton;
+    QPushButton *mStartButton, *mStopButton, *mDrawButton;
     QLabel* mSizeDisplay, *mLengthDisplay;
     QAudioInput* mInput;
-    QBuffer* mBuffer;
+    QFile* mFile;
     QAudioFormat::SampleType mSampleType;
-    int mSampleSize;
+    int mSampleSize, mSampleRate;
+    qint64 mProcessedUSec;
 };

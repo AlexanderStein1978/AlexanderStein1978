@@ -6,7 +6,8 @@
 #include <QComboBox>
 #include <QAudioDeviceInfo>
 #include <QAudioInput>
-#include <QBuffer>
+#include <QFile>
+#include <QDataStream>
 #include <QMessageBox>
 
 #include <algorithm>
@@ -22,63 +23,51 @@ namespace
 
 
 SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
-    mStopAndDrawButton(new QPushButton("Stop recording and draw", this)), mSizeDisplay(new QLabel(SizeString, this)), mLengthDisplay(new QLabel(LengthString, this)), mInput(nullptr), mBuffer(nullptr)
+    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mSizeDisplay(new QLabel(SizeString, this)), mLengthDisplay(new QLabel(LengthString, this)),
+    mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
 {
     setWindowTitle("Sound Record and Draw Control");
     QGridLayout *L = new QGridLayout(this);
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     for (QAudioDeviceInfo info : deviceList) mInputSelectorBox->addItem(info.deviceName());
-    L->setColumnStretch(0, 1);
-    L->setColumnStretch(1, 1);
     L->addWidget(new QLabel("Input device:", this), 0, 0);
-    L->addWidget(mInputSelectorBox, 0, 1);
+    L->addWidget(mInputSelectorBox, 0, 1, 1, 2);
     L->addWidget(mStartButton, 1, 0);
-    L->addWidget(mStopAndDrawButton, 1, 1);
-    mStopAndDrawButton->setEnabled(false);
+    L->addWidget(mStopButton, 1, 1);
+    L->addWidget(mDrawButton, 1, 2);
+    mStopButton->setEnabled(false);
     L->addWidget(mSizeDisplay, 2, 0);
     L->addWidget(mLengthDisplay, 2, 1);
     connect(mStartButton, SIGNAL(clicked()), this, SLOT(StartRecording()));
-    connect(mStopAndDrawButton, SIGNAL(clicked()), this, SLOT(StopAndDraw()));
+    connect(mStopButton, SIGNAL(clicked()), this, SLOT(Stop()));
+    connect(mDrawButton, SIGNAL(clicked()), this, SLOT(Draw()));
 }
 
 SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
 {
     if (nullptr != mInput) delete mInput;
-    if (nullptr != mBuffer) delete mBuffer;
+    if (nullptr != mFile) delete mFile;
 }
 
-void SoundRecordAndDrawControl::StartRecording()
+void SoundRecordAndDrawControl::VerifyFileExists(QString deviceName)
+{
+    deviceName.replace(QRegularExpression("[.,:=]"), "_");
+    if (nullptr != mFile) delete mFile;
+    mFile = new QFile(deviceName + ".dat", this);
+}
+
+bool SoundRecordAndDrawControl::DetermineSampleTypeAndSize()
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     int deviceIndex = mInputSelectorBox->currentIndex();
-    if (nullptr == mBuffer)
-    {
-        mBuffer = new QBuffer;
-    }
-    else
-    {
-        mBuffer->close();
-        mBuffer->buffer().clear();
-    }
-    mBuffer->buffer().reserve(100000000);
-    mBuffer->open(QIODevice::WriteOnly);
-    QAudioFormat format;
-    int sampleRate = 0;
-    QList<int> ssrs = deviceList[deviceIndex].supportedSampleRates();
-    for (int s : ssrs) if (s > sampleRate) sampleRate = s;
-    format.setSampleRate(sampleRate);
-    format.setChannelCount(1);
     mSampleSize = 0;
     QList<int> ssss = deviceList[deviceIndex].supportedSampleSizes();
     for (int s : ssss) if (s > mSampleSize) mSampleSize = s;
     if (0 == mSampleSize)
     {
         QMessageBox::warning(this, "DrawSound", "For the selected input device the needed information could not be found!");
-        return;
+        return false;
     }
-    format.setSampleSize(mSampleSize);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
     mSampleType = QAudioFormat::Unknown;
     QList<QAudioFormat::SampleType> ssts = deviceList[deviceIndex].supportedSampleTypes();
     for (QAudioFormat::SampleType t : ssts)
@@ -104,29 +93,61 @@ void SoundRecordAndDrawControl::StartRecording()
         }
         break;
     }
+    mSampleRate = 0;
+    QList<int> ssrs = deviceList[deviceIndex].supportedSampleRates();
+    for (int s : ssrs) if (s > mSampleRate) mSampleRate = s;
+    mProcessedUSec = 0u;
+    return true;
+}
+
+void SoundRecordAndDrawControl::StartRecording()
+{
+    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    int deviceIndex = mInputSelectorBox->currentIndex();
+    VerifyFileExists(mInputSelectorBox->currentText());
+    mFile->open(QIODevice::WriteOnly);
+    QAudioFormat format;
+    if (!DetermineSampleTypeAndSize()) return;
+    format.setSampleRate(mSampleRate);
+    format.setChannelCount(1);
+    format.setSampleSize(mSampleSize);
+    format.setCodec("audio/pcm");
+    format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(mSampleType);
     if (nullptr != mInput) delete mInput;
     mInput = new QAudioInput(deviceList[deviceIndex], format, this);
-    mInput->start(mBuffer);
+    mInput->start(mFile);
     mInputSelectorBox->setEnabled(false);
     mStartButton->setEnabled(false);
-    mStopAndDrawButton->setEnabled(true);
+    mStopButton->setEnabled(true);
 }
 
-void SoundRecordAndDrawControl::StopAndDraw()
+void SoundRecordAndDrawControl::Stop()
 {
-    mInput->suspend();
-    int nBytes = mInput->bytesReady();
+    mProcessedUSec = mInput->processedUSecs();
+    mInput->stop();
+    mFile->close();
+    mInputSelectorBox->setEnabled(true);
+    mStartButton->setEnabled(true);
+    mStopButton->setEnabled(false);
+}
+
+void SoundRecordAndDrawControl::Draw()
+{
+    VerifyFileExists(mInputSelectorBox->currentText());
+    int nBytes = mFile->size();
+    mFile->open(QIODevice::ReadOnly);
+    QDataStream stream(mFile);
+    char* inputData = new char[nBytes];
+    nBytes = stream.readRawData(inputData, nBytes);
+    if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
     int nSamples = nBytes / mSampleSize * 8, i, pos;
-    if (0 < nSamples)
+    if (nullptr != inputData && 0 < nBytes)
     {
-        double passedTime = 0.000001 * mInput->processedUSecs(), currentTime;
+        if (0u == mProcessedUSec) mProcessedUSec = static_cast<double>(nBytes) * 8000000 / (mSampleSize * mSampleRate);
+        double passedTime = 0.000001 * mProcessedUSec, currentTime;
         double timeStep = passedTime / nSamples;
-        QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-        int deviceIndex = mInputSelectorBox->currentIndex();
         double **data = Create(nSamples, 2);
-        QByteArray inputArray = mBuffer->data();
-        char* inputData = inputArray.data();
         for (i=pos=0, currentTime = 0.0; i < nSamples; ++i, currentTime += timeStep, pos += (mSampleSize / 8))
         {
             data[i][0] = currentTime;
@@ -162,6 +183,7 @@ void SoundRecordAndDrawControl::StopAndDraw()
                         data[i][1] = sample;
                     }
                     else if (mSampleSize == 64) data[i][1] = *reinterpret_cast<double*>(inputData + pos);
+                    printf("(%g|%g), ", data[i][0], data[i][1]);
                     break;
                 case QAudioFormat::Unknown:
                 case QAudioFormat::SignedInt:
@@ -172,11 +194,11 @@ void SoundRecordAndDrawControl::StopAndDraw()
                             data[i][1] = inputData[i];
                             break;
                         case 16:
-                            data[i][1] = *reinterpret_cast<int16_t*>(inputData + i);
+                            data[i][1] = *reinterpret_cast<int16_t*>(inputData + pos);
                             break;
                         default:
                             int32_t sample = 0;
-                            memcpy(&sample, inputData + i, mSampleSize);
+                            memcpy(&sample, inputData + pos, mSampleSize / 8);
                             data[i][1] = sample;
                             break;
                     }
@@ -188,8 +210,5 @@ void SoundRecordAndDrawControl::StopAndDraw()
         window->show();
     }
     else QMessageBox::information(this, "DrawSound", "With the selected input device no sound could be recorded!");
-    mInput->stop();
-    mInputSelectorBox->setEnabled(true);
-    mStartButton->setEnabled(true);
-    mStopAndDrawButton->setEnabled(false);
+    if (nullptr != inputData) delete[] inputData;
 }
