@@ -9,6 +9,7 @@ class QLabel;
 class QComboBox;
 class QAudioInput;
 class QFile;
+class QLineEdit;
 
 
 class SoundRecordAndDrawControl : public QWidget
@@ -23,14 +24,16 @@ private slots:
     void StartRecording();
     void Stop();
     void Draw();
+    void showFileDialog();
 
 private:
     void VerifyFileExists(QString deviceName);
     bool DetermineSampleTypeAndSize();
 
     QComboBox *mInputSelectorBox;
-    QPushButton *mStartButton, *mStopButton, *mDrawButton;
+    QPushButton *mStartButton, *mStopButton, *mDrawButton, *mFileDialogButton;
     QLabel* mSizeDisplay, *mLengthDisplay;
+    QLineEdit* mFileNameEdit;
     QAudioInput* mInput;
     QFile* mFile;
     QAudioFormat::SampleType mSampleType;

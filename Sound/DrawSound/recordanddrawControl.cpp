@@ -4,9 +4,11 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QAudioDeviceInfo>
 #include <QAudioInput>
 #include <QFile>
+#include <QFileDialog>
 #include <QDataStream>
 #include <QMessageBox>
 
@@ -23,8 +25,9 @@ namespace
 
 
 SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
-    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mSizeDisplay(new QLabel(SizeString, this)), mLengthDisplay(new QLabel(LengthString, this)),
-    mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
+    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mFileDialogButton(new QPushButton("...", this)), mSizeDisplay(new QLabel(SizeString, this)),
+    mLengthDisplay(new QLabel(LengthString, this)), mFileNameEdit(new QLineEdit(this)), mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0),
+    mProcessedUSec(0u)
 {
     setWindowTitle("Sound Record and Draw Control");
     QGridLayout *L = new QGridLayout(this);
@@ -32,15 +35,21 @@ SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new Q
     for (QAudioDeviceInfo info : deviceList) mInputSelectorBox->addItem(info.deviceName());
     L->addWidget(new QLabel("Input device:", this), 0, 0);
     L->addWidget(mInputSelectorBox, 0, 1, 1, 2);
-    L->addWidget(mStartButton, 1, 0);
-    L->addWidget(mStopButton, 1, 1);
-    L->addWidget(mDrawButton, 1, 2);
+    L->addWidget(new QLabel("Filename:", this), 1, 0);
+    QGridLayout *FL  = new QGridLayout;
+    L->addLayout(FL, 1, 1, 1, 2);
+    FL->addWidget(mFileNameEdit, 0, 0);
+    FL->addWidget(mFileDialogButton, 0, 1);
+    L->addWidget(mStartButton, 2, 0);
+    L->addWidget(mStopButton, 2, 1);
+    L->addWidget(mDrawButton, 2, 2);
     mStopButton->setEnabled(false);
-    L->addWidget(mSizeDisplay, 2, 0);
-    L->addWidget(mLengthDisplay, 2, 1);
+    L->addWidget(mSizeDisplay, 3, 0);
+    L->addWidget(mLengthDisplay, 3, 1);
     connect(mStartButton, SIGNAL(clicked()), this, SLOT(StartRecording()));
     connect(mStopButton, SIGNAL(clicked()), this, SLOT(Stop()));
     connect(mDrawButton, SIGNAL(clicked()), this, SLOT(Draw()));
+    connect(mFileDialogButton, SIGNAL(clicked()), this, SLOT(showFileDialog()));
 }
 
 SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
@@ -49,11 +58,19 @@ SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
     if (nullptr != mFile) delete mFile;
 }
 
+void SoundRecordAndDrawControl::showFileDialog()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Select filename", mFileNameEdit->text());
+    if (!fileName.isEmpty()) mFileNameEdit->setText(fileName);
+}
+
 void SoundRecordAndDrawControl::VerifyFileExists(QString deviceName)
 {
-    deviceName.replace(QRegularExpression("[.,:=]"), "_");
+    QString filename = mFileNameEdit->text();
+    if (filename.isEmpty()) filename = deviceName.replace(QRegularExpression("[.,:=]"), "_");
+    if (!filename.contains('.')) filename += ".dat";
     if (nullptr != mFile) delete mFile;
-    mFile = new QFile(deviceName + ".dat", this);
+    mFile = new QFile(filename, this);
 }
 
 bool SoundRecordAndDrawControl::DetermineSampleTypeAndSize()
