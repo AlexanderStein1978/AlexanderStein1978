@@ -14,7 +14,7 @@
 
 #include <algorithm>
 
-#include "DiagWindow.h"
+#include "sounddrawwindow.h"
 #include "utils.h"
 
 
@@ -200,7 +200,7 @@ void SoundRecordAndDrawControl::Draw()
                         data[i][1] = sample;
                     }
                     else if (mSampleSize == 64) data[i][1] = *reinterpret_cast<double*>(inputData + pos);
-                    printf("(%g|%g), ", data[i][0], data[i][1]);
+                    // printf("(%g|%g), ", data[i][0], data[i][1]);
                     break;
                 case QAudioFormat::Unknown:
                 case QAudioFormat::SignedInt:
@@ -221,9 +221,8 @@ void SoundRecordAndDrawControl::Draw()
                     }
             }
         }
-        DiagWindow* window = new DiagWindow;
+        SoundDrawWindow* window = new SoundDrawWindow(mFileNameEdit->text());
         window->setData(data, nSamples);
-        window->setUnits("time [s]", "intensity");
         window->show();
     }
     else QMessageBox::information(this, "DrawSound", "With the selected input device no sound could be recorded!");
