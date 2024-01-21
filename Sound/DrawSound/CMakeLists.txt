@@ -10,6 +10,8 @@ add_executable(DrawSound
     main.cpp
     recordanddrawControl.cpp
     recordanddrawControl.h
+    sounddrawwindow.cpp
+    sounddrawwindow.h
 )
 
 # target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
