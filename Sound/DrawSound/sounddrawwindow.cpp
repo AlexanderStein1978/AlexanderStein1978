@@ -9,6 +9,9 @@ SoundDrawWindow::SoundDrawWindow(QString filename)
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
     connect(Bild, SIGNAL(SelectionChanged(QRect*)), this, SLOT(SelectionChanged(QRect*)));
+    connect(Bild, SIGNAL(mouseMoved(QMouseEvent*)), this, SLOT(mouseMoved(QMouseEvent*)));
+    connect(Bild, SIGNAL(mousePressed(QMouseEvent*)), this, SLOT(mousePressed(QMouseEvent*)));
+    connect(Bild, SIGNAL(mouseReleased(QMouseEvent*)), this, SLOT(mouseReleased(QMouseEvent*)));
 }
 
 SoundDrawWindow::~SoundDrawWindow() noexcept
@@ -50,24 +53,149 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
     const int x = e->x(), y = e->y();
     const QRect CR = Bild->contentsRect();
     const double left = mSelectionRect->left() * XSF + XO, top = YO - mSelectionRect->top() * YSF, right = mSelectionRect->right() * XSF + XO, bottom = YO - mSelectionRect->bottom() * YSF;
-    if (x < left - 5 || x < CR.left() + ScaleYWidth || y < top - 5 || y < CR.top() || x > right + 5 || x > CR.right() || y > bottom + 5 || x > CR.bottom() - ScaleXHeight)
-        ensureMouseShape(Qt::ArrowCursor);
+    if (mMoveState == MSOutside)
+    {
+        if (x < left - 5 || x < CR.left() + ScaleYWidth || y < top - 5 || y < CR.top() || x > right + 5 || x > CR.right() || y > bottom + 5 || y > CR.bottom() - ScaleXHeight)
+        {
+            ensureMouseShape(Qt::ArrowCursor);
+            mMouseState = MSOutside;
+        }
+        else
+        {
+            if (x > left + 5 && y > top + 5 && x < right - 5 && y < bottom - 5)
+            {
+                ensureMouseShape(Qt::SizeAllCursor);
+                mMouseState = MSInside;
+            }
+            else if (x <= left + 5)
+            {
+                if (y <= top + 5)
+                {
+                    ensureMouseShape(Qt::SizeFDiagCursor);
+                    mMouseState = MSLTCorner;
+                }
+                else if (y >= bottom - 5)
+                {
+                    ensureMouseShape(Qt::SizeBDiagCursor);
+                    mMouseState = MSBLCorner;
+                }
+                else
+                {
+                    ensureMouseShape(Qt::SizeHorCursor);
+                    mMouseState = MSLeft;
+                }
+            }
+            else if (x >= right - 5)
+            {
+                if (y <= top + 5)
+                {
+                    ensureMouseShape(Qt::SizeBDiagCursor);
+                    mMouseState = MSTRCorner;
+                }
+                else if (y >= bottom - 5)
+                {
+                    ensureMouseShape(Qt::SizeFDiagCursor);
+                    mMouseState = MSBLCorner;
+                }
+                else
+                {
+                    ensureMouseShape(Qt::SizeHorCursor);
+                    mMouseState = MSRight;
+                }
+            }
+            else
+            {
+                ensureMouseShape(Qt::SizeVerCursor);
+                mMouseState = (y >= bottom - 5 ? MSBottom : MSTop);
+            }
+            e->accept();
+        }
+    }
     else
     {
-        if (x > left + 5 && y > top + 5 && x < right - 5 && y < bottom - 5) ensureMouseShape(Qt::SizeAllCursor);
-        else if (x <= left + 5)
+        const double mouseXDiff = x - mMoveMouseStartPoint.x(), mouseYDiff = y - mMoveMouseStartPoint.y();
+        switch (mMouseState)
         {
-            if (y <= top + 5) ensureMouseShape(Qt::SizeFDiagCursor);
-            else if (y >= bottom - 5) ensureMouseShape(Qt::SizeBDiagCursor);
-            else ensureMouseShape(Qt::SizeHorCursor);
+            case MSInside:
+                mSelectionRect->setLeft(mMoveStartRect.left() + mouseXDiff / XSF);
+                mSelectionRect->setTop(mMoveStartRect.top() - mouseYDiff / YSF);
+                break;
+            case MSLeft:
+                {
+                    const double xMoveObjC = mouseXDiff / XSF;
+                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                }
+                break;
+            case MSTop:
+                {
+                    const double yMoveObcC = mouseYDiff / YSF;
+                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                }
+                break;
+            case MSLTCorner:
+                {
+                    const double xMoveObjC = mouseXDiff / XSF;
+                    const double yMoveObcC = mouseYDiff / YSF;
+                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                }
+                break;
+            case MSTRCorner:
+                {
+                    const double yMoveObcC = mouseYDiff / YSF;
+                    mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
+                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                }
+                break;
+            case MSRight:
+                mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
+                break;
+            case MSRBCorner:
+                mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
+                mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                break;
+            case MSBottom:
+                mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                break;
+            case MSBLCorner:
+                {
+                    const double xMoveObjC = mouseXDiff / XSF;
+                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                }
+                break;
+            case MSOutside:
+            default:
+                // don't get here
+                break;
         }
-        else if (x >= right - 5)
-        {
-            if (y <= top + 5) ensureMouseShape(Qt::SizeBDiagCursor);
-            else if (y >= bottom - 5) ensureMouseShape(Qt::SizeFDiagCursor);
-            else ensureMouseShape(Qt::SizeHorCursor);
-        }
-        else ensureMouseShape(Qt::SizeVerCursor);
         e->accept();
+        Paint();
     }
+}
+
+void SoundDrawWindow::mousePressed(QMouseEvent* e)
+{
+    if (e->button() == Qt::LeftButton)
+    {
+        mMoveState = mMouseState;
+        if (mMouseState != MSOutside)
+        {
+            mMoveMouseStartPoint = QPoint(e->x(), e->y());
+            mMoveStartRect = *mSelectionRect;
+        }
+        ensureMouseShape(Qt::DragMoveCursor);
+    }
+}
+
+void SoundDrawWindow::mouseReleased(QMouseEvent* e)
+{
+    mMoveState = MSOutside;
+    ensureMouseShape(Qt::ArrowCursor);
 }
