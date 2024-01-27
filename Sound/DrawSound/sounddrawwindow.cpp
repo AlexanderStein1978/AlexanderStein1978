@@ -95,7 +95,7 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                 else if (y >= bottom - 5)
                 {
                     ensureMouseShape(Qt::SizeFDiagCursor);
-                    mMouseState = MSBLCorner;
+                    mMouseState = MSRBCorner;
                 }
                 else
                 {
@@ -119,6 +119,8 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
             case MSInside:
                 mSelectionRect->setLeft(mMoveStartRect.left() + mouseXDiff / XSF);
                 mSelectionRect->setTop(mMoveStartRect.top() - mouseYDiff / YSF);
+                mSelectionRect->setWidth(mMoveStartRect.width());
+                mSelectionRect->setHeight(mMoveStartRect.height());
                 break;
             case MSLeft:
                 {
@@ -147,27 +149,27 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
             case MSTRCorner:
                 {
                     const double yMoveObcC = mouseYDiff / YSF;
-                    mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
+                    mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                     mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
                     mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
                 break;
             case MSRight:
-                mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
+                mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                 break;
             case MSRBCorner:
-                mSelectionRect->setWidth(mMoveStartRect.width() - mouseXDiff / XSF);
-                mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 break;
             case MSBottom:
-                mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 break;
             case MSBLCorner:
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
                     mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
                     mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
-                    mSelectionRect->setHeight(mMoveStartRect.height() + mouseYDiff / YSF);
+                    mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 }
                 break;
             case MSOutside:
