@@ -221,7 +221,7 @@ void SoundRecordAndDrawControl::Draw()
                     }
             }
         }
-        SoundDrawWindow* window = new SoundDrawWindow(mFileNameEdit->text());
+        SoundDrawWindow* window = new SoundDrawWindow(mFileNameEdit->text(), mSampleRate);
         window->setData(data, nSamples);
         window->show();
     }
