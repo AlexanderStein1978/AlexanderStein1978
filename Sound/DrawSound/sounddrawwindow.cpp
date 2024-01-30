@@ -1,13 +1,31 @@
 #include "sounddrawwindow.h"
 
+#include "datensatz.h"
+
 #include <QPainter>
 #include <QToolButton>
+#include <QComboBox>
+#include <QAudioOutput>
+#include <QMenu>
+#include <QFileDialog>
 
 
-SoundDrawWindow::SoundDrawWindow(QString filename)
+SoundDrawWindow::SoundDrawWindow(const QString& filename, const int sampleRate) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", 1),
+    mPopupMenu(new QMenu(this)), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mSampleRate(sampleRate)
 {
+    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
+    QGridLayout *Layout = new QGridLayout;
+    Layout->addWidget(new QLabel("Sound output device:", this), 0, 0);
+    Layout->addWidget(mOutputDeviceBox, 0, 1);
+    SpektrumLayout->addLayout(Layout, 0, 0, 1, 9);
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
+	QAction *playAct = new QAction("Play", this), *writeAct = new QAction("Write to file...", this);
+    mPopupMenu->addAction(playAct);
+    mPopupMenu->addAction(writeAct);
+	connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
+    connect(writeAct, SIGNAL(triggered()), this, SLOT(WriteToFile()));
     connect(Bild, SIGNAL(SelectionChanged(QRect*)), this, SLOT(SelectionChanged(QRect*)));
     connect(Bild, SIGNAL(mouseMoved(QMouseEvent*)), this, SLOT(mouseMoved(QMouseEvent*)));
     connect(Bild, SIGNAL(mousePressed(QMouseEvent*)), this, SLOT(mousePressed(QMouseEvent*)));
@@ -17,6 +35,7 @@ SoundDrawWindow::SoundDrawWindow(QString filename)
 SoundDrawWindow::~SoundDrawWindow() noexcept
 {
     if (nullptr != mSelectionRect) delete mSelectionRect;
+    if (nullptr != mAudioOutput) delete mAudioOutput;
 }
 
 void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
@@ -200,4 +219,54 @@ void SoundDrawWindow::mouseReleased(QMouseEvent* e)
 {
     mMoveState = MSOutside;
     ensureMouseShape(Qt::ArrowCursor);
+}
+
+void SoundDrawWindow::ShowPopupMenu(const QPoint& point)
+{
+    mPopupMenu->popup(point);
+}
+
+int SoundDrawWindow::getSoundData(float ** data)
+{
+    int xStart = 0, length = Daten->GetDSL(), xStop = length - 1, n = 1;
+    if (nullptr != mSelectionRect)
+    {
+        const double startTime = mSelectionRect->left(), stopTime = mSelectionRect->right();
+        while (n < length && Daten->GetValue(n, 0) < startTime) ++n;
+        xStart = n;
+        while (n < length && Daten->GetValue(n, 0) <= stopTime) ++n;
+        xStop = n-1;
+    }
+    int rLength = xStop - xStart + 1, i;
+    *data = new float[rLength];
+    for (n = xStart, i=0; n <= xStop; ++n) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
+    return rLength;
+}
+
+void SoundDrawWindow::Play()
+{
+    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    QAudioFormat format;
+    format.setSampleRate(mSampleRate);
+    format.setChannelCount(1);
+    format.setSampleSize(32);
+    format.setCodec("audio/pcm");
+    format.setByteOrder(QAudioFormat::LittleEndian);
+    format.setSampleType(QAudioFormat::Float);
+    if (nullptr != mAudioOutput) delete mAudioOutput;
+    mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
+    QIODevice* inputDevice = mAudioOutput->start();
+    float* data;
+    int length = getSoundData(&data);
+    inputDevice->write(reinterpret_cast<char*>(data), 4*length);
+}
+
+void SoundDrawWindow::WriteToFile()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Select filename to save");
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+    float* data;
+    int length = getSoundData(&data);
+    file.write(reinterpret_cast<char*>(data), 4*length);
 }
