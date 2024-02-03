@@ -213,12 +213,16 @@ void SoundDrawWindow::mousePressed(QMouseEvent* e)
         }
         ensureMouseShape(Qt::DragMoveCursor);
     }
+    else if (e->button() == Qt::RightButton) ShowPopupMenu(e->globalPos());
 }
 
 void SoundDrawWindow::mouseReleased(QMouseEvent* e)
 {
-    mMoveState = MSOutside;
-    ensureMouseShape(Qt::ArrowCursor);
+    if (e->button() == Qt::LeftButton)
+    {
+        mMoveState = MSOutside;
+        ensureMouseShape(Qt::ArrowCursor);
+    }
 }
 
 void SoundDrawWindow::ShowPopupMenu(const QPoint& point)
@@ -239,7 +243,7 @@ int SoundDrawWindow::getSoundData(float ** data)
     }
     int rLength = xStop - xStart + 1, i;
     *data = new float[rLength];
-    for (n = xStart, i=0; n <= xStop; ++n) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
+    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
     return rLength;
 }
 
