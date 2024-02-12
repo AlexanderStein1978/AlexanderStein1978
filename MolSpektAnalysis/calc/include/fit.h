@@ -83,6 +83,8 @@ void solveLinEQSbyLU(double ** EQS, int N);
 void solveLinEQSbySVD(double** EQS, int N, double t);
 double calcEQSFQS(MatDoub a, VecDoub b, VecDoub x);
 
+void calcFFT(const double *const inputData, const int N, const double delta, double **const realOutput, double **const imaginaryOutput);
+
 inline double SpinRotation(double R, double SpinRRm, double SpinRb, int NSpinRGamma, double *SpinRGamma, 
 						   double SpinRR1, double SpinRR2)
 {

@@ -38,6 +38,7 @@ QTextStream* DebugStream;
 #include "../../NR_C301/code/gaussj.h"
 #include "../../NR_C301/code/fitmrq.h"
 #include "../../NR_C301/code/amoeba.h"
+#include "../../NR_C301/code/fourier.h"
 
 #include <limits>
 #include <cmath>
@@ -1556,4 +1557,29 @@ void FitBandConstants(double *o_BandConstants, double *o_err, int i_NBandC, doub
         o_BandConstants[n] = x[n];
         o_err[n] = sqrt(C[n][n]);
     }
+}
+
+void calcFFT(const double *const realInputData, const int N, const double delta, double **const realOutput, double **const imaginaryOutput)
+{
+	int n, m, DL = 2*N;
+	Doub* data = new Doub[DL];
+	for (n=0, m=-1; n<N; ++n)
+	{
+		data[++m] = realInputData[n];
+		data[++m] = 0.0;
+	}
+	four1(data, N, 1);
+	double f, fStep = 1.0 / (N * delta);
+	realOutput[0][0] = imaginaryOutput[0][0] = 0.0;
+	realOutput[0][1] = data[0];
+	imaginaryOutput[0][1] = data[1];
+	for (n=2, m=1, f = fStep; n < DL; n+=2, ++m, f += fStep)
+	{
+		realOutput[m][0] = imaginaryOutput[m][0] = f;
+		realOutput[m][1] = data[n] + data[DL-n];
+		imaginaryOutput[m][1] = data[n+1] - data[DL-n+1];
+	}
+	realOutput[N][0] = imaginaryOutput[N][0] = f;
+	realOutput[N][1] = data[N];
+	imaginaryOutput[N][1] = data[N+1];
 }

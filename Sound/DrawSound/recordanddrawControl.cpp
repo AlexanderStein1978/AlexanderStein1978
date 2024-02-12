@@ -14,13 +14,13 @@
 
 #include <algorithm>
 
-#include "sounddrawwindow.h"
+#include "soundwindow.h"
 #include "utils.h"
 
 
 namespace
 {
-    const QString SizeString("Size: "), LengthString("Length: ");
+    const QString SizeString("Size: "), LengthString("Length: "), DefaultDirectory(DATA_DIRECTORY "/Recordings/");
 }
 
 
@@ -60,7 +60,9 @@ SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
 
 void SoundRecordAndDrawControl::showFileDialog()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "Select filename", mFileNameEdit->text());
+    QString fileName = mFileNameEdit->text();
+    if (!fileName.contains(QRegExp("[/\\\\]"))) fileName = DefaultDirectory + fileName;
+    fileName = QFileDialog::getSaveFileName(this, "Select filename", fileName);
     if (!fileName.isEmpty()) mFileNameEdit->setText(fileName);
 }
 
@@ -69,6 +71,7 @@ void SoundRecordAndDrawControl::VerifyFileExists(QString deviceName)
     QString filename = mFileNameEdit->text();
     if (filename.isEmpty()) filename = deviceName.replace(QRegularExpression("[.,:=]"), "_");
     if (!filename.contains('.')) filename += ".dat";
+    if (!filename.contains(QRegExp("[/\\\\]"))) filename = DefaultDirectory + filename;
     if (nullptr != mFile) delete mFile;
     mFile = new QFile(filename, this);
 }
@@ -221,7 +224,7 @@ void SoundRecordAndDrawControl::Draw()
                     }
             }
         }
-        SoundDrawWindow* window = new SoundDrawWindow(mFileNameEdit->text(), mSampleRate);
+        SoundDrawWindow* window = new SoundWindow(mFileNameEdit->text(), mSampleRate);
         window->setData(data, nSamples);
         window->show();
     }

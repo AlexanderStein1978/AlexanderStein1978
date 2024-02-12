@@ -5,26 +5,17 @@
 #include <QPainter>
 #include <QToolButton>
 #include <QComboBox>
-#include <QAudioOutput>
 #include <QMenu>
 #include <QFileDialog>
 
+#include <cmath>
 
-SoundDrawWindow::SoundDrawWindow(const QString& filename, const int sampleRate) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", 1),
-    mPopupMenu(new QMenu(this)), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mSampleRate(sampleRate)
+
+SoundDrawWindow::SoundDrawWindow(const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
+    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate)
 {
-    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
-    QGridLayout *Layout = new QGridLayout;
-    Layout->addWidget(new QLabel("Sound output device:", this), 0, 0);
-    Layout->addWidget(mOutputDeviceBox, 0, 1);
-    SpektrumLayout->addLayout(Layout, 0, 0, 1, 9);
-    setUnits("time [s]", "intensity");
-    setWindowTitle("Draw sound: " + filename);
-	QAction *playAct = new QAction("Play", this), *writeAct = new QAction("Write to file...", this);
-    mPopupMenu->addAction(playAct);
+    QAction *writeAct = new QAction("Write to file...", this);
     mPopupMenu->addAction(writeAct);
-	connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
     connect(writeAct, SIGNAL(triggered()), this, SLOT(WriteToFile()));
     connect(Bild, SIGNAL(SelectionChanged(QRect*)), this, SLOT(SelectionChanged(QRect*)));
     connect(Bild, SIGNAL(mouseMoved(QMouseEvent*)), this, SLOT(mouseMoved(QMouseEvent*)));
@@ -32,10 +23,9 @@ SoundDrawWindow::SoundDrawWindow(const QString& filename, const int sampleRate) 
     connect(Bild, SIGNAL(mouseReleased(QMouseEvent*)), this, SLOT(mouseReleased(QMouseEvent*)));
 }
 
-SoundDrawWindow::~SoundDrawWindow() noexcept
+SoundDrawWindow::~SoundDrawWindow()
 {
     if (nullptr != mSelectionRect) delete mSelectionRect;
-    if (nullptr != mAudioOutput) delete mAudioOutput;
 }
 
 void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
@@ -43,7 +33,13 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
     if (!ZoomB->isChecked())
     {
         if (nullptr == mSelectionRect) mSelectionRect = new QRectF;
-        mSelectionRect->setCoords(double(MarkedArea->left() - XO) / XSF, -double(MarkedArea->top() - YO) / YSF, double(MarkedArea->right() - XO) / XSF, -double(MarkedArea->bottom() - YO) / YSF);
+        if (mIsFFT)
+        {
+            double left = double(MarkedArea->left() - XO) / XSF, right = double(MarkedArea->right() - XO) / XSF, width = right - left, FFTWidth = getFFTWidth(width), delta = width - FFTWidth;
+            mSelectionRect->setCoords(left + delta, -double(MarkedArea->top() - YO) / YSF, right - delta, -double(MarkedArea->bottom() - YO) / YSF);
+            showFFT();
+        }
+        else mSelectionRect->setCoords(double(MarkedArea->left() - XO) / XSF, -double(MarkedArea->top() - YO) / YSF, double(MarkedArea->right() - XO) / XSF, -double(MarkedArea->bottom() - YO) / YSF);
         Paint();
     }
 }
@@ -68,7 +64,7 @@ void SoundDrawWindow::ensureMouseShape(const Qt::CursorShape shape)
 
 void SoundDrawWindow::mouseMoved(QMouseEvent* e)
 {
-    if (nullptr == mSelectionRect) return;
+    if (nullptr == mSelectionRect || ZoomB->isChecked()) return;
     const int x = e->x(), y = e->y();
     const QRect CR = Bild->contentsRect();
     const double left = mSelectionRect->left() * XSF + XO, top = YO - mSelectionRect->top() * YSF, right = mSelectionRect->right() * XSF + XO, bottom = YO - mSelectionRect->bottom() * YSF;
@@ -140,12 +136,23 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                 mSelectionRect->setTop(mMoveStartRect.top() - mouseYDiff / YSF);
                 mSelectionRect->setWidth(mMoveStartRect.width());
                 mSelectionRect->setHeight(mMoveStartRect.height());
+                if (mIsFFT) showFFT();
                 break;
             case MSLeft:
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
-                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    if (mIsFFT)
+                    {
+                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
+                        mSelectionRect->setWidth(newWidth);
+                        if (oldWidth != newWidth) showFFT();
+                    }
+                    else
+                    {
+                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    }
                 }
                 break;
             case MSTop:
@@ -159,8 +166,18 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
                     const double yMoveObcC = mouseYDiff / YSF;
-                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    if (mIsFFT)
+                    {
+                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
+                        mSelectionRect->setWidth(newWidth);
+                        if (oldWidth != newWidth) showFFT();
+                    }
+                    else
+                    {
+                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    }
                     mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
                     mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
@@ -168,16 +185,34 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
             case MSTRCorner:
                 {
                     const double yMoveObcC = mouseYDiff / YSF;
-                    mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    if (mIsFFT)
+                    {
+                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                        mSelectionRect->setWidth(newWidth);
+                        if (oldWidth != newWidth) showFFT();
+                    }
+                    else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                     mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
                     mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
                 break;
             case MSRight:
-                mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                if (mIsFFT)
+                {
+                    const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    mSelectionRect->setWidth(newWidth);
+                    if (oldWidth != newWidth) showFFT();
+                }
+                else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                 break;
             case MSRBCorner:
-                mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                if (mIsFFT)
+                {
+                    const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    mSelectionRect->setWidth(newWidth);
+                    if (oldWidth != newWidth) showFFT();
+                }
+                else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                 mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 break;
             case MSBottom:
@@ -186,8 +221,18 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
             case MSBLCorner:
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
-                    mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                    mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    if (mIsFFT)
+                    {
+                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
+                        mSelectionRect->setWidth(newWidth);
+                        if (oldWidth != newWidth) showFFT();
+                    }
+                    else
+                    {
+                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                    }
                     mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 }
                 break;
@@ -203,7 +248,7 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
 
 void SoundDrawWindow::mousePressed(QMouseEvent* e)
 {
-    if (e->button() == Qt::LeftButton)
+    if (!ZoomB->isChecked() &&  e->button() == Qt::LeftButton)
     {
         mMoveState = mMouseState;
         if (mMouseState != MSOutside)
@@ -213,15 +258,18 @@ void SoundDrawWindow::mousePressed(QMouseEvent* e)
         }
         ensureMouseShape(Qt::DragMoveCursor);
     }
-    else if (e->button() == Qt::RightButton) ShowPopupMenu(e->globalPos());
 }
 
 void SoundDrawWindow::mouseReleased(QMouseEvent* e)
 {
-    if (e->button() == Qt::LeftButton)
+    if (!ZoomB->isChecked())
     {
-        mMoveState = MSOutside;
-        ensureMouseShape(Qt::ArrowCursor);
+        if (e->button() == Qt::LeftButton)
+        {
+            mMoveState = MSOutside;
+            ensureMouseShape(Qt::ArrowCursor);
+        }
+        else if (e->button() == Qt::RightButton) ShowPopupMenu(e->globalPos());
     }
 }
 
@@ -230,9 +278,11 @@ void SoundDrawWindow::ShowPopupMenu(const QPoint& point)
     mPopupMenu->popup(point);
 }
 
-int SoundDrawWindow::getSoundData(float ** data)
+int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop)
 {
-    int xStart = 0, length = Daten->GetDSL(), xStop = length - 1, n = 1;
+    int length = Daten->GetDSL(), n = 1;
+    xStart = 0;
+    xStop = length - 1;
     if (nullptr != mSelectionRect)
     {
         const double startTime = mSelectionRect->left(), stopTime = mSelectionRect->right();
@@ -241,36 +291,39 @@ int SoundDrawWindow::getSoundData(float ** data)
         while (n < length && Daten->GetValue(n, 0) <= stopTime) ++n;
         xStop = n-1;
     }
-    int rLength = xStop - xStart + 1, i;
+    return xStop - xStart + 1;
+}
+
+int SoundDrawWindow::getSoundData(float ** data)
+{
+    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
     *data = new float[rLength];
     for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
     return rLength;
 }
 
-void SoundDrawWindow::Play()
+int SoundDrawWindow::getSoundData(double ** data)
 {
-    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    QAudioFormat format;
-    format.setSampleRate(mSampleRate);
-    format.setChannelCount(1);
-    format.setSampleSize(32);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::Float);
-    if (nullptr != mAudioOutput) delete mAudioOutput;
-    mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
-    QIODevice* inputDevice = mAudioOutput->start();
-    float* data;
-    int length = getSoundData(&data);
-    inputDevice->write(reinterpret_cast<char*>(data), 4*length);
+    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
+    *data = new double[rLength];
+    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = Daten->GetValue(n, 1);
+    return rLength;
 }
 
 void SoundDrawWindow::WriteToFile()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Select filename to save");
+    QString filename = QFileDialog::getSaveFileName(this, "Select filename to save", DATA_DIRECTORY  "/Chars");
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     float* data;
     int length = getSoundData(&data);
     file.write(reinterpret_cast<char*>(data), 4*length);
+}
+
+double SoundDrawWindow::getFFTWidth(const double inputWidth)
+{
+    int N = static_cast<int>(log2(inputWidth * mSampleRate));
+    if (N < 1) N=1;
+    double rc = (static_cast<double>(2 << N)) / mSampleRate;
+    return (abs(inputWidth - rc) < abs(inputWidth - 0.5 * rc) ? rc : 0.5 * rc);
 }
