@@ -10,7 +10,7 @@ class SoundDrawWindow : public DiagWindow
 {
     Q_OBJECT
 public:
-    SoundDrawWindow(const QString& filename, const int sampleRate);
+    SoundDrawWindow(const int sampleRate, const int o);
     ~SoundDrawWindow();
 
 private slots:
@@ -18,8 +18,18 @@ private slots:
     void mouseMoved(QMouseEvent *e);
     void mousePressed(QMouseEvent *e);
 	void mouseReleased(QMouseEvent *e);
-    void Play();
     void WriteToFile();
+
+protected:
+    int getSoundData(float** data);
+    int getSoundData(double** data);
+    double getFFTWidth(const double inputWidth);
+    virtual void showFFT() {}
+
+    QMenu *mPopupMenu;
+    QRectF *mSelectionRect = nullptr;
+    int mSampleRate;
+    bool mIsFFT = false;
 
 private:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
@@ -27,13 +37,9 @@ private:
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     void ShowPopupMenu(const QPoint& point) override;
     void ensureMouseShape(const Qt::CursorShape shape);
-    int getSoundData(float** data);
+    int getSoundDataRange(int& xStart, int& xStop);
 
-    QRectF *mSelectionRect = nullptr, mMoveStartRect;
+    QRectF mMoveStartRect;
     MouseState mMouseState = MSOutside, mMoveState = MSOutside;
     QPoint mMoveMouseStartPoint;
-    QMenu *mPopupMenu;
-    QComboBox* mOutputDeviceBox;
-    QAudioOutput* mAudioOutput;
-    int mSampleRate;
 };
