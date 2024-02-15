@@ -788,11 +788,14 @@ void DiagWindow::setData(double **Data, int numRows)
 		if (Data[r][1] > Max) Max = Data[r][1];
 		if (Data[r][1] < Min) Min = Data[r][1];
 	}
-	d = (Max - Min) * 0.05;
-	xStart->setText(QString::number(XMin = Data[0][0], 'g', 11));
-    xStop->setText(QString::number(XMax = Data[numRows - 1][0], 'g', 11));
-    yStart->setText(QString::number(YMin = Min - d));
-    yStop->setText(QString::number(YMax = Max + d));
+	if (mRescaleOnSetAndAdd)
+	{
+		d = (Max - Min) * 0.05;
+		xStart->setText(QString::number(XMin = Data[0][0], 'g', 11));
+		xStop->setText(QString::number(XMax = Data[numRows - 1][0], 'g', 11));
+		yStart->setText(QString::number(YMin = Min - d));
+		yStop->setText(QString::number(YMax = Max + d));
+	}
 	nDatenS = 1;
 	Paint();
 	Changed();
@@ -829,12 +832,15 @@ void DiagWindow::addData(double** Data, int numRows)
 		if (Data[r][1] < Min) Min = Data[r][1];
 	}
 	nDatenS++;
-	d = (Max - Min) * 0.05;
-	if (Data[0][0] < XMin) xStart->setText(QString::number(XMin = Data[0][0], 'g', 11));
-    if (Data[numRows - 1][0] > XMax) 
-		xStop->setText(QString::number(XMax = Data[numRows - 1][0], 'g', 11));
-    yStart->setText(QString::number(YMin = Min - d));
-    yStop->setText(QString::number(YMax = Max + d));
+	if (mRescaleOnSetAndAdd)
+	{
+		d = (Max - Min) * 0.05;
+		if (Data[0][0] < XMin) xStart->setText(QString::number(XMin = Data[0][0], 'g', 11));
+		if (Data[numRows - 1][0] > XMax)
+			xStop->setText(QString::number(XMax = Data[numRows - 1][0], 'g', 11));
+		yStart->setText(QString::number(YMin = Min - d));
+		yStop->setText(QString::number(YMax = Max + d));
+	}
 	Paint();
 	Changed();
 }

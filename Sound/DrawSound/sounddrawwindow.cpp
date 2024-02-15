@@ -11,8 +11,8 @@
 #include <cmath>
 
 
-SoundDrawWindow::SoundDrawWindow(const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
-    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate)
+SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
+    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control)
 {
     QAction *writeAct = new QAction("Write to file...", this);
     mPopupMenu->addAction(writeAct);
@@ -292,32 +292,6 @@ int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop)
         xStop = n-1;
     }
     return xStop - xStart + 1;
-}
-
-int SoundDrawWindow::getSoundData(float ** data)
-{
-    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
-    *data = new float[rLength];
-    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
-    return rLength;
-}
-
-int SoundDrawWindow::getSoundData(double ** data)
-{
-    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
-    *data = new double[rLength];
-    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = Daten->GetValue(n, 1);
-    return rLength;
-}
-
-void SoundDrawWindow::WriteToFile()
-{
-    QString filename = QFileDialog::getSaveFileName(this, "Select filename to save", DATA_DIRECTORY  "/Chars");
-    QFile file(filename);
-    file.open(QIODevice::WriteOnly);
-    float* data;
-    int length = getSoundData(&data);
-    file.write(reinterpret_cast<char*>(data), 4*length);
 }
 
 double SoundDrawWindow::getFFTWidth(const double inputWidth)

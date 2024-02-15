@@ -1573,7 +1573,7 @@ void calcFFT(const double *const realInputData, const int N, const double delta,
 	realOutput[0][0] = imaginaryOutput[0][0] = 0.0;
 	realOutput[0][1] = data[0];
 	imaginaryOutput[0][1] = data[1];
-	for (n=2, m=1, f = fStep; n < DL; n+=2, ++m, f += fStep)
+	for (n=2, m=1, f = fStep; n < N; n+=2, ++m, f += fStep)
 	{
 		realOutput[m][0] = imaginaryOutput[m][0] = f;
 		realOutput[m][1] = data[n] + data[DL-n];
@@ -1582,4 +1582,29 @@ void calcFFT(const double *const realInputData, const int N, const double delta,
 	realOutput[N][0] = imaginaryOutput[N][0] = f;
 	realOutput[N][1] = data[N];
 	imaginaryOutput[N][1] = data[N+1];
+}
+
+void backtransformFFT(const double *const realInput, const double *const imaginaryInput, const int N, const double delta, double **const realOutput, double **const imaginaryOutput)
+{
+	int n, m, DL = 2*N;
+	Doub* data = new Doub[DL];
+	for (n=0, m=-1; n<N; ++n)
+	{
+		data[++m] = realInput[n];
+		data[++m] = imaginaryInput[n];
+	}
+	four1(data, N, -1);
+	double t, tStep = 1.0 / (N * delta);
+	for (n=N, m=0, t = 0.0; n < 2*N; n+=2, ++m, t += tStep)
+	{
+		realOutput[m][0] = imaginaryOutput[m][0] = t;
+		realOutput[m][1] = data[n];
+		imaginaryOutput[m][1] = data[n+1];
+	}
+	for (n=0; n <= N; n+=2, ++m, t += tStep)
+	{
+		realOutput[m][0] = imaginaryOutput[m][0] = t;
+		realOutput[m][1] = data[n];
+		imaginaryOutput[m][1] = data[n+1];
+	}
 }
