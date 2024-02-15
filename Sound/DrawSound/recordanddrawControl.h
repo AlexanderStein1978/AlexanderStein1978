@@ -4,6 +4,7 @@
 #include <QAudioFormat>
 
 
+class DiagWindow;
 class QPushButton;
 class QLabel;
 class QComboBox;
@@ -19,6 +20,26 @@ class SoundRecordAndDrawControl : public QWidget
 public:
     SoundRecordAndDrawControl();
     ~SoundRecordAndDrawControl();
+
+    inline void AddFrequencyWindow(DiagWindow* newWindow)
+    {
+        mFrequencyWindows.push_back(newWindow);
+    }
+
+    inline const std::vector<DiagWindow*>& GetTheFrequencyWindows() const
+    {
+        return mFrequencyWindows;
+    }
+
+    inline int GetNumberFrequencyWindows() const
+    {
+        return static_cast<int>(mFrequencyWindows.size());
+    }
+
+    inline DiagWindow* GetWindow(int index) const
+    {
+        return mFrequencyWindows[index];
+    }
 
 private slots:
     void StartRecording();
@@ -39,4 +60,5 @@ private:
     QAudioFormat::SampleType mSampleType;
     int mSampleSize, mSampleRate;
     qint64 mProcessedUSec;
+    std::vector<DiagWindow*> mFrequencyWindows;
 };

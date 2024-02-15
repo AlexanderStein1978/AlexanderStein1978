@@ -126,7 +126,7 @@ protected:
 	QString XUnit, YUnit;
 	QFont UnitFont, ScaleFont;
 	Datensatz *Daten;
-    bool DMarkers, ShowAssignmentsOnTop, showPoints;
+    bool DMarkers, ShowAssignmentsOnTop, showPoints, mRescaleOnSetAndAdd = true;
 	Marker *marker;
     int AnzahlMarker, nDatenS, cPosx, cPosy, sPoint, mPoint;
 	QFont AssFont;
@@ -156,14 +156,12 @@ private slots:
 	
 private:
     void setClippingRect(QPainter& Pt, int width, int height);
+    void init();
+    void destroy();
     
     QPixmap image0;
     bool ScrollsEnabled, ShowMarkerLabels;
     QDoubleValidator *VEVon, *VEBis, *VWNVon, *VWNBis;
-
-    void init();
-    void destroy();
-
 };
 
 #endif // SPEKTRUM_H

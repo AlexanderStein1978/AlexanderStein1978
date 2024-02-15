@@ -3,12 +3,15 @@
 #include "sounddrawwindow.h"
 
 
+class FrequencyWindow;
+
+
 class SoundWindow : public SoundDrawWindow
 {
     Q_OBJECT
 
 public:
-    SoundWindow(const QString& filename, const int sampleRate);
+    SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate);
     ~SoundWindow();
 
 private slots:
@@ -17,8 +20,11 @@ private slots:
 
 private:
     void showFFT() override;
+    void WriteToFile() override;
+    int getSoundData(float** data);
+    int getSoundData(double** data);
 
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;
-    DiagWindow* mFFTWindow = nullptr;
+    FrequencyWindow* mFFTWindow = nullptr;
 };

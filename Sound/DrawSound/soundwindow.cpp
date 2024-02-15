@@ -1,17 +1,21 @@
 #include "soundwindow.h"
-
+#include "frequencywindow.h"
+#include "datensatz.h"
 #include "utils.h"
 #include "fit.h"
 
 #include <QAudioOutput>
 #include <QAction>
 #include <QMenu>
+#include <QFileDialog>
 
 
-SoundWindow::SoundWindow(const QString& filename, const int sampleRate) : SoundDrawWindow(sampleRate, 1), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr)
+SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
+    mAudioOutput(nullptr)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
+    mOutputDeviceBox->setEditable(false);
     QGridLayout *Layout = new QGridLayout;
     Layout->addWidget(new QLabel("Sound output device:", this), 0, 0);
     Layout->addWidget(mOutputDeviceBox, 0, 1);
@@ -27,7 +31,7 @@ SoundWindow::SoundWindow(const QString& filename, const int sampleRate) : SoundD
 }
 
 
-SoundWindow::~SoundWindow() noexcept
+SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
 }
@@ -48,6 +52,23 @@ void SoundWindow::Play()
     float* data;
     int length = getSoundData(&data);
     inputDevice->write(reinterpret_cast<char*>(data), 4*length);
+    delete[] data;
+}
+
+int SoundWindow::getSoundData(float ** data)
+{
+    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
+    *data = new float[rLength];
+    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
+    return rLength;
+}
+
+int SoundWindow::getSoundData(double ** data)
+{
+    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
+    *data = new double[rLength];
+    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = Daten->GetValue(n, 1);
+    return rLength;
 }
 
 void SoundWindow::showFFT()
@@ -56,15 +77,14 @@ void SoundWindow::showFFT()
     int length = getSoundData(&data), FFTLength = length + 1;
     double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
     calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
-    if (nullptr == mFFTWindow)
-    {
-        mFFTWindow = new DiagWindow;
-        mFFTWindow->setUnits("Frequency [Hz]", "Intensity");
-    }
+    if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
     else mFFTWindow->clear();
     mFFTWindow->setData(realFFTData, FFTLength);
     mFFTWindow->addData(imaginaryFFTData, FFTLength);
     if (!mFFTWindow->isVisible()) mFFTWindow->show();
+    Destroy(realFFTData, FFTLength);
+    Destroy(imaginaryFFTData, FFTLength);
+    delete[] data;
 }
 
 void SoundWindow::FFTActTriggered(bool checked)
@@ -75,4 +95,15 @@ void SoundWindow::FFTActTriggered(bool checked)
         mSelectionRect->setWidth(getFFTWidth(mSelectionRect->width()));
         Paint();
     }
+}
+
+void SoundWindow::WriteToFile()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Select filename to save", DATA_DIRECTORY  "/Chars");
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+    float* data;
+    int length = getSoundData(&data);
+    file.write(reinterpret_cast<char*>(data), 4*length);
+    delete[] data;
 }
