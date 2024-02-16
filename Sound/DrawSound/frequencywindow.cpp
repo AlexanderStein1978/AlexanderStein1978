@@ -17,13 +17,16 @@ FrequencyWindow::FrequencyWindow(SoundRecordAndDrawControl *const control, const
     mPopupMenu->addAction(backTransformAct);
     mPopupMenu->addAction(copyToWindowAct);
     connect(backTransformAct, SIGNAL(triggered()), this, SLOT(BackTransform()));
-    connect(copyToWindowAct, SIGNAL(toggled(bool)), this, SLOT(CopyAllDataToNewWindow(bool)));
+    connect(copyToWindowAct, SIGNAL(triggered()), this, SLOT(CopyAllDataToNewWindow()));
 }
 
 void FrequencyWindow::BackTransform()
 {
-    int xStart, xStop, n, i, inputLength = getSoundDataRange(xStart, xStop), transLength = inputLength + 1;
-    double *realInputdata = new double[inputLength], *imaginaryInputdata = new double[inputLength], **realTransData = Create(transLength, 2), **imaginaryTransData = Create(transLength, 2), step(0.0);
+    int xStart, xStop, n, i, inputLength = getSoundDataRange(xStart, xStop), transInLength = getFFTLength(inputLength);
+    if (transInLength < inputLength) transInLength *= 2;
+    int transOutLength = transInLength + 1;
+    double *realInputdata = new double[transInLength], *imaginaryInputdata = new double[transInLength], **realTransData = Create(transOutLength, 2), **imaginaryTransData = Create(transOutLength, 2);
+    double step(0.0);
     QString FName("Backtransformed.dat");
     for (n = xStart, i=0; n <= xStop; ++n, ++i)
     {
@@ -31,15 +34,16 @@ void FrequencyWindow::BackTransform()
         imaginaryInputdata[i] = Daten[1].GetValue(n, 1);
         if (step == 0.0 && n>0) step = Daten[0].GetValue(n, 0) - Daten[0].GetValue(n-1, 0);
     }
+    for ( ; i < transInLength; ++i) realInputdata[i] = imaginaryInputdata[i] = 0.0;
     backtransformFFT(realInputdata, imaginaryInputdata, inputLength, step, realTransData, imaginaryTransData);
     SoundWindow* window = new SoundWindow(mControl, FName, mSampleRate);
-    window->setData(realTransData, transLength);
-    window->addData(imaginaryTransData, transLength);
+    window->setData(realTransData, transOutLength);
+    window->addData(imaginaryTransData, transOutLength);
     window->show();
     delete[] realInputdata;
     delete[] imaginaryInputdata;
-    Destroy(realTransData, transLength);
-    Destroy(imaginaryTransData, transLength);
+    Destroy(realTransData, transOutLength);
+    Destroy(imaginaryTransData, transOutLength);
 }
 
 void FrequencyWindow::CopyAllDataToNewWindow()
@@ -48,7 +52,7 @@ void FrequencyWindow::CopyAllDataToNewWindow()
     if (windowDialog.exec() == QDialog::Rejected) return;
     int length = Daten->GetDSL(), index = windowDialog.GetSelection();
     DiagWindow* window;
-    if (0 > index && index >= mControl->GetNumberFrequencyWindows())
+    if (0 > index || index >= mControl->GetNumberFrequencyWindows())
     {
         NameSelectionDialog nameDialog(this);
         if (nameDialog.exec() == QDialog::Rejected) return;

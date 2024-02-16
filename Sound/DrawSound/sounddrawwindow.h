@@ -22,6 +22,7 @@ private slots:
     virtual void WriteToFile() = 0;
 
 protected:
+    int getFFTLength(const int inputLength);
     double getFFTWidth(const double inputWidth);
     int getSoundDataRange(int& xStart, int& xStop);
     virtual void showFFT() {}

@@ -93,6 +93,7 @@ void SoundWindow::FFTActTriggered(bool checked)
     if (checked && nullptr != mSelectionRect)
     {
         mSelectionRect->setWidth(getFFTWidth(mSelectionRect->width()));
+        showFFT();
         Paint();
     }
 }
