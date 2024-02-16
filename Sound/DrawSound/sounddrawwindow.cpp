@@ -35,7 +35,7 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
         if (nullptr == mSelectionRect) mSelectionRect = new QRectF;
         if (mIsFFT)
         {
-            double left = double(MarkedArea->left() - XO) / XSF, right = double(MarkedArea->right() - XO) / XSF, width = right - left, FFTWidth = getFFTWidth(width), delta = width - FFTWidth;
+            double left = double(MarkedArea->left() - XO) / XSF, right = double(MarkedArea->right() - XO) / XSF, width = right - left, FFTWidth = getFFTWidth(width), delta = 0.5 * (width - FFTWidth);
             mSelectionRect->setCoords(left + delta, -double(MarkedArea->top() - YO) / YSF, right - delta, -double(MarkedArea->bottom() - YO) / YSF);
             showFFT();
         }
@@ -294,10 +294,15 @@ int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop)
     return xStop - xStart + 1;
 }
 
+int SoundDrawWindow::getFFTLength(const int inputLength)
+{
+    int N = static_cast<int>(log2(inputLength));
+    if (N < 1) N=1;
+    int rc = (2 << N);
+    return (abs(inputLength - rc) < abs(inputLength - rc / 2) ? rc : rc / 2);
+}
+
 double SoundDrawWindow::getFFTWidth(const double inputWidth)
 {
-    int N = static_cast<int>(log2(inputWidth * mSampleRate));
-    if (N < 1) N=1;
-    double rc = (static_cast<double>(2 << N)) / mSampleRate;
-    return (abs(inputWidth - rc) < abs(inputWidth - 0.5 * rc) ? rc : 0.5 * rc);
+    return getFFTLength(static_cast<int>(inputWidth * mSampleRate)) / mSampleRate;
 }
