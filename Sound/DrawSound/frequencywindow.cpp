@@ -59,6 +59,7 @@ void FrequencyWindow::CopyAllDataToNewWindow()
         window = new DiagWindow;
         window->setUnits("Frequency [Hz]", "Intensity");
         window->setName(nameDialog.GetName());
+        window->setWindowTitle(nameDialog.GetName());
         mControl->AddFrequencyWindow(window);
     }
     else window = mControl->GetWindow(index);

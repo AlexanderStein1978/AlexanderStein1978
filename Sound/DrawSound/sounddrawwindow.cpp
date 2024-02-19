@@ -304,5 +304,5 @@ int SoundDrawWindow::getFFTLength(const int inputLength)
 
 double SoundDrawWindow::getFFTWidth(const double inputWidth)
 {
-    return getFFTLength(static_cast<int>(inputWidth * mSampleRate)) / mSampleRate;
+    return static_cast<double>(getFFTLength(static_cast<int>(inputWidth * mSampleRate))) / mSampleRate;
 }
