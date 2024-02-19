@@ -22,10 +22,12 @@ private slots:
     virtual void WriteToFile() = 0;
 
 protected:
+    void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     int getFFTLength(const int inputLength);
     double getFFTWidth(const double inputWidth);
     int getSoundDataRange(int& xStart, int& xStop);
     virtual void showFFT() {}
+    void ShowPopupMenu(const QPoint& point) override;
 
     QMenu *mPopupMenu;
     QRectF *mSelectionRect = nullptr;
@@ -36,8 +38,6 @@ protected:
 private:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
 
-    void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
-    void ShowPopupMenu(const QPoint& point) override;
     void ensureMouseShape(const Qt::CursorShape shape);
 
     QRectF mMoveStartRect;
