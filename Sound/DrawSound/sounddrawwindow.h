@@ -22,6 +22,9 @@ private slots:
     virtual void WriteToFile() = 0;
 
 protected:
+    enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
+
+    void ensureMouseShape(const Qt::CursorShape shape);
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     int getFFTLength(const int inputLength);
     double getFFTWidth(const double inputWidth);
@@ -34,12 +37,6 @@ protected:
     int mSampleRate;
     bool mIsFFT = false;
     SoundRecordAndDrawControl *const mControl;
-
-private:
-    enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
-
-    void ensureMouseShape(const Qt::CursorShape shape);
-
     QRectF mMoveStartRect;
     MouseState mMouseState = MSOutside, mMoveState = MSOutside;
     QPoint mMoveMouseStartPoint;
