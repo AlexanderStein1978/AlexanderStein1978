@@ -128,8 +128,11 @@ void SoundWindow::AddLabel()
     Label newLabel;
     newLabel.phoneme = dialog.GetName();
     newLabel.rect = *mSelectionRect;
+    mLabels.push_back(newLabel);
     delete mSelectionRect;
     mSelectionRect = nullptr;
+    ensureMouseShape(Qt::ArrowCursor);
+    mMouseState = mMoveState = MSOutside;
     Changed();
     Paint();
 }
@@ -169,6 +172,7 @@ void SoundWindow::LoadLabels()
         filename = QFileDialog::getOpenFileName(this, "Select filename", filename);
         if (filename.isEmpty()) return;
     }
+    mLabels.clear();
     QFile file(filename);
     file.open(QIODevice::ReadOnly);
     file.readLine();
@@ -185,6 +189,7 @@ void SoundWindow::LoadLabels()
                 Label label;
                 label.phoneme = line.left(indexLeft).trimmed();
                 label.rect.setCoords(list[0].toDouble(), list[1].toDouble(), list[2].toDouble(), list[3].toDouble());
+                mLabels.push_back(label);
             }
         }
     }
@@ -195,7 +200,7 @@ void SoundWindow::LoadLabels()
 void SoundWindow::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
 {
     SoundDrawWindow::PSpektrum(P, A, PrintFN);
-    P.setPen(QColor(0, 255, 0));
+    P.setPen(QColor(0, 200, 0));
     QFont font = P.font();
     font.setPixelSize(24);
     for (Label label : mLabels)
@@ -203,7 +208,7 @@ void SoundWindow::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
         int bottom = YO - label.rect.bottom() * YSF, height = label.rect.height() * YSF;
         int left = label.rect.left() * XSF + XO, width = label.rect.width() * XSF;
         P.drawRect(left, bottom, width, height);
-        WriteText(P, left + (width - TextWidth(font, label.phoneme)) / 2,  bottom - height - (3 * TextHeight(font, label.phoneme)) / 2, label.phoneme, font, 0);
+        WriteText(P, left + (abs(width) - TextWidth(font, label.phoneme)) / 2,  bottom - abs(height) - TextHeight(font, label.phoneme) / 4, label.phoneme, font, 0);
     }
 }
 
