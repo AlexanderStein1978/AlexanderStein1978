@@ -201,14 +201,15 @@ void SoundWindow::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
 {
     SoundDrawWindow::PSpektrum(P, A, PrintFN);
     P.setPen(QColor(0, 200, 0));
-    QFont font = P.font();
-    font.setPixelSize(24);
+    mLabelFont = P.font();
+    mLabelFont.setPixelSize(24);
     for (Label label : mLabels)
     {
         int bottom = YO - label.rect.bottom() * YSF, height = label.rect.height() * YSF;
         int left = label.rect.left() * XSF + XO, width = label.rect.width() * XSF;
         P.drawRect(left, bottom, width, height);
-        WriteText(P, left + (abs(width) - TextWidth(font, label.phoneme)) / 2,  bottom - abs(height) - TextHeight(font, label.phoneme) / 4, label.phoneme, font, 0);
+        QRect textRect = getLabelTextRect(label);
+        WriteText(P, textRect.left(),  textRect.bottom(), label.phoneme, mLabelFont, 0);
     }
 }
 

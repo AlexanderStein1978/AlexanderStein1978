@@ -24,11 +24,6 @@ private slots:
 
 private:
 
-    struct Label
-    {
-        QString phoneme;
-        QRectF rect;
-    };
 
     void closeEvent(QCloseEvent *i_event) override;
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
@@ -42,7 +37,6 @@ private:
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;
     FrequencyWindow* mFFTWindow = nullptr;
-    std::vector<Label> mLabels;
     QString mFilename;
     QString mLabelFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct;

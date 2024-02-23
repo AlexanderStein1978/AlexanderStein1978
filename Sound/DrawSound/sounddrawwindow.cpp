@@ -21,6 +21,7 @@ SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, const
     connect(Bild, SIGNAL(mouseMoved(QMouseEvent*)), this, SLOT(mouseMoved(QMouseEvent*)));
     connect(Bild, SIGNAL(mousePressed(QMouseEvent*)), this, SLOT(mousePressed(QMouseEvent*)));
     connect(Bild, SIGNAL(mouseReleased(QMouseEvent*)), this, SLOT(mouseReleased(QMouseEvent*)));
+    connect(Bild, SIGNAL(LeftClicked(QPoint*)), this, SLOT(mouseLeftClicked(QPoint*)));
 }
 
 SoundDrawWindow::~SoundDrawWindow()
@@ -40,6 +41,7 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
             showFFT();
         }
         else mSelectionRect->setCoords(double(MarkedArea->left() - XO) / XSF, -double(MarkedArea->top() - YO) / YSF, double(MarkedArea->right() - XO) / XSF, -double(MarkedArea->bottom() - YO) / YSF);
+        updateLabelRectSelections();
         Paint();
     }
 }
@@ -59,6 +61,16 @@ void SoundDrawWindow::ensureMouseShape(const Qt::CursorShape shape)
     {
         mousePointer.setShape(shape);
         Bild->setCursor(mousePointer);
+    }
+}
+
+void SoundDrawWindow::mouseLeftClicked(QPoint*)
+{
+    if (mMouseState == MSOutside && nullptr != mSelectionRect)
+    {
+        delete mSelectionRect;
+        mSelectionRect = nullptr;
+        Paint();
     }
 }
 
@@ -242,6 +254,7 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                 break;
         }
         e->accept();
+        updateLabelRectSelections();
         Paint();
     }
 }
@@ -305,4 +318,82 @@ int SoundDrawWindow::getFFTLength(const int inputLength)
 double SoundDrawWindow::getFFTWidth(const double inputWidth)
 {
     return static_cast<double>(getFFTLength(static_cast<int>(inputWidth * mSampleRate))) / mSampleRate;
+}
+
+void SoundDrawWindow::updateLabelRectSelections()
+{
+    const double left = mSelectionRect->left() * XSF + XO, top = YO - mSelectionRect->top() * YSF, right = mSelectionRect->right() * XSF + XO, bottom = YO - mSelectionRect->bottom() * YSF;
+    for (Label label : mLabels) label.isSelected = (left <= label.rect.left() && right >= label.rect.right() && top <= label.rect.top() && bottom >= label.rect.top());
+}
+
+std::pair<int, SoundDrawWindow::MouseState> SoundDrawWindow::getBestMouseState(const QPoint& point)
+{
+    std::pair<int, MouseState> rValue;
+    rValue.first = -1;
+    for (int i=0; i < mLabels.size(); ++i) if (getLabelTextRect(mLabels[i]).contains(point))
+    {
+        rValue.first = i;
+        rValue.second = MSInside;
+        return rValue;
+    }
+    if (nullptr != mSelectionRect && (rValue.second = isCloseToCorner(*mSelectionRect, point)) != MSOutside) return rValue;
+    for (int i=0; i < mLabels.size(); ++i) if ((rValue.second = isCloseToCorner(mLabels[i].rect, point)) != MSOutside)
+    {
+        rValue.first = i;
+        return rValue;
+    }
+    if (nullptr != mSelectionRect && (rValue.second = isCloseToWall(*mSelectionRect, point)) != MSOutside) return rValue;
+    for (int i=0; i < mLabels.size(); ++i) if ((rValue.second = isCloseToWall(mLabels[i].rect, point)) != MSOutside)
+    {
+        rValue.first = i;
+        return rValue;
+    }
+    if (nullptr != mSelectionRect && isInsideRect(*mSelectionRect, point)) rValue.second = MSInside;
+    return rValue;
+}
+
+QRect SoundDrawWindow::getLabelTextRect(const Label& label)
+{
+    int bottom = YO - label.rect.bottom() * YSF, height = label.rect.height() * YSF, left = label.rect.left() * XSF + XO, width = label.rect.width() * XSF;
+    int rWidth = TextWidth(mLabelFont, label.phoneme), rHeight = TextHeight(mLabelFont, label.phoneme);
+    return QRect(left + (width - rWidth) / 2, bottom + height - (5 * rHeight) / 4, rWidth, rHeight);
+}
+
+bool SoundDrawWindow::arePointsClose(const QPointF& pointF, const QPoint& point) const
+{
+    const int left = static_cast<int>(pointF.x() * XSF + XO), top = static_cast<int>(YO - pointF.y() * YSF);
+    return abs(left - point.x()) <= D && abs(top - point.y()) <= D;
+}
+
+SoundDrawWindow::MouseState SoundDrawWindow::isCloseToCorner(const QRectF& rect, const QPoint& point) const
+{
+    if (arePointsClose(rect.bottomLeft(), point)) return MSBLCorner;
+    if (arePointsClose(rect.bottomRight(), point)) return MSRBCorner;
+    if (arePointsClose(rect.topLeft(), point)) return MSLTCorner;
+    if (arePointsClose(rect.topRight(), point)) return MSTRCorner;
+    return MSOutside;
+}
+
+SoundDrawWindow::MouseState SoundDrawWindow::isCloseToWall(const QRectF& rect, const QPoint& point) const
+{
+    const int left = static_cast<int>(rect.left() * XSF + XO), top = static_cast<int>(YO - rect.top() * YSF), right = static_cast<int>(rect.right() * XSF + XO);
+    const int bottom = static_cast<int>(YO - rect.bottom() * YSF), x = point.x(), y = point.y();
+    if (y > top && y < bottom)
+    {
+        if (abs(x - left) <= D) return MSLeft;
+        if (abs(x - right) <= D) return MSRight;
+    }
+    if (x > left && x < right)
+    {
+        if (abs(y - top) <= D) return MSTop;
+        if (abs(y - bottom) <= D) return MSBottom;
+    }
+    return MSOutside;
+}
+
+bool SoundDrawWindow::isInsideRect(const QRectF& rect, const QPoint& point) const
+{
+    const int left = static_cast<int>(rect.left() * XSF + XO), top = static_cast<int>(YO - rect.top() * YSF), right = static_cast<int>(rect.right() * XSF + XO);
+    const int bottom = static_cast<int>(YO - rect.bottom() * YSF), x = point.x(), y = point.y();
+    return (x >= left && x <= right && y >= top && y <= bottom);
 }
