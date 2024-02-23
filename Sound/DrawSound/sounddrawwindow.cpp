@@ -64,82 +64,54 @@ void SoundDrawWindow::ensureMouseShape(const Qt::CursorShape shape)
     }
 }
 
-void SoundDrawWindow::mouseLeftClicked(QPoint*)
+void SoundDrawWindow::mouseLeftClicked(QPoint* point)
 {
-    if (mMouseState == MSOutside && nullptr != mSelectionRect)
+    int clicked = getBestMouseState(*point).first;
+    if ((mMouseState == MSOutside || clicked != -1) && nullptr != mSelectionRect)
     {
         delete mSelectionRect;
         mSelectionRect = nullptr;
         Paint();
     }
+    for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == clicked);
 }
 
 void SoundDrawWindow::mouseMoved(QMouseEvent* e)
 {
-    if (nullptr == mSelectionRect || ZoomB->isChecked()) return;
-    const int x = e->x(), y = e->y();
-    const QRect CR = Bild->contentsRect();
-    const double left = mSelectionRect->left() * XSF + XO, top = YO - mSelectionRect->top() * YSF, right = mSelectionRect->right() * XSF + XO, bottom = YO - mSelectionRect->bottom() * YSF;
+    if ((nullptr == mSelectionRect && 0 == mLabels.size()) || ZoomB->isChecked()) return;
     if (mMoveState == MSOutside)
     {
-        if (x < left - 5 || x < CR.left() + ScaleYWidth || y < top - 5 || y < CR.top() || x > right + 5 || x > CR.right() || y > bottom + 5 || y > CR.bottom() - ScaleXHeight)
+        mMouseState = getBestMouseState(e->pos()).second;
+        switch (mMouseState)
         {
-            ensureMouseShape(Qt::ArrowCursor);
-            mMouseState = MSOutside;
-        }
-        else
-        {
-            if (x > left + 5 && y > top + 5 && x < right - 5 && y < bottom - 5)
-            {
-                ensureMouseShape(Qt::SizeAllCursor);
-                mMouseState = MSInside;
-            }
-            else if (x <= left + 5)
-            {
-                if (y <= top + 5)
-                {
-                    ensureMouseShape(Qt::SizeFDiagCursor);
-                    mMouseState = MSLTCorner;
-                }
-                else if (y >= bottom - 5)
-                {
-                    ensureMouseShape(Qt::SizeBDiagCursor);
-                    mMouseState = MSBLCorner;
-                }
-                else
-                {
-                    ensureMouseShape(Qt::SizeHorCursor);
-                    mMouseState = MSLeft;
-                }
-            }
-            else if (x >= right - 5)
-            {
-                if (y <= top + 5)
-                {
-                    ensureMouseShape(Qt::SizeBDiagCursor);
-                    mMouseState = MSTRCorner;
-                }
-                else if (y >= bottom - 5)
-                {
-                    ensureMouseShape(Qt::SizeFDiagCursor);
-                    mMouseState = MSRBCorner;
-                }
-                else
-                {
-                    ensureMouseShape(Qt::SizeHorCursor);
-                    mMouseState = MSRight;
-                }
-            }
-            else
-            {
+            case MSBLCorner:
+            case MSTRCorner:
+               ensureMouseShape(Qt::SizeBDiagCursor);
+               break;
+            case MSBottom:
+            case MSTop:
                 ensureMouseShape(Qt::SizeVerCursor);
-                mMouseState = (y >= bottom - 5 ? MSBottom : MSTop);
-            }
-            e->accept();
+                break;
+            case MSInside:
+                ensureMouseShape(Qt::SizeAllCursor);
+                break;
+            case MSLeft:
+            case MSRight:
+                ensureMouseShape(Qt::SizeHorCursor);
+                break;
+            case MSLTCorner:
+            case MSRBCorner:
+                ensureMouseShape(Qt::SizeFDiagCursor);
+                break;
+            case MSOutside:
+                ensureMouseShape(Qt::ArrowCursor);
+                break;
         }
+        if (mMouseState != MSOutside) e->accept();
     }
     else
     {
+        const int x = e->x(), y = e->y();
         const double mouseXDiff = x - mMoveMouseStartPoint.x(), mouseYDiff = y - mMoveMouseStartPoint.y();
         switch (mMouseState)
         {
