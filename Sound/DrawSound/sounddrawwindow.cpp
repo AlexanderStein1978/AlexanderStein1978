@@ -66,14 +66,15 @@ void SoundDrawWindow::ensureMouseShape(const Qt::CursorShape shape)
 
 void SoundDrawWindow::mouseLeftClicked(QPoint* point)
 {
-    int clicked = getBestMouseState(*point).first;
-    if ((mMouseState == MSOutside || clicked != -1) && nullptr != mSelectionRect)
+    std::pair<int, MouseState> state = getBestMouseState(*point);
+    if ((state.second == MSOutside || state.first != -1) && nullptr != mSelectionRect)
     {
         delete mSelectionRect;
         mSelectionRect = nullptr;
-        Paint();
     }
-    for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == clicked);
+    if (state.second != MSOutside) for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == state.first);
+    else for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = false;
+    Paint();
 }
 
 void SoundDrawWindow::mouseMoved(QMouseEvent* e)
@@ -116,34 +117,34 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
         switch (mMouseState)
         {
             case MSInside:
-                mSelectionRect->setLeft(mMoveStartRect.left() + mouseXDiff / XSF);
-                mSelectionRect->setTop(mMoveStartRect.top() - mouseYDiff / YSF);
-                mSelectionRect->setWidth(mMoveStartRect.width());
-                mSelectionRect->setHeight(mMoveStartRect.height());
-                if (mIsFFT) showFFT();
+                mMovingRect->setLeft(mMoveStartRect.left() + mouseXDiff / XSF);
+                mMovingRect->setTop(mMoveStartRect.top() - mouseYDiff / YSF);
+                mMovingRect->setWidth(mMoveStartRect.width());
+                mMovingRect->setHeight(mMoveStartRect.height());
+                if (mIsFFT && mMovingRect == mSelectionRect) showFFT();
                 break;
             case MSLeft:
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
                     if (mIsFFT)
                     {
-                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
-                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
-                        mSelectionRect->setWidth(newWidth);
-                        if (oldWidth != newWidth) showFFT();
+                        const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMovingRect->right() - newWidth);
+                        mMovingRect->setWidth(newWidth);
+                        if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                     }
                     else
                     {
-                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mMovingRect->setWidth(mMoveStartRect.width() - xMoveObjC);
                     }
                 }
                 break;
             case MSTop:
                 {
                     const double yMoveObcC = mouseYDiff / YSF;
-                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
-                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                    mMovingRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mMovingRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
                 break;
             case MSLTCorner:
@@ -152,18 +153,18 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                     const double yMoveObcC = mouseYDiff / YSF;
                     if (mIsFFT)
                     {
-                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
-                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
-                        mSelectionRect->setWidth(newWidth);
-                        if (oldWidth != newWidth) showFFT();
+                        const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMovingRect->right() - newWidth);
+                        mMovingRect->setWidth(newWidth);
+                        if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                     }
                     else
                     {
-                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mMovingRect->setWidth(mMoveStartRect.width() - xMoveObjC);
                     }
-                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
-                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                    mMovingRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mMovingRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
                 break;
             case MSTRCorner:
@@ -171,53 +172,53 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                     const double yMoveObcC = mouseYDiff / YSF;
                     if (mIsFFT)
                     {
-                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
-                        mSelectionRect->setWidth(newWidth);
-                        if (oldWidth != newWidth) showFFT();
+                        const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                        mMovingRect->setWidth(newWidth);
+                        if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                     }
-                    else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
-                    mSelectionRect->setTop(mMoveStartRect.top() - yMoveObcC);
-                    mSelectionRect->setHeight(mMoveStartRect.height() + yMoveObcC);
+                    else mMovingRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    mMovingRect->setTop(mMoveStartRect.top() - yMoveObcC);
+                    mMovingRect->setHeight(mMoveStartRect.height() + yMoveObcC);
                 }
                 break;
             case MSRight:
                 if (mIsFFT)
                 {
-                    const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
-                    mSelectionRect->setWidth(newWidth);
-                    if (oldWidth != newWidth) showFFT();
+                    const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    mMovingRect->setWidth(newWidth);
+                    if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                 }
-                else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                else mMovingRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
                 break;
             case MSRBCorner:
                 if (mIsFFT)
                 {
-                    const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
-                    mSelectionRect->setWidth(newWidth);
-                    if (oldWidth != newWidth) showFFT();
+                    const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                    mMovingRect->setWidth(newWidth);
+                    if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                 }
-                else mSelectionRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
-                mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
+                else mMovingRect->setWidth(mMoveStartRect.width() + mouseXDiff / XSF);
+                mMovingRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 break;
             case MSBottom:
-                mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
+                mMovingRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 break;
             case MSBLCorner:
                 {
                     const double xMoveObjC = mouseXDiff / XSF;
                     if (mIsFFT)
                     {
-                        const double oldWidth = mSelectionRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
-                        mSelectionRect->setLeft(mSelectionRect->right() - newWidth);
-                        mSelectionRect->setWidth(newWidth);
-                        if (oldWidth != newWidth) showFFT();
+                        const double oldWidth = mMovingRect->width(), newWidth = getFFTWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMovingRect->right() - newWidth);
+                        mMovingRect->setWidth(newWidth);
+                        if (mMovingRect == mSelectionRect && oldWidth != newWidth) showFFT();
                     }
                     else
                     {
-                        mSelectionRect->setLeft(mMoveStartRect.left() + xMoveObjC);
-                        mSelectionRect->setWidth(mMoveStartRect.width() - xMoveObjC);
+                        mMovingRect->setLeft(mMoveStartRect.left() + xMoveObjC);
+                        mMovingRect->setWidth(mMoveStartRect.width() - xMoveObjC);
                     }
-                    mSelectionRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
+                    mMovingRect->setHeight(mMoveStartRect.height() - mouseYDiff / YSF);
                 }
                 break;
             case MSOutside:
@@ -226,7 +227,7 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
                 break;
         }
         e->accept();
-        updateLabelRectSelections();
+        if (mMovingRect == mSelectionRect) updateLabelRectSelections();
         Paint();
     }
 }
@@ -235,11 +236,13 @@ void SoundDrawWindow::mousePressed(QMouseEvent* e)
 {
     if (!ZoomB->isChecked() &&  e->button() == Qt::LeftButton)
     {
-        mMoveState = mMouseState;
+        std::pair<int, MouseState> state = getBestMouseState(e->pos());
+        mMoveState = mMouseState = state.second;
         if (mMouseState != MSOutside)
         {
+            mMovingRect = (state.first >= 0 ? &mLabels[state.first].rect : mSelectionRect);
             mMoveMouseStartPoint = QPoint(e->x(), e->y());
-            mMoveStartRect = *mSelectionRect;
+            mMoveStartRect = *mMovingRect;
         }
         ensureMouseShape(Qt::DragMoveCursor);
     }

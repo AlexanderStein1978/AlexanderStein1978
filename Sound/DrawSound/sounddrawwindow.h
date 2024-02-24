@@ -53,6 +53,7 @@ protected:
     MouseState mMouseState = MSOutside, mMoveState = MSOutside;
     QPoint mMoveMouseStartPoint;
     QFont mLabelFont;
+    QRectF* mMovingRect = nullptr;
 
 private:
     static const int D=5;
