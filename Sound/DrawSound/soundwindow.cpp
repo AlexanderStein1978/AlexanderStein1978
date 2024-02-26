@@ -15,7 +15,7 @@
 
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
-    mAudioOutput(nullptr), mFilename(filename), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this))
+    mAudioOutput(nullptr), mFilename(filename), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this))
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -35,13 +35,14 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(LoadLabelsAct);
     mPopupMenu->addAction(mSaveLabelsAct);
     mPopupMenu->addSeparator();
+    mPopupMenu->addAction(mDeleteAct);
     connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
+    connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
 }
-
 
 SoundWindow::~SoundWindow()
 {
@@ -69,15 +70,47 @@ void SoundWindow::Play()
 
 int SoundWindow::getSoundData(float ** data)
 {
-    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
+    int *xStart, *xStop, n, i=0, rLength = 0, nSelected = 0, j;
+    if (nullptr != mSelectionRect)
+    {
+        nSelected = 1;
+        xStart = new int[nSelected];
+        xStop = new int[nSelected];
+        rLength = getSoundDataRange(xStart[0], xStop[0]);
+    }
+    else
+    {
+        for (Label label : mLabels) if (label.isSelected) ++nSelected;
+        if (0 < nSelected)
+        {
+            xStart = new int[nSelected];
+            xStop = new int[nSelected];
+            for (n=0; n < mLabels.size(); ++n) if (mLabels[n].isSelected)
+            {
+                rLength += getSoundDataRange(xStart[i], xStop[i], n, FSNotForFTT);
+                ++i;
+            }
+        }
+        else
+        {
+            nSelected = 1;
+            xStart = new int[nSelected];
+            xStop = new int[nSelected];
+            xStart[0] = 0;
+            rLength = Daten->GetDSL();
+            xStop[0] = rLength - 1;
+        }
+    }
     *data = new float[rLength];
-    for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
+    for (i=j=0; j < nSelected; ++j) for (n = xStart[j]; n <= xStop[j]; ++n, ++i) (*data)[i] = static_cast<float>(Daten->GetValue(n, 1));
+    delete[] xStart;
+    delete[] xStop;
     return rLength;
 }
 
-int SoundWindow::getSoundData(double ** data)
+int SoundWindow::getSoundData(double ** data, const int labelIndex, FFTSelection fftSelection)
 {
-    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop);
+    int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop, labelIndex, fftSelection);
     *data = new double[rLength];
     for (n = xStart, i=0; n <= xStop; ++n, ++i) (*data)[i] = Daten->GetValue(n, 1);
     return rLength;
@@ -85,18 +118,50 @@ int SoundWindow::getSoundData(double ** data)
 
 void SoundWindow::showFFT()
 {
-    double* data;
-    int length = getSoundData(&data), FFTLength = length + 1;
-    double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
-    calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
-    if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
-    else mFFTWindow->clear();
-    mFFTWindow->setData(realFFTData, FFTLength);
-    mFFTWindow->addData(imaginaryFFTData, FFTLength);
-    if (!mFFTWindow->isVisible()) mFFTWindow->show();
-    Destroy(realFFTData, FFTLength);
-    Destroy(imaginaryFFTData, FFTLength);
-    delete[] data;
+    if (nullptr != mSelectionRect)
+    {
+        double* data;
+        int length = getSoundData(&data, -1, FSForFTT), FFTLength = length + 1;
+        double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
+        calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
+        if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
+        else mFFTWindow->clear();
+        mFFTWindow->setData(realFFTData, FFTLength);
+        mFFTWindow->addData(imaginaryFFTData, FFTLength);
+        if (!mFFTWindow->isVisible()) mFFTWindow->show();
+        Destroy(realFFTData, FFTLength);
+        Destroy(imaginaryFFTData, FFTLength);
+        delete[] data;
+    }
+    else if (mLabels.size() > 0)
+    {
+        int nSelected = 0;
+        bool wasSelected = true;
+        for (Label label : mLabels) if (label.isSelected) ++nSelected;
+        if (0 == nSelected)
+        {
+            wasSelected = false;
+            for (auto it = mLabels.begin(); it != mLabels.end(); ++it) it->isSelected = true;
+            nSelected = mLabels.size();
+        }
+        for (int n=0; n < mLabels.size(); ++n) if (mLabels[n].isSelected)
+        {
+            double* data;
+            int length = getSoundData(&data, n, FSForFTT), FFTLength = length + 1;
+            double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
+            calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
+            DiagWindow* window = new DiagWindow;
+            window->setWindowTitle(mLabels[n].phoneme);
+            window->setUnits("frequency [Hz]", "intensity");
+            window->setData(realFFTData, FFTLength);
+            window->addData(imaginaryFFTData, FFTLength);
+            window->show();
+            Destroy(realFFTData, FFTLength);
+            Destroy(imaginaryFFTData, FFTLength);
+            delete[] data;
+        }
+        if (!wasSelected) for (auto it = mLabels.begin(); it != mLabels.end(); ++it) it->isSelected = false;
+    }
 }
 
 void SoundWindow::FFTActTriggered(bool checked)
@@ -200,11 +265,11 @@ void SoundWindow::LoadLabels()
 void SoundWindow::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
 {
     SoundDrawWindow::PSpektrum(P, A, PrintFN);
-    P.setPen(QColor(0, 200, 0));
     mLabelFont = P.font();
     mLabelFont.setPixelSize(24);
     for (Label label : mLabels)
     {
+        P.setPen(label.isSelected ? QColor(125, 125, 0) : QColor(0, 200, 0));
         int bottom = YO - label.rect.bottom() * YSF, height = label.rect.height() * YSF;
         int left = label.rect.left() * XSF + XO, width = label.rect.width() * XSF;
         P.drawRect(left, bottom, width, height);
@@ -232,7 +297,27 @@ void SoundWindow::closeEvent(QCloseEvent* i_event)
 
 void SoundWindow::ShowPopupMenu(const QPoint& point)
 {
+    auto state = getBestMouseState(point);
+    if (state.first != -1 && state.second != MSOutside && !mLabels[state.first].isSelected)
+    {
+        for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == state.first);
+        if (nullptr != mSelectionRect)
+        {
+            delete mSelectionRect;
+            mSelectionRect = nullptr;
+        }
+    }
     mAddLabelAct->setEnabled(nullptr != mSelectionRect);
     mSaveLabelsAct->setEnabled(!isSaved() && 0 < mLabels.size());
     SoundDrawWindow::ShowPopupMenu(point);
+}
+
+void SoundWindow::Delete()
+{
+    if (nullptr != mSelectionRect) delete mSelectionRect;
+    mSelectionRect = nullptr;
+    std::vector<Label> tempLabels;
+    for (Label label : mLabels) if (!label.isSelected) tempLabels.push_back(label);
+    mLabels = tempLabels;
+    Paint();
 }

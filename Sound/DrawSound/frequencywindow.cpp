@@ -14,6 +14,7 @@ FrequencyWindow::FrequencyWindow(SoundRecordAndDrawControl *const control, const
 {
     mRescaleOnSetAndAdd = false;
     QAction *backTransformAct = new QAction("Back transform", this), *copyToWindowAct = new QAction("Copy to window...", this);
+    setUnits("frequency [Hz]", "intensity");
     mPopupMenu->addAction(backTransformAct);
     mPopupMenu->addAction(copyToWindowAct);
     connect(backTransformAct, SIGNAL(triggered()), this, SLOT(BackTransform()));

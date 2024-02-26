@@ -21,17 +21,16 @@ private slots:
     void AddLabel();
     void LoadLabels();
     void SaveLabels();
+    void Delete();
 
 private:
-
-
     void closeEvent(QCloseEvent *i_event) override;
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     void showFFT() override;
     void WriteToFile() override;
     void ShowPopupMenu(const QPoint& point) override;
     int getSoundData(float** data);
-    int getSoundData(double** data);
+    int getSoundData(double** data, const int labelIndex, FFTSelection fftSelection);
     QString predictLabelFilename();
 
     QComboBox* mOutputDeviceBox;
@@ -39,5 +38,5 @@ private:
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename;
     QString mLabelFilename;
-    QAction* mAddLabelAct, *mSaveLabelsAct;
+    QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
 };
