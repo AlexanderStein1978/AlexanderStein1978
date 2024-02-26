@@ -26,6 +26,7 @@ protected slots:
 
 protected:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
+    enum FFTSelection{FSForFTT, FSNotForFTT, FSDependsOnState};
 
     struct Label
     {
@@ -35,10 +36,11 @@ protected:
     };
 
     void ensureMouseShape(const Qt::CursorShape shape);
+    std::pair<int, MouseState> getBestMouseState(const QPoint& point);
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     int getFFTLength(const int inputLength);
     double getFFTWidth(const double inputWidth);
-    int getSoundDataRange(int& xStart, int& xStop);
+    int getSoundDataRange(int& xStart, int& xStop, const int labelIndex = -1, const FFTSelection fftSelection = FSDependsOnState);
     virtual void showFFT() {}
     void ShowPopupMenu(const QPoint& point) override;
     QRect getLabelTextRect(const Label& label);
@@ -59,7 +61,6 @@ private:
     static const int D=5;
 
     void updateLabelRectSelections();
-    std::pair<int, MouseState> getBestMouseState(const QPoint& point);
     MouseState isCloseToCorner(const QRectF& rect, const QPoint& point) const;
     MouseState isCloseToWall(const QRectF& rect, const QPoint& point) const;
     bool isInsideRect(const QRectF& rect, const QPoint& point) const;

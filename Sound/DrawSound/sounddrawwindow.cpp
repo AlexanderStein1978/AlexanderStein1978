@@ -266,17 +266,26 @@ void SoundDrawWindow::ShowPopupMenu(const QPoint& point)
     mPopupMenu->popup(point);
 }
 
-int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop)
+int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop, const int labelIndex, const FFTSelection fftSelection)
 {
+    QRectF* rect = (labelIndex >= 0 ? &mLabels[labelIndex].rect : mSelectionRect);
+    double start = rect->left(), stop = rect->right();
+    if (labelIndex >= 0 && (fftSelection == FSForFTT || (fftSelection == FSDependsOnState && mIsFFT)))
+    {
+        double length = stop - start, fftLength = getFFTWidth(length);
+        if (fftLength > length) fftLength *= 0.5;
+        double step = 0.5 * (length - fftLength);
+        start += step;
+        stop -= step;
+    }
     int length = Daten->GetDSL(), n = 1;
     xStart = 0;
     xStop = length - 1;
     if (nullptr != mSelectionRect)
     {
-        const double startTime = mSelectionRect->left(), stopTime = mSelectionRect->right();
-        while (n < length && Daten->GetValue(n, 0) < startTime) ++n;
+        while (n < length && Daten->GetValue(n, 0) < start) ++n;
         xStart = n;
-        while (n < length && Daten->GetValue(n, 0) <= stopTime) ++n;
+        while (n < length && Daten->GetValue(n, 0) <= stop) ++n;
         xStop = n-1;
     }
     return xStop - xStart + 1;
