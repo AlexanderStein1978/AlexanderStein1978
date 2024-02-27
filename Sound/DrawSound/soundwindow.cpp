@@ -269,7 +269,7 @@ void SoundWindow::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     mLabelFont.setPixelSize(24);
     for (Label label : mLabels)
     {
-        P.setPen(label.isSelected ? QColor(125, 125, 0) : QColor(0, 200, 0));
+        P.setPen(label.isSelected ? QColor(255, 255, 0) : QColor(0, 200, 0));
         int bottom = YO - label.rect.bottom() * YSF, height = label.rect.height() * YSF;
         int left = label.rect.left() * XSF + XO, width = label.rect.width() * XSF;
         P.drawRect(left, bottom, width, height);
