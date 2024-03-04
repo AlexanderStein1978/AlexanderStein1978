@@ -22,6 +22,7 @@ private slots:
     void LoadLabels();
     void SaveLabels();
     void Delete();
+    void mouseLeftClicked(QPoint *Position) override;
 
 private:
     void closeEvent(QCloseEvent *i_event) override;

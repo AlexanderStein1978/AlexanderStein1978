@@ -147,7 +147,7 @@ void SoundWindow::showFFT()
         for (int n=0; n < mLabels.size(); ++n) if (mLabels[n].isSelected)
         {
             double* data;
-            int length = getSoundData(&data, n, FSForFTT), FFTLength = length + 1;
+            int length = getSoundData(&data, n, FSForSelectedFTT), FFTLength = length + 1;
             double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
             calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
             DiagWindow* window = new DiagWindow;
@@ -320,4 +320,14 @@ void SoundWindow::Delete()
     for (Label label : mLabels) if (!label.isSelected) tempLabels.push_back(label);
     mLabels = tempLabels;
     Paint();
+}
+
+void SoundWindow::mouseLeftClicked(QPoint* Position)
+{
+    SoundDrawWindow::mouseLeftClicked(Position);
+    if (!mIsFFT || 0 == mLabels.size()) return;
+    double minSize = mLabels[0].rect.width();
+    for (Label label : mLabels) if (label.rect.width() < minSize) minSize = label.rect.width();
+    mSelectedFFtSize = getFFTWidth(minSize);
+    showFFT();
 }

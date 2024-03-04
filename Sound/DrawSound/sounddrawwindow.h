@@ -19,14 +19,14 @@ private slots:
     void mouseMoved(QMouseEvent *e);
     void mousePressed(QMouseEvent *e);
 	void mouseReleased(QMouseEvent *e);
-    void mouseLeftClicked(QPoint *Position);
 
 protected slots:
     virtual void WriteToFile() = 0;
+    virtual void mouseLeftClicked(QPoint *Position);
 
 protected:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
-    enum FFTSelection{FSForFTT, FSNotForFTT, FSDependsOnState};
+    enum FFTSelection{FSForFTT, FSForSelectedFTT, FSNotForFTT, FSDependsOnState};
 
     struct Label
     {
@@ -56,6 +56,7 @@ protected:
     QPoint mMoveMouseStartPoint;
     QFont mLabelFont;
     QRectF* mMovingRect = nullptr;
+    double mSelectedFFtSize = 0.0;
 
 private:
     static const int D=5;
@@ -65,7 +66,5 @@ private:
     MouseState isCloseToWall(const QRectF& rect, const QPoint& point) const;
     bool isInsideRect(const QRectF& rect, const QPoint& point) const;
     bool arePointsClose(const QPointF& pointF, const QPoint& point) const;
-
-
     int movingRect;
 };
