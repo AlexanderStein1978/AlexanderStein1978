@@ -38,9 +38,9 @@ protected:
     void ensureMouseShape(const Qt::CursorShape shape);
     std::pair<int, MouseState> getBestMouseState(const QPoint& point);
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
-    int getFFTLength(const int inputLength);
-    double getFFTWidth(const double inputWidth);
-    int getSoundDataRange(int& xStart, int& xStop, const int labelIndex = -1, const FFTSelection fftSelection = FSDependsOnState);
+    int getFFTLength(const int inputLength) const;
+    double getFFTWidth(const double inputWidth) const;
+    int getSoundDataRange(int& xStart, int& xStop, const int labelIndex = -1, const FFTSelection fftSelection = FSDependsOnState) const;
     virtual void showFFT() {}
     void ShowPopupMenu(const QPoint& point) override;
     QRect getLabelTextRect(const Label& label);

@@ -266,9 +266,9 @@ void SoundDrawWindow::ShowPopupMenu(const QPoint& point)
     mPopupMenu->popup(point);
 }
 
-int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop, const int labelIndex, const FFTSelection fftSelection)
+int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop, const int labelIndex, const FFTSelection fftSelection) const
 {
-    QRectF* rect = (labelIndex >= 0 ? &mLabels[labelIndex].rect : mSelectionRect);
+    const QRectF* rect = (labelIndex >= 0 ? &mLabels[labelIndex].rect : mSelectionRect);
     double start =  (nullptr != rect ? rect->left() : 0), stop = (nullptr != rect ? rect->right() : Daten->GetValue(Daten->GetDSL() - 1, 0));
     if (labelIndex >= 0 && (fftSelection == FSForFTT  || fftSelection == FSForSelectedFTT || (fftSelection == FSDependsOnState && mIsFFT)))
     {
@@ -286,7 +286,7 @@ int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop, const int labelI
     return xStop - xStart + 1;
 }
 
-int SoundDrawWindow::getFFTLength(const int inputLength)
+int SoundDrawWindow::getFFTLength(const int inputLength) const
 {
     int N = static_cast<int>(log2(inputLength));
     if (N < 1) N=1;
@@ -294,7 +294,7 @@ int SoundDrawWindow::getFFTLength(const int inputLength)
     return (abs(inputLength - rc) < abs(inputLength - rc / 2) ? rc : rc / 2);
 }
 
-double SoundDrawWindow::getFFTWidth(const double inputWidth)
+double SoundDrawWindow::getFFTWidth(const double inputWidth) const
 {
     return static_cast<double>(getFFTLength(static_cast<int>(inputWidth * mSampleRate))) / mSampleRate;
 }
