@@ -27,6 +27,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
     QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
+    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
@@ -35,12 +36,15 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(LoadLabelsAct);
     mPopupMenu->addAction(mSaveLabelsAct);
     mPopupMenu->addSeparator();
+    mPopupMenu->addAction(WriteAnnInputAct);
+    mPopupMenu->addSeparator();
     mPopupMenu->addAction(mDeleteAct);
     connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
+    connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(CreateAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
 }
 
@@ -108,7 +112,7 @@ int SoundWindow::getSoundData(float ** data)
     return rLength;
 }
 
-int SoundWindow::getSoundData(double ** data, const int labelIndex, FFTSelection fftSelection)
+int SoundWindow::getSoundData(double ** data, const int labelIndex, FFTSelection fftSelection) const
 {
     int xStart, xStop, n, i, rLength = getSoundDataRange(xStart, xStop, labelIndex, fftSelection);
     *data = new double[rLength];
@@ -120,10 +124,9 @@ void SoundWindow::showFFT()
 {
     if (nullptr != mSelectionRect)
     {
-        double* data;
-        int length = getSoundData(&data, -1, FSForFTT), FFTLength = length + 1;
-        double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
-        calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
+        double **realFFTData, **imaginaryFFTData;
+        int FFTLength;
+        getFFTData(FSForFTT, -1, FFTLength, realFFTData, imaginaryFFTData);
         if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
         else mFFTWindow->clear();
         mFFTWindow->setData(realFFTData, FFTLength);
@@ -131,7 +134,6 @@ void SoundWindow::showFFT()
         if (!mFFTWindow->isVisible()) mFFTWindow->show();
         Destroy(realFFTData, FFTLength);
         Destroy(imaginaryFFTData, FFTLength);
-        delete[] data;
     }
     else if (mLabels.size() > 0)
     {
@@ -146,10 +148,9 @@ void SoundWindow::showFFT()
         }
         for (int n=0; n < mLabels.size(); ++n) if (mLabels[n].isSelected)
         {
-            double* data;
-            int length = getSoundData(&data, n, FSForSelectedFTT), FFTLength = length + 1;
-            double **realFFTData = Create(FFTLength, 2), **imaginaryFFTData = Create(FFTLength, 2);
-            calcFFT(data, length, 1.0 / mSampleRate, realFFTData, imaginaryFFTData);
+            double **realFFTData, **imaginaryFFTData;
+            int FFTLength;
+            getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
             DiagWindow* window = new DiagWindow;
             window->setWindowTitle(mLabels[n].phoneme);
             window->setUnits("frequency [Hz]", "intensity");
@@ -158,7 +159,6 @@ void SoundWindow::showFFT()
             window->show();
             Destroy(realFFTData, FFTLength);
             Destroy(imaginaryFFTData, FFTLength);
-            delete[] data;
         }
         if (!wasSelected) for (auto it = mLabels.begin(); it != mLabels.end(); ++it) it->isSelected = false;
     }
@@ -326,8 +326,44 @@ void SoundWindow::mouseLeftClicked(QPoint* Position)
 {
     SoundDrawWindow::mouseLeftClicked(Position);
     if (!mIsFFT || 0 == mLabels.size()) return;
+    calcMinLabelWidth();
+    showFFT();
+}
+
+void SoundWindow::CreateAnnInput()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
+    if (filename.isEmpty()) return;
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+    QDataStream stream(&file);
+    calcMinLabelWidth();
+    double **realFFTData, **imaginaryFFTData;
+    int FFTLength;
+    for (int n=0; n < mLabels.size(); ++n)
+    {
+        getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
+        if (n==0) stream << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
+        for(int m=0; m < FFTLength; ++m) stream << (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+        Destroy(realFFTData, FFTLength);
+        Destroy(imaginaryFFTData, FFTLength);
+    }
+}
+
+void SoundWindow::calcMinLabelWidth()
+{
     double minSize = mLabels[0].rect.width();
     for (Label label : mLabels) if (label.rect.width() < minSize) minSize = label.rect.width();
     mSelectedFFtSize = getFFTWidth(minSize);
-    showFFT();
+}
+
+void SoundWindow::getFFTData(const SoundDrawWindow::FFTSelection selection, const int labelIndex, int& FFTLength, double **& realData, double **& imaginaryData) const
+{
+    double* data;
+    int length = getSoundData(&data, labelIndex, selection);
+    FFTLength = length + 1;
+    realData = Create(FFTLength, 2);
+    imaginaryData = Create(FFTLength, 2);
+    calcFFT(data, length, 1.0 / mSampleRate, realData, imaginaryData);
+    delete[] data;
 }

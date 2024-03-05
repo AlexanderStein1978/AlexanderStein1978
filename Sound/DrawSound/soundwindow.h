@@ -22,6 +22,7 @@ private slots:
     void LoadLabels();
     void SaveLabels();
     void Delete();
+    void CreateAnnInput();
     void mouseLeftClicked(QPoint *Position) override;
 
 private:
@@ -30,8 +31,10 @@ private:
     void showFFT() override;
     void WriteToFile() override;
     void ShowPopupMenu(const QPoint& point) override;
+    void calcMinLabelWidth();
+    void getFFTData(const FFTSelection selection, const int labelIndex, int& N, double **&realData, double **&imaginaryData) const;
     int getSoundData(float** data);
-    int getSoundData(double** data, const int labelIndex, FFTSelection fftSelection);
+    int getSoundData(double** data, const int labelIndex, FFTSelection fftSelection) const;
     QString predictLabelFilename();
 
     QComboBox* mOutputDeviceBox;
