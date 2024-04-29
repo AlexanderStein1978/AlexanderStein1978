@@ -210,6 +210,7 @@ QString SoundWindow::predictLabelFilename()
 
 void SoundWindow::SaveLabels()
 {
+    estimateLabelIndices();
     if (mLabelFilename.isEmpty())
     {
         mLabelFilename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
@@ -224,7 +225,7 @@ void SoundWindow::SaveLabels()
     QTextStream stream(&file);
     stream << "Sound file: " << mFilename << '\n' << "Phoneme(left, top, right, bottom)\n";
     for (Label label : mLabels)
-        stream << label.phoneme << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
+        stream << label.phoneme << '[' << label.index << ']' << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
     Saved();
 }
@@ -245,6 +246,7 @@ void SoundWindow::LoadLabels()
     while(!file.atEnd())
     {
         QString line(file.readLine());
+        size_t indexIndexLeft(line.indexOf('[')), indexIndexRight(line.indexOf(']'));
         size_t indexLeft(line.indexOf('(')), indexRight(line.indexOf(')'));
         if (0 < indexLeft && indexLeft < indexRight)
         {
@@ -252,7 +254,9 @@ void SoundWindow::LoadLabels()
             if (list.size() == 4)
             {
                 Label label;
-                label.phoneme = line.left(indexLeft).trimmed();
+                if (indexIndexLeft > 0 && indexIndexLeft < indexIndexRight - 1) label.index = line.mid(indexIndexLeft + 1, indexIndexRight - indexIndexLeft - 1).toInt();
+                else indexIndexLeft = indexLeft;
+                label.phoneme = line.left(indexIndexLeft).trimmed();
                 label.rect.setCoords(list[0].toDouble(), list[1].toDouble(), list[2].toDouble(), list[3].toDouble());
                 mLabels.push_back(label);
             }
@@ -332,6 +336,7 @@ void SoundWindow::mouseLeftClicked(QPoint* Position)
 
 void SoundWindow::CreateAnnInput()
 {
+    estimateLabelIndices();
     QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
@@ -343,7 +348,7 @@ void SoundWindow::CreateAnnInput()
     for (int n=0; n < mLabels.size(); ++n)
     {
         getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
-        if (n==0) stream << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
+        if (n==0) stream << static_cast<quint8>(mLabels[n].index) << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
         for(int m=0; m < FFTLength; ++m) stream << (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
         Destroy(realFFTData, FFTLength);
         Destroy(imaginaryFFTData, FFTLength);
