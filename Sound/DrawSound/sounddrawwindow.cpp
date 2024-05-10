@@ -350,6 +350,7 @@ void SoundDrawWindow::estimateLabelIndices()
     mLabels[0].index = 0;
     std::vector<Label*> iv;
     iv.push_back(&mLabels[0]);
+    int cm = 0;
     for (int n=1; n < mLabels.size(); ++n)
     {
         mLabels[n].index = -1;
@@ -360,7 +361,7 @@ void SoundDrawWindow::estimateLabelIndices()
         }
         if (mLabels[n].index == -1)
         {
-            mLabels[n].index = n;
+            mLabels[n].index = cm++;
             iv.push_back(&mLabels[n]);
         }
     }

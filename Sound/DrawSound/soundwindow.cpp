@@ -348,7 +348,8 @@ void SoundWindow::CreateAnnInput()
     for (int n=0; n < mLabels.size(); ++n)
     {
         getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
-        if (n==0) stream << static_cast<quint8>(mLabels[n].index) << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
+        if (n==0) stream << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
+        stream << static_cast<quint8>(mLabels[n].index);
         for(int m=0; m < FFTLength; ++m) stream << (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
         Destroy(realFFTData, FFTLength);
         Destroy(imaginaryFFTData, FFTLength);
