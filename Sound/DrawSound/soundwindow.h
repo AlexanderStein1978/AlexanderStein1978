@@ -22,7 +22,8 @@ private slots:
     void LoadLabels();
     void SaveLabels();
     void Delete();
-    void CreateAnnInput();
+    void WriteAnnInput();
+    void ReadAndVerifyAnnOutput();
     void mouseLeftClicked(QPoint *Position) override;
 
 private:
@@ -30,6 +31,7 @@ private:
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     void showFFT() override;
     void WriteToFile() override;
+    void CreateAnnInput(double ** data, int &fftLength);
     void ShowPopupMenu(const QPoint& point) override;
     void calcMinLabelWidth();
     void getFFTData(const FFTSelection selection, const int labelIndex, int& N, double **&realData, double **&imaginaryData) const;

@@ -46,15 +46,16 @@ private slots:
     void Stop();
     void Draw();
     void showFileDialog();
+    void SplitFileIntoPackets();
 
 private:
     void VerifyFileExists(QString deviceName);
     bool DetermineSampleTypeAndSize();
 
     QComboBox *mInputSelectorBox;
-    QPushButton *mStartButton, *mStopButton, *mDrawButton, *mFileDialogButton;
+    QPushButton *mStartButton, *mStopButton, *mDrawButton, *mFileDialogButton, *mSplitFileButton;
     QLabel* mSizeDisplay, *mLengthDisplay;
-    QLineEdit* mFileNameEdit;
+    QLineEdit *mFileNameEdit, *mPacketSizeEdit;
     QAudioInput* mInput;
     QFile* mFile;
     QAudioFormat::SampleType mSampleType;

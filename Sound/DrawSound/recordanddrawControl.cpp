@@ -25,9 +25,9 @@ namespace
 
 
 SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
-    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mFileDialogButton(new QPushButton("...", this)), mSizeDisplay(new QLabel(SizeString, this)),
-    mLengthDisplay(new QLabel(LengthString, this)), mFileNameEdit(new QLineEdit(this)), mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0),
-    mProcessedUSec(0u)
+    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mFileDialogButton(new QPushButton("...", this)),
+    mSplitFileButton(new QPushButton("Split recording", this)), mSizeDisplay(new QLabel(SizeString, this)), mLengthDisplay(new QLabel(LengthString, this)), mFileNameEdit(new QLineEdit(this)),
+    mPacketSizeEdit(new QLineEdit("10", this)), mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
 {
     setWindowTitle("Sound Record and Draw Control");
     QGridLayout *L = new QGridLayout(this);
@@ -46,10 +46,14 @@ SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new Q
     mStopButton->setEnabled(false);
     L->addWidget(mSizeDisplay, 3, 0);
     L->addWidget(mLengthDisplay, 3, 1);
+    L->addWidget(mSplitFileButton, 4, 0);
+    L->addWidget(new QLabel("Size of split files", this), 4, 1);
+    L->addWidget(mPacketSizeEdit, 4, 2);
     connect(mStartButton, SIGNAL(clicked()), this, SLOT(StartRecording()));
     connect(mStopButton, SIGNAL(clicked()), this, SLOT(Stop()));
     connect(mDrawButton, SIGNAL(clicked()), this, SLOT(Draw()));
     connect(mFileDialogButton, SIGNAL(clicked()), this, SLOT(showFileDialog()));
+    connect(mSplitFileButton, SIGNAL(clicked()), this, SLOT(SplitFileIntoPackets()));
 }
 
 SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
@@ -150,6 +154,42 @@ void SoundRecordAndDrawControl::Stop()
     mInputSelectorBox->setEnabled(true);
     mStartButton->setEnabled(true);
     mStopButton->setEnabled(false);
+}
+
+void SoundRecordAndDrawControl::SplitFileIntoPackets()
+{
+    QString filename = mFileNameEdit->text();
+    if (filename.isEmpty()) return;
+    QFile inputFile(filename);
+    if (!inputFile.exists()) return;
+    int allBytes = inputFile.size(), fileIndex, currentOffset, packetSize = mPacketSizeEdit->text().toInt() * 1000000, n = filename.lastIndexOf('.');
+    if (0 == packetSize) return;
+    if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
+    packetSize = mSampleSize * (packetSize / mSampleSize);
+    QString fileEnding = filename.right(filename.length() - n), basicFilename = filename.left(n);
+    inputFile.open(QIODevice::ReadOnly);
+    QDataStream inputStream(&inputFile);
+    char* buffer = new char[packetSize];
+    for (fileIndex = 0, currentOffset = 0; currentOffset < allBytes; ++fileIndex)
+    {
+        QString splitFilename = basicFilename + QString::number(fileIndex) + fileEnding;
+        QFile splitFile(splitFilename);
+        splitFile.open(QIODevice::WriteOnly);
+        int bytesRead = inputStream.readRawData(buffer, packetSize);
+        if (-1 == bytesRead)
+        {
+            QMessageBox::information(this, "DrawSound", "The data could not be read completely!");
+            break;
+        }
+        currentOffset += bytesRead;
+        int bytesWritten = splitFile.write(buffer, bytesRead);
+        if (bytesWritten < bytesRead)
+        {
+            QMessageBox::information(this, "DrawSound", "Not all data could be written!");
+            break;
+        }
+    }
+    delete[] buffer;
 }
 
 void SoundRecordAndDrawControl::Draw()
