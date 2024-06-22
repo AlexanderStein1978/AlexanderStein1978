@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "fit.h"
 #include "windowselectdialog.h"
+#include "soundvector.h"
+#include "soundmatrix.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -27,7 +29,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
     QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
-    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this);
+    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
@@ -37,6 +39,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(mSaveLabelsAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(WriteAnnInputAct);
+    mPopupMenu->addAction(ReadAnnOutputAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mDeleteAct);
     connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
@@ -44,8 +47,9 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
-    connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(CreateAnnInput()));
+    connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(WriteAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
+    connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
 }
 
 SoundWindow::~SoundWindow()
@@ -334,26 +338,74 @@ void SoundWindow::mouseLeftClicked(QPoint* Position)
     showFFT();
 }
 
-void SoundWindow::CreateAnnInput()
+void SoundWindow::CreateAnnInput(double ** data, int &FFTLength)
 {
     estimateLabelIndices();
+    calcMinLabelWidth();
+    double **realFFTData, **imaginaryFFTData;
+    for (int n=0; n < mLabels.size(); ++n)
+    {
+        getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
+        data[n] = new double[FFTLength];
+        for(int m=0; m < FFTLength; ++m) data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+        Destroy(realFFTData, FFTLength);
+        Destroy(imaginaryFFTData, FFTLength);
+    }
+}
+
+void SoundWindow::WriteAnnInput()
+{
+    if (0 == mLabels.size())
+    {
+        QMessageBox::information(this, "DrawSound", "No ANN input can be created because no labels are loaded.");
+        return;
+    }
     QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QDataStream stream(&file);
-    calcMinLabelWidth();
-    double **realFFTData, **imaginaryFFTData;
     int FFTLength;
+    double **data = new double*[mLabels.size()];
+    CreateAnnInput(data, FFTLength);
     for (int n=0; n < mLabels.size(); ++n)
     {
-        getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
         if (n==0) stream << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
         stream << static_cast<quint8>(mLabels[n].index);
-        for(int m=0; m < FFTLength; ++m) stream << (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
-        Destroy(realFFTData, FFTLength);
-        Destroy(imaginaryFFTData, FFTLength);
+        for(int m=0; m < FFTLength; ++m) stream << data[n][m];
     }
+    Destroy(data, mLabels.size());
+}
+
+void SoundWindow::ReadAndVerifyAnnOutput()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Select filename", predictLabelFilename());
+    if (filename.isEmpty()) return;
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    QDataStream stream(&file);
+    quint16 T1NR, T1NC, T2NR, T2NC;
+    stream >> T1NR >> T1NC;
+    SoundMatrix T1(T1NC, T1NR);
+    for (int c=0; c < T1NC; ++c) for (int r=0; r < T1NR; ++r) stream >> T1[c][r];
+    stream >> T2NR >> T2NC;
+    SoundMatrix T2(T2NC, T2NR);
+    for (int c=0; c < T2NC; ++c) for (int r=0; r < T2NR; ++r) stream >> T2[c][r];
+
+    int FFTLength, correctPred=0;
+    double **data = new double*[mLabels.size()];
+    CreateAnnInput(data, FFTLength);
+    for (int n=0; n < mLabels.size(); ++n)
+    {
+        SoundVector in(FFTLength + 1);
+        in[0] = 1.0;
+        for (int m=0; m < FFTLength; ++m) in[m+1] = data[n][m];
+        SoundVector h1((T1*in).sigmoid());
+        if (mLabels[n].index == (T2*h1).getIndexOfMax()) ++correctPred;
+    }
+    Destroy(data, mLabels.size());
+
+    QMessageBox::information(this, "DrawSound", QString("%1 of %2 predicted correctly!").arg(correctPred).arg(mLabels.size()));
 }
 
 void SoundWindow::calcMinLabelWidth()
