@@ -45,9 +45,10 @@ protected:
     virtual void showFFT() {}
     void ShowPopupMenu(const QPoint& point) override;
     QRect getLabelTextRect(const Label& label);
-    void estimateLabelIndices();
+    int estimateLabelIndex(const QString& phoneme);
 
     std::vector<Label> mLabels;
+    QStringList mLabelOrder;
     QMenu *mPopupMenu;
     QRectF *mSelectionRect = nullptr;
     int mSampleRate;

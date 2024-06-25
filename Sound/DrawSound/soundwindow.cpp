@@ -17,7 +17,8 @@
 
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
-    mAudioOutput(nullptr), mFilename(filename), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this))
+    mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
+    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayContinuous(false)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -50,6 +51,9 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(WriteAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
+    QFile labelOrderFile(mLabelOrderFilename);
+    labelOrderFile.open(QIODevice::ReadOnly);
+    mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
 }
 
 SoundWindow::~SoundWindow()
@@ -57,7 +61,7 @@ SoundWindow::~SoundWindow()
     if (nullptr != mAudioOutput) delete mAudioOutput;
 }
 
-void SoundWindow::Play()
+void SoundWindow::startPlaying()
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     QAudioFormat format;
@@ -74,6 +78,11 @@ void SoundWindow::Play()
     int length = getSoundData(&data);
     inputDevice->write(reinterpret_cast<char*>(data), 4*length);
     delete[] data;
+}
+
+void SoundWindow::continuePlaying()
+{
+
 }
 
 int SoundWindow::getSoundData(float ** data)
@@ -197,6 +206,7 @@ void SoundWindow::AddLabel()
     Label newLabel;
     newLabel.phoneme = dialog.GetName();
     newLabel.rect = *mSelectionRect;
+    newLabel.index = estimateLabelIndex(newLabel.phoneme);
     mLabels.push_back(newLabel);
     delete mSelectionRect;
     mSelectionRect = nullptr;
@@ -214,7 +224,6 @@ QString SoundWindow::predictLabelFilename()
 
 void SoundWindow::SaveLabels()
 {
-    estimateLabelIndices();
     if (mLabelFilename.isEmpty())
     {
         mLabelFilename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
@@ -231,6 +240,9 @@ void SoundWindow::SaveLabels()
     for (Label label : mLabels)
         stream << label.phoneme << '[' << label.index << ']' << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
+    QFile labelOrderFile(mLabelOrderFilename);
+    labelOrderFile.open(QIODevice::WriteOnly);
+    labelOrderFile.write(mLabelOrder.join('\t').toLatin1());
     Saved();
 }
 
@@ -262,6 +274,7 @@ void SoundWindow::LoadLabels()
                 else indexIndexLeft = indexLeft;
                 label.phoneme = line.left(indexIndexLeft).trimmed();
                 label.rect.setCoords(list[0].toDouble(), list[1].toDouble(), list[2].toDouble(), list[3].toDouble());
+                label.index = estimateLabelIndex(label.phoneme);
                 mLabels.push_back(label);
             }
         }

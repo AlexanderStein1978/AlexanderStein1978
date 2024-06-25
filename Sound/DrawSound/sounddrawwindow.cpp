@@ -344,27 +344,15 @@ bool SoundDrawWindow::arePointsClose(const QPointF& pointF, const QPoint& point)
     return abs(left - point.x()) <= D && abs(top - point.y()) <= D;
 }
 
-void SoundDrawWindow::estimateLabelIndices()
+int SoundDrawWindow::estimateLabelIndex(const QString& phoneme)
 {
-    if (mLabels.size() == 0) return;
-    mLabels[0].index = 0;
-    std::vector<Label*> iv;
-    iv.push_back(&mLabels[0]);
-    int cm = 0;
-    for (int n=1; n < mLabels.size(); ++n)
+    int index = mLabelOrder.indexOf(phoneme);
+    if (-1 == index)
     {
-        mLabels[n].index = -1;
-        for (Label* l : iv) if (l->phoneme == mLabels[n].phoneme)
-        {
-            mLabels[n].index = l->index;
-            break;
-        }
-        if (mLabels[n].index == -1)
-        {
-            mLabels[n].index = cm++;
-            iv.push_back(&mLabels[n]);
-        }
+        index = mLabelOrder.size();
+        mLabelOrder.push_back(phoneme);
     }
+    return index;
 }
 
 SoundDrawWindow::MouseState SoundDrawWindow::isCloseToCorner(const QRectF& rect, const QPoint& point) const
