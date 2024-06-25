@@ -16,7 +16,8 @@ public:
     ~SoundWindow();
 
 private slots:
-    void Play();
+    void startPlaying();
+    void continuePlaying();
     void FFTActTriggered(bool checked);
     void AddLabel();
     void LoadLabels();
@@ -41,8 +42,11 @@ private:
 
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;
+    QIODevice* mAudioInputDevice;
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename;
     QString mLabelFilename;
+    const QString mLabelOrderFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
+    bool mPlayContinuous;
 };
