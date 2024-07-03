@@ -18,7 +18,7 @@
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
     mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
-    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayContinuous(false)
+    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMode(MNormal)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -29,11 +29,13 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     SpektrumLayout->addLayout(Layout, 0, 0, 1, 9);
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
-    QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
+    QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *FastLabelingAct = new QAction("Fast labeling", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
     QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
+    FastLabelingAct->setCheckable(true);
+    mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mAddLabelAct);
     mPopupMenu->addAction(LoadLabelsAct);
@@ -43,8 +45,9 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(ReadAnnOutputAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mDeleteAct);
-    connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
+    connect(playAct, SIGNAL(triggered()), this, SLOT(play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
+    connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
@@ -59,6 +62,28 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
 SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
+    if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+}
+
+void SoundWindow::play()
+{
+    mPlayState = PSPlayOnce;
+    startPlaying();
+}
+
+void SoundWindow::setFastAssignmentMode(bool enable)
+{
+    if (enable)
+    {
+        mMode = MFastLabeling;
+        mPlayState = PSPlayContinuously;
+        startPlaying();
+    }
+    else
+    {
+        mMode = MNormal;
+        mPlayState = PSStopPlaying;
+    }
 }
 
 void SoundWindow::startPlaying()
@@ -73,16 +98,29 @@ void SoundWindow::startPlaying()
     format.setSampleType(QAudioFormat::Float);
     if (nullptr != mAudioOutput) delete mAudioOutput;
     mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
-    QIODevice* inputDevice = mAudioOutput->start();
-    float* data;
-    int length = getSoundData(&data);
-    inputDevice->write(reinterpret_cast<char*>(data), 4*length);
-    delete[] data;
+    if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+    mAudioInputDevice = mAudioOutput->start();
+    if (mPlayState == PSPlayContinuously) connect(mAudioOutput, SIGNAL(notify()), this, SLOT(continuePlaying()));
+    continuePlaying();
 }
 
 void SoundWindow::continuePlaying()
 {
-
+    switch(mPlayState)
+    {
+        case PSPlayOnce:
+            mPlayState = PSStopPlaying;
+            break;
+        case PSPlayContinuously:
+            break;
+        case PSStopPlaying:
+            return;
+    }
+    float* data;
+    int length = getSoundData(&data);
+    mAudioInputDevice->write(reinterpret_cast<char*>(data), 4*length);
+    if (mPlayState == PSPlayContinuously) mAudioOutput->setNotifyInterval(static_cast<int>((static_cast<double>(length) / mSampleRate) * 1000));
+    delete[] data;
 }
 
 int SoundWindow::getSoundData(float ** data)
@@ -203,8 +241,13 @@ void SoundWindow::AddLabel()
 {
     NameSelectionDialog dialog;
     if (dialog.exec() == QDialog::Rejected) return;
+    addLabel(dialog.GetName());
+}
+
+void SoundWindow::addLabel(const QString name)
+{
     Label newLabel;
-    newLabel.phoneme = dialog.GetName();
+    newLabel.phoneme = name;
     newLabel.rect = *mSelectionRect;
     newLabel.index = estimateLabelIndex(newLabel.phoneme);
     mLabels.push_back(newLabel);
@@ -353,7 +396,6 @@ void SoundWindow::mouseLeftClicked(QPoint* Position)
 
 void SoundWindow::CreateAnnInput(double ** data, int &FFTLength)
 {
-    estimateLabelIndices();
     calcMinLabelWidth();
     double **realFFTData, **imaginaryFFTData;
     for (int n=0; n < mLabels.size(); ++n)
@@ -437,4 +479,18 @@ void SoundWindow::getFFTData(const SoundDrawWindow::FFTSelection selection, cons
     imaginaryData = Create(FFTLength, 2);
     calcFFT(data, length, 1.0 / mSampleRate, realData, imaginaryData);
     delete[] data;
+}
+
+void SoundWindow::keyPressed(QKeyEvent* K)
+{
+    if (mMode == MFastLabeling && K->text().length() == 1)
+    {
+        K->accept();
+        mKeyText += K->text();
+        QStringList results = mLabelOrder.filter(QRegularExpression("^" + mKeyText, QRegularExpression::CaseInsensitiveOption));
+        if (results.size() == 1) addLabel(results[0]);
+        else if (results.empty()) addLabel(mKeyText);
+        else return;
+        mKeyText.clear();
+    }
 }

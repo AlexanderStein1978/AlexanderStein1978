@@ -16,7 +16,8 @@ public:
     ~SoundWindow();
 
 private slots:
-    void startPlaying();
+    void play();
+    void setFastAssignmentMode(bool enable);
     void continuePlaying();
     void FFTActTriggered(bool checked);
     void AddLabel();
@@ -26,8 +27,14 @@ private slots:
     void WriteAnnInput();
     void ReadAndVerifyAnnOutput();
     void mouseLeftClicked(QPoint *Position) override;
+    void keyPressed(QKeyEvent *K);
 
 private:
+    enum PlayState {PSPlayOnce, PSPlayContinuously, PSStopPlaying};
+    enum Mode {MFastLabeling, MNormal};
+
+    void addLabel(const QString name);
+    void startPlaying();
     void closeEvent(QCloseEvent *i_event) override;
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     void showFFT() override;
@@ -44,9 +51,9 @@ private:
     QAudioOutput* mAudioOutput;
     QIODevice* mAudioInputDevice;
     FrequencyWindow* mFFTWindow = nullptr;
-    QString mFilename;
-    QString mLabelFilename;
+    QString mFilename, mLabelFilename, mKeyText;
     const QString mLabelOrderFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
-    bool mPlayContinuous;
+    PlayState mPlayState;
+    Mode mMode;
 };
