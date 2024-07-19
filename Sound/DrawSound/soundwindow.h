@@ -31,7 +31,6 @@ private slots:
 
 private:
     enum PlayState {PSPlayOnce, PSPlayContinuously, PSStopPlaying};
-    enum Mode {MFastLabeling, MNormal};
 
     void addLabel(const QString name);
     void startPlaying();
@@ -55,5 +54,4 @@ private:
     const QString mLabelOrderFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
     PlayState mPlayState;
-    Mode mMode;
 };

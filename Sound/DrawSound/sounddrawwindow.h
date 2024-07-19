@@ -15,18 +15,19 @@ public:
     ~SoundDrawWindow();
 
 private slots:
-    void SelectionChanged(QRect *MarkedArea);
     void mouseMoved(QMouseEvent *e);
     void mousePressed(QMouseEvent *e);
 	void mouseReleased(QMouseEvent *e);
 
 protected slots:
+    void SelectionChanged(QRect *MarkedArea);
     virtual void WriteToFile() = 0;
     virtual void mouseLeftClicked(QPoint *Position);
 
 protected:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
     enum FFTSelection{FSForFTT, FSForSelectedFTT, FSNotForFTT, FSDependsOnState};
+    enum Mode {MFastLabeling, MNormal};
 
     struct Label
     {
@@ -70,4 +71,5 @@ private:
     bool isInsideRect(const QRectF& rect, const QPoint& point) const;
     bool arePointsClose(const QPointF& pointF, const QPoint& point) const;
     int movingRect;
+    Mode mMode;
 };
