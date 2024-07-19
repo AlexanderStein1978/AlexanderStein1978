@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QMenu>
 #include <QFileDialog>
+#include <QLineEdit>
 
 #include <cmath>
 
@@ -42,6 +43,17 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
         }
         else mSelectionRect->setCoords(double(MarkedArea->left() - XO) / XSF, -double(MarkedArea->top() - YO) / YSF, double(MarkedArea->right() - XO) / XSF, -double(MarkedArea->bottom() - YO) / YSF);
         updateLabelRectSelections();
+        if (mMode == MFastLabeling && ((mSelectionRect->left() <= mXStart && mXStart > 0 && mSelectionRect->right() < mXStop) ||
+                                       (mSelectionRect->right() >= mXStop && mXStop < Daten->GetValue(Daten->GetDSL() - 1, 0) && mSelectionRect->left() > mXStop)))
+        {
+            double diff = 0.5 * (mSelectionRect->left() + mSelectionRect->right() - mXStart - mXStop);
+            if (mSelectionRect->left() + diff < 0) diff = -1.0 * mSelectionRect->left();
+            else if (mSelectionRect->right() + diff > Daten->GetValue(Daten->GetDSL() - 1, 0)) diff = Daten->GetValue(Daten->GetDSL() - 1, 0) - mSelectionRect->right();
+            xStart->setText(QString::number(mXStart + diff, 'g', 11));
+            xStop->setText(QString::number(mXStop + diff, 'g', 11));
+
+
+        }
         Paint();
     }
 }

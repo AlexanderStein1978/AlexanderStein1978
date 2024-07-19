@@ -77,6 +77,17 @@ void SoundWindow::setFastAssignmentMode(bool enable)
     {
         mMode = MFastLabeling;
         mPlayState = PSPlayContinuously;
+        if (nullptr == mSelectionRect)
+        {
+            QPoint mousePosition(mapFromGlobal(QCursor::pos()));
+            double minSize = mLabels[0].rect.width();
+            for (Label label : mLabels) if (label.rect.width() < minSize) minSize = label.rect.width();
+            int selWidth = minSize * XSF, x = mousePosition.x() - 0.5 * selWidth;
+            if (x < ScaleYWidth) x = ScaleYWidth;
+            else if (x + selWidth > width()) x = width() - selWidth;
+            QRect newSelection(x, 0, selWidth, height() - ScaleXHeight);
+            SelectionChanged(&newSelection);
+        }
         startPlaying();
     }
     else
