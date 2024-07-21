@@ -13,7 +13,7 @@
 
 
 SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
-    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control)
+    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control), mMode(MNormal)
 {
     QAction *writeAct = new QAction("Write to file...", this);
     mPopupMenu->addAction(writeAct);
@@ -51,8 +51,9 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
             else if (mSelectionRect->right() + diff > Daten->GetValue(Daten->GetDSL() - 1, 0)) diff = Daten->GetValue(Daten->GetDSL() - 1, 0) - mSelectionRect->right();
             xStart->setText(QString::number(mXStart + diff, 'g', 11));
             xStop->setText(QString::number(mXStop + diff, 'g', 11));
-
-
+            QPoint mousePos = this->mapFromGlobal(QCursor::pos());
+            mousePos.setX(mousePos.x()  - diff * XSF);
+            QCursor::setPos(this->mapToGlobal(mousePos));
         }
         Paint();
     }
