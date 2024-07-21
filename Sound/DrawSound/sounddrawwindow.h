@@ -61,6 +61,7 @@ protected:
     QFont mLabelFont;
     QRectF* mMovingRect = nullptr;
     double mSelectedFFtSize = 0.0;
+    Mode mMode;
 
 private:
     static const int D=5;
@@ -70,6 +71,6 @@ private:
     MouseState isCloseToWall(const QRectF& rect, const QPoint& point) const;
     bool isInsideRect(const QRectF& rect, const QPoint& point) const;
     bool arePointsClose(const QPointF& pointF, const QPoint& point) const;
+
     int movingRect;
-    Mode mMode;
 };
