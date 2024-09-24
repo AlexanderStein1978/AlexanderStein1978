@@ -54,4 +54,5 @@ private:
     const QString mLabelOrderFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
     PlayState mPlayState;
+    double mMinLabelWidth;
 };

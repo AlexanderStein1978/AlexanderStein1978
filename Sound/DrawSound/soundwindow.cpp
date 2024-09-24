@@ -18,7 +18,7 @@
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
     mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
-    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying)
+    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -57,6 +57,11 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     QFile labelOrderFile(mLabelOrderFilename);
     labelOrderFile.open(QIODevice::ReadOnly);
     mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
+    if (!mLabelOrder.empty())
+    {
+        mMinLabelWidth = mLabelOrder[0].toDouble();
+        mLabelOrder.pop_front();
+    }
 }
 
 SoundWindow::~SoundWindow()
@@ -77,17 +82,17 @@ void SoundWindow::setFastAssignmentMode(bool enable)
     {
         mMode = MFastLabeling;
         mPlayState = PSPlayContinuously;
+        int selWidth = mMinLabelWidth * XSF;
         if (nullptr == mSelectionRect)
         {
             QPoint mousePosition(mapFromGlobal(QCursor::pos()));
-            double minSize = mLabels[0].rect.width();
-            for (Label label : mLabels) if (label.rect.width() < minSize) minSize = label.rect.width();
-            int selWidth = minSize * XSF, x = mousePosition.x() - 0.5 * selWidth;
+            int x = mousePosition.x() - 0.5 * selWidth;
             if (x < ScaleYWidth) x = ScaleYWidth;
             else if (x + selWidth > width()) x = width() - selWidth;
             QRect newSelection(x, 0, selWidth, height() - ScaleXHeight);
             SelectionChanged(&newSelection);
         }
+        else mSelectionRect->setWidth(selWidth);
         startPlaying();
     }
     else
@@ -260,10 +265,14 @@ void SoundWindow::addLabel(const QString name)
     Label newLabel;
     newLabel.phoneme = name;
     newLabel.rect = *mSelectionRect;
+    if (mSelectionRect->width() < mMinLabelWidth) mMinLabelWidth = mSelectionRect->width();
     newLabel.index = estimateLabelIndex(newLabel.phoneme);
     mLabels.push_back(newLabel);
-    delete mSelectionRect;
-    mSelectionRect = nullptr;
+    if (mMode != MFastLabeling)
+    {
+        delete mSelectionRect;
+        mSelectionRect = nullptr;
+    }
     ensureMouseShape(Qt::ArrowCursor);
     mMouseState = mMoveState = MSOutside;
     Changed();
@@ -296,7 +305,7 @@ void SoundWindow::SaveLabels()
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
     QFile labelOrderFile(mLabelOrderFilename);
     labelOrderFile.open(QIODevice::WriteOnly);
-    labelOrderFile.write(mLabelOrder.join('\t').toLatin1());
+    labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
     Saved();
 }
 
@@ -328,6 +337,7 @@ void SoundWindow::LoadLabels()
                 else indexIndexLeft = indexLeft;
                 label.phoneme = line.left(indexIndexLeft).trimmed();
                 label.rect.setCoords(list[0].toDouble(), list[1].toDouble(), list[2].toDouble(), list[3].toDouble());
+                if (mMinLabelWidth < 0.0 || label.rect.width() < mMinLabelWidth) mMinLabelWidth = label.rect.width();
                 label.index = estimateLabelIndex(label.phoneme);
                 mLabels.push_back(label);
             }
