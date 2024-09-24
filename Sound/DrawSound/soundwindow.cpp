@@ -67,7 +67,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
 SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
-    if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+    else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
 }
 
 void SoundWindow::play()
@@ -113,8 +113,8 @@ void SoundWindow::startPlaying()
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::Float);
     if (nullptr != mAudioOutput) delete mAudioOutput;
+    else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
     mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
-    if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
     mAudioInputDevice = mAudioOutput->start();
     if (mPlayState == PSPlayContinuously) connect(mAudioOutput, SIGNAL(notify()), this, SLOT(continuePlaying()));
     continuePlaying();
