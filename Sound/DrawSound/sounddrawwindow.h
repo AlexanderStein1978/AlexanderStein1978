@@ -15,23 +15,25 @@ public:
     ~SoundDrawWindow();
 
 private slots:
-    void SelectionChanged(QRect *MarkedArea);
     void mouseMoved(QMouseEvent *e);
     void mousePressed(QMouseEvent *e);
 	void mouseReleased(QMouseEvent *e);
 
 protected slots:
+    void SelectionChanged(QRect *MarkedArea);
     virtual void WriteToFile() = 0;
     virtual void mouseLeftClicked(QPoint *Position);
 
 protected:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
     enum FFTSelection{FSForFTT, FSForSelectedFTT, FSNotForFTT, FSDependsOnState};
+    enum Mode {MFastLabeling, MNormal};
 
     struct Label
     {
         QString phoneme;
         QRectF rect;
+        int index = -1;
         bool isSelected = false;
     };
 
@@ -44,8 +46,10 @@ protected:
     virtual void showFFT() {}
     void ShowPopupMenu(const QPoint& point) override;
     QRect getLabelTextRect(const Label& label);
+    int estimateLabelIndex(const QString& phoneme);
 
     std::vector<Label> mLabels;
+    QStringList mLabelOrder;
     QMenu *mPopupMenu;
     QRectF *mSelectionRect = nullptr;
     int mSampleRate;
@@ -57,6 +61,7 @@ protected:
     QFont mLabelFont;
     QRectF* mMovingRect = nullptr;
     double mSelectedFFtSize = 0.0;
+    Mode mMode;
 
 private:
     static const int D=5;
@@ -66,5 +71,6 @@ private:
     MouseState isCloseToWall(const QRectF& rect, const QPoint& point) const;
     bool isInsideRect(const QRectF& rect, const QPoint& point) const;
     bool arePointsClose(const QPointF& pointF, const QPoint& point) const;
+
     int movingRect;
 };

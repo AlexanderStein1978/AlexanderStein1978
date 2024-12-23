@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "fit.h"
 #include "windowselectdialog.h"
+#include "soundvector.h"
+#include "soundmatrix.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -15,7 +17,8 @@
 
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
-    mAudioOutput(nullptr), mFilename(filename), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this))
+    mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
+    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -26,34 +29,80 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     SpektrumLayout->addLayout(Layout, 0, 0, 1, 9);
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
-    QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
-    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this);
+    QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *FastLabelingAct = new QAction("Fast labeling", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
+    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
+    FastLabelingAct->setCheckable(true);
+    mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mAddLabelAct);
     mPopupMenu->addAction(LoadLabelsAct);
     mPopupMenu->addAction(mSaveLabelsAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(WriteAnnInputAct);
+    mPopupMenu->addAction(ReadAnnOutputAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mDeleteAct);
-    connect(playAct, SIGNAL(triggered()), this, SLOT(Play()));
+    connect(playAct, SIGNAL(triggered()), this, SLOT(play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
+    connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
-    connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(CreateAnnInput()));
+    connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(WriteAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
+    connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
+    QFile labelOrderFile(mLabelOrderFilename);
+    labelOrderFile.open(QIODevice::ReadOnly);
+    mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
+    if (!mLabelOrder.empty())
+    {
+        mMinLabelWidth = mLabelOrder[0].toDouble();
+        mLabelOrder.pop_front();
+    }
 }
 
 SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
+    else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
 }
 
-void SoundWindow::Play()
+void SoundWindow::play()
+{
+    mPlayState = PSPlayOnce;
+    startPlaying();
+}
+
+void SoundWindow::setFastAssignmentMode(bool enable)
+{
+    if (enable)
+    {
+        mMode = MFastLabeling;
+        mPlayState = PSPlayContinuously;
+        int selWidth = mMinLabelWidth * XSF;
+        if (nullptr == mSelectionRect)
+        {
+            QPoint mousePosition(mapFromGlobal(QCursor::pos()));
+            int x = mousePosition.x() - 0.5 * selWidth;
+            if (x < ScaleYWidth) x = ScaleYWidth;
+            else if (x + selWidth > width()) x = width() - selWidth;
+            QRect newSelection(x, 0, selWidth, height() - ScaleXHeight);
+            SelectionChanged(&newSelection);
+        }
+        else mSelectionRect->setWidth(selWidth);
+        startPlaying();
+    }
+    else
+    {
+        mMode = MNormal;
+        mPlayState = PSStopPlaying;
+    }
+}
+
+void SoundWindow::startPlaying()
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     QAudioFormat format;
@@ -64,11 +113,29 @@ void SoundWindow::Play()
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::Float);
     if (nullptr != mAudioOutput) delete mAudioOutput;
+    else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
     mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
-    QIODevice* inputDevice = mAudioOutput->start();
+    mAudioInputDevice = mAudioOutput->start();
+    if (mPlayState == PSPlayContinuously) connect(mAudioOutput, SIGNAL(notify()), this, SLOT(continuePlaying()));
+    continuePlaying();
+}
+
+void SoundWindow::continuePlaying()
+{
+    switch(mPlayState)
+    {
+        case PSPlayOnce:
+            mPlayState = PSStopPlaying;
+            break;
+        case PSPlayContinuously:
+            break;
+        case PSStopPlaying:
+            return;
+    }
     float* data;
     int length = getSoundData(&data);
-    inputDevice->write(reinterpret_cast<char*>(data), 4*length);
+    mAudioInputDevice->write(reinterpret_cast<char*>(data), 4*length);
+    if (mPlayState == PSPlayContinuously) mAudioOutput->setNotifyInterval(static_cast<int>((static_cast<double>(length) / mSampleRate) * 1000));
     delete[] data;
 }
 
@@ -190,12 +257,22 @@ void SoundWindow::AddLabel()
 {
     NameSelectionDialog dialog;
     if (dialog.exec() == QDialog::Rejected) return;
+    addLabel(dialog.GetName());
+}
+
+void SoundWindow::addLabel(const QString name)
+{
     Label newLabel;
-    newLabel.phoneme = dialog.GetName();
+    newLabel.phoneme = name;
     newLabel.rect = *mSelectionRect;
+    if (mSelectionRect->width() < mMinLabelWidth) mMinLabelWidth = mSelectionRect->width();
+    newLabel.index = estimateLabelIndex(newLabel.phoneme);
     mLabels.push_back(newLabel);
-    delete mSelectionRect;
-    mSelectionRect = nullptr;
+    if (mMode != MFastLabeling)
+    {
+        delete mSelectionRect;
+        mSelectionRect = nullptr;
+    }
     ensureMouseShape(Qt::ArrowCursor);
     mMouseState = mMoveState = MSOutside;
     Changed();
@@ -224,8 +301,11 @@ void SoundWindow::SaveLabels()
     QTextStream stream(&file);
     stream << "Sound file: " << mFilename << '\n' << "Phoneme(left, top, right, bottom)\n";
     for (Label label : mLabels)
-        stream << label.phoneme << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
+        stream << label.phoneme << '[' << label.index << ']' << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
+    QFile labelOrderFile(mLabelOrderFilename);
+    labelOrderFile.open(QIODevice::WriteOnly);
+    labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
     Saved();
 }
 
@@ -245,6 +325,7 @@ void SoundWindow::LoadLabels()
     while(!file.atEnd())
     {
         QString line(file.readLine());
+        size_t indexIndexLeft(line.indexOf('[')), indexIndexRight(line.indexOf(']'));
         size_t indexLeft(line.indexOf('(')), indexRight(line.indexOf(')'));
         if (0 < indexLeft && indexLeft < indexRight)
         {
@@ -252,8 +333,12 @@ void SoundWindow::LoadLabels()
             if (list.size() == 4)
             {
                 Label label;
-                label.phoneme = line.left(indexLeft).trimmed();
+                if (indexIndexLeft > 0 && indexIndexLeft < indexIndexRight - 1) label.index = line.mid(indexIndexLeft + 1, indexIndexRight - indexIndexLeft - 1).toInt();
+                else indexIndexLeft = indexLeft;
+                label.phoneme = line.left(indexIndexLeft).trimmed();
                 label.rect.setCoords(list[0].toDouble(), list[1].toDouble(), list[2].toDouble(), list[3].toDouble());
+                if (mMinLabelWidth < 0.0 || label.rect.width() < mMinLabelWidth) mMinLabelWidth = label.rect.width();
+                label.index = estimateLabelIndex(label.phoneme);
                 mLabels.push_back(label);
             }
         }
@@ -330,24 +415,73 @@ void SoundWindow::mouseLeftClicked(QPoint* Position)
     showFFT();
 }
 
-void SoundWindow::CreateAnnInput()
+void SoundWindow::CreateAnnInput(double ** data, int &FFTLength)
 {
+    calcMinLabelWidth();
+    double **realFFTData, **imaginaryFFTData;
+    for (int n=0; n < mLabels.size(); ++n)
+    {
+        getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
+        data[n] = new double[FFTLength];
+        for(int m=0; m < FFTLength; ++m) data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+        Destroy(realFFTData, FFTLength);
+        Destroy(imaginaryFFTData, FFTLength);
+    }
+}
+
+void SoundWindow::WriteAnnInput()
+{
+    if (0 == mLabels.size())
+    {
+        QMessageBox::information(this, "DrawSound", "No ANN input can be created because no labels are loaded.");
+        return;
+    }
     QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QDataStream stream(&file);
-    calcMinLabelWidth();
-    double **realFFTData, **imaginaryFFTData;
     int FFTLength;
+    double **data = new double*[mLabels.size()];
+    CreateAnnInput(data, FFTLength);
     for (int n=0; n < mLabels.size(); ++n)
     {
-        getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
         if (n==0) stream << static_cast<quint32>(mLabels.size()) << static_cast<quint32>(FFTLength);
-        for(int m=0; m < FFTLength; ++m) stream << (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
-        Destroy(realFFTData, FFTLength);
-        Destroy(imaginaryFFTData, FFTLength);
+        stream << static_cast<quint8>(mLabels[n].index);
+        for(int m=0; m < FFTLength; ++m) stream << data[n][m];
     }
+    Destroy(data, mLabels.size());
+}
+
+void SoundWindow::ReadAndVerifyAnnOutput()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Select filename", predictLabelFilename());
+    if (filename.isEmpty()) return;
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    QDataStream stream(&file);
+    quint16 T1NR, T1NC, T2NR, T2NC;
+    stream >> T1NR >> T1NC;
+    SoundMatrix T1(T1NC, T1NR);
+    for (int c=0; c < T1NC; ++c) for (int r=0; r < T1NR; ++r) stream >> T1[c][r];
+    stream >> T2NR >> T2NC;
+    SoundMatrix T2(T2NC, T2NR);
+    for (int c=0; c < T2NC; ++c) for (int r=0; r < T2NR; ++r) stream >> T2[c][r];
+
+    int FFTLength, correctPred=0;
+    double **data = new double*[mLabels.size()];
+    CreateAnnInput(data, FFTLength);
+    for (int n=0; n < mLabels.size(); ++n)
+    {
+        SoundVector in(FFTLength + 1);
+        in[0] = 1.0;
+        for (int m=0; m < FFTLength; ++m) in[m+1] = data[n][m];
+        SoundVector h1((T1*in).sigmoid());
+        if (mLabels[n].index == (T2*h1).getIndexOfMax()) ++correctPred;
+    }
+    Destroy(data, mLabels.size());
+
+    QMessageBox::information(this, "DrawSound", QString("%1 of %2 predicted correctly!").arg(correctPred).arg(mLabels.size()));
 }
 
 void SoundWindow::calcMinLabelWidth()
@@ -366,4 +500,18 @@ void SoundWindow::getFFTData(const SoundDrawWindow::FFTSelection selection, cons
     imaginaryData = Create(FFTLength, 2);
     calcFFT(data, length, 1.0 / mSampleRate, realData, imaginaryData);
     delete[] data;
+}
+
+void SoundWindow::keyPressed(QKeyEvent* K)
+{
+    if (mMode == MFastLabeling && K->text().length() == 1)
+    {
+        K->accept();
+        mKeyText += K->text();
+        QStringList results = mLabelOrder.filter(QRegularExpression("^" + mKeyText, QRegularExpression::CaseInsensitiveOption));
+        if (results.size() == 1) addLabel(results[0]);
+        else if (results.empty()) addLabel(mKeyText);
+        else return;
+        mKeyText.clear();
+    }
 }

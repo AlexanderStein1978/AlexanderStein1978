@@ -16,20 +16,29 @@ public:
     ~SoundWindow();
 
 private slots:
-    void Play();
+    void play();
+    void setFastAssignmentMode(bool enable);
+    void continuePlaying();
     void FFTActTriggered(bool checked);
     void AddLabel();
     void LoadLabels();
     void SaveLabels();
     void Delete();
-    void CreateAnnInput();
+    void WriteAnnInput();
+    void ReadAndVerifyAnnOutput();
     void mouseLeftClicked(QPoint *Position) override;
+    void keyPressed(QKeyEvent *K);
 
 private:
+    enum PlayState {PSPlayOnce, PSPlayContinuously, PSStopPlaying};
+
+    void addLabel(const QString name);
+    void startPlaying();
     void closeEvent(QCloseEvent *i_event) override;
     void PSpektrum(QPainter &P, const QRect &A, bool PrintFN ) override;
     void showFFT() override;
     void WriteToFile() override;
+    void CreateAnnInput(double ** data, int &fftLength);
     void ShowPopupMenu(const QPoint& point) override;
     void calcMinLabelWidth();
     void getFFTData(const FFTSelection selection, const int labelIndex, int& N, double **&realData, double **&imaginaryData) const;
@@ -39,8 +48,11 @@ private:
 
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;
+    QIODevice* mAudioInputDevice;
     FrequencyWindow* mFFTWindow = nullptr;
-    QString mFilename;
-    QString mLabelFilename;
+    QString mFilename, mLabelFilename, mKeyText;
+    const QString mLabelOrderFilename;
     QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
+    PlayState mPlayState;
+    double mMinLabelWidth;
 };

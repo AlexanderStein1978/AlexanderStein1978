@@ -7,12 +7,13 @@
 #include <QComboBox>
 #include <QMenu>
 #include <QFileDialog>
+#include <QLineEdit>
 
 #include <cmath>
 
 
 SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
-    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control)
+    mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control), mMode(MNormal)
 {
     QAction *writeAct = new QAction("Write to file...", this);
     mPopupMenu->addAction(writeAct);
@@ -42,6 +43,18 @@ void SoundDrawWindow::SelectionChanged(QRect* MarkedArea)
         }
         else mSelectionRect->setCoords(double(MarkedArea->left() - XO) / XSF, -double(MarkedArea->top() - YO) / YSF, double(MarkedArea->right() - XO) / XSF, -double(MarkedArea->bottom() - YO) / YSF);
         updateLabelRectSelections();
+        if (mMode == MFastLabeling && ((mSelectionRect->left() <= mXStart && mXStart > 0 && mSelectionRect->right() < mXStop) ||
+                                       (mSelectionRect->right() >= mXStop && mXStop < Daten->GetValue(Daten->GetDSL() - 1, 0) && mSelectionRect->left() > mXStop)))
+        {
+            double diff = 0.5 * (mSelectionRect->left() + mSelectionRect->right() - mXStart - mXStop);
+            if (mSelectionRect->left() + diff < 0) diff = -1.0 * mSelectionRect->left();
+            else if (mSelectionRect->right() + diff > Daten->GetValue(Daten->GetDSL() - 1, 0)) diff = Daten->GetValue(Daten->GetDSL() - 1, 0) - mSelectionRect->right();
+            xStart->setText(QString::number(mXStart + diff, 'g', 11));
+            xStop->setText(QString::number(mXStop + diff, 'g', 11));
+            QPoint mousePos = this->mapFromGlobal(QCursor::pos());
+            mousePos.setX(mousePos.x()  - diff * XSF);
+            QCursor::setPos(this->mapToGlobal(mousePos));
+        }
         Paint();
     }
 }
@@ -342,6 +355,17 @@ bool SoundDrawWindow::arePointsClose(const QPointF& pointF, const QPoint& point)
 {
     const int left = static_cast<int>(pointF.x() * XSF + XO), top = static_cast<int>(YO - pointF.y() * YSF);
     return abs(left - point.x()) <= D && abs(top - point.y()) <= D;
+}
+
+int SoundDrawWindow::estimateLabelIndex(const QString& phoneme)
+{
+    int index = mLabelOrder.indexOf(phoneme);
+    if (-1 == index)
+    {
+        index = mLabelOrder.size();
+        mLabelOrder.push_back(phoneme);
+    }
+    return index;
 }
 
 SoundDrawWindow::MouseState SoundDrawWindow::isCloseToCorner(const QRectF& rect, const QPoint& point) const
