@@ -11,6 +11,7 @@ class QComboBox;
 class QAudioInput;
 class QFile;
 class QLineEdit;
+class QAudioDecoder;
 
 
 class SoundRecordAndDrawControl : public QWidget
@@ -47,16 +48,19 @@ private slots:
     void Draw();
     void showFileDialog();
     void SplitFileIntoPackets();
+    void ReadyToDraw();
 
 private:
     void VerifyFileExists(QString deviceName);
     bool DetermineSampleTypeAndSize();
+    void draw(const char* const inputData, const int nBytes);
 
     QComboBox *mInputSelectorBox;
     QPushButton *mStartButton, *mStopButton, *mDrawButton, *mFileDialogButton, *mSplitFileButton;
     QLabel* mSizeDisplay, *mLengthDisplay;
     QLineEdit *mFileNameEdit, *mPacketSizeEdit;
     QAudioInput* mInput;
+    QAudioDecoder* mDecoder = nullptr;
     QFile* mFile;
     QAudioFormat::SampleType mSampleType;
     int mSampleSize, mSampleRate;
