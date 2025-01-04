@@ -201,25 +201,34 @@ void SoundRecordAndDrawControl::SplitFileIntoPackets()
 void SoundRecordAndDrawControl::Draw()
 {
     VerifyFileExists(mInputSelectorBox->currentText());
+    mFile->open(QIODevice::ReadOnly);
     if (mFile->fileName().right(4) == ".mp3")
     {
         if (nullptr == mDecoder)
         {
             mDecoder = new QAudioDecoder;
             connect(mDecoder, SIGNAL(finished()), this, SLOT(ReadyToDraw()));
+            connect(mDecoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(Error(QAudioDecoder::Error)));
+            connect(mDecoder, SIGNAL(bufferReady()), this, SLOT(BufferReady()));
         }
-        mDecoder->setSourceFilename(mFile->fileName());
+        mDecoder->setSourceDevice(mFile);
+        mDecodeBuffer.clear();
+        mProcessedUSec = 0;
         mDecoder->start();
     }
     else
     {
         int nBytes = mFile->size();
-        mFile->open(QIODevice::ReadOnly);
-        QDataStream stream(mFile);
-        char* inputData = new char[nBytes];
-        nBytes = stream.readRawData(inputData, nBytes);
-        if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
-        draw(inputData, nBytes);
+        if (0 < nBytes)
+        {
+            QDataStream stream(mFile);
+            char* inputData = new char[nBytes];
+            nBytes = stream.readRawData(inputData, nBytes);
+            if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
+            draw(inputData, nBytes);
+            delete[] inputData;
+        }
+        else QMessageBox::information(this, "DrawSound", "With the selected input device no sound could be recorded!");
     }
 }
 
@@ -292,22 +301,33 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
         window->setData(data, nSamples);
         window->show();
     }
-    else QMessageBox::information(this, "DrawSound", "With the selected input device no sound could be recorded!");
-    if (nullptr != inputData) delete[] inputData;
 }
 
 void SoundRecordAndDrawControl::ReadyToDraw()
 {
+    draw(mDecodeBuffer.data(), mDecodeBuffer.size());
+}
+
+void SoundRecordAndDrawControl::Error(QAudioDecoder::Error)
+{
+    printf("Error: %s\n", mDecoder->errorString().toLatin1().data());
+}
+
+void SoundRecordAndDrawControl::BufferReady()
+{
     QAudioBuffer buffer = mDecoder->read();
-    QAudioFormat format = buffer.format();
-    if (format.channelCount() > 1)
+    if (0 == mProcessedUSec)
     {
-        QMessageBox::warning(this, "DrawSound", "Observed a channel count larger than one. This is currently not supported!");
-        return;
+        QAudioFormat format = buffer.format();
+        if (format.channelCount() > 1)
+        {
+            QMessageBox::warning(this, "DrawSound", "Observed a channel count larger than one. This is currently not supported!");
+            return;
+        }
+        mSampleRate = format.sampleRate();
+        mSampleSize = format.sampleSize();
+        mSampleType = format.sampleType();
     }
-    mProcessedUSec = buffer.duration();
-    mSampleRate = format.sampleRate();
-    mSampleSize = format.sampleSize();
-    mSampleType = format.sampleType();
-    draw(reinterpret_cast<const char*>(buffer.data()), buffer.byteCount());
+    mProcessedUSec += buffer.duration();
+    mDecodeBuffer.append(reinterpret_cast<const char*>(buffer.constData()), buffer.byteCount());
 }
