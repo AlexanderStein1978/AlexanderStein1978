@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QAudioFormat>
+#include <QAudioDecoder>
 
 
 class DiagWindow;
@@ -11,7 +12,6 @@ class QComboBox;
 class QAudioInput;
 class QFile;
 class QLineEdit;
-class QAudioDecoder;
 
 
 class SoundRecordAndDrawControl : public QWidget
@@ -49,6 +49,8 @@ private slots:
     void showFileDialog();
     void SplitFileIntoPackets();
     void ReadyToDraw();
+    void Error(QAudioDecoder::Error error);
+    void BufferReady();
 
 private:
     void VerifyFileExists(QString deviceName);
@@ -61,6 +63,7 @@ private:
     QLineEdit *mFileNameEdit, *mPacketSizeEdit;
     QAudioInput* mInput;
     QAudioDecoder* mDecoder = nullptr;
+    QByteArray mDecodeBuffer;
     QFile* mFile;
     QAudioFormat::SampleType mSampleType;
     int mSampleSize, mSampleRate;
