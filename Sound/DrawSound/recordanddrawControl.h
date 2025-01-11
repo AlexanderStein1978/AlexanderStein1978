@@ -19,6 +19,8 @@ class SoundRecordAndDrawControl : public QWidget
     Q_OBJECT
 
 public:
+    enum Message{ChannelCountLargerOne, NotAllDataCouldBeWritten, DecodeError};
+
     SoundRecordAndDrawControl();
     ~SoundRecordAndDrawControl();
 
@@ -46,25 +48,37 @@ private slots:
     void StartRecording();
     void Stop();
     void Draw();
-    void showFileDialog();
+    void Decode();
+    void showInputFileDialog();
+    void showOutputFileDialog();
     void SplitFileIntoPackets();
     void ReadyToDraw();
     void Error(QAudioDecoder::Error error);
     void BufferReady();
+    void ShowMessage(Message message);
+
+signals:
+    void showMessage(Message);
 
 private:
-    void VerifyFileExists(QString deviceName);
+    enum DecodingFor{DF_Draw, DF_File, DF_Nothing};
+
+    void VerifyFileExists(QString deviceName, QFile*& file, QLineEdit* edit);
     bool DetermineSampleTypeAndSize();
     void draw(const char* const inputData, const int nBytes);
+    void writeRST();
+    void createDecoder();
 
+    DecodingFor mDecodingFor = DF_Nothing;
     QComboBox *mInputSelectorBox;
-    QPushButton *mStartButton, *mStopButton, *mDrawButton, *mFileDialogButton, *mSplitFileButton;
+    QPushButton *mStartButton, *mStopButton, *mDrawButton, *mDecodeButton, *mInputFileDialogButton, *mOutputFileDialogButton, *mSplitFileButton;
     QLabel* mSizeDisplay, *mLengthDisplay;
-    QLineEdit *mFileNameEdit, *mPacketSizeEdit;
+    QLineEdit *mInputFileNameEdit, *mOutputFileNameEdit, *mPacketSizeEdit;
     QAudioInput* mInput;
     QAudioDecoder* mDecoder = nullptr;
     QByteArray mDecodeBuffer;
-    QFile* mFile;
+    const QString RST = "RST";
+    QFile *mInputFile, *mOutputFile;
     QAudioFormat::SampleType mSampleType;
     int mSampleSize, mSampleRate;
     qint64 mProcessedUSec;

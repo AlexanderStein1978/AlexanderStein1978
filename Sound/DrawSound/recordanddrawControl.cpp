@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QDataStream>
 #include <QMessageBox>
+#include <QtEndian>
 
 #include <algorithm>
 
@@ -26,41 +27,49 @@ namespace
 
 
 SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
-    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mFileDialogButton(new QPushButton("...", this)),
-    mSplitFileButton(new QPushButton("Split recording", this)), mSizeDisplay(new QLabel(SizeString, this)), mLengthDisplay(new QLabel(LengthString, this)), mFileNameEdit(new QLineEdit(this)),
-    mPacketSizeEdit(new QLineEdit("10", this)), mInput(nullptr), mFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
+    mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mDecodeButton(new QPushButton("Decode", this)), mInputFileDialogButton(new QPushButton("...", this)),
+    mOutputFileDialogButton(new QPushButton("...", this)), mSplitFileButton(new QPushButton("Split recording", this)), mSizeDisplay(new QLabel(SizeString, this)),
+    mLengthDisplay(new QLabel(LengthString, this)), mInputFileNameEdit(new QLineEdit(this)), mOutputFileNameEdit(new QLineEdit(this)), mPacketSizeEdit(new QLineEdit("10", this)), mInput(nullptr), mInputFile(nullptr), mOutputFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
 {
     setWindowTitle("Sound Record and Draw Control");
     QGridLayout *L = new QGridLayout(this);
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     for (QAudioDeviceInfo info : deviceList) mInputSelectorBox->addItem(info.deviceName());
     L->addWidget(new QLabel("Input device:", this), 0, 0);
-    L->addWidget(mInputSelectorBox, 0, 1, 1, 2);
-    L->addWidget(new QLabel("Filename:", this), 1, 0);
+    L->addWidget(mInputSelectorBox, 0, 1, 1, 3);
+    L->addWidget(new QLabel("Input filename:", this), 1, 0);
+    L->addWidget(new QLabel("Output filename:", this), 2, 0);
     QGridLayout *FL  = new QGridLayout;
-    L->addLayout(FL, 1, 1, 1, 2);
-    FL->addWidget(mFileNameEdit, 0, 0);
-    FL->addWidget(mFileDialogButton, 0, 1);
-    L->addWidget(mStartButton, 2, 0);
-    L->addWidget(mStopButton, 2, 1);
-    L->addWidget(mDrawButton, 2, 2);
+    L->addLayout(FL, 1, 1, 2, 2);
+    FL->addWidget(mInputFileNameEdit, 0, 0);
+    FL->addWidget(mInputFileDialogButton, 0, 1);
+    FL->addWidget(mOutputFileNameEdit, 1, 0);
+    FL->addWidget(mOutputFileDialogButton, 1, 1);
+    L->addWidget(mStartButton, 3, 0);
+    L->addWidget(mStopButton, 3, 1);
+    L->addWidget(mDrawButton, 3, 2);
+    L->addWidget(mDecodeButton, 3, 3);
     mStopButton->setEnabled(false);
-    L->addWidget(mSizeDisplay, 3, 0);
-    L->addWidget(mLengthDisplay, 3, 1);
-    L->addWidget(mSplitFileButton, 4, 0);
-    L->addWidget(new QLabel("Size of split files", this), 4, 1);
-    L->addWidget(mPacketSizeEdit, 4, 2);
+    L->addWidget(mSizeDisplay, 4, 0);
+    L->addWidget(mLengthDisplay, 4, 1);
+    L->addWidget(mSplitFileButton, 5, 0);
+    L->addWidget(new QLabel("Size of split files", this), 5, 1);
+    L->addWidget(mPacketSizeEdit, 5, 2, 1, 2);
     connect(mStartButton, SIGNAL(clicked()), this, SLOT(StartRecording()));
     connect(mStopButton, SIGNAL(clicked()), this, SLOT(Stop()));
     connect(mDrawButton, SIGNAL(clicked()), this, SLOT(Draw()));
-    connect(mFileDialogButton, SIGNAL(clicked()), this, SLOT(showFileDialog()));
+    connect(mDecodeButton, SIGNAL(clicked()), this, SLOT(Decode()));
+    connect(mInputFileDialogButton, SIGNAL(clicked()), this, SLOT(showInputFileDialog()));
+    connect(mOutputFileDialogButton, SIGNAL(clicked()), this, SLOT(showOutputFileDialog()));
     connect(mSplitFileButton, SIGNAL(clicked()), this, SLOT(SplitFileIntoPackets()));
+    connect(this, SIGNAL(showMessage(Message)), this, SLOT(ShowMessage(Message)), Qt::QueuedConnection);
 }
 
 SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
 {
     if (nullptr != mInput) delete mInput;
-    if (nullptr != mFile) delete mFile;
+    if (nullptr != mInputFile) delete mInputFile;
+    if (nullptr != mOutputFile) delete mOutputFile;
     if (nullptr != mDecoder)
     {
         disconnect(mDecoder);
@@ -68,22 +77,30 @@ SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
     }
 }
 
-void SoundRecordAndDrawControl::showFileDialog()
+void SoundRecordAndDrawControl::showInputFileDialog()
 {
-    QString fileName = mFileNameEdit->text();
-    if (!fileName.contains(QRegExp("[/\\\\]"))) fileName = DefaultDirectory + fileName;
-    fileName = QFileDialog::getSaveFileName(this, "Select filename", fileName);
-    if (!fileName.isEmpty()) mFileNameEdit->setText(fileName);
+    QString filename = mInputFileNameEdit->text();
+    if (!filename.contains(QRegExp("[/\\\\]"))) filename = DefaultDirectory + filename;
+    filename = QFileDialog::getOpenFileName(this, "Select filename to write to", filename);
+    if (!filename.isEmpty()) mInputFileNameEdit->setText(filename);
 }
 
-void SoundRecordAndDrawControl::VerifyFileExists(QString deviceName)
+void SoundRecordAndDrawControl::showOutputFileDialog()
 {
-    QString filename = mFileNameEdit->text();
+    QString fileName = mOutputFileNameEdit->text();
+    if (!fileName.contains(QRegExp("[/\\\\]"))) fileName = DefaultDirectory + fileName;
+    fileName = QFileDialog::getSaveFileName(this, "Select filename to open", fileName);
+    if (!fileName.isEmpty()) mOutputFileNameEdit->setText(fileName);
+}
+
+void SoundRecordAndDrawControl::VerifyFileExists(QString deviceName, QFile*& file, QLineEdit* edit)
+{
+    QString filename = edit->text();
     if (filename.isEmpty()) filename = deviceName.replace(QRegularExpression("[.,:=]"), "_");
     if (!filename.contains('.')) filename += ".dat";
     if (!filename.contains(QRegExp("[/\\\\]"))) filename = DefaultDirectory + filename;
-    if (nullptr != mFile) delete mFile;
-    mFile = new QFile(filename, this);
+    if (nullptr != file) delete file;
+    file = new QFile(filename, this);
 }
 
 bool SoundRecordAndDrawControl::DetermineSampleTypeAndSize()
@@ -134,8 +151,8 @@ void SoundRecordAndDrawControl::StartRecording()
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     int deviceIndex = mInputSelectorBox->currentIndex();
-    VerifyFileExists(mInputSelectorBox->currentText());
-    mFile->open(QIODevice::WriteOnly);
+    VerifyFileExists(mInputSelectorBox->currentText(), mOutputFile, mOutputFileNameEdit);
+    mOutputFile->open(QIODevice::WriteOnly);
     QAudioFormat format;
     if (!DetermineSampleTypeAndSize()) return;
     format.setSampleRate(mSampleRate);
@@ -144,19 +161,26 @@ void SoundRecordAndDrawControl::StartRecording()
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(mSampleType);
+    writeRST();
     if (nullptr != mInput) delete mInput;
     mInput = new QAudioInput(deviceList[deviceIndex], format, this);
-    mInput->start(mFile);
+    mInput->start(mOutputFile);
     mInputSelectorBox->setEnabled(false);
     mStartButton->setEnabled(false);
     mStopButton->setEnabled(true);
+}
+
+void SoundRecordAndDrawControl::writeRST()
+{
+    QDataStream outputStream(mOutputFile);
+    outputStream << RST.toUtf8() << static_cast<qint32>(mSampleRate) << static_cast<qint32>(mSampleSize) << static_cast<quint8>(mSampleType);
 }
 
 void SoundRecordAndDrawControl::Stop()
 {
     mProcessedUSec = mInput->processedUSecs();
     mInput->stop();
-    mFile->close();
+    mOutputFile->close();
     mInputSelectorBox->setEnabled(true);
     mStartButton->setEnabled(true);
     mStopButton->setEnabled(false);
@@ -164,68 +188,141 @@ void SoundRecordAndDrawControl::Stop()
 
 void SoundRecordAndDrawControl::SplitFileIntoPackets()
 {
-    QString filename = mFileNameEdit->text();
+    QString filename = mInputFileNameEdit->text();
     if (filename.isEmpty()) return;
-    QFile inputFile(filename);
-    if (!inputFile.exists()) return;
-    int allBytes = inputFile.size(), fileIndex, currentOffset, packetSize = mPacketSizeEdit->text().toInt() * 1000000, n = filename.lastIndexOf('.');
+    if (nullptr != mInputFile) delete mInputFile;
+    mInputFile = new QFile(filename);
+    if (!mInputFile->exists()) return;
+    int allBytes = mInputFile->size(), fileIndex, currentOffset, packetSize = mPacketSizeEdit->text().toInt() * 1000000, n = filename.lastIndexOf('.'), headerSize = 12;
     if (0 == packetSize) return;
+    mInputFile->open(QIODevice::ReadOnly);
+    QDataStream inputStream(mInputFile);
+    char header[headerSize];
+    int bytesRead = inputStream.readRawData(header, headerSize);
+    if (headerSize != bytesRead)
+    {
+        QMessageBox::information(this, "DrawSound", "The input file could not be read!");
+        return;
+    }
+    if (RST == QString::fromUtf8(header, 3)) mSampleSize = qFromBigEndian<qint32>(header + 7);
+    else headerSize = 0;
     if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
     packetSize = mSampleSize * (packetSize / mSampleSize);
     QString fileEnding = filename.right(filename.length() - n), basicFilename = filename.left(n);
-    inputFile.open(QIODevice::ReadOnly);
-    QDataStream inputStream(&inputFile);
     char* buffer = new char[packetSize];
+    if (nullptr != mOutputFile)
+    {
+        delete mOutputFile;
+        mOutputFile = nullptr;
+    }
     for (fileIndex = 0, currentOffset = 0; currentOffset < allBytes; ++fileIndex)
     {
         QString splitFilename = basicFilename + QString::number(fileIndex) + fileEnding;
-        QFile splitFile(splitFilename);
-        splitFile.open(QIODevice::WriteOnly);
+        mOutputFile = new QFile(splitFilename);
+        mOutputFile->open(QIODevice::WriteOnly);
         int bytesRead = inputStream.readRawData(buffer, packetSize);
         if (-1 == bytesRead)
         {
             QMessageBox::information(this, "DrawSound", "The data could not be read completely!");
             break;
         }
+        if (0 == fileIndex || 0 < headerSize)
+        {
+            currentOffset += bytesRead;
+            int bytesWritten = mOutputFile->write(header, 12);
+            if (bytesWritten < 12)
+            {
+                QMessageBox::information(this, "DrawSound", "Not all data could be written!");
+                break;
+            }
+        }
         currentOffset += bytesRead;
-        int bytesWritten = splitFile.write(buffer, bytesRead);
+        int bytesWritten = mOutputFile->write(buffer, bytesRead);
         if (bytesWritten < bytesRead)
         {
             QMessageBox::information(this, "DrawSound", "Not all data could be written!");
             break;
         }
+        delete mOutputFile;
+        mOutputFile = nullptr;
     }
     delete[] buffer;
 }
 
+void SoundRecordAndDrawControl::createDecoder()
+{
+    if (nullptr == mDecoder)
+    {
+        mDecoder = new QAudioDecoder;
+        connect(mDecoder, SIGNAL(finished()), this, SLOT(ReadyToDraw()));
+        connect(mDecoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(Error(QAudioDecoder::Error)));
+        connect(mDecoder, SIGNAL(bufferReady()), this, SLOT(BufferReady()));
+    }
+}
+
+void SoundRecordAndDrawControl::Decode()
+{
+    QString inputFileName = mInputFileNameEdit->text();
+    if (inputFileName.isEmpty())
+    {
+        QMessageBox::information(this, "DrawSound", "Please provide an existing input file.");
+        return;
+    }
+    if (nullptr != mInputFile) delete mInputFile;
+    mInputFile = new QFile(inputFileName);
+    if (!mInputFile->exists())
+    {
+        QMessageBox::information(this, "DrawSound", "The given input file does not exist!");
+        return;
+    }
+    QString outputFileName = mOutputFileNameEdit->text();
+    if (outputFileName.isEmpty())
+    {
+        int pointIndex = inputFileName.lastIndexOf('.');
+        if (pointIndex < 1) outputFileName = inputFileName + ".dat";
+        else outputFileName = inputFileName.left(pointIndex) + ".dat";
+        mOutputFileNameEdit->setText(outputFileName);
+    }
+    if (nullptr != mOutputFile) delete mOutputFile;
+    mOutputFile = new QFile(outputFileName);
+    mInputFile->open(QIODevice::ReadOnly);
+    mOutputFile->open(QIODevice::WriteOnly);
+    createDecoder();
+    mDecoder->setSourceDevice(mInputFile);
+    mDecoder->start();
+}
+
 void SoundRecordAndDrawControl::Draw()
 {
-    VerifyFileExists(mInputSelectorBox->currentText());
-    mFile->open(QIODevice::ReadOnly);
-    if (mFile->fileName().right(4) == ".mp3")
+    VerifyFileExists(mInputSelectorBox->currentText(), mInputFile, mInputFileNameEdit);
+    mInputFile->open(QIODevice::ReadOnly);
+    if (mInputFile->fileName().right(4) == ".mp3" || mInputFile->fileName().right(4) == ".m4a")
     {
-        if (nullptr == mDecoder)
-        {
-            mDecoder = new QAudioDecoder;
-            connect(mDecoder, SIGNAL(finished()), this, SLOT(ReadyToDraw()));
-            connect(mDecoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(Error(QAudioDecoder::Error)));
-            connect(mDecoder, SIGNAL(bufferReady()), this, SLOT(BufferReady()));
-        }
-        mDecoder->setSourceDevice(mFile);
+        createDecoder();
+        mDecoder->setSourceDevice(mInputFile);
         mDecodeBuffer.clear();
         mProcessedUSec = 0;
+        mDecodingFor = DF_Draw;
         mDecoder->start();
     }
     else
     {
-        int nBytes = mFile->size();
+        int nBytes = mInputFile->size();
         if (0 < nBytes)
         {
-            QDataStream stream(mFile);
+            QDataStream stream(mInputFile);
             char* inputData = new char[nBytes];
             nBytes = stream.readRawData(inputData, nBytes);
+            int offset = 0;
+            if (RST == QString::fromUtf8(inputData, 3))
+            {
+                mSampleRate = qFromBigEndian<qint32>(inputData + 3);
+                mSampleSize = qFromBigEndian<qint32>(inputData + 7);
+                mSampleType = static_cast<QAudioFormat::SampleType>(inputData[11]);
+                offset = 12;
+            }
             if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
-            draw(inputData, nBytes);
+            draw(inputData + offset, nBytes - offset);
             delete[] inputData;
         }
         else QMessageBox::information(this, "DrawSound", "With the selected input device no sound could be recorded!");
@@ -297,7 +394,7 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
                     }
             }
         }
-        SoundDrawWindow* window = new SoundWindow(this, mFileNameEdit->text(), mSampleRate);
+        SoundDrawWindow* window = new SoundWindow(this, mInputFileNameEdit->text(), mSampleRate);
         window->setData(data, nSamples);
         window->show();
     }
@@ -305,12 +402,18 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
 
 void SoundRecordAndDrawControl::ReadyToDraw()
 {
-    draw(mDecodeBuffer.data(), mDecodeBuffer.size());
+    if (mDecodingFor == DF_Draw) draw(mDecodeBuffer.data(), mDecodeBuffer.size());
+    else
+    {
+        delete mOutputFile;
+        mOutputFile = nullptr;
+    }
+    mDecodingFor = DF_Nothing;
 }
 
 void SoundRecordAndDrawControl::Error(QAudioDecoder::Error)
 {
-    printf("Error: %s\n", mDecoder->errorString().toLatin1().data());
+    emit showMessage(DecodeError);
 }
 
 void SoundRecordAndDrawControl::BufferReady()
@@ -321,13 +424,47 @@ void SoundRecordAndDrawControl::BufferReady()
         QAudioFormat format = buffer.format();
         if (format.channelCount() > 1)
         {
-            QMessageBox::warning(this, "DrawSound", "Observed a channel count larger than one. This is currently not supported!");
+            printf("Observed a channel count = %d. This is currently not supported!\n", format.channelCount());
+            emit showMessage(ChannelCountLargerOne);
+            mDecoder->stop();
             return;
         }
         mSampleRate = format.sampleRate();
         mSampleSize = format.sampleSize();
         mSampleType = format.sampleType();
+        if (mDecodingFor == DF_File) writeRST();
     }
-    mProcessedUSec += buffer.duration();
-    mDecodeBuffer.append(reinterpret_cast<const char*>(buffer.constData()), buffer.byteCount());
+    if (mDecodingFor == DF_File)
+    {
+        static int callCounter = 0;
+        printf("Number of Calls: %d\n", ++callCounter);
+        int count = buffer.byteCount();
+        int bytesWritten = mOutputFile->write(reinterpret_cast<const char*>(buffer.constData()), count);
+        if (bytesWritten < count)
+        {
+            emit showMessage(NotAllDataCouldBeWritten);
+            mDecoder->stop();
+        }
+    }
+    else
+    {
+        mProcessedUSec += buffer.duration();
+        mDecodeBuffer.append(reinterpret_cast<const char*>(buffer.constData()), buffer.byteCount());
+    }
+}
+
+void SoundRecordAndDrawControl::ShowMessage(Message message)
+{
+    switch(message)
+    {
+        case ChannelCountLargerOne:
+            QMessageBox::warning(this, "DrawSound", "Observed a channel count larger than one. This is currently not supported!");
+            break;
+        case NotAllDataCouldBeWritten:
+            QMessageBox::warning(this, "DrawSound", "Error: Not all data could be written!");
+            break;
+        case DecodeError:
+            QMessageBox::warning(this, "DrawSound", "Error: %s\n", mDecoder->errorString().toLatin1().data());
+            break;
+    }
 }
