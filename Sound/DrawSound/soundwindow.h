@@ -11,6 +11,12 @@ class SoundWindow : public SoundDrawWindow
 {
     Q_OBJECT
 
+    struct IntensityMax
+    {
+        int F = 0;
+        double I = 0.0;
+    };
+
 public:
     SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate);
     ~SoundWindow();

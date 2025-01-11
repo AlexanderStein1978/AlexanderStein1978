@@ -419,13 +419,30 @@ void SoundWindow::CreateAnnInput(double ** data, int &FFTLength)
 {
     calcMinLabelWidth();
     double **realFFTData, **imaginaryFFTData;
+    int i;
     for (int n=0; n < mLabels.size(); ++n)
     {
         getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
         data[n] = new double[FFTLength];
-        for(int m=0; m < FFTLength; ++m) data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+        IntensityMax IMax[10];
+        for(int m=0; m < FFTLength; ++m)
+        {
+            data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+            if (m>1 && data[n][m-1] > data[n][m-2] && data[n][m-1] > data[n][m])
+            {
+                for (i = 8; i >= 0 && data[n][m-1] > IMax[i].I; --i) IMax[i+1] = IMax[i];
+                if (data[n][m-1] > IMax[i+1].I)
+                {
+                    IMax[i+1].I = data[n][m-1];
+                    IMax[i+1].F = m-1;
+                }
+            }
+        }
         Destroy(realFFTData, FFTLength);
         Destroy(imaginaryFFTData, FFTLength);
+        printf("%s ", mLabels[n].phoneme.toLatin1().data());
+        for (i=9; i>=0; --i) printf("%d ", IMax[i].F);
+        printf("\n");
     }
 }
 
