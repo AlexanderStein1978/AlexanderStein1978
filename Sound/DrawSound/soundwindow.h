@@ -21,6 +21,8 @@ public:
     SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate);
     ~SoundWindow();
 
+    void setData(double **Data, int numRows) override;
+
 private slots:
     void play();
     void setFastAssignmentMode(bool enable);
@@ -32,6 +34,7 @@ private slots:
     void Delete();
     void WriteAnnInput();
     void ReadAndVerifyAnnOutput();
+    void ApplyBoxFilter();
     void mouseLeftClicked(QPoint *Position) override;
     void keyPressed(QKeyEvent *K);
 
@@ -51,6 +54,7 @@ private:
     int getSoundData(float** data);
     int getSoundData(double** data, const int labelIndex, FFTSelection fftSelection) const;
     QString predictLabelFilename();
+    void analyzeData(double ** const Data, const int numRows);
 
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;

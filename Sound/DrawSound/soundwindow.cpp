@@ -6,6 +6,8 @@
 #include "windowselectdialog.h"
 #include "soundvector.h"
 #include "soundmatrix.h"
+#include "roundbuffer.h"
+#include "boxfilterdialog.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -532,3 +534,39 @@ void SoundWindow::keyPressed(QKeyEvent* K)
         mKeyText.clear();
     }
 }
+
+void SoundWindow::setData(double ** Data, int numRows)
+{
+    analyzeData(Data, numRows);
+    DiagWindow::setData(Data, numRows);
+}
+
+void SoundWindow::analyzeData(double **const Data, const int numRows)
+{
+
+}
+
+void SoundWindow::ApplyBoxFilter()
+{
+    BoxFilterDialog dialog;
+    if (dialog.exec() == QDialog::Rejected) return;
+    const int filterRadius = dialog.getResult(), nData = Daten->GetDSL();
+    double **filteredData = Create(nData, 2), Sum = 0.0;
+    int l, c, r;
+    for (r=0, c = -filterRadius, l = - 2 * filterRadius - 1; c < nData; ++r, ++c, ++l)
+    {
+        if (r < nData) Sum += Daten->GetValue(r, 1);
+        if (c >= 0)
+        {
+            if (l >= 0) Sum -= Daten->GetValue(l, 1);
+            filteredData[c][0] = Daten->GetValue(c, 0);
+            filteredData[c][1] = Sum;
+        }
+    }
+
+    SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
+    newWindow->setWindowTitle(newWindow->windowTitle() + " BoxFilter " + QString::number(filterRadius));
+    newWindow->setData(filteredData, nData);
+    newWindow->show();
+}
+

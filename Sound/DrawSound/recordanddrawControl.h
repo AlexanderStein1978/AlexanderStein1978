@@ -80,7 +80,7 @@ private:
     const QString RST = "RST";
     QFile *mInputFile, *mOutputFile;
     QAudioFormat::SampleType mSampleType;
-    int mSampleSize, mSampleRate;
+    int mSampleSize, mSampleRate, mNumChannels;
     qint64 mProcessedUSec;
     std::vector<DiagWindow*> mFrequencyWindows;
 };
