@@ -579,3 +579,9 @@ void SoundWindow::ApplyBoxFilter()
     mControl->GetMW()->showMDIChild(newWindow);
 }
 
+void SoundWindow::ApplyDiffMaxTransfo()
+{
+    const int radius = static_cast<int>(0.005 * mSampleRate), nData = Daten->GetDSL();
+    double** transformedData = Create(nData - 1, 2);
+
+}

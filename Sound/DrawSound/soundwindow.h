@@ -35,6 +35,7 @@ private slots:
     void WriteAnnInput();
     void ReadAndVerifyAnnOutput();
     void ApplyBoxFilter();
+    void ApplyDiffMaxTransfo();
     void mouseLeftClicked(QPoint *Position) override;
     void keyPressed(QKeyEvent *K);
 
