@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "soundwindow.h"
+#include "soundmainwindow.h"
 #include "utils.h"
 
 
@@ -26,10 +27,10 @@ namespace
 }
 
 
-SoundRecordAndDrawControl::SoundRecordAndDrawControl() : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
+SoundRecordAndDrawControl::SoundRecordAndDrawControl(SoundMainWindow* MW) : mInputSelectorBox(new QComboBox(this)), mStartButton(new QPushButton("Start recording", this)),
     mStopButton(new QPushButton("Stop recording", this)), mDrawButton(new QPushButton("Draw", this)), mDecodeButton(new QPushButton("Decode", this)), mInputFileDialogButton(new QPushButton("...", this)),
     mOutputFileDialogButton(new QPushButton("...", this)), mSplitFileButton(new QPushButton("Split recording", this)), mSizeDisplay(new QLabel(SizeString, this)),
-    mLengthDisplay(new QLabel(LengthString, this)), mInputFileNameEdit(new QLineEdit(this)), mOutputFileNameEdit(new QLineEdit(this)), mPacketSizeEdit(new QLineEdit("10", this)), mInput(nullptr), mInputFile(nullptr), mOutputFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u)
+    mLengthDisplay(new QLabel(LengthString, this)), mInputFileNameEdit(new QLineEdit(this)), mOutputFileNameEdit(new QLineEdit(this)), mPacketSizeEdit(new QLineEdit("10", this)), mInput(nullptr), mInputFile(nullptr), mOutputFile(nullptr), mSampleType(QAudioFormat::Unknown), mSampleSize(0), mSampleRate(0), mProcessedUSec(0u), mMW(MW)
 {
     setWindowTitle("Sound Record and Draw Control");
     QGridLayout *L = new QGridLayout(this);
@@ -405,7 +406,7 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
         window->setData(data[0], nSamples);
         for (n=1; n < mNumChannels; ++n) window->addData(data[n], nSamples);
         delete data;
-        window->show();
+        mMW->showMDIChild(window);
     }
 }
 

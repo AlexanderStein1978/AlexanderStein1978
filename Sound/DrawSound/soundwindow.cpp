@@ -8,6 +8,8 @@
 #include "soundmatrix.h"
 #include "roundbuffer.h"
 #include "boxfilterdialog.h"
+#include "recordanddrawControl.h"
+#include "soundmainwindow.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -32,10 +34,11 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
     QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *FastLabelingAct = new QAction("Fast labeling", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
-    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this);
+    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this), *ApplyBoxFilterAct = new QAction("Apply box filter...", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
+    mPopupMenu->addAction(ApplyBoxFilterAct);
     FastLabelingAct->setCheckable(true);
     mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
@@ -49,6 +52,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(mDeleteAct);
     connect(playAct, SIGNAL(triggered()), this, SLOT(play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
+    connect(ApplyBoxFilterAct, SIGNAL(triggered()), this, SLOT(ApplyBoxFilter()));
     connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
@@ -196,7 +200,11 @@ void SoundWindow::showFFT()
         double **realFFTData, **imaginaryFFTData;
         int FFTLength;
         getFFTData(FSForFTT, -1, FFTLength, realFFTData, imaginaryFFTData);
-        if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
+        if (nullptr == mFFTWindow)
+        {
+            mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
+            mControl->GetMW()->showMDIChild(mFFTWindow);
+        }
         else mFFTWindow->clear();
         mFFTWindow->setData(realFFTData, FFTLength);
         mFFTWindow->addData(imaginaryFFTData, FFTLength);
@@ -225,7 +233,7 @@ void SoundWindow::showFFT()
             window->setUnits("frequency [Hz]", "intensity");
             window->setData(realFFTData, FFTLength);
             window->addData(imaginaryFFTData, FFTLength);
-            window->show();
+            mControl->GetMW()->showMDIChild(window);
             Destroy(realFFTData, FFTLength);
             Destroy(imaginaryFFTData, FFTLength);
         }
@@ -567,6 +575,7 @@ void SoundWindow::ApplyBoxFilter()
     SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
     newWindow->setWindowTitle(newWindow->windowTitle() + " BoxFilter " + QString::number(filterRadius));
     newWindow->setData(filteredData, nData);
-    newWindow->show();
+    newWindow->mLabels = mLabels;
+    mControl->GetMW()->showMDIChild(newWindow);
 }
 

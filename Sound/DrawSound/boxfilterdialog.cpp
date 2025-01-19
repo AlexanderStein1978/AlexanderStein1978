@@ -6,14 +6,14 @@
 #include <QPushButton>
 
 
-BoxFilterDialog::BoxFilterDialog(QWidget* parent) : QDialog(parent), mFilterRadiusEdit(new QLineEdit(this)), mOKButton(new QPushButton("OK", this)), mCancelButton("Cancel", this))
+BoxFilterDialog::BoxFilterDialog(QWidget* parent) : QDialog(parent), mFilterRadiusEdit(new QLineEdit(this)), mOKButton(new QPushButton("OK", this)), mCancelButton(new QPushButton("Cancel", this))
 {
     QGridLayout* L = new QGridLayout(this);
     L->addWidget(new QLabel("Filter radius [samples]:", this), 0, 0);
     L->addWidget(mFilterRadiusEdit, 0, 1);
     L->setRowMinimumHeight(1, 20);
     L->addWidget(mOKButton, 2, 0);
-    L->addWidget(mCancelButton, 2, 1));
+    L->addWidget(mCancelButton, 2, 1);
     connect(mOKButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(mCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 }

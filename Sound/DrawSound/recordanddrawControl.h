@@ -6,6 +6,7 @@
 
 
 class DiagWindow;
+class SoundMainWindow;
 class QPushButton;
 class QLabel;
 class QComboBox;
@@ -21,7 +22,7 @@ class SoundRecordAndDrawControl : public QWidget
 public:
     enum Message{ChannelCountLargerOne, NotAllDataCouldBeWritten, DecodeError};
 
-    SoundRecordAndDrawControl();
+    SoundRecordAndDrawControl(SoundMainWindow* MW);
     ~SoundRecordAndDrawControl();
 
     inline void AddFrequencyWindow(DiagWindow* newWindow)
@@ -42,6 +43,11 @@ public:
     inline DiagWindow* GetWindow(int index) const
     {
         return mFrequencyWindows[index];
+    }
+
+    inline SoundMainWindow* GetMW() const
+    {
+        return mMW;
     }
 
 private slots:
@@ -72,7 +78,7 @@ private:
     DecodingFor mDecodingFor = DF_Nothing;
     QComboBox *mInputSelectorBox;
     QPushButton *mStartButton, *mStopButton, *mDrawButton, *mDecodeButton, *mInputFileDialogButton, *mOutputFileDialogButton, *mSplitFileButton;
-    QLabel* mSizeDisplay, *mLengthDisplay;
+    QLabel *mSizeDisplay, *mLengthDisplay;
     QLineEdit *mInputFileNameEdit, *mOutputFileNameEdit, *mPacketSizeEdit;
     QAudioInput* mInput;
     QAudioDecoder* mDecoder = nullptr;
@@ -83,4 +89,5 @@ private:
     int mSampleSize, mSampleRate, mNumChannels;
     qint64 mProcessedUSec;
     std::vector<DiagWindow*> mFrequencyWindows;
+    SoundMainWindow* mMW;
 };
