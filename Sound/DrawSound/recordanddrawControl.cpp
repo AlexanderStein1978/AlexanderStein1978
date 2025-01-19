@@ -322,6 +322,7 @@ void SoundRecordAndDrawControl::Draw()
                 offset = 12;
             }
             if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
+            mNumChannels = 1;
             draw(inputData + offset, nBytes - offset);
             delete[] inputData;
         }
@@ -331,48 +332,51 @@ void SoundRecordAndDrawControl::Draw()
 
 void SoundRecordAndDrawControl::draw(const char* const inputData, const int nBytes)
 {
-    int nSamples = nBytes / mSampleSize * 8, i, pos;
+    int nSamples = nBytes / (mSampleSize * mNumChannels) * 8, i, n, pos, p, sampleSizeBytes = mSampleSize / 8, frameSize = sampleSizeBytes * mNumChannels;
     if (nullptr != inputData && 0 < nBytes)
     {
-        if (0u == mProcessedUSec) mProcessedUSec = static_cast<double>(nBytes) * 8000000 / (mSampleSize * mSampleRate);
+        if (0u == mProcessedUSec) mProcessedUSec = static_cast<double>(nBytes) * 8000000 / (mSampleSize * mSampleRate * mNumChannels);
         double passedTime = 0.000001 * mProcessedUSec, currentTime;
         double timeStep = passedTime / nSamples;
-        double **data = Create(nSamples, 2);
-        for (i=pos=0, currentTime = 0.0; i < nSamples; ++i, currentTime += timeStep, pos += (mSampleSize / 8))
+        double ***data = Create(mNumChannels, nSamples, 2);
+        for (i=pos=0, currentTime = 0.0; i < nSamples; ++i, currentTime += timeStep, pos += frameSize)
         {
-            data[i][0] = currentTime;
+            for (n=0; n < mNumChannels; ++n) data[n][i][0] = currentTime;
             switch (mSampleType)
             {
                 case QAudioFormat::UnSignedInt:
                     switch (mSampleSize)
                     {
                         case 8:
-                            data[i][1] = static_cast<u_int8_t>(inputData[i]);
+                            for (n=0; n < mNumChannels; ++n) data[n][i][1] = static_cast<u_int8_t>(inputData[pos + n]);
                             break;
                         case 16:
-                            data[i][1] = *reinterpret_cast<const u_int16_t*>(inputData + pos);
+                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const u_int16_t*>(inputData + p);
                             break;
                         default:
-                            u_int32_t sample = 0;
-                            memcpy(&sample, inputData + pos, mSampleSize / 8);
-                            data[i][1] = sample;
-                            break;
+                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
+                            {
+                                u_int32_t sample = 0;
+                                memcpy(&sample, inputData + p, sampleSizeBytes);
+                                data[n][i][1] = sample;
+                                break;
+                            }
                     }
                 case QAudioFormat::Float:
-                    if (mSampleSize < 32)
+                    if (mSampleSize < 32) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
                     {
                         _Float32 sample = 0.0f;
-                        memcpy(&sample, inputData + pos, mSampleSize / 8);
-                        data[i][1] = sample;
+                        memcpy(&sample, inputData + p, sampleSizeBytes);
+                        data[n][i][1] = sample;
                     }
-                    else if (mSampleSize == 32) data[i][1] = *reinterpret_cast<const _Float32*>(inputData + pos);
-                    else if (mSampleSize < 64)
+                    else if (mSampleSize == 32) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const _Float32*>(inputData + p);
+                    else if (mSampleSize < 64) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
                     {
                         double sample = 0.0;
-                        memcpy(&sample, inputData + pos, mSampleSize / 8);
-                        data[i][1] = sample;
+                        memcpy(&sample, inputData + p, sampleSizeBytes);
+                        data[n][i][1] = sample;
                     }
-                    else if (mSampleSize == 64) data[i][1] = *reinterpret_cast<const double*>(inputData + pos);
+                    else if (mSampleSize == 64) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const double*>(inputData + p);
                     // printf("(%g|%g), ", data[i][0], data[i][1]);
                     break;
                 case QAudioFormat::Unknown:
@@ -381,21 +385,26 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
                     switch (mSampleSize)
                     {
                         case 8:
-                            data[i][1] = inputData[i];
+                            for (n=0; n < mNumChannels; ++n) data[n][i][1] = inputData[i + n];
                             break;
                         case 16:
-                            data[i][1] = *reinterpret_cast<const int16_t*>(inputData + pos);
+                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const int16_t*>(inputData + p);
                             break;
                         default:
-                            int32_t sample = 0;
-                            memcpy(&sample, inputData + pos, mSampleSize / 8);
-                            data[i][1] = sample;
+                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
+                            {
+                                int32_t sample = 0;
+                                memcpy(&sample, inputData + p, sampleSizeBytes);
+                                data[n][i][1] = sample;
+                            }
                             break;
                     }
             }
         }
         SoundDrawWindow* window = new SoundWindow(this, mInputFileNameEdit->text(), mSampleRate);
-        window->setData(data, nSamples);
+        window->setData(data[0], nSamples);
+        for (n=1; n < mNumChannels; ++n) window->addData(data[n], nSamples);
+        delete data;
         window->show();
     }
 }
@@ -422,7 +431,8 @@ void SoundRecordAndDrawControl::BufferReady()
     if (0 == mProcessedUSec)
     {
         QAudioFormat format = buffer.format();
-        if (format.channelCount() > 1)
+        mNumChannels = format.channelCount();
+        if (mNumChannels > 1 && mDecodingFor != DF_Draw)
         {
             printf("Observed a channel count = %d. This is currently not supported!\n", format.channelCount());
             emit showMessage(ChannelCountLargerOne);
