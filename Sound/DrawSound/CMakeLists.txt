@@ -10,10 +10,15 @@ find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
 add_executable(DrawSound
     main.cpp
+    boxfilterdialog.cpp
+    boxfilterdialog.h
     frequencywindow.cpp
     frequencywindow.h
     recordanddrawControl.cpp
     recordanddrawControl.h
+    roundbuffer.h
+    soundmainwindow.cpp
+    soundmainwindow.h
     windowselectdialog.cpp
     windowselectdialog.h
     sounddrawwindow.cpp

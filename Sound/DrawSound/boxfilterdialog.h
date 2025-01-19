@@ -3,6 +3,9 @@
 #include <QDialog>
 
 
+class QLineEdit;
+
+
 class BoxFilterDialog : public QDialog
 {
     Q_OBJECT

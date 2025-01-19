@@ -5,6 +5,7 @@
 #include "soundwindow.h"
 #include "windowselectdialog.h"
 #include "recordanddrawControl.h"
+#include "soundmainwindow.h"
 
 #include <QAction>
 #include <QMenu>
@@ -40,7 +41,7 @@ void FrequencyWindow::BackTransform()
     SoundWindow* window = new SoundWindow(mControl, FName, mSampleRate);
     window->setData(realTransData, transOutLength);
     window->addData(imaginaryTransData, transOutLength);
-    window->show();
+    mControl->GetMW()->showMDIChild(window);
     delete[] realInputdata;
     delete[] imaginaryInputdata;
     Destroy(realTransData, transOutLength);
