@@ -29,8 +29,8 @@ void MaxBuffer::AddToStore(element* first, element* last)
     }
     else
     {
-        first->prev = mLStore->prev;
-        first->prev->next = first;
+        first->prev = mLStore;
+        mLStore->next = first;
     }
     mLStore = last;
 }
@@ -65,7 +65,7 @@ double MaxBuffer::newValue(const double f, const double a)
         else if (a >= mLast->a)
         {
             element *nextLarger = mLast;
-            while (nextLarger->a <= a) nextLarger = nextLarger->prev);
+            while (nextLarger->a <= a) nextLarger = nextLarger->prev;
             if (nextLarger->next != mLast)
             {
                 element* current = nextLarger->next;
@@ -76,10 +76,11 @@ double MaxBuffer::newValue(const double f, const double a)
         else if (nullptr != mFStore)
         {
             mLast->next = mFStore;
-            mFStore->prev = mLast->prev;
+            mFStore->prev = mLast;
             mLast = mFStore;
             mFStore = mFStore->next;
-            mFStore->prev = nullptr;
+            if (nullptr != mFStore) mFStore->prev = nullptr;
+            else mLStore = nullptr;
         }
         else
         {
