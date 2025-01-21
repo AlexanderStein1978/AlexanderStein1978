@@ -14,6 +14,8 @@ add_executable(DrawSound
     boxfilterdialog.h
     frequencywindow.cpp
     frequencywindow.h
+    maxbuffer.cpp
+    maxbuffer.h
     recordanddrawControl.cpp
     recordanddrawControl.h
     roundbuffer.h

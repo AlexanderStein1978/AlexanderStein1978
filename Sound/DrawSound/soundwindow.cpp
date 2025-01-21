@@ -10,6 +10,7 @@
 #include "boxfilterdialog.h"
 #include "recordanddrawControl.h"
 #include "soundmainwindow.h"
+#include "maxbuffer.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -35,10 +36,12 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     setWindowTitle("Draw sound: " + filename);
     QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *FastLabelingAct = new QAction("Fast labeling", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
     QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this), *ApplyBoxFilterAct = new QAction("Apply box filter...", this);
+    QAction *ApplyDiffMaxTransfoAct = new QAction("Apply diff max transformation", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
     mPopupMenu->addAction(ApplyBoxFilterAct);
+    mPopupMenu->addAction(ApplyDiffMaxTransfoAct);
     FastLabelingAct->setCheckable(true);
     mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
@@ -53,6 +56,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     connect(playAct, SIGNAL(triggered()), this, SLOT(play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
     connect(ApplyBoxFilterAct, SIGNAL(triggered()), this, SLOT(ApplyBoxFilter()));
+    connect(ApplyDiffMaxTransfoAct, SIGNAL(triggered()), this, SLOT(ApplyDiffMaxTransfo()));
     connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
@@ -581,7 +585,33 @@ void SoundWindow::ApplyBoxFilter()
 
 void SoundWindow::ApplyDiffMaxTransfo()
 {
-    const int radius = static_cast<int>(0.005 * mSampleRate), nData = Daten->GetDSL();
-    double** transformedData = Create(nData - 1, 2);
-
+    const double radius_s = 0.005;
+    const int radius = static_cast<int>(radius_s * mSampleRate), nData = Daten->GetDSL();
+    double** transformedData = Create(nData, 2), t, a, step = 1.0 / mSampleRate;
+    MaxBuffer maxbuffer(2 * radius_s);
+    int c, r;
+    for (r=0, c = -radius; c < nData; r++, c++)
+    {
+        if (r < nData)
+        {
+            t = Daten->GetValue(r, 0);
+            a = abs(Daten->GetValue(r, 1));
+        }
+        else
+        {
+            t += step;
+            a = 0.0;
+        }
+        if (c >= 0)
+        {
+            transformedData[c][0] = Daten->GetValue(c, 0);
+            transformedData[c][1] = maxbuffer.newValue(t, a);
+        }
+        else maxbuffer.newValue(t, a);
+    }
+    SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
+    newWindow->setWindowTitle(newWindow->windowTitle() + " DiffMaxTransformed");
+    newWindow->setData(transformedData, nData);
+    newWindow->mLabels = mLabels;
+    mControl->GetMW()->showMDIChild(newWindow);
 }

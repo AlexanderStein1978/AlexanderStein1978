@@ -18,7 +18,7 @@ private:
     };
 
     void DestroyChain(element* first, element* last);
-    void AddToStore(element* first, elelemnt* last);
+    void AddToStore(element* first, element* last);
 
     element* mFirst, *mLast, *mFStore, *mLStore;
     const double mDiameter;
