@@ -1,7 +1,9 @@
 #include "maxbuffer.h"
 
+#include <cmath>
 
-MaxBuffer::MaxBuffer(const double diameter) : mFirst(nullptr), mLast(nullptr), mFStore(nullptr), mLStore(nullptr), mDiameter(diameter)
+
+MaxBuffer::MaxBuffer(const double diameter) : mFirst(nullptr), mLast(nullptr), mFStore(nullptr), mLStore(nullptr), mCurrent(new feature), mFeatures(nullptr), mDiameter(diameter)
 {
 }
 
@@ -9,6 +11,8 @@ MaxBuffer::~MaxBuffer()
 {
     DestroyChain(mFirst, mLast);
     DestroyChain(mFStore, mLStore);
+    clearObs();
+    delete mCurrent;
 }
 
 void MaxBuffer::DestroyChain(element* first, element* last)
@@ -93,4 +97,71 @@ double MaxBuffer::newValue(const double f, const double a)
     mLast->a = a;
     mLast->f = f;
     return mFirst->a - prevMax;
+}
+
+MaxBuffer::Observation MaxBuffer::analyzeNewValue(const double f, const double a)
+{
+    double newVal = newValue(f, a);
+    if (newVal > mThreshold)
+    {
+        double Abs = fabs(a);
+        if (Abs > mCurrent->maxA) mCurrent->maxA = Abs;
+        if (mCurrent->fStart == Invalid) mCurrent->fStart = f;
+        mCurrent->fEnd = f;
+    }
+    else if (Invalid != mCurrent->fStart && f - mCurrent->fEnd > mMinWidth)
+    {
+        if (mCurrent->fEnd - mCurrent->fStart < mMinWidth)
+        {
+            mCurrent->maxA = 0.0;
+            mCurrent->fStart = Invalid;
+            if (nullptr != mFeatures)
+            {
+                if (nullptr == mFeatures->next) return DObserved;
+                else return BObserved;
+            }
+        }
+        else
+        {
+            mCurrent->next = mFeatures;
+            mFeatures = mCurrent;
+            mCurrent = new feature;
+        }
+    }
+    return NothingObserved;
+}
+
+void MaxBuffer::clearObs()
+{
+    if (nullptr != mFeatures)
+    {
+        feature *c, *n;
+        for (c = mFeatures; c != nullptr; c=n)
+        {
+            n = c->next;
+            delete c;
+        }
+        mFeatures = nullptr;
+    }
+}
+
+double MaxBuffer::getMaxAmplitude() const
+{
+    double result = Invalid;
+    for (feature* c = mFeatures; c != nullptr; c = c->next) if (c->maxA > result) result = c->maxA;
+    return result;
+}
+
+double MaxBuffer::getObsEnd() const
+{
+    if (mFeatures != nullptr) return mFeatures->fEnd;
+    return Invalid;
+}
+
+double MaxBuffer::getObsStart() const
+{
+    if (nullptr == mFeatures) return Invalid;
+    feature* f = mFeatures;
+    while (nullptr != f->next) f = f->next;
+    return f->fStart;
 }

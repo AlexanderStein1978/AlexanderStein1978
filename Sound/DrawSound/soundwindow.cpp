@@ -555,7 +555,40 @@ void SoundWindow::setData(double ** Data, int numRows)
 
 void SoundWindow::analyzeData(double **const Data, const int numRows)
 {
-
+    const double radius_s = 0.005;
+    const int radius = static_cast<int>(radius_s * mSampleRate);
+    double t, a, step = 1.0 / mSampleRate;
+    MaxBuffer maxbuffer(2 * radius_s);
+    int c, r;
+    for (r=0, c = -radius; c < numRows; r++, c++)
+    {
+        if (r < numRows)
+        {
+            t = Data[r][0];
+            a = abs(Data[r][1]);
+        }
+        else
+        {
+            t += step;
+            a = 0.0;
+        }
+        if (c >= 0)
+        {
+            MaxBuffer::Observation obs = maxbuffer.analyzeNewValue(t, a);
+            if (obs != MaxBuffer::NothingObserved)
+            {
+                double max = maxbuffer.getMaxAmplitude();
+                Label newLabel;
+                newLabel.phoneme = (obs == MaxBuffer::BObserved ? "B" : "D");
+                newLabel.rect.setCoords(maxbuffer.getObsStart(), max, maxbuffer.getObsEnd(), -max);
+                if (newLabel.rect.width() < mMinLabelWidth) mMinLabelWidth = newLabel.rect.width();
+                newLabel.index = estimateLabelIndex(newLabel.phoneme);
+                mLabels.push_back(newLabel);
+                maxbuffer.clearObs();
+            }
+        }
+        else maxbuffer.newValue(t, a);
+    }
 }
 
 void SoundWindow::ApplyBoxFilter()
