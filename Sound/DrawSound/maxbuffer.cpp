@@ -165,3 +165,55 @@ double MaxBuffer::getObsStart() const
     while (nullptr != f->next) f = f->next;
     return f->fStart;
 }
+
+double MaxBuffer::searchBroadest(const double f, const double a, const double pf)
+{
+    double value = newValue(f, a);
+    if (value > 5e-5)
+    {
+        if (mCurrent->fStart == Invalid) mCurrent->fStart = pf;
+        mCurrent->fEnd = pf;
+        if (value > mCurrent->maxA) mCurrent->maxA = value;
+    }
+    else if (mCurrent->fStart != Invalid && pf - mCurrent->fEnd > mMinWidth)
+    {
+        mCurrent->ratio = (mCurrent->fEnd - mCurrent->fStart) / mCurrent->maxA;
+        if (nullptr == mFeatures || mCurrent->ratio >= mFeatures->ratio)
+        {
+            mCurrent->next = mFeatures;
+            mFeatures = mCurrent;
+            mCurrent = new feature;
+        }
+        else
+        {
+            feature* f = mFeatures;
+            int counter;
+            for (counter = 0; counter < 10 && nullptr != f->next && f->next->ratio > mCurrent->ratio; ++counter) f = f->next;
+            if (10 == counter)
+            {
+                mCurrent->fStart = Invalid;
+                mCurrent->maxA = 0.0;
+            }
+            else if (nullptr == f->next || mCurrent->ratio >= f->next->ratio)
+            {
+                mCurrent->next = f->next;
+                f->next = mCurrent;
+                mCurrent = new feature;
+            }
+        }
+    }
+    return value;
+}
+
+void MaxBuffer::getBroadest(const int index, double& start, double& end, double& max, QString& ratioForLabel)
+{
+    feature *f = mFeatures;
+    for (int i=0; nullptr != f; ++i, f = f->next) if (i == index)
+    {
+        start = f->fStart;
+        end = f->fEnd;
+        max = f->maxA;
+        ratioForLabel = QString::number(f->ratio, 'g', 5);
+        break;
+    }
+}
