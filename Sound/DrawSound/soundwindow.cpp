@@ -638,13 +638,24 @@ void SoundWindow::ApplyDiffMaxTransfo()
         if (c >= 0)
         {
             transformedData[c][0] = Daten->GetValue(c, 0);
-            transformedData[c][1] = maxbuffer.newValue(t, a);
+            transformedData[c][1] = maxbuffer.searchBroadest(t, a, Daten->GetValue(c, 0));
         }
         else maxbuffer.newValue(t, a);
     }
     SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
     newWindow->setWindowTitle(newWindow->windowTitle() + " DiffMaxTransformed");
     newWindow->setData(transformedData, nData);
-    newWindow->mLabels = mLabels;
+    //newWindow->mLabels = mLabels;
+    for (int i=0; i<10; ++i)
+    {
+        QString text;
+        double start, end, max;
+        maxbuffer.getBroadest(i, start, end, max, text);
+        if (text.isEmpty()) break;
+        Label l;
+        l.phoneme = text;
+        l.rect.setCoords(start, max, end, 0.0);
+        newWindow->mLabels.push_back(l);
+    }
     mControl->GetMW()->showMDIChild(newWindow);
 }

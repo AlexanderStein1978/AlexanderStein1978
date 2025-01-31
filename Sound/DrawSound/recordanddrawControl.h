@@ -25,6 +25,9 @@ public:
     SoundRecordAndDrawControl(SoundMainWindow* MW);
     ~SoundRecordAndDrawControl();
 
+    void Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleType sampleType, const char* const inputData, const int nBytes);
+    void Save(const char* const inputData, const int nBytes);
+
     inline void AddFrequencyWindow(DiagWindow* newWindow)
     {
         mFrequencyWindows.push_back(newWindow);

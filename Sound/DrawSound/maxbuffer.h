@@ -1,17 +1,21 @@
 #pragma once
 
 
+#include <QString>
+
 class MaxBuffer
 {
 public:
     enum Observation {NothingObserved, BObserved, DObserved};
 
-    const double Invalid = -1.0;
+    constexpr static const double Invalid = -1.0;
 
     MaxBuffer(const double diameter);
     ~MaxBuffer();
 
     double newValue(const double f, const double a);
+    double searchBroadest(const double f, const double a, const double pf);
+    void getBroadest(const int index, double& start, double& end, double& max, QString& ratioForLabel);
     Observation analyzeNewValue(const double f, const double a);
     double getObsStart() const;
     double getObsEnd() const;
@@ -28,7 +32,7 @@ private:
 
     struct feature
     {
-        double fStart = -1.0, fEnd, maxA = 0.0;
+        double fStart = Invalid, fEnd, maxA = 0.0, ratio;
         feature *next = nullptr;
     };
 

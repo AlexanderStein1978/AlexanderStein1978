@@ -4,35 +4,45 @@
 class RoundBuffer
 {
 public:
+    enum ObservationStatus{NoPatternObserved, MaybePatternObserved, PatternObserved};
+    enum PatternStatus{NewPattern, ReobservedPattern};
+
     struct BufferElement
     {
         double frequency, amplitude;
     };
 
-    RoundBuffer(const int size) : m_elements(new BufferElement[size]), m_size(size), m_currentIndex(0u)
+    struct Pattern
     {
-    }
+        constexpr static const int  MaxLength = 5;
 
-    ~RoundBuffer()
-    {
-        delete[] m_elements;
-    }
+        BufferElement elements[MaxLength];
+        Pattern* next;
+        int length = 0;
+    };
 
-    inline void setNextElement(const double frequency, const double amplitude)
+    struct PatternObservation
     {
-        if (++m_currentIndex >= m_size) m_currentIndex = 0;
-        m_elements[m_currentIndex].frequency = frequency;
-        m_elements[m_currentIndex].amplitude = amplitude;
-    }
+        int patternIndex;
+        double start, end, maxA = 0.0;
+        PatternObservation* next = nullptr;
+    };
 
-    inline const BufferElement& element(const int index) const
-    {
-        int i = m_currentIndex - index;
-        if (i < 0) i += m_size;
-        return m_elements[i];
-    }
+    RoundBuffer(const int size);
+    ~RoundBuffer();
+
+    void setNextElement(const double frequency, const double amplitude);
+    void setElementToAnalyse(const double frequency, const double amplitude);
+    const BufferElement& element(const int index) const;
+    PatternObservation* popObservation();
 
 private:
     BufferElement* m_elements;
-    int m_size, m_currentIndex;
+    Pattern* mPatterns, *mLastPattern;
+    Pattern* mCurrentPattern;
+    PatternObservation* observations;
+    int m_size, m_currentIndex, mNumElements;
+    double mPossibleObsStart, mPossibleObsEnd;
+    ObservationStatus mObsStatus;
+    PatternStatus mPatternStatus;
 };

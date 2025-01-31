@@ -19,6 +19,7 @@
 #include "soundwindow.h"
 #include "soundmainwindow.h"
 #include "utils.h"
+#include "definesamplesizedialog.h"
 
 
 namespace
@@ -250,6 +251,25 @@ void SoundRecordAndDrawControl::SplitFileIntoPackets()
     delete[] buffer;
 }
 
+void SoundRecordAndDrawControl::Save(const char *const inputData, const int nBytes)
+{
+    QString filename = mOutputFileNameEdit->text();
+    if (filename.isEmpty())
+    {
+        filename = mInputFileNameEdit->text();
+        mOutputFileNameEdit->setText(filename);
+    }
+    if (nullptr != mOutputFile) delete mOutputFile;
+    mOutputFile = new QFile(filename);
+    mOutputFile->open(QIODevice::WriteOnly);
+    writeRST();
+    int bytesWritten = mOutputFile->write(inputData, nBytes);
+    if (bytesWritten < nBytes)
+    {
+        QMessageBox::information(this, "DrawSound", "Not all data could be written!");
+    }
+}
+
 void SoundRecordAndDrawControl::createDecoder()
 {
     if (nullptr == mDecoder)
@@ -322,8 +342,13 @@ void SoundRecordAndDrawControl::Draw()
                 mSampleType = static_cast<QAudioFormat::SampleType>(inputData[11]);
                 offset = 12;
             }
-            if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
             mNumChannels = 1;
+            if (0 == mSampleSize)
+            {
+                DefineSampleSizeDialog *dialog = new DefineSampleSizeDialog(this, inputData, nBytes);
+                mMW->showMDIChild(dialog);
+                return;
+            }
             draw(inputData + offset, nBytes - offset);
             delete[] inputData;
         }
@@ -408,6 +433,14 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
         delete data;
         mMW->showMDIChild(window);
     }
+}
+
+void SoundRecordAndDrawControl::Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleType sampleType, const char *const inputData, const int nBytes)
+{
+    mSampleSize = sampleSize;
+    mSampleRate = sampleRate;
+    mSampleType = sampleType;
+    draw(inputData, nBytes);
 }
 
 void SoundRecordAndDrawControl::ReadyToDraw()
