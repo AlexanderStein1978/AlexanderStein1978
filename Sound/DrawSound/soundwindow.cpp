@@ -589,6 +589,15 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
         }
         else maxbuffer.newValue(t, a);
     }
+    for (PatternBuffer::PatternObservation* obs = maxbuffer.popObservation(); nullptr != obs; obs = maxbuffer.popObservation())
+    {
+        Label newLabel;
+        newLabel.phoneme = QString::number(obs->patternIndex);
+        newLabel.rect.setCoords(obs->start, obs->maxA, obs->end, -obs->maxA);
+        if (newLabel.rect.width() < mMinLabelWidth) mMinLabelWidth = newLabel.rect.width();
+        newLabel.index = estimateLabelIndex(newLabel.phoneme);
+        mLabels.push_back(newLabel);
+    }
 }
 
 void SoundWindow::ApplyBoxFilter()
