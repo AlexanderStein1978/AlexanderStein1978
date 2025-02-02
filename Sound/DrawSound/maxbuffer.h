@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include "patternbuffer.h"
+
 #include <QString>
 
 class MaxBuffer
@@ -21,6 +23,11 @@ public:
     double getObsEnd() const;
     double getMaxAmplitude() const;
     void clearObs();
+
+    inline PatternBuffer::PatternObservation* popObservation()
+    {
+        return mPatternBuffer.popObservation();
+    }
 
 private:
 
@@ -45,4 +52,6 @@ private:
     element *mFirst, *mLast, *mFStore, *mLStore;
     feature *mCurrent, *mFeatures;
     const double mDiameter;
+    PatternBuffer mPatternBuffer;
+    double mPrevTime, mSecondLastAmp = 0.0, mLastAmp = 0.0;
 };

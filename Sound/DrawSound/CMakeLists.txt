@@ -18,8 +18,11 @@ add_executable(DrawSound
     frequencywindow.h
     maxbuffer.cpp
     maxbuffer.h
+    patternbuffer.cpp
+    patternbuffer.h
     recordanddrawControl.cpp
     recordanddrawControl.h
+    roundbuffer.cpp
     roundbuffer.h
     soundmainwindow.cpp
     soundmainwindow.h

@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-MaxBuffer::MaxBuffer(const double diameter) : mFirst(nullptr), mLast(nullptr), mFStore(nullptr), mLStore(nullptr), mCurrent(new feature), mFeatures(nullptr), mDiameter(diameter)
+MaxBuffer::MaxBuffer(const double diameter) : mFirst(nullptr), mLast(nullptr), mFStore(nullptr), mLStore(nullptr), mCurrent(new feature), mFeatures(nullptr), mDiameter(diameter), mPatternBuffer(10)
 {
 }
 
@@ -128,6 +128,10 @@ MaxBuffer::Observation MaxBuffer::analyzeNewValue(const double f, const double a
             mCurrent = new feature;
         }
     }
+    if (mLastAmp > 0.8 * mFirst->a && mLastAmp > mSecondLastAmp && mLastAmp > a) mPatternBuffer.setNextElement(mPrevTime, mLastAmp);
+    mPrevTime = f;
+    mSecondLastAmp = mLastAmp;
+    mLastAmp = a;
     return NothingObserved;
 }
 
