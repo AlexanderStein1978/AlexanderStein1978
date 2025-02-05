@@ -195,7 +195,7 @@ void SoundRecordAndDrawControl::SplitFileIntoPackets()
     if (nullptr != mInputFile) delete mInputFile;
     mInputFile = new QFile(filename);
     if (!mInputFile->exists()) return;
-    int allBytes = mInputFile->size(), fileIndex, currentOffset, packetSize = mPacketSizeEdit->text().toInt() * 1000000, n = filename.lastIndexOf('.'), headerSize = 12;
+    int allBytes = mInputFile->size(), fileIndex, currentOffset, packetSize = mPacketSizeEdit->text().toInt() * 1000000, n = filename.lastIndexOf('.'), headerSize = 16;
     if (0 == packetSize) return;
     mInputFile->open(QIODevice::ReadOnly);
     QDataStream inputStream(mInputFile);
@@ -206,7 +206,7 @@ void SoundRecordAndDrawControl::SplitFileIntoPackets()
         QMessageBox::information(this, "DrawSound", "The input file could not be read!");
         return;
     }
-    if (RST == QString::fromUtf8(header, 3)) mSampleSize = qFromBigEndian<qint32>(header + 7);
+    if (RST == QString::fromUtf8(header + 4, 3)) mSampleSize = qFromBigEndian<qint32>(header + 11);
     else headerSize = 0;
     if (0 == mSampleSize && !DetermineSampleTypeAndSize()) return;
     packetSize = mSampleSize * (packetSize / mSampleSize);
@@ -335,12 +335,12 @@ void SoundRecordAndDrawControl::Draw()
             char* inputData = new char[nBytes];
             nBytes = stream.readRawData(inputData, nBytes);
             int offset = 0;
-            if (RST == QString::fromUtf8(inputData, 3))
+            if (RST == QString::fromUtf8(inputData + 4, 3))
             {
-                mSampleRate = qFromBigEndian<qint32>(inputData + 3);
-                mSampleSize = qFromBigEndian<qint32>(inputData + 7);
-                mSampleType = static_cast<QAudioFormat::SampleType>(inputData[11]);
-                offset = 12;
+                mSampleRate = qFromBigEndian<qint32>(inputData + 7);
+                mSampleSize = qFromBigEndian<qint32>(inputData + 11);
+                mSampleType = static_cast<QAudioFormat::SampleType>(inputData[15]);
+                offset = 16;
             }
             mNumChannels = 1;
             if (0 == mSampleSize)
