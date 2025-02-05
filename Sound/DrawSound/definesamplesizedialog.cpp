@@ -26,10 +26,10 @@ DefineSampleSizeDialog::DefineSampleSizeDialog(SoundRecordAndDrawControl* parent
     layout->addWidget(mSampleRateBox, 2, 1);
     mSampleTypeBox->setEditable(false);
     layout->addWidget(new QLabel("Sample type:", this), 3, 0);
-    layout->addWidget(mSampleRateBox, 3, 1);
+    layout->addWidget(mSampleTypeBox, 3, 1);
     layout->setRowMinimumHeight(4, 20);
     QPushButton* DrawB = new QPushButton("Draw", this), *SaveB = new QPushButton("Save", this), *CloseB = new QPushButton("Close", this);
-    QGridLayout* BL;
+    QGridLayout* BL = new QGridLayout;
     layout->addLayout(BL, 5, 0, 1, 2);
     BL->addWidget(DrawB, 0, 0);
     BL->addWidget(SaveB, 0, 1);

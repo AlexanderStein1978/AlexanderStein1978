@@ -151,7 +151,7 @@ void PatternBuffer::createObservation()
 PatternBuffer::PatternObservation* PatternBuffer::popObservation()
 {
     PatternObservation* r = mObservations;
-    mObservations = r->next;
+    if (nullptr != r) mObservations = r->next;
     return r;
 }
 
