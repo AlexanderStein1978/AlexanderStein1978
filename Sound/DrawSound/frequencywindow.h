@@ -7,7 +7,7 @@ class FrequencyWindow : public SoundDrawWindow
 {
     Q_OBJECT
 public:
-    FrequencyWindow(SoundRecordAndDrawControl *const control, const int sampleRate);
+    FrequencyWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const int sampleRate);
 
 private slots:
     void BackTransform();

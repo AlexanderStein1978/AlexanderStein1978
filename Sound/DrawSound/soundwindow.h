@@ -18,7 +18,7 @@ class SoundWindow : public SoundDrawWindow
     };
 
 public:
-    SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate);
+    SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate);
     ~SoundWindow();
 
     void setData(double **Data, int numRows) override;

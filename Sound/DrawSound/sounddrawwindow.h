@@ -5,13 +5,14 @@
 
 class SoundRecordAndDrawControl;
 class QAudioOutput;
+class SoundMainWindow;
 
 
 class SoundDrawWindow : public DiagWindow
 {
     Q_OBJECT
 public:
-    SoundDrawWindow(SoundRecordAndDrawControl *const control, const int sampleRate, const int o);
+    SoundDrawWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const int sampleRate, const int o);
     ~SoundDrawWindow();
 
 private slots:

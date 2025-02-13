@@ -21,7 +21,7 @@
 #include <QPainter>
 
 
-SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
+SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate) : SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
     mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
     mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
@@ -206,7 +206,7 @@ void SoundWindow::showFFT()
         getFFTData(FSForFTT, -1, FFTLength, realFFTData, imaginaryFFTData);
         if (nullptr == mFFTWindow)
         {
-            mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
+            mFFTWindow = new FrequencyWindow(mControl, mControl->GetMW(), mSampleRate);
             mControl->GetMW()->showMDIChild(mFFTWindow);
         }
         else mFFTWindow->clear();
@@ -618,7 +618,7 @@ void SoundWindow::ApplyBoxFilter()
         }
     }
 
-    SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
+    SoundWindow* newWindow = new SoundWindow(mControl, mControl->GetMW(), mFilename, mSampleRate);
     newWindow->setWindowTitle(newWindow->windowTitle() + " BoxFilter " + QString::number(filterRadius));
     newWindow->setData(filteredData, nData);
     newWindow->mLabels = mLabels;
@@ -651,7 +651,7 @@ void SoundWindow::ApplyDiffMaxTransfo()
         }
         else maxbuffer.newValue(t, a);
     }
-    SoundWindow* newWindow = new SoundWindow(mControl, mFilename, mSampleRate);
+    SoundWindow* newWindow = new SoundWindow(mControl, mControl->GetMW(), mFilename, mSampleRate);
     newWindow->setWindowTitle(newWindow->windowTitle() + " DiffMaxTransformed");
     newWindow->setData(transformedData, nData);
     //newWindow->mLabels = mLabels;

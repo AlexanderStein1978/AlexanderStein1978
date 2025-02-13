@@ -1,4 +1,5 @@
 #include "sounddrawwindow.h"
+#include "soundmainwindow.h"
 
 #include "datensatz.h"
 
@@ -12,7 +13,7 @@
 #include <cmath>
 
 
-SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, nullptr, "Data files (*.dat)", ".dat", o),
+SoundDrawWindow::SoundDrawWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const int sampleRate, const int o) : DiagWindow(SimpleDiagWindow, MW, "Data files (*.dat)", ".dat", o),
     mPopupMenu(new QMenu(this)), mSampleRate(sampleRate), mControl(control), mMode(MNormal)
 {
     QAction *writeAct = new QAction("Write to file...", this);

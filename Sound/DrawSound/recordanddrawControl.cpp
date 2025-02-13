@@ -427,7 +427,7 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
                     }
             }
         }
-        SoundDrawWindow* window = new SoundWindow(this, mInputFileNameEdit->text(), mSampleRate);
+        SoundDrawWindow* window = new SoundWindow(this, mMW, mInputFileNameEdit->text(), mSampleRate);
         window->setData(data[0], nSamples);
         for (n=1; n < mNumChannels; ++n) window->addData(data[n], nSamples);
         delete data;
