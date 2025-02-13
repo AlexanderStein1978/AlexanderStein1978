@@ -24,6 +24,8 @@ RoundBuffer & RoundBuffer::operator=(const RoundBuffer& right)
     m_size = right.m_size;
     m_currentIndex = right.m_currentIndex;
     mNumElements = right.mNumElements;
+
+    return *this;
 }
 
 void RoundBuffer::setNextElement(const double frequency, const double amplitude)
