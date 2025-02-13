@@ -11,7 +11,7 @@
 #include <QMenu>
 
 
-FrequencyWindow::FrequencyWindow(SoundRecordAndDrawControl *const control, const int sampleRate) : SoundDrawWindow(control, sampleRate, 0)
+FrequencyWindow::FrequencyWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const int sampleRate) : SoundDrawWindow(control, MW, sampleRate, 0)
 {
     mRescaleOnSetAndAdd = false;
     QAction *backTransformAct = new QAction("Back transform", this), *copyToWindowAct = new QAction("Copy to window...", this);
@@ -38,7 +38,7 @@ void FrequencyWindow::BackTransform()
     }
     for ( ; i < transInLength; ++i) realInputdata[i] = imaginaryInputdata[i] = 0.0;
     backtransformFFT(realInputdata, imaginaryInputdata, inputLength, step, realTransData, imaginaryTransData);
-    SoundWindow* window = new SoundWindow(mControl, FName, mSampleRate);
+    SoundWindow* window = new SoundWindow(mControl, mControl->GetMW(), FName, mSampleRate);
     window->setData(realTransData, transOutLength);
     window->addData(imaginaryTransData, transOutLength);
     mControl->GetMW()->showMDIChild(window);
