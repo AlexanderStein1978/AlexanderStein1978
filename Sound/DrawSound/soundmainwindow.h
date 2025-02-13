@@ -1,17 +1,10 @@
 #pragma once
 
-#include <QMainWindow>
-
-class QMdiArea;
+#include "MainWindow.h"
 
 
-class SoundMainWindow : public QMainWindow
+class SoundMainWindow : public MainWindow
 {
 public:
     SoundMainWindow();
-
-    void showMDIChild(QWidget *C);
-
-private:
-    QMdiArea *workspace;
 };
