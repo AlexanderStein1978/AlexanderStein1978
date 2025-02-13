@@ -101,8 +101,8 @@ double MaxBuffer::newValue(const double f, const double a)
 
 MaxBuffer::Observation MaxBuffer::analyzeNewValue(const double f, const double a)
 {
-    double newVal = newValue(f, a);
-    if (newVal > mThreshold)
+    /*double newVal =*/ newValue(f, a);
+    /*if (newVal > mThreshold)
     {
         double Abs = fabs(a);
         if (Abs > mCurrent->maxA) mCurrent->maxA = Abs;
@@ -127,7 +127,7 @@ MaxBuffer::Observation MaxBuffer::analyzeNewValue(const double f, const double a
             mFeatures = mCurrent;
             mCurrent = new feature;
         }
-    }
+    }*/
     if (mLastAmp > 0.8 * mFirst->a && mLastAmp > mSecondLastAmp && mLastAmp > a) mPatternBuffer.setNextElement(mPrevTime, mLastAmp);
     mPrevTime = f;
     mSecondLastAmp = mLastAmp;
