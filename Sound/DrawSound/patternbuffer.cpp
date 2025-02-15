@@ -92,7 +92,7 @@ void PatternBuffer::setNextElement(const double frequency, const double amplitud
         if (mObsStatus == MaybePatternObserved)
         {
             mObsStatus = checkPattern(&mPossiblePattern, 2);
-            if (mObsStatus = NoPatternObserved) mObsStatus = MaybePatternObserved;
+            if (mObsStatus == NoPatternObserved) mObsStatus = MaybePatternObserved;
             else
             {
                 mObsStatus = PatternObserved;
@@ -113,8 +113,8 @@ PatternBuffer::ObservationStatus PatternBuffer::checkPattern(Pattern* pattern, i
     {
         double expT = element(startIndex + n).frequency + pattern->buffer.element(n).frequency;
         double expA = element(startIndex + n).amplitude * pattern->buffer.element(n).amplitude;
-        if (abs(element(startIndex + n + 1).frequency - expT) > TimeTol * (element(startIndex + n + 1).frequency - element(startIndex + n).frequency)
-            || abs(element(startIndex + n).amplitude - expA) > AmplitudeTol * element(startIndex + n).amplitude)
+        if (fabs(element(startIndex + n + 1).frequency - expT) > TimeTol * (element(startIndex + n).frequency - element(startIndex + n + 1).frequency)
+            || fabs(element(startIndex + n).amplitude - expA) > AmplitudeTol * element(startIndex + n).amplitude)
         {
             return NoPatternObserved;
         }
@@ -126,15 +126,18 @@ void PatternBuffer::createPattern()
 {
     createObservation();
     mCurrentPattern = new Pattern(mPossiblePattern);
-    mCurrentPattern->index = mLastPattern->index + 1;
-    mLastPattern->next = mCurrentPattern;
+    if (nullptr != mLastPattern)
+    {
+        mCurrentPattern->index = mLastPattern->index + 1;
+        mLastPattern->next = mCurrentPattern;
+    }
     mLastPattern = mCurrentPattern;
 }
 
 void PatternBuffer::createObservation()
 {
     if (nullptr == mCurrentPattern) return;
-    if (mObservations->patternIndex == mCurrentPattern->index)
+    if (nullptr != mObservations && mObservations->patternIndex == mCurrentPattern->index)
     {
         mObservations->end = mPossibleObsEnd;
         return;
