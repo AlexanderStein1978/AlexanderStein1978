@@ -292,12 +292,22 @@ int SoundDrawWindow::getSoundDataRange(int& xStart, int& xStop, const int labelI
         start += step;
         stop -= step;
     }
-    int length = Daten->GetDSL(), n = 1;
+    int length = Daten->GetDSL(), n = 0;
     while (n < length && Daten->GetValue(n, 0) < start) ++n;
     xStart = n;
     while (n < length && Daten->GetValue(n, 0) <= stop) ++n;
     xStop = n-1;
-    return xStop - xStart + 1;
+    int rLength = xStop - xStart + 1;
+    if (fftSelection == FSForFTT && rLength&(rLength-1))
+    {
+        int l = getFFTLength(rLength);
+        if (l > length) l/=2 ;
+        xStart -= (l - rLength) / 2;
+        if (xStart < 0) xStart = 0;
+        xStop = xStart + l - 1;
+        rLength = l;
+    }
+    return rLength;
 }
 
 int SoundDrawWindow::getFFTLength(const int inputLength) const
