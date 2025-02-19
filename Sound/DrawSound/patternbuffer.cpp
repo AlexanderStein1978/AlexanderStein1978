@@ -79,6 +79,7 @@ void PatternBuffer::setNextElement(const double frequency, const double amplitud
         {
             createObservation();
             createPattern();
+            mPossibleObsStart = element(2*n-1).frequency;
             mPossibleObsEnd = frequency;
             mMax = amplitude;
             for (int i=1; i <= n; ++i) if (element(i).amplitude > mMax) mMax = element(i).amplitude;
