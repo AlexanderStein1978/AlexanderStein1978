@@ -12,6 +12,7 @@ public:
         double *time, *frequency, **data;
         int numTimeSteps;
 
+        Results();
         Results(Results& right);
         Results& operator=(Results& right);
     };

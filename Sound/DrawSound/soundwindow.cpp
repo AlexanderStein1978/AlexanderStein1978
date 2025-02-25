@@ -11,6 +11,8 @@
 #include "recordanddrawControl.h"
 #include "soundmainwindow.h"
 #include "maxbuffer.h"
+#include "oscillatorarray.h"
+#include "oscillatordiagram.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -555,7 +557,12 @@ void SoundWindow::setData(double ** Data, int numRows)
 
 void SoundWindow::analyzeData(double **const Data, const int numRows)
 {
-    const double radius_s = 0.005;
+    OscillatorArray array(numRows);
+    for (int r=0; r < numRows; ++r) array.setNewValue(r, Data[r][0], Data[r][1]);
+    OscillatorDiagram* diagram = new OscillatorDiagram(mControl->GetMW());
+    diagram->setData(array.getResults());
+    mControl->GetMW()->showMDIChild(diagram);
+    /*const double radius_s = 0.005;
     const int radius = static_cast<int>(radius_s * mSampleRate);
     double t, a, step = 1.0 / mSampleRate;
     MaxBuffer maxbuffer(2 * radius_s);
@@ -597,7 +604,7 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
         if (newLabel.rect.width() < mMinLabelWidth) mMinLabelWidth = newLabel.rect.width();
         newLabel.index = estimateLabelIndex(newLabel.phoneme);
         mLabels.push_back(newLabel);
-    }
+    }*/
 }
 
 void SoundWindow::ApplyBoxFilter()
