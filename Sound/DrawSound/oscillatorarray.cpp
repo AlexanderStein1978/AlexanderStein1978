@@ -3,16 +3,15 @@
 #include "utils.h"
 
 
-namespace
-{
-    const double gamma = 0.1;
-    const double MinOmega = 10;
-    const double MaxOmega = 5000;
-    const double OmegaStep = (MaxOmega - MinOmega) / (NumOscillators - 1);
-}
-
 const int OscillatorArray::NumOscillators = 100;
 
+namespace
+{
+    const double gamma = 10.0;
+    const double MinOmega = 10;
+    const double MaxOmega = 5000;
+    const double OmegaStep = (MaxOmega - MinOmega) / (OscillatorArray::NumOscillators - 1);
+}
 
 OscillatorArray::OscillatorArray(const int numTimeSteps) : mOscillators(new Oscillator[NumOscillators])
 {
@@ -37,7 +36,7 @@ OscillatorArray::~OscillatorArray()
     {
         delete[] mResults.time;
         delete[] mResults.frequency;
-        Destroy(mResults.data, numTimeSteps);
+        Destroy(mResults.data, mResults.numTimeSteps);
     }
 }
 
@@ -46,6 +45,12 @@ void OscillatorArray::setNewValue(const int timeIndex, const double time, const 
     mResults.time[timeIndex] = time;
     for (int n=0; n < NumOscillators; ++n) mResults.data[timeIndex][n] = mOscillators[n].newValue(time, amplitude);
 }
+
+
+OscillatorArray::Results::Results() : time(nullptr), frequency(nullptr), data(nullptr), numTimeSteps(0)
+{
+}
+
 
 OscillatorArray::Results::Results(Results& right)
 {

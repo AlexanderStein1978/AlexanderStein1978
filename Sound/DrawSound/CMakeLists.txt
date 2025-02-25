@@ -36,6 +36,12 @@ add_executable(DrawSound
     soundvector.cpp
     soundmatrix.h
     soundmatrix.cpp
+    oscillator.h
+    oscillator.cpp
+    oscillatorarray.h
+    oscillatorarray.cpp
+    oscillatordiagram.h
+    oscillatordiagram.cpp
 )
 
 # target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
