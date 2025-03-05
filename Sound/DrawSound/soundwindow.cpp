@@ -557,7 +557,7 @@ void SoundWindow::setData(double ** Data, int numRows)
 
 void SoundWindow::analyzeData(double **const Data, const int numRows)
 {
-    OscillatorArray array(numRows);
+    OscillatorArray array(numRows, Data[numRows-1][0] - Data[0][0]);
     for (int r=0; r < numRows; ++r) array.setNewValue(r, Data[r][0], Data[r][1]);
     OscillatorDiagram* diagram = new OscillatorDiagram(mControl->GetMW());
     diagram->setData(array.getResults());

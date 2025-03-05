@@ -13,7 +13,7 @@ namespace
     const double OmegaStep = (MaxOmega - MinOmega) / (OscillatorArray::NumOscillators - 1);
 }
 
-OscillatorArray::OscillatorArray(const int numTimeSteps) : mOscillators(new Oscillator[NumOscillators])
+OscillatorArray::OscillatorArray(const int numTimeSteps, const double deltaT) : mOscillators(new Oscillator[NumOscillators])
 {
     mResults.time = new double[numTimeSteps];
     mResults.frequency = new double[NumOscillators];
@@ -21,11 +21,11 @@ OscillatorArray::OscillatorArray(const int numTimeSteps) : mOscillators(new Osci
     mResults.numTimeSteps = numTimeSteps;
 
     int n;
-    double omega;
+    double omega, timeStep = deltaT / (numTimeSteps - 1);
     for (n=0, omega = MinOmega; n < NumOscillators; ++n, omega += OmegaStep)
     {
         mResults.frequency[n] = omega;
-        mOscillators[n].initialize(omega, gamma);
+        mOscillators[n].initialize(omega, gamma, timeStep);
     }
 }
 
@@ -43,7 +43,9 @@ OscillatorArray::~OscillatorArray()
 void OscillatorArray::setNewValue(const int timeIndex, const double time, const double amplitude)
 {
     mResults.time[timeIndex] = time;
-    for (int n=0; n < NumOscillators; ++n) mResults.data[timeIndex][n] = mOscillators[n].newValue(time, amplitude);
+    double deltaAmp = amplitude - mLastAmplitude;
+    mLastAmplitude = amplitude;
+    for (int n=0; n < NumOscillators; ++n) mResults.data[timeIndex][n] = mOscillators[n].newValue(deltaAmp);
 }
 
 
@@ -64,6 +66,8 @@ OscillatorArray::Results& OscillatorArray::Results::operator=(Results& right)
     frequency = right.frequency;
     right.frequency = nullptr;
     data = right.data;
-    data = nullptr;
+    right.data = nullptr;
+    numTimeSteps = right.numTimeSteps;
+    right.numTimeSteps = 0;
     return *this;
 }

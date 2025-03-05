@@ -19,7 +19,7 @@ public:
 
     static const int NumOscillators;
 
-    OscillatorArray(const int numTimeSteps);
+    OscillatorArray(const int numTimeSteps, const double deltaT);
     ~OscillatorArray();
 
     void setNewValue(const int timeIndex, const double time, const double amplitude);
@@ -32,4 +32,5 @@ public:
 private:
     Oscillator* mOscillators;
     Results mResults;
+    double mLastAmplitude;
 };

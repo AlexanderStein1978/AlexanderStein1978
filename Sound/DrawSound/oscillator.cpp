@@ -3,35 +3,27 @@
 #include <cmath>
 
 
-double Oscillator::HALF = 0.5;
-double Oscillator::M1 = -1.0;
+const double Oscillator::HALF = 0.5;
 
 
-Oscillator::Oscillator() : mOmega(0.0), mGamma(0.0), mLastAmplitude(0.0), mLastOA(0.0), mLastV(0.0), mGmO(0.0),
-    mGpO(0.0), md2O(0.0), mLastAvA(0.0), mhOsq(0.0), mLastExpGmO(1.0), mLastExpGpO(1.0)
+Oscillator::Oscillator() : mHOsq(0.0), mLastAmp(0.0), mLastV(0.0), mAmpAmp0Term(0.0), mAmpV0Term(0.0), mVAmp0Term(0.0), mVV0Term(0.0)
 {
 }
 
-void Oscillator::initialize(const double omega, const double gamma)
+void Oscillator::initialize(const double omega, const double gamma, const double deltaT)
 {
-    mOmega = omega;
-    mGamma = gamma;
-    mGmO = gamma - omega;
-    mGpO = gamma + omega;
-    md2O = HALF / omega;
-    mhOsq = HALF * omega * omega;
+    const double expGammaT = exp(-1.0 * gamma * deltaT), coswt = cos(omega * deltaT), sinwt = sin(omega * deltaT), dOmega = 1.0 / omega, gammaDOmega = gamma * dOmega;
+    mHOsq = HALF * omega * omega;
+    mAmpAmp0Term = expGammaT * (coswt + gammaDOmega * sinwt);
+    mAmpV0Term = expGammaT * dOmega * sinwt;
+    mVAmp0Term = expGammaT * (omega + gamma * gammaDOmega) * sinwt;
+    mVV0Term = expGammaT * (coswt - gammaDOmega * sinwt);
 }
 
-double Oscillator::newValue(const double amplitude, const double time)
+double Oscillator::newValue(const double deltaAmplitude)
 {
-    double avA(HALF * (amplitude + mLastAmplitude)), deltaAvA(avA - mLastAvA), oA = mLastOA - deltaAvA;
-    double c1 = (oA + (oA * mGmO + mLastV) * md2O) / mLastExpGmO;
-    double c2 = M1 * (oA * (mGmO + mLastV) * md2O) / mLastExpGpO;
-    mLastAmplitude = amplitude;
-    mLastAvA = avA;
-    mLastExpGmO = exp(M1 * mGmO * time);
-    mLastExpGpO = exp(M1 * mGpO * time);
-    mLastOA = c1 * mLastExpGmO + c2 * mLastExpGpO;
-    mLastV = M1 * (c1 * mGmO * mLastExpGmO + c2 * mGpO * mLastExpGpO);
-    return HALF * mLastV * mLastV + mhOsq * mLastOA * mLastOA;
+    const double currAmp = mLastAmp * mAmpAmp0Term + mLastV * mAmpV0Term;
+    mLastV = mLastAmp * mVAmp0Term + mLastV * mVV0Term;
+    mLastAmp = currAmp - deltaAmplitude;
+    return HALF * mLastV * mLastV + mHOsq * mLastAmp * mLastAmp;
 }
