@@ -47,33 +47,34 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
 	double ymin = yStart->text().toDouble(), ymax = yStop->text().toDouble(), Tsc, Fsc, MaxAmp = 0.0, T;
     int BHeight = A.height() - ScaleTopOffset - ScaleXHeight;
 	int BWidth = A.width() - ScaleYWidth, TIMin, TIMax, FIMin, FIMax, n, m, i, j;
+    if (BHeight <= 0 || BWidth <= 0) return;
     for (TIMin = 0; TIMin < mData.numTimeSteps && mData.time[TIMin] < xmin; ++TIMin) mTimePixelAssignments[TIMin] = -1;
     if (TIMin == mData.numTimeSteps) return;
     for (TIMax = TIMin; TIMax < mData.numTimeSteps; ++TIMax) if (mData.time[TIMax] > xmax) break;
     if (TIMax == 0) return;
-    int PictWidth = TIMax - TIMin + 1;
+    int PictWidth = TIMax - TIMin;
     if (PictWidth > BWidth)
     {
         Tsc = PictWidth / BWidth;
-        for (n = TIMin, m=0, T = mData.time[n]; n <= TIMax; ++m, T += Tsc) while (n < mData.numTimeSteps && mData.time[n] <= T) mTimePixelAssignments[n++] = m;
+        for (n = TIMin, m=0, T = mData.time[n]; n < TIMax; ++m, T += Tsc) while (n < mData.numTimeSteps && n <= T) mTimePixelAssignments[n++] = m;
         PictWidth = BWidth;
     }
-    else for (n = TIMin; n <= TIMax; ++n) mTimePixelAssignments[n] = n - TIMin;
-    for (n = TIMax + 1; n < mData.numTimeSteps; ++n) mTimePixelAssignments[n] = -1;
+    else for (n = TIMin; n < TIMax; ++n) mTimePixelAssignments[n] = n - TIMin;
+    for (n = TIMax; n < mData.numTimeSteps; ++n) mTimePixelAssignments[n] = -1;
     for (FIMin = 0; FIMin < OscillatorArray::NumOscillators && mData.frequency[FIMin] < ymin; ++FIMin) mFrequencyPixelAssignments[FIMin] = -1;
     if (FIMin == OscillatorArray::NumOscillators) return;
     for (FIMax = FIMin; FIMax < OscillatorArray::NumOscillators; ++FIMax) if (mData.frequency[FIMax] > ymax) break;
     if (FIMax == 0) return;
-    int PictHeight = FIMax - FIMin + 1;
+    int PictHeight = FIMax - FIMin;
     if (PictHeight > BHeight)
     {
         Fsc = PictHeight / BHeight;
-        for (n = FIMin, m=0, T = mData.frequency[n]; n <= FIMax; ++m, T += Fsc) while (n < OscillatorArray::NumOscillators && mData.frequency[n] <= T)
+        for (n = FIMin, m=0, T = mData.frequency[n]; n < FIMax; ++m, T += Fsc) while (n < OscillatorArray::NumOscillators && n <= T)
             mFrequencyPixelAssignments[n++] = m;
         PictHeight = BHeight;
     }
-    else for (n = FIMin; n <= FIMax; ++n) mFrequencyPixelAssignments[n] = n - FIMin;
-    for (n = FIMax + 1; n < OscillatorArray::NumOscillators; ++n) mFrequencyPixelAssignments[n] = -1;
+    else for (n = FIMin; n < FIMax; ++n) mFrequencyPixelAssignments[n] = n - FIMin;
+    for (n = FIMax; n < OscillatorArray::NumOscillators; ++n) mFrequencyPixelAssignments[n] = -1;
     double **Pixel = Create(PictWidth, PictHeight);
 	QImage *Pict = new QImage(PictWidth, PictHeight, QImage::Format_RGB32);
     for (n=0, i = TIMin; n < PictWidth; ++n) for (m=0, j = FIMin; m < PictHeight; ++m)

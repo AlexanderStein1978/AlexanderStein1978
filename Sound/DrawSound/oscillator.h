@@ -1,15 +1,16 @@
 #pragma once
 
+
 class Oscillator
 {
 public:
     Oscillator();
 
-    void initialize(const double omega, const double gamma);
+    void initialize(const double omega, const double gamma, const double deltaT);
 
-    double newValue(const double amplitude, const double time);
+    double newValue(const double deltaAmplitude);
 
 private:
-    double mOmega, mGamma, mLastAmplitude, mLastOA, mLastV, mGmO, mGpO, md2O, mLastAvA, mhOsq, mLastExpGmO, mLastExpGpO;
-    static double HALF, M1;
+    double mHOsq, mLastAmp, mLastV, mAmpAmp0Term, mAmpV0Term, mVAmp0Term, mVV0Term;
+    static const double HALF;
 };
