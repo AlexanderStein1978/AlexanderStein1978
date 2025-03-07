@@ -44,7 +44,7 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     if (XMax == XMin || YMax == YMin) return;
 	QRgb *PP;
     double xmin = xStart->text().toDouble(), xmax = xStop->text().toDouble();
-	double ymin = yStart->text().toDouble(), ymax = yStop->text().toDouble(), Tsc, Fsc, MaxAmp = 0.0, T;
+	double ymin = yStart->text().toDouble(), ymax = yStop->text().toDouble(), Tsc, Fsc, T;
     int BHeight = A.height() - ScaleTopOffset - ScaleXHeight;
 	int BWidth = A.width() - ScaleYWidth, TIMin, TIMax, FIMin, FIMax, n, m, i, j;
     if (BHeight <= 0 || BWidth <= 0) return;
@@ -77,37 +77,43 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     for (n = FIMax; n < OscillatorArray::NumOscillators; ++n) mFrequencyPixelAssignments[n] = -1;
     double **Pixel = Create(PictWidth, PictHeight);
 	QImage *Pict = new QImage(PictWidth, PictHeight, QImage::Format_RGB32);
+    double* MaxAmp = new double[PictHeight];
+    for (n=0; n < PictHeight; n++) MaxAmp[n] = 0.0;
     for (n=0, i = TIMin; n < PictWidth; ++n) for (m=0, j = FIMin; m < PictHeight; ++m)
     {
         for (Pixel[n][m] = 0.0; i < mData.numTimeSteps && mTimePixelAssignments[i] == n; ++i)
             for ( ; j < OscillatorArray::NumOscillators && mFrequencyPixelAssignments[j] == m; ++j) if (mData.data[i][j] > Pixel[n][m])
                 Pixel[n][m] = mData.data[i][j];
-        if (Pixel[n][m] > MaxAmp) MaxAmp = Pixel[n][m];
+        if (Pixel[n][m] > MaxAmp[m]) MaxAmp[m] = Pixel[n][m];
     }
     QRgb* PL;
-    double Isc = 1024.0 / MaxAmp;
-    for (n=0, i = PictHeight - 1; n < PictHeight; ++n, --i) for (m=0, PL = reinterpret_cast<QRgb*>(Pict->scanLine(n)); m < PictWidth; ++m)
+    for (n=0, i = PictHeight - 1; n < PictHeight; ++n, --i)
     {
-        int value = static_cast<int>(Isc * Pixel[m][i]);
-        if (value < 256) PL[m] = qRgb(0, 0, value);
-        else if (value < 512)
+        double Isc = 1024.0 / MaxAmp[i];
+        for (m=0, PL = reinterpret_cast<QRgb*>(Pict->scanLine(n)); m < PictWidth; ++m)
         {
-            value -= 256;
-            PL[m] = qRgb(0, value, 255 - value);
+            int value = static_cast<int>(Isc * Pixel[m][i]);
+            if (value < 256) PL[m] = qRgb(0, 0, value);
+            else if (value < 512)
+            {
+                value -= 256;
+                PL[m] = qRgb(0, value, 255 - value);
+            }
+            else if (value < 768)
+            {
+                value -= 512;
+                PL[m] = qRgb(value, 255 - value, 0);
+            }
+            else if (value < 1024)
+            {
+                value -= 768;
+                PL[m] = qRgb(255, value, value);
+            }
+            else PL[m] = qRgb(255, 255, 255);
         }
-        else if (value < 768)
-        {
-            value -= 512;
-            PL[m] = qRgb(value, 255 - value, 0);
-        }
-        else if (value < 1024)
-        {
-            value -= 768;
-            PL[m] = qRgb(255, value, value);
-        }
-        else PL[m] = qRgb(255, 255, 255);
     }
     Destroy(Pixel, PictWidth);
+    delete[] MaxAmp;
 	if (Image != nullptr) delete Image;
 	Image = Pict;
 	DiagWindow::PSpektrum(P, A, PrintFN);

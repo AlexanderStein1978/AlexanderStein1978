@@ -1,1 +1,3 @@
 add_subdirectory(DrawSound)
+add_subdirectory(DrawSoundExe)
+add_subdirectory(OscillatorTestDrawer)
