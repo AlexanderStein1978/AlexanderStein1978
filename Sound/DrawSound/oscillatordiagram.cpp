@@ -55,8 +55,9 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     int PictWidth = TIMax - TIMin;
     if (PictWidth > BWidth)
     {
-        Tsc = PictWidth / BWidth;
-        for (n = TIMin, m=0, T = mData.time[n]; n < TIMax; ++m, T += Tsc) while (n < mData.numTimeSteps && n <= T) mTimePixelAssignments[n++] = m;
+        Tsc = static_cast<double>(PictWidth) / BWidth;
+        for (n = TIMin, m=0, T = n; n < TIMax && m < BWidth; ++m, T += Tsc) while (n < mData.numTimeSteps && n <= T) mTimePixelAssignments[n++] = m;
+        for (--m; n < TIMax; ++n) mTimePixelAssignments[n] = m;
         PictWidth = BWidth;
     }
     else for (n = TIMin; n < TIMax; ++n) mTimePixelAssignments[n] = n - TIMin;
@@ -68,9 +69,10 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     int PictHeight = FIMax - FIMin;
     if (PictHeight > BHeight)
     {
-        Fsc = PictHeight / BHeight;
-        for (n = FIMin, m=0, T = mData.frequency[n]; n < FIMax; ++m, T += Fsc) while (n < OscillatorArray::NumOscillators && n <= T)
+        Fsc = static_cast<double>(PictHeight) / BHeight;
+        for (n = FIMin, m=0, T = n; n < FIMax && m < BHeight; ++m, T += Fsc) while (n < OscillatorArray::NumOscillators && n <= T)
             mFrequencyPixelAssignments[n++] = m;
+        for (--m; n < FIMax; ++n) mFrequencyPixelAssignments[n] = m;
         PictHeight = BHeight;
     }
     else for (n = FIMin; n < FIMax; ++n) mFrequencyPixelAssignments[n] = n - FIMin;
@@ -78,14 +80,14 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
     double **Pixel = Create(PictWidth, PictHeight);
 	QImage *Pict = new QImage(PictWidth, PictHeight, QImage::Format_RGB32);
     double* MaxAmp = new double[PictHeight];
-    for (n=0; n < PictHeight; n++) MaxAmp[n] = 0.0;
-    for (n=0, i = TIMin; n < PictWidth; ++n) for (m=0, j = FIMin; m < PictHeight; ++m)
+    for (n=0; n < PictHeight; ++n)
     {
-        for (Pixel[n][m] = 0.0; i < mData.numTimeSteps && mTimePixelAssignments[i] == n; ++i)
-            for ( ; j < OscillatorArray::NumOscillators && mFrequencyPixelAssignments[j] == m; ++j) if (mData.data[i][j] > Pixel[n][m])
-                Pixel[n][m] = mData.data[i][j];
-        if (Pixel[n][m] > MaxAmp[m]) MaxAmp[m] = Pixel[n][m];
+        MaxAmp[n] = 0.0;
+        for (m=0; m < PictWidth; ++m) Pixel[m][n] = 0.0;
     }
+    for (n = TIMin; n < TIMax; ++n) for (m = FIMin; m < FIMax; ++m) if (mData.data[n][m] > Pixel[mTimePixelAssignments[n]][mFrequencyPixelAssignments[m]])
+        Pixel[mTimePixelAssignments[n]][mFrequencyPixelAssignments[m]] = mData.data[n][m];
+    for (n=0; n < PictWidth; ++n) for (m=0; m < PictHeight; ++m) if (Pixel[n][m] > MaxAmp[m]) MaxAmp[m] = Pixel[n][m];
     QRgb* PL;
     for (n=0, i = PictHeight - 1; n < PictHeight; ++n, --i)
     {
