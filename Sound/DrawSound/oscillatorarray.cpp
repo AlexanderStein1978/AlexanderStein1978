@@ -2,14 +2,15 @@
 #include "oscillator.h"
 #include "utils.h"
 
+#include <math.h>
 
 const int OscillatorArray::NumOscillators = 100;
 
 namespace
 {
-    const double gamma = 10.0;
-    const double MinOmega = 10;
-    const double MaxOmega = 5000;
+    const double Gamma = 2.0;
+    const double MinOmega = 10 * 2.0 * M_PI;
+    const double MaxOmega = 5000 * 2.0 * M_PI;
     const double OmegaStep = (MaxOmega - MinOmega) / (OscillatorArray::NumOscillators - 1);
 }
 
@@ -25,7 +26,7 @@ OscillatorArray::OscillatorArray(const int numTimeSteps, const double deltaT) : 
     for (n=0, omega = MinOmega; n < NumOscillators; ++n, omega += OmegaStep)
     {
         mResults.frequency[n] = omega;
-        mOscillators[n].initialize(omega, gamma, timeStep);
+        mOscillators[n].initialize(omega, Gamma, timeStep);
     }
 }
 
