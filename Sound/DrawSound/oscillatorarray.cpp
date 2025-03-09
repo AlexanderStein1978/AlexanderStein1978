@@ -4,14 +4,14 @@
 
 #include <math.h>
 
-const int OscillatorArray::NumOscillators = 100;
+const int OscillatorArray::NumOscillators = 200;
 
 namespace
 {
     const double Gamma = 2.0;
-    const double MinOmega = 10 * 2.0 * M_PI;
-    const double MaxOmega = 5000 * 2.0 * M_PI;
-    const double OmegaStep = (MaxOmega - MinOmega) / (OscillatorArray::NumOscillators - 1);
+    const double MinF = 10;
+    const double MaxF = 10000;
+    const double FStep = (MaxF - MinF) / (OscillatorArray::NumOscillators - 1);
 }
 
 OscillatorArray::OscillatorArray(const int numTimeSteps, const double deltaT) : mOscillators(new Oscillator[NumOscillators])
@@ -22,11 +22,11 @@ OscillatorArray::OscillatorArray(const int numTimeSteps, const double deltaT) : 
     mResults.numTimeSteps = numTimeSteps;
 
     int n;
-    double omega, timeStep = deltaT / (numTimeSteps - 1);
-    for (n=0, omega = MinOmega; n < NumOscillators; ++n, omega += OmegaStep)
+    double f, timeStep = deltaT / (numTimeSteps - 1);
+    for (n=0, f = MinF; n < NumOscillators; ++n, f += FStep)
     {
-        mResults.frequency[n] = omega;
-        mOscillators[n].initialize(omega, Gamma, timeStep);
+        mResults.frequency[n] = f;
+        mOscillators[n].initialize(2.0 * M_PI * f, Gamma, timeStep);
     }
 }
 

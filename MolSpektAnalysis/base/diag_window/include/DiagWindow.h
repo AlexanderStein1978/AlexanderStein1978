@@ -126,7 +126,7 @@ protected:
 	QString XUnit, YUnit;
 	QFont UnitFont, ScaleFont;
 	Datensatz *Daten;
-    bool DMarkers, ShowAssignmentsOnTop, showPoints, mRescaleOnSetAndAdd = true;
+    bool DMarkers, ShowAssignmentsOnTop, showPoints, mRescaleOnSetAndAdd = true, mApplyImageZoom = true;
 	Marker *marker;
     int AnzahlMarker, nDatenS, cPosx, cPosy, sPoint, mPoint;
 	QFont AssFont;
