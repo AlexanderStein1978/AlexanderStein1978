@@ -9,9 +9,10 @@
 OscillatorDiagram::OscillatorDiagram(SoundMainWindow* MW) : DiagWindow(SimpleDiagWindow, MW), mTimePixelAssignments(nullptr), mFrequencyPixelAssignments(nullptr)
 {
     setUnits("time [s]", "frequency [Hz]");
+    mApplyImageZoom = false;
 }
 
-OscillatorDiagram::~OscillatorDiagram() noexcept
+OscillatorDiagram::~OscillatorDiagram()
 {
     if (nullptr != mTimePixelAssignments) delete[] mTimePixelAssignments;
     if (nullptr != mFrequencyPixelAssignments) delete[] mFrequencyPixelAssignments;
@@ -89,12 +90,12 @@ void OscillatorDiagram::PSpektrum(QPainter& P, const QRect& A, bool PrintFN)
         Pixel[mTimePixelAssignments[n]][mFrequencyPixelAssignments[m]] = mData.data[n][m];
     for (n=0; n < PictWidth; ++n) for (m=0; m < PictHeight; ++m) if (Pixel[n][m] > MaxAmp[m]) MaxAmp[m] = Pixel[n][m];
     QRgb* PL;
-    for (n=0, i = PictHeight - 1; n < PictHeight; ++n, --i)
+    for (n=0; n < PictHeight; ++n)
     {
-        double Isc = 1024.0 / MaxAmp[i];
+        double Isc = 1024.0 / MaxAmp[n];
         for (m=0, PL = reinterpret_cast<QRgb*>(Pict->scanLine(n)); m < PictWidth; ++m)
         {
-            int value = static_cast<int>(Isc * Pixel[m][i]);
+            int value = static_cast<int>(Isc * Pixel[m][n]);
             if (value < 256) PL[m] = qRgb(0, 0, value);
             else if (value < 512)
             {
