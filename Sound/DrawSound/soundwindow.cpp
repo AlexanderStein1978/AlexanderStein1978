@@ -80,6 +80,7 @@ SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
     else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+    if (nullptr != mAssignmentResults) Destroy(mAssignmentResults, Daten->GetDSL());
 }
 
 void SoundWindow::play()
@@ -359,6 +360,7 @@ void SoundWindow::LoadLabels()
             }
         }
     }
+    createLabellingData();
     Paint();
     Saved();
 }
@@ -559,9 +561,22 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
 {
     OscillatorArray array(numRows, Data[numRows-1][0] - Data[0][0]);
     for (int r=0; r < numRows; ++r) array.setNewValue(r, Data[r][0], Data[r][1]);
-    OscillatorDiagram* diagram = new OscillatorDiagram(mControl->GetMW());
-    diagram->setData(array.getResults());
-    mControl->GetMW()->showMDIChild(diagram);
+    mOscillatorDiagram = new OscillatorDiagram(mControl->GetMW(), mFilename);
+    mOscillatorDiagram->setData(array.getResults());
+    mControl->GetMW()->showMDIChild(mOscillatorDiagram);
+    int n;
+    SoundRecordAndDrawControl::AssignmentElement* assignmentData = mControl->GetAssignmentData(n);
+    if (nullptr != assignmentData)
+    {
+        if (nullptr != mAssignmentResults) Destroy(mAssignmentResults, Daten->GetDSL());
+        mAssignmentResults = Create(numPoints, AL_Z + 1);
+        const OscillatorArray::Results& arrayResults = mOscillatorDiagram->getData();
+        for (int i=0; i < numRows; ++i) for (int j = AL_A; j  <= AL_Z; ++j) for (mAssignmentResults[i][j] = 0.0, n=0; n < OscillatorArray::NumOscillators; ++n)
+        {
+
+
+        }
+    }
     /*const double radius_s = 0.005;
     const int radius = static_cast<int>(radius_s * mSampleRate);
     double t, a, step = 1.0 / mSampleRate;
@@ -605,6 +620,76 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
         newLabel.index = estimateLabelIndex(newLabel.phoneme);
         mLabels.push_back(newLabel);
     }*/
+}
+
+void SoundWindow::createLabellingData()
+{
+    int n, m, b=1, nLabels = mLabels.size(), *labelIndices = new int[nLabels], *labelsAndGaps = new int[2*nLabels];
+    for (n=0; n < nLabels; ++n) labelIndices[n] = n;
+    while (0!=b)
+    {
+        b=0;
+        for (n=1; n < nLabels; ++n) if (mLabels[labelIndices[n-1]].rect.left() > mLabels[labelIndices[n]].rect.left())
+        {
+            b = labelIndices[n-1];
+            labelIndices[n-1] = labelIndices[n];
+            labelIndices[n] = b;
+        }
+    }
+    double avDelta = 0.0;
+    for (n=1; n < nLabels; ++n) avDelta += mLabels[labelIndices[n]].rect.left() - mLabels[labelIndices[n-1]].rect.right();
+    avDelta /= (nLabels - 1);
+    for (n=m=0; n < nLabels; ++n)
+    {
+        if (n > 0 && mLabels[labelIndices[n]].rect.left() - mLabels[labelIndices[n-1]].rect.right() > avDelta) labelsAndGaps[m++] = -1;
+        labelsAndGaps[m++] = labelIndices[n];
+    }
+    nLabels = m;
+    std::vector<int> labelIndexVectors[AL_Z + 1];
+    for (n=0; n < nLabels; ++n)
+    {
+        if (labelIndices[n] == -1) continue;
+        if (mLabels[labelIndices[n]].phoneme == "A") labelIndexVectors[AL_A].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "C") labelIndexVectors[AL_C].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "E")
+        {
+            if (n == nLabels - 1 || labelIndices[n+1] == -1) labelIndexVectors[AL_E1].push_back(n);
+            else labelIndexVectors[AL_E2].push_back(n);
+        }
+        else if (mLabels[labelIndices[n]].phoneme == "F") labelIndexVectors[AL_F].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "H") labelIndexVectors[AL_H].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "I") labelIndexVectors[AL_I].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "J") labelIndexVectors[AL_J].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "L") labelIndexVectors[AL_L].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "M") labelIndexVectors[AL_M].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "N") labelIndexVectors[AL_N].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "O") labelIndexVectors[AL_O].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "Q") labelIndexVectors[AL_Q].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "R") labelIndexVectors[AL_R].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "S") labelIndexVectors[AL_S].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "U") labelIndexVectors[AL_U].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "AU") labelIndexVectors[AL_AU].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "W") labelIndexVectors[AL_W].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "X") labelIndexVectors[AL_X].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "Y") labelIndexVectors[AL_Y].push_back(n);
+        else if (mLabels[labelIndices[n]].phoneme == "Z") labelIndexVectors[AL_Z].push_back(n);
+    }
+    mControl->InitializeAssignmentData(AL_Z + 1, OscillatorArray::NumOscillators);
+    SoundRecordAndDrawControl::AssignmentElement* assignments = mControl->GetAssignmentData(n);
+    const OscillatorArray::Results& oscillatorResults = mOscillatorDiagram->getData();
+    for (m=0, n = AL_A; n <= AL_Z; ++n)
+    {
+        int count = 0;
+        if (!labelIndexVectors[n].empty()) assignments[n].phoneme = mLabels[labelIndexVectors[n][0]].phoneme;
+        for (int index : labelIndexVectors[n])
+        {
+            while (m > 0 && m > mLabels[index].rect.left()) --m;
+            while (m < oscillatorResults.numTimeSteps && m < mLabels[index].rect.left()) ++m;
+            for (++count; m < oscillatorResults.numTimeSteps && m < mLabels[index].rect.right(); ++m, ++count) for (int i=0; i < OscillatorArray::NumOscillators; ++i)
+                assignments[n].data[i] += oscillatorResults.data[m][i];
+        }
+        for (int i=0; i < OscillatorArray::NumOscillators; ++i) assignments[n].data[i] /= count;
+    }
 }
 
 void SoundWindow::ApplyBoxFilter()

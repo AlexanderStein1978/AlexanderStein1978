@@ -6,10 +6,11 @@
 #include <QLineEdit>
 
 
-OscillatorDiagram::OscillatorDiagram(SoundMainWindow* MW) : DiagWindow(SimpleDiagWindow, MW), mTimePixelAssignments(nullptr), mFrequencyPixelAssignments(nullptr)
+OscillatorDiagram::OscillatorDiagram(SoundMainWindow* MW, const QString& filename) : DiagWindow(SimpleDiagWindow, MW), mTimePixelAssignments(nullptr), mFrequencyPixelAssignments(nullptr)
 {
     setUnits("time [s]", "frequency [Hz]");
     mApplyImageZoom = false;
+    setWindowTitle("Oscillator Diagram " + filename);
 }
 
 OscillatorDiagram::~OscillatorDiagram()
