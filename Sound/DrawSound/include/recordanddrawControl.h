@@ -22,11 +22,19 @@ class SoundRecordAndDrawControl : public QWidget
 public:
     enum Message{ChannelCountLargerOne, NotAllDataCouldBeWritten, DecodeError};
 
+    struct AssignmentElement
+    {
+        double* data = nullptr;
+        QString phoneme;
+    };
+
     SoundRecordAndDrawControl(SoundMainWindow* MW);
     ~SoundRecordAndDrawControl();
 
     void Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleType sampleType, const char* const inputData, const int nBytes);
     void Save(const char* const inputData, const int nBytes);
+    void InitializeAssignmentData(const int numElements, const int numOscillators);
+    AssignmentElement* GetAssignmentData(int& numElements) const;
 
     inline void AddFrequencyWindow(DiagWindow* newWindow)
     {
@@ -77,6 +85,7 @@ private:
     void draw(const char* const inputData, const int nBytes);
     void writeRST();
     void createDecoder();
+    void clearAssignmentData();
 
     DecodingFor mDecodingFor = DF_Nothing;
     QComboBox *mInputSelectorBox;
@@ -89,8 +98,9 @@ private:
     const QString RST = "RST";
     QFile *mInputFile, *mOutputFile;
     QAudioFormat::SampleType mSampleType;
-    int mSampleSize, mSampleRate, mNumChannels;
+    int mSampleSize, mSampleRate, mNumChannels, mNumAssignmentElements;
     qint64 mProcessedUSec;
     std::vector<DiagWindow*> mFrequencyWindows;
     SoundMainWindow* mMW;
+    AssignmentElement* mAssignmentElements = nullptr;
 };

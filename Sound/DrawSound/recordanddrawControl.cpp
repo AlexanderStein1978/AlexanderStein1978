@@ -77,6 +77,7 @@ SoundRecordAndDrawControl::~SoundRecordAndDrawControl()
         disconnect(mDecoder);
         delete mDecoder;
     }
+    clearAssignmentData();
 }
 
 void SoundRecordAndDrawControl::showInputFileDialog()
@@ -511,4 +512,30 @@ void SoundRecordAndDrawControl::ShowMessage(Message message)
             QMessageBox::warning(this, "DrawSound", "Error: %s\n", mDecoder->errorString().toLatin1().data());
             break;
     }
+}
+
+void SoundRecordAndDrawControl::clearAssignmentData()
+{
+    if (nullptr != mAssignmentElements)
+    {
+        for (int n=0; n < mNumAssignmentElements; ++n) if (nullptr != mAssignmentElements[n].data) delete[] mAssignmentElements[n].data;
+        delete[] mAssignmentElements;
+    }
+}
+
+void SoundRecordAndDrawControl::InitializeAssignmentData(const int numElements, const int numOscillators)
+{
+    clearAssignmentData();
+    mAssignmentElements = new AssignmentElement[numElements];
+    for (int n=0; n < numElements; ++n)
+    {
+        mAssignmentElements[n].data = new double[numOscillators];
+        for (int m=0; m < numOscillators; ++m) mAssignmentElements[n].data[m] = 0.0;
+    }
+}
+
+SoundRecordAndDrawControl::AssignmentElement* SoundRecordAndDrawControl::GetAssignmentData(int& numElements) const
+{
+    numElements = mNumAssignmentElements;
+    return mAssignmentElements;
 }
