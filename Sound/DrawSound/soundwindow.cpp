@@ -13,6 +13,7 @@
 #include "maxbuffer.h"
 #include "oscillatorarray.h"
 #include "oscillatordiagram.h"
+#include "oscillatordataviewer.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -564,6 +565,10 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
     mOscillatorDiagram = new OscillatorDiagram(mControl->GetMW(), mFilename);
     mOscillatorDiagram->setData(array.getResults());
     mControl->GetMW()->showMDIChild(mOscillatorDiagram);
+
+    OscillatorDataViewer* viewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename);
+    mControl->GetMW()->showMDIChild(viewer);
+
     int n;
     SoundRecordAndDrawControl::AssignmentElement* assignmentData = mControl->GetAssignmentData(n);
     if (nullptr != assignmentData)

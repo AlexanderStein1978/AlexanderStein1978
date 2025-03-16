@@ -41,6 +41,8 @@ add_library(DrawSound STATIC
     oscillatorarray.cpp
     oscillatordiagram.h
     oscillatordiagram.cpp
+    oscillatordataviewer.h
+    oscillatordataviewer.cpp
 )
 
 target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

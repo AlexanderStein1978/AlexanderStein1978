@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-const int OscillatorArray::NumOscillators = 200;
+const int OscillatorArray::NumOscillators = 1000;
 
 namespace
 {
