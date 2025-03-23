@@ -653,31 +653,31 @@ void SoundWindow::createLabellingData()
     std::vector<int> labelIndexVectors[AL_Z + 1];
     for (n=0; n < nLabels; ++n)
     {
-        if (labelIndices[n] == -1) continue;
-        if (mLabels[labelIndices[n]].phoneme == "A") labelIndexVectors[AL_A].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "C") labelIndexVectors[AL_C].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "E")
+        if (labelsAndGaps[n] == -1) continue;
+        if (mLabels[labelsAndGaps[n]].phoneme == "A") labelIndexVectors[AL_A].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "C") labelIndexVectors[AL_C].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "E")
         {
-            if (n == nLabels - 1 || labelIndices[n+1] == -1) labelIndexVectors[AL_E1].push_back(n);
+            if (n == nLabels - 1 || labelsAndGaps[n+1] == -1) labelIndexVectors[AL_E1].push_back(n);
             else labelIndexVectors[AL_E2].push_back(n);
         }
-        else if (mLabels[labelIndices[n]].phoneme == "F") labelIndexVectors[AL_F].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "H") labelIndexVectors[AL_H].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "I") labelIndexVectors[AL_I].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "J") labelIndexVectors[AL_J].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "L") labelIndexVectors[AL_L].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "M") labelIndexVectors[AL_M].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "N") labelIndexVectors[AL_N].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "O") labelIndexVectors[AL_O].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "Q") labelIndexVectors[AL_Q].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "R") labelIndexVectors[AL_R].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "S") labelIndexVectors[AL_S].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "U") labelIndexVectors[AL_U].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "AU") labelIndexVectors[AL_AU].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "W") labelIndexVectors[AL_W].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "X") labelIndexVectors[AL_X].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "Y") labelIndexVectors[AL_Y].push_back(n);
-        else if (mLabels[labelIndices[n]].phoneme == "Z") labelIndexVectors[AL_Z].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "F") labelIndexVectors[AL_F].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "H") labelIndexVectors[AL_H].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "I") labelIndexVectors[AL_I].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "J") labelIndexVectors[AL_J].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "L") labelIndexVectors[AL_L].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "M") labelIndexVectors[AL_M].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "N") labelIndexVectors[AL_N].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "O") labelIndexVectors[AL_O].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Q") labelIndexVectors[AL_Q].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "R") labelIndexVectors[AL_R].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "S") labelIndexVectors[AL_S].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "U") labelIndexVectors[AL_U].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "AU") labelIndexVectors[AL_AU].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "W") labelIndexVectors[AL_W].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "X") labelIndexVectors[AL_X].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Y") labelIndexVectors[AL_Y].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Z") labelIndexVectors[AL_Z].push_back(n);
     }
     mControl->InitializeAssignmentData(AL_Z + 1, OscillatorArray::NumOscillators);
     SoundRecordAndDrawControl::AssignmentElement* assignments = mControl->GetAssignmentData(n);
@@ -694,7 +694,9 @@ void SoundWindow::createLabellingData()
                 assignments[n].data[i] += oscillatorResults.data[m][i];
         }
         for (int i=0; i < OscillatorArray::NumOscillators; ++i) assignments[n].data[i] /= count;
-    }*/
+    }
+    delete[] labelIndices;
+    delete[] labelsAndGaps;*/
 }
 
 void SoundWindow::ApplyBoxFilter()
