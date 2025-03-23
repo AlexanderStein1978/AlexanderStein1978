@@ -22,7 +22,7 @@ private slots:
 
 private:
     const OscillatorArray::Results& mData;
-    QLineEdit* mTimeEdit;
+    QLineEdit* mTimeEdit, *mStepSizeEdit;
     int mTimeIndex;
     double mHalfDeltaT;
 };
