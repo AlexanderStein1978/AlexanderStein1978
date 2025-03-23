@@ -629,7 +629,7 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
 
 void SoundWindow::createLabellingData()
 {
-    int n, m, b=1, nLabels = mLabels.size(), *labelIndices = new int[nLabels], *labelsAndGaps = new int[2*nLabels];
+    /*int n, m, b=1, nLabels = mLabels.size(), *labelIndices = new int[nLabels], *labelsAndGaps = new int[2*nLabels];
     for (n=0; n < nLabels; ++n) labelIndices[n] = n;
     while (0!=b)
     {
@@ -694,7 +694,7 @@ void SoundWindow::createLabellingData()
                 assignments[n].data[i] += oscillatorResults.data[m][i];
         }
         for (int i=0; i < OscillatorArray::NumOscillators; ++i) assignments[n].data[i] /= count;
-    }
+    }*/
 }
 
 void SoundWindow::ApplyBoxFilter()

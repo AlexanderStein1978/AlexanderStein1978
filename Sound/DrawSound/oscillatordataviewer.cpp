@@ -12,8 +12,8 @@
 
 
 OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const OscillatorArray::Results& data, const QString& filename)
-    : DiagWindow(SimpleDiagWindow, MW, "Data files (*.dat)", ".dat", 1), mData(data), mTimeEdit(new QLineEdit("0.0", this)), mTimeIndex(0)
-    , mHalfDeltaT(0.5 * (data.time[1] - data.time[0]))
+    : DiagWindow(SimpleDiagWindow, MW, "Data files (*.dat)", ".dat", 1), mData(data), mTimeEdit(new QLineEdit("0.0", this))
+    , mStepSizeEdit(new QLineEdit(QString::number(mData.time[1] - mData.time[0], 'g', 5))), mTimeIndex(0), mHalfDeltaT(0.5 * (data.time[1] - data.time[0]))
 {
     setWindowTitle("Oscillator Data Viewer " + filename);
     setUnits("Frequency [Hz]", "Energy [arbitrary units]");
@@ -22,6 +22,8 @@ OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const Oscillator
     SpektrumLayout->addWidget(decreaseButton, 0, 1);
     SpektrumLayout->addWidget(mTimeEdit, 0, 2);
     SpektrumLayout->addWidget(increaseButton, 0, 3);
+    SpektrumLayout->addWidget(new QLabel("step size:", this), 0, 4);
+    SpektrumLayout->addWidget(mStepSizeEdit, 0, 5);
     mTimeEdit->setValidator(new QDoubleValidator(data.time[0], data.time[data.numTimeSteps - 1], 10, mTimeEdit));
     connect(increaseButton, SIGNAL(clicked()), this, SLOT(IncreaseTime()));
     connect(decreaseButton, SIGNAL(clicked()), this, SLOT(DecreaseTime()));
@@ -30,19 +32,19 @@ OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const Oscillator
 
 void OscillatorDataViewer::DecreaseTime()
 {
-    if (mTimeIndex > 0) mTimeEdit->setText(QString::number(mData.time[--mTimeIndex], 'f', 10));
+    mTimeEdit->setText(QString::number(mTimeEdit->text().toDouble() - mStepSizeEdit->text().toDouble(), 'f', 10));
 }
 
 void OscillatorDataViewer::IncreaseTime()
 {
-    if (mTimeIndex < mData.numTimeSteps - 1) mTimeEdit->setText(QString::number(mData.time[++mTimeIndex], 'f', 10));
+    mTimeEdit->setText(QString::number(mTimeEdit->text().toDouble() + mStepSizeEdit->text().toDouble(), 'f', 10));
 }
 
 void OscillatorDataViewer::TimeChanged(const QString& value)
 {
     double newTime = value.toDouble();
-    while (mData.time[mTimeIndex] + mHalfDeltaT < newTime) ++mTimeIndex;
-    while (mData.time[mTimeIndex] - mHalfDeltaT > newTime) --mTimeIndex;
+    while (mTimeIndex < mData.numTimeSteps - 1 && mData.time[mTimeIndex] + mHalfDeltaT < newTime) ++mTimeIndex;
+    while (mTimeIndex > 0 && mData.time[mTimeIndex] - mHalfDeltaT > newTime) --mTimeIndex;
     double** currentData = Create(OscillatorArray::NumOscillators, 2);
     for (int n=0; n < OscillatorArray::NumOscillators; ++n)
     {
