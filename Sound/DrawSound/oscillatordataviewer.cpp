@@ -7,13 +7,14 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QDoubleValidator>
+#include <QComboBox>
 
 #include <cmath>
 
 
-OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const OscillatorArray::Results& data, const QString& filename)
-    : DiagWindow(SimpleDiagWindow, MW, "Data files (*.dat)", ".dat", 1), mData(data), mTimeEdit(new QLineEdit("0.0", this))
-    , mStepSizeEdit(new QLineEdit(QString::number(mData.time[1] - mData.time[0], 'g', 5))), mTimeIndex(0), mHalfDeltaT(0.5 * (data.time[1] - data.time[0]))
+OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const OscillatorArray::Results& data, const QString& filename, const std::vector<SoundDrawWindow::Label>& labels)
+    : DiagWindow(SimpleDiagWindow, MW, "Data files (*.dat)", ".dat", 1), mData(data), mLabels(labels), mTimeEdit(new QLineEdit("0.0", this))
+    , mStepSizeEdit(new QLineEdit(QString::number(mData.time[1] - mData.time[0], 'g', 5))), mLabelBox(new QComboBox(this)), mTimeIndex(0), mHalfDeltaT(0.5 * (data.time[1] - data.time[0]))
 {
     setWindowTitle("Oscillator Data Viewer " + filename);
     setUnits("Frequency [Hz]", "Energy [arbitrary units]");
@@ -24,10 +25,33 @@ OscillatorDataViewer::OscillatorDataViewer(SoundMainWindow* MW, const Oscillator
     SpektrumLayout->addWidget(increaseButton, 0, 3);
     SpektrumLayout->addWidget(new QLabel("step size:", this), 0, 4);
     SpektrumLayout->addWidget(mStepSizeEdit, 0, 5);
+    SpektrumLayout->addWidget(new QLabel("Label:", this), 0, 6);
+    SpektrumLayout->addWidget(mLabelBox, 0, 7);
     mTimeEdit->setValidator(new QDoubleValidator(data.time[0], data.time[data.numTimeSteps - 1], 10, mTimeEdit));
+    mLabelIndices = new int[mLabels.size()];
+    int n, b, nLabels = mLabels.size();
+    for (n=0; n < nLabels; ++n) mLabelIndices[n] = n;
+    while (0!=b)
+    {
+        b=0;
+        for (n=1; n < nLabels; ++n) if (mLabels[mLabelIndices[n-1]].rect.left() > mLabels[mLabelIndices[n]].rect.left())
+        {
+            b = mLabelIndices[n-1];
+            mLabelIndices[n-1] = mLabelIndices[n];
+            mLabelIndices[n] = b;
+        }
+    }
+    for (n=0; n < nLabels; ++n) mLabelBox->addItem(mLabels[mLabelIndices[n]].phoneme);
+    mLabelBox->setEditable(false);
     connect(increaseButton, SIGNAL(clicked()), this, SLOT(IncreaseTime()));
     connect(decreaseButton, SIGNAL(clicked()), this, SLOT(DecreaseTime()));
     connect(mTimeEdit, SIGNAL(textChanged(const QString&)), this, SLOT(TimeChanged(const QString&)));
+    connect(mLabelBox, SIGNAL(currentIndexChanged(int)), this, SLOT(LabelChanged(int)));
+}
+
+OscillatorDataViewer::~OscillatorDataViewer()
+{
+    delete[] mLabelIndices;
 }
 
 void OscillatorDataViewer::DecreaseTime()
@@ -38,6 +62,11 @@ void OscillatorDataViewer::DecreaseTime()
 void OscillatorDataViewer::IncreaseTime()
 {
     mTimeEdit->setText(QString::number(mTimeEdit->text().toDouble() + mStepSizeEdit->text().toDouble(), 'f', 10));
+}
+
+void OscillatorDataViewer::LabelChanged(int index)
+{
+    mTimeEdit->setText(QString::number(mLabels[mLabelIndices[index]].rect.center().x(), 'f', 10));
 }
 
 void OscillatorDataViewer::TimeChanged(const QString& value)

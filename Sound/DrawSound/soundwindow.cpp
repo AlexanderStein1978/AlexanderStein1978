@@ -566,7 +566,7 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
     mOscillatorDiagram->setData(array.getResults());
     mControl->GetMW()->showMDIChild(mOscillatorDiagram);
 
-    OscillatorDataViewer* viewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename);
+    OscillatorDataViewer* viewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename, mLabels);
     mControl->GetMW()->showMDIChild(viewer);
 
     int n;
