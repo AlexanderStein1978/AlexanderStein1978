@@ -12,6 +12,15 @@ class SoundDrawWindow : public DiagWindow
 {
     Q_OBJECT
 public:
+
+    struct Label
+    {
+        QString phoneme;
+        QRectF rect;
+        int index = -1;
+        bool isSelected = false;
+    };
+
     SoundDrawWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const int sampleRate, const int o);
     ~SoundDrawWindow();
 
@@ -29,14 +38,6 @@ protected:
     enum MouseState{MSOutside, MSInside, MSLeft, MSLTCorner, MSTop, MSTRCorner, MSRight, MSRBCorner, MSBottom, MSBLCorner};
     enum FFTSelection{FSForFTT, FSForSelectedFTT, FSNotForFTT, FSDependsOnState};
     enum Mode {MFastLabeling, MNormal};
-
-    struct Label
-    {
-        QString phoneme;
-        QRectF rect;
-        int index = -1;
-        bool isSelected = false;
-    };
 
     void ensureMouseShape(const Qt::CursorShape shape);
     std::pair<int, MouseState> getBestMouseState(const QPoint& point);
