@@ -6,6 +6,7 @@
 class FrequencyWindow;
 class QAction;
 class OscillatorDiagram;
+class OscillatorDataViewer;
 
 
 class SoundWindow : public SoundDrawWindow
@@ -70,4 +71,5 @@ private:
     PlayState mPlayState;
     double mMinLabelWidth, **mAssignmentResults = nullptr;
     OscillatorDiagram* mOscillatorDiagram = nullptr;
+    OscillatorDataViewer* mOscillatorDataViewer = nullptr;
 };
