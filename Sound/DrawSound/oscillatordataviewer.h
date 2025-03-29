@@ -14,8 +14,10 @@ class OscillatorDataViewer : public DiagWindow
 {
     Q_OBJECT
 public:
-    OscillatorDataViewer(SoundMainWindow* MW, const OscillatorArray::Results& data, const QString& filename, const std::vector<SoundDrawWindow::Label>& labels);
-    ~OscillatorDataViewer();
+    OscillatorDataViewer(SoundMainWindow* MW, const OscillatorArray::Results& data, const QString& filename);
+    virtual ~OscillatorDataViewer();
+
+    void setLabels(const std::vector<SoundDrawWindow::Label>& labels);
 
 private slots:
     void IncreaseTime();
@@ -26,8 +28,7 @@ private slots:
 
 private:
     const OscillatorArray::Results& mData;
-    const std::vector<SoundDrawWindow::Label>& mLabels;
-    int* mLabelIndices;
+    std::vector<SoundDrawWindow::Label> mLabels;
     QLineEdit* mTimeEdit, *mStepSizeEdit;
     QComboBox* mLabelBox;
     int mTimeIndex;

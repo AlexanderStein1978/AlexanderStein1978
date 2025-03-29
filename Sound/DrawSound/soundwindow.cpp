@@ -362,6 +362,7 @@ void SoundWindow::LoadLabels()
         }
     }
     createLabellingData();
+    if (nullptr != mOscillatorDataViewer) mOscillatorDataViewer->setLabels(mLabels);
     Paint();
     Saved();
 }
@@ -566,8 +567,8 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
     mOscillatorDiagram->setData(array.getResults());
     mControl->GetMW()->showMDIChild(mOscillatorDiagram);
 
-    OscillatorDataViewer* viewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename, mLabels);
-    mControl->GetMW()->showMDIChild(viewer);
+    mOscillatorDataViewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename);
+    mControl->GetMW()->showMDIChild(mOscillatorDataViewer);
 
     int n;
     SoundRecordAndDrawControl::AssignmentElement* assignmentData = mControl->GetAssignmentData(n);
