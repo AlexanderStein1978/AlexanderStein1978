@@ -31,6 +31,7 @@ public:
     NameSelectionDialog(QWidget *parent = nullptr);
 
     QString GetName();
+    void SetText(const QString& text);
 
 private:
     QLineEdit* mNameEdit;

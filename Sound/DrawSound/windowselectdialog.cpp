@@ -48,3 +48,8 @@ QString NameSelectionDialog::GetName()
 {
     return mNameEdit->text();
 }
+
+void NameSelectionDialog::SetText(const QString& text)
+{
+    mNameEdit->setText(text);
+}

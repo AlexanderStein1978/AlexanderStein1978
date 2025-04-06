@@ -271,6 +271,29 @@ void SoundWindow::WriteToFile()
     delete[] data;
 }
 
+void SoundWindow::addLabel(const QString& phoneme, const double time)
+{
+    if (mMinLabelWidth < 0.0) mMinLabelWidth = 0.02;
+    double minTime = time - 0.5 * mMinLabelWidth, maxTime = minTime + mMinLabelWidth, minInt = 0.0,  maxInt = 0.0, intOff;
+    int n, l = Daten->GetDSL();
+    for (n=0; n<l; ++n) if (Daten->GetValue(n, 0) >= minTime) break;
+    if (n==l || Daten->GetValue(n, 0) > maxTime) return;
+    while (n<l && Daten->GetValue(n, 0) <= maxTime)
+    {
+        double intensity = Daten->GetValue(n, 1);
+        if (intensity < minInt) minInt = intensity;
+        else if (intensity > maxInt) maxInt = intensity;
+    }
+    intOff = 0.1 * (maxInt - minInt);
+    Label newLabel;
+    newLabel.phoneme = phoneme;
+    newLabel.rect.setCoords(minTime, minInt - intOff, maxTime, maxInt + intOff);
+    newLabel.index = estimateLabelIndex(phoneme);
+    mLabels.push_back(newLabel);
+    Changed();
+    Paint();
+}
+
 void SoundWindow::AddLabel()
 {
     NameSelectionDialog dialog;
@@ -567,7 +590,7 @@ void SoundWindow::analyzeData(double **const Data, const int numRows)
     mOscillatorDiagram->setData(array.getResults());
     mControl->GetMW()->showMDIChild(mOscillatorDiagram);
 
-    mOscillatorDataViewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename);
+    mOscillatorDataViewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename, this);
     mControl->GetMW()->showMDIChild(mOscillatorDataViewer);
 
     int n;
