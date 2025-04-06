@@ -24,6 +24,7 @@ public:
     ~SoundWindow();
 
     void setData(double **Data, int numRows) override;
+    void addLabel(const QString& phoneme, const double time);
 
 private slots:
     void play();
