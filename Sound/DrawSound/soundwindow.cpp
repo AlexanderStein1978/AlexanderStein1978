@@ -24,9 +24,11 @@
 #include <QPainter>
 
 
-SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate) : SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
-    mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
-    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
+SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate)
+: SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename)
+, mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this))
+, mDeleteAct(new QAction("Delete", this)), mClearLabelsAct(new QAction("Clear labels", this)), mEditPhonemeAct(new QAction("Edit phoneme...", this))
+, mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -49,8 +51,10 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
     mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mAddLabelAct);
+    mPopupMenu->addAction(mEditPhonemeAct);
     mPopupMenu->addAction(LoadLabelsAct);
     mPopupMenu->addAction(mSaveLabelsAct);
+    mPopupMenu->addAction(mClearLabelsAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(WriteAnnInputAct);
     mPopupMenu->addAction(ReadAnnOutputAct);
@@ -62,8 +66,10 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
     connect(ApplyDiffMaxTransfoAct, SIGNAL(triggered()), this, SLOT(ApplyDiffMaxTransfo()));
     connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
+    connect(mEditPhonemeAct, SIGNAL(triggered()), this, SLOT(editPhoneme()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
+    connect(mClearLabelsAct, SIGNAL(triggered()), this, SLOT(clearLabels()));
     connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(WriteAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
@@ -437,6 +443,8 @@ void SoundWindow::ShowPopupMenu(const QPoint& point)
     }
     mAddLabelAct->setEnabled(nullptr != mSelectionRect);
     mSaveLabelsAct->setEnabled(!isSaved() && 0 < mLabels.size());
+    mClearLabelsAct->setEnabled(0 < mLabels.size());
+    mEditPhonemeAct->setEnabled(state.first != -1);
     SoundDrawWindow::ShowPopupMenu(point);
 }
 
@@ -790,4 +798,32 @@ void SoundWindow::ApplyDiffMaxTransfo()
         newWindow->mLabels.push_back(l);
     }
     mControl->GetMW()->showMDIChild(newWindow);
+}
+
+void SoundWindow::clearLabels()
+{
+    if (!isSaved())
+    {
+        QMessageBox::StandardButton pressedButton = QMessageBox::question(this, "Clear labels", "Do you really want to clear the labels without saving them?",
+                                                                          QMessageBox::Yes | QMessageBox::Save | QMessageBox::Cancel);
+        if (pressedButton == QMessageBox::Save) SaveLabels();
+        else if (pressedButton == QMessageBox::Cancel) return;
+    }
+    mLabels.clear();
+    Paint();
+}
+
+void SoundWindow::editPhoneme()
+{
+    int index;
+    for (index = 0; index < mLabels.size(); ++index) if (mLabels[index].isSelected) break;
+    if (index == mLabels.size()) return;
+    NameSelectionDialog dialog;
+    dialog.SetText(mLabels[index].phoneme);
+    if (dialog.exec() != QDialog::Rejected)
+    {
+        mLabels[index].phoneme = dialog.GetName();
+        Changed();
+        Paint();
+    }
 }

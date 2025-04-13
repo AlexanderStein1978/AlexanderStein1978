@@ -112,8 +112,12 @@ void OscillatorDataViewer::KeyPressed(QKeyEvent* K)
         else mKeyText = text;
         for (int i = mLabelBox->currentIndex() + 1; i != mLabelBox->currentIndex(); ++i)
         {
-            if (i == mLabelBox->count()) i=0;
-            if (mLabelBox->itemText(i) == mKeyText)
+            if (i == mLabelBox->count())
+            {
+                if (mLabelBox->currentIndex() == 0) break;
+                i=0;
+            }
+            if (mLabelBox->itemText(i).compare(mKeyText, Qt::CaseInsensitive) == 0)
             {
                 mLabelBox->setCurrentIndex(i);
                 break;

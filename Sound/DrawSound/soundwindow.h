@@ -41,6 +41,8 @@ private slots:
     void ApplyDiffMaxTransfo();
     void mouseLeftClicked(QPoint *Position) override;
     void keyPressed(QKeyEvent *K);
+    void clearLabels();
+    void editPhoneme();
 
 private:
     enum PlayState {PSPlayOnce, PSPlayContinuously, PSStopPlaying};
@@ -68,7 +70,7 @@ private:
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename, mLabelFilename, mKeyText;
     const QString mLabelOrderFilename;
-    QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
+    QAction *mAddLabelAct, *mSaveLabelsAct, *mDeleteAct, *mClearLabelsAct, *mEditPhonemeAct;
     PlayState mPlayState;
     double mMinLabelWidth, **mAssignmentResults = nullptr;
     OscillatorDiagram* mOscillatorDiagram = nullptr;
