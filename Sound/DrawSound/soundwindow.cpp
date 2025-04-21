@@ -431,7 +431,7 @@ void SoundWindow::closeEvent(QCloseEvent* i_event)
 
 void SoundWindow::ShowPopupMenu(const QPoint& point)
 {
-    auto state = getBestMouseState(point);
+    auto state = getBestMouseState(QWidget::mapFromGlobal(point));
     if (state.first != -1 && state.second != MSOutside && !mLabels[state.first].isSelected)
     {
         for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == state.first);
