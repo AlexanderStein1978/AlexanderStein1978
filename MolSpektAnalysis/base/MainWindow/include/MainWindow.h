@@ -51,7 +51,7 @@ class MainWindow : public QMainWindow
 
 	public:
 		MainWindow();
-		~MainWindow();
+		virtual ~MainWindow();
 		int getNumAtoms();
 		Atom *getAtom(int Index);
 		Atom *getAtom(QString Filename);

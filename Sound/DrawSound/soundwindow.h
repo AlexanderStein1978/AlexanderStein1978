@@ -5,15 +5,26 @@
 
 class FrequencyWindow;
 class QAction;
+class OscillatorDiagram;
+class OscillatorDataViewer;
 
 
 class SoundWindow : public SoundDrawWindow
 {
     Q_OBJECT
 
+    struct IntensityMax
+    {
+        int F = 0;
+        double I = 0.0;
+    };
+
 public:
-    SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate);
+    SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate);
     ~SoundWindow();
+
+    void setData(double **Data, int numRows) override;
+    void addLabel(const QString& phoneme, const double time);
 
 private slots:
     void play();
@@ -26,11 +37,16 @@ private slots:
     void Delete();
     void WriteAnnInput();
     void ReadAndVerifyAnnOutput();
+    void ApplyBoxFilter();
+    void ApplyDiffMaxTransfo();
     void mouseLeftClicked(QPoint *Position) override;
     void keyPressed(QKeyEvent *K);
+    void clearLabels();
+    void editPhoneme();
 
 private:
     enum PlayState {PSPlayOnce, PSPlayContinuously, PSStopPlaying};
+    enum AssignmentLabels {AL_A, AL_C, AL_E1, AL_E2, AL_F, AL_H, AL_I, AL_J, AL_L, AL_M, AL_N, AL_O, AL_Q, AL_R, AL_S, AL_U, AL_AU, AL_W, AL_X, AL_Y, AL_Z};
 
     void addLabel(const QString name);
     void startPlaying();
@@ -45,6 +61,8 @@ private:
     int getSoundData(float** data);
     int getSoundData(double** data, const int labelIndex, FFTSelection fftSelection) const;
     QString predictLabelFilename();
+    void analyzeData(double ** const Data, const int numRows);
+    void createLabellingData();
 
     QComboBox* mOutputDeviceBox;
     QAudioOutput* mAudioOutput;
@@ -52,7 +70,9 @@ private:
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename, mLabelFilename, mKeyText;
     const QString mLabelOrderFilename;
-    QAction* mAddLabelAct, *mSaveLabelsAct, *mDeleteAct;
+    QAction *mAddLabelAct, *mSaveLabelsAct, *mDeleteAct, *mClearLabelsAct, *mEditPhonemeAct;
     PlayState mPlayState;
-    double mMinLabelWidth;
+    double mMinLabelWidth, **mAssignmentResults = nullptr;
+    OscillatorDiagram* mOscillatorDiagram = nullptr;
+    OscillatorDataViewer* mOscillatorDataViewer = nullptr;
 };

@@ -8,12 +8,24 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
-add_executable(DrawSound
-    main.cpp
+add_library(DrawSound STATIC
+    include/oscillator.h
+    include/recordanddrawControl.h
+    include/soundmainwindow.h
+    boxfilterdialog.cpp
+    boxfilterdialog.h
+    definesamplesizedialog.cpp
+    definesamplesizedialog.h
     frequencywindow.cpp
     frequencywindow.h
+    maxbuffer.cpp
+    maxbuffer.h
+    patternbuffer.cpp
+    patternbuffer.h
     recordanddrawControl.cpp
-    recordanddrawControl.h
+    roundbuffer.cpp
+    roundbuffer.h
+    soundmainwindow.cpp
     windowselectdialog.cpp
     windowselectdialog.h
     sounddrawwindow.cpp
@@ -24,9 +36,16 @@ add_executable(DrawSound
     soundvector.cpp
     soundmatrix.h
     soundmatrix.cpp
+    oscillator.cpp
+    oscillatorarray.h
+    oscillatorarray.cpp
+    oscillatordiagram.h
+    oscillatordiagram.cpp
+    oscillatordataviewer.h
+    oscillatordataviewer.cpp
 )
 
-# target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(DrawSound
     DiagWindow

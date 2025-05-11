@@ -996,12 +996,17 @@ void DiagWindow::PSpektrum(QPainter &P, const QRect &A, bool PrintFN )
 	double ymin = yStart->text().toDouble(), ymax = yStop->text().toDouble();
 	if (Image != 0)
 	{
-		double xsc = Image->width() / (XMax - XMin);
-		double ysc = Image->height() / (YMax - YMin);
-		P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1, 
-						   A.height() - ScaleXHeight), Image->mirrored(),
-					QRectF((xmin - XMin) * xsc, Image->height() - (ymax - YMin) * ysc,
-						   (xmax - xmin) * xsc, (ymax - ymin) * ysc));
+		if (mApplyImageZoom)
+		{
+			double xsc = Image->width() / (XMax - XMin);
+			double ysc = Image->height() / (YMax - YMin);
+			P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
+							   A.height() - ScaleXHeight), Image->mirrored(),
+						QRectF((xmin - XMin) * xsc, Image->height() - (ymax - YMin) * ysc,
+							   (xmax - xmin) * xsc, (ymax - ymin) * ysc));
+		}
+		else P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
+							   A.height() - ScaleXHeight), Image->mirrored());
 	}
     if (nDatenS == 0) return;
 	//printf("Nach Painter\n");
@@ -1016,6 +1021,7 @@ void DiagWindow::PSpektrum(QPainter &P, const QRect &A, bool PrintFN )
     int Bymin = A.top() + ScaleTopOffset;
 	int BHeight = A.height() - ScaleTopOffset - ScaleXHeight;
 	int BWidth = A.width() - ScaleYWidth;
+	if (BWidth < 0 || BHeight < 0) return;
 	int BTop = Bymin + BHeight, BRight = Bxmin + BWidth;
 	int x1, y1, x2, y2, DStart;
     double LMLX = 0.0, LMLY = 0.0;
@@ -1025,7 +1031,7 @@ void DiagWindow::PSpektrum(QPainter &P, const QRect &A, bool PrintFN )
     for (n=1; true; n++)
 	{
 		if (n == nDatenS) n=0;
-		if ((l = Daten->GetDSL()) == 0) 
+		if ((l = Daten[n].GetDSL()) == 0)
 		{
 			if (n==0) return;
 			continue;

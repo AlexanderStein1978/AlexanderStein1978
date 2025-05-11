@@ -6,6 +6,14 @@
 #include "windowselectdialog.h"
 #include "soundvector.h"
 #include "soundmatrix.h"
+#include "roundbuffer.h"
+#include "boxfilterdialog.h"
+#include "recordanddrawControl.h"
+#include "soundmainwindow.h"
+#include "maxbuffer.h"
+#include "oscillatorarray.h"
+#include "oscillatordiagram.h"
+#include "oscillatordataviewer.h"
 
 #include <QAudioOutput>
 #include <QAction>
@@ -16,9 +24,11 @@
 #include <QPainter>
 
 
-SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString& filename, const int sampleRate) : SoundDrawWindow(control, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)),
-    mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename), mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)),
-    mSaveLabelsAct(new QAction("Save labels (...)", this)), mDeleteAct(new QAction("Delete", this)), mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
+SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate)
+: SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename)
+, mLabelOrderFilename(DATA_DIRECTORY "/Labels/Label.index"), mAddLabelAct(new QAction("Add label...", this)), mSaveLabelsAct(new QAction("Save labels (...)", this))
+, mDeleteAct(new QAction("Delete", this)), mClearLabelsAct(new QAction("Clear labels", this)), mEditPhonemeAct(new QAction("Edit phoneme...", this))
+, mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
     QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
@@ -30,16 +40,21 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     setUnits("time [s]", "intensity");
     setWindowTitle("Draw sound: " + filename);
     QAction *playAct = new QAction("Play", this), *FFTAct = new QAction("FFT", this), *FastLabelingAct = new QAction("Fast labeling", this), *LoadLabelsAct = new QAction("Load labels (...)", this);
-    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this);
+    QAction *WriteAnnInputAct = new QAction("Write ANN input...", this), *ReadAnnOutputAct = new QAction("Read ANN output...", this), *ApplyBoxFilterAct = new QAction("Apply box filter...", this);
+    QAction *ApplyDiffMaxTransfoAct = new QAction("Apply diff max transformation", this);
     FFTAct->setCheckable(true);
     mPopupMenu->addAction(playAct);
     mPopupMenu->addAction(FFTAct);
+    mPopupMenu->addAction(ApplyBoxFilterAct);
+    mPopupMenu->addAction(ApplyDiffMaxTransfoAct);
     FastLabelingAct->setCheckable(true);
     mPopupMenu->addAction(FastLabelingAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(mAddLabelAct);
+    mPopupMenu->addAction(mEditPhonemeAct);
     mPopupMenu->addAction(LoadLabelsAct);
     mPopupMenu->addAction(mSaveLabelsAct);
+    mPopupMenu->addAction(mClearLabelsAct);
     mPopupMenu->addSeparator();
     mPopupMenu->addAction(WriteAnnInputAct);
     mPopupMenu->addAction(ReadAnnOutputAct);
@@ -47,10 +62,14 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, const QString
     mPopupMenu->addAction(mDeleteAct);
     connect(playAct, SIGNAL(triggered()), this, SLOT(play()));
     connect(FFTAct, SIGNAL(toggled(bool)), this, SLOT(FFTActTriggered(bool)));
+    connect(ApplyBoxFilterAct, SIGNAL(triggered()), this, SLOT(ApplyBoxFilter()));
+    connect(ApplyDiffMaxTransfoAct, SIGNAL(triggered()), this, SLOT(ApplyDiffMaxTransfo()));
     connect(FastLabelingAct, SIGNAL(toggled(bool)), this, SLOT(setFastAssignmentMode(bool)));
     connect(mAddLabelAct, SIGNAL(triggered()), this, SLOT(AddLabel()));
+    connect(mEditPhonemeAct, SIGNAL(triggered()), this, SLOT(editPhoneme()));
     connect(LoadLabelsAct, SIGNAL(triggered()), this, SLOT(LoadLabels()));
     connect(mSaveLabelsAct, SIGNAL(triggered()), this, SLOT(SaveLabels()));
+    connect(mClearLabelsAct, SIGNAL(triggered()), this, SLOT(clearLabels()));
     connect(WriteAnnInputAct, SIGNAL(triggered()), this, SLOT(WriteAnnInput()));
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
@@ -68,6 +87,7 @@ SoundWindow::~SoundWindow()
 {
     if (nullptr != mAudioOutput) delete mAudioOutput;
     else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+    if (nullptr != mAssignmentResults) Destroy(mAssignmentResults, Daten->GetDSL());
 }
 
 void SoundWindow::play()
@@ -194,7 +214,11 @@ void SoundWindow::showFFT()
         double **realFFTData, **imaginaryFFTData;
         int FFTLength;
         getFFTData(FSForFTT, -1, FFTLength, realFFTData, imaginaryFFTData);
-        if (nullptr == mFFTWindow) mFFTWindow = new FrequencyWindow(mControl, mSampleRate);
+        if (nullptr == mFFTWindow)
+        {
+            mFFTWindow = new FrequencyWindow(mControl, mControl->GetMW(), mSampleRate);
+            mControl->GetMW()->showMDIChild(mFFTWindow);
+        }
         else mFFTWindow->clear();
         mFFTWindow->setData(realFFTData, FFTLength);
         mFFTWindow->addData(imaginaryFFTData, FFTLength);
@@ -223,7 +247,7 @@ void SoundWindow::showFFT()
             window->setUnits("frequency [Hz]", "intensity");
             window->setData(realFFTData, FFTLength);
             window->addData(imaginaryFFTData, FFTLength);
-            window->show();
+            mControl->GetMW()->showMDIChild(window);
             Destroy(realFFTData, FFTLength);
             Destroy(imaginaryFFTData, FFTLength);
         }
@@ -251,6 +275,29 @@ void SoundWindow::WriteToFile()
     int length = getSoundData(&data);
     file.write(reinterpret_cast<char*>(data), 4*length);
     delete[] data;
+}
+
+void SoundWindow::addLabel(const QString& phoneme, const double time)
+{
+    if (mMinLabelWidth < 0.0) mMinLabelWidth = 0.02;
+    double minTime = time - 0.5 * mMinLabelWidth, maxTime = minTime + mMinLabelWidth, minInt = 0.0,  maxInt = 0.0, intOff;
+    int n, l = Daten->GetDSL();
+    for (n=0; n<l; ++n) if (Daten->GetValue(n, 0) >= minTime) break;
+    if (n==l || Daten->GetValue(n, 0) > maxTime) return;
+    while (n<l && Daten->GetValue(n, 0) <= maxTime)
+    {
+        double intensity = Daten->GetValue(n, 1);
+        if (intensity < minInt) minInt = intensity;
+        else if (intensity > maxInt) maxInt = intensity;
+    }
+    intOff = 0.1 * (maxInt - minInt);
+    Label newLabel;
+    newLabel.phoneme = phoneme;
+    newLabel.rect.setCoords(minTime, minInt - intOff, maxTime, maxInt + intOff);
+    newLabel.index = estimateLabelIndex(phoneme);
+    mLabels.push_back(newLabel);
+    Changed();
+    Paint();
 }
 
 void SoundWindow::AddLabel()
@@ -343,6 +390,8 @@ void SoundWindow::LoadLabels()
             }
         }
     }
+    createLabellingData();
+    if (nullptr != mOscillatorDataViewer) mOscillatorDataViewer->setLabels(mLabels);
     Paint();
     Saved();
 }
@@ -382,7 +431,7 @@ void SoundWindow::closeEvent(QCloseEvent* i_event)
 
 void SoundWindow::ShowPopupMenu(const QPoint& point)
 {
-    auto state = getBestMouseState(point);
+    auto state = getBestMouseState(QWidget::mapFromGlobal(point));
     if (state.first != -1 && state.second != MSOutside && !mLabels[state.first].isSelected)
     {
         for (int i=0; i < mLabels.size(); ++i) mLabels[i].isSelected = (i == state.first);
@@ -394,6 +443,8 @@ void SoundWindow::ShowPopupMenu(const QPoint& point)
     }
     mAddLabelAct->setEnabled(nullptr != mSelectionRect);
     mSaveLabelsAct->setEnabled(!isSaved() && 0 < mLabels.size());
+    mClearLabelsAct->setEnabled(0 < mLabels.size());
+    mEditPhonemeAct->setEnabled(state.first != -1);
     SoundDrawWindow::ShowPopupMenu(point);
 }
 
@@ -419,13 +470,30 @@ void SoundWindow::CreateAnnInput(double ** data, int &FFTLength)
 {
     calcMinLabelWidth();
     double **realFFTData, **imaginaryFFTData;
+    int i;
     for (int n=0; n < mLabels.size(); ++n)
     {
         getFFTData(FSForSelectedFTT, n, FFTLength, realFFTData, imaginaryFFTData);
         data[n] = new double[FFTLength];
-        for(int m=0; m < FFTLength; ++m) data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+        IntensityMax IMax[10];
+        for(int m=0; m < FFTLength; ++m)
+        {
+            data[n][m] = (realFFTData[m][1] * realFFTData[m][1] + imaginaryFFTData[m][1] * imaginaryFFTData[m][1]);
+            if (m>1 && data[n][m-1] > data[n][m-2] && data[n][m-1] > data[n][m])
+            {
+                for (i = 8; i >= 0 && data[n][m-1] > IMax[i].I; --i) IMax[i+1] = IMax[i];
+                if (data[n][m-1] > IMax[i+1].I)
+                {
+                    IMax[i+1].I = data[n][m-1];
+                    IMax[i+1].F = m-1;
+                }
+            }
+        }
         Destroy(realFFTData, FFTLength);
         Destroy(imaginaryFFTData, FFTLength);
+        printf("%s ", mLabels[n].phoneme.toLatin1().data());
+        for (i=9; i>=0; --i) printf("%d ", IMax[i].F);
+        printf("\n");
     }
 }
 
@@ -513,5 +581,249 @@ void SoundWindow::keyPressed(QKeyEvent* K)
         else if (results.empty()) addLabel(mKeyText);
         else return;
         mKeyText.clear();
+    }
+}
+
+void SoundWindow::setData(double ** Data, int numRows)
+{
+    analyzeData(Data, numRows);
+    DiagWindow::setData(Data, numRows);
+}
+
+void SoundWindow::analyzeData(double **const Data, const int numRows)
+{
+    OscillatorArray array(numRows, Data[numRows-1][0] - Data[0][0]);
+    for (int r=0; r < numRows; ++r) array.setNewValue(r, Data[r][0], Data[r][1]);
+    mOscillatorDiagram = new OscillatorDiagram(mControl->GetMW(), mFilename);
+    mOscillatorDiagram->setData(array.getResults());
+    mControl->GetMW()->showMDIChild(mOscillatorDiagram);
+
+    mOscillatorDataViewer = new OscillatorDataViewer(mControl->GetMW(), mOscillatorDiagram->getData(), mFilename, this);
+    mControl->GetMW()->showMDIChild(mOscillatorDataViewer);
+
+    int n;
+    SoundRecordAndDrawControl::AssignmentElement* assignmentData = mControl->GetAssignmentData(n);
+    if (nullptr != assignmentData)
+    {
+        if (nullptr != mAssignmentResults) Destroy(mAssignmentResults, Daten->GetDSL());
+        mAssignmentResults = Create(numPoints, AL_Z + 1);
+        const OscillatorArray::Results& arrayResults = mOscillatorDiagram->getData();
+        for (int i=0; i < numRows; ++i) for (int j = AL_A; j  <= AL_Z; ++j) for (mAssignmentResults[i][j] = 0.0, n=0; n < OscillatorArray::NumOscillators; ++n)
+        {
+
+
+        }
+    }
+    /*const double radius_s = 0.005;
+    const int radius = static_cast<int>(radius_s * mSampleRate);
+    double t, a, step = 1.0 / mSampleRate;
+    MaxBuffer maxbuffer(2 * radius_s);
+    int c, r;
+    for (r=0, c = -radius; c < numRows; r++, c++)
+    {
+        if (r < numRows)
+        {
+            t = Data[r][0];
+            a = abs(Data[r][1]);
+        }
+        else
+        {
+            t += step;
+            a = 0.0;
+        }
+        if (c >= 0)
+        {
+            MaxBuffer::Observation obs = maxbuffer.analyzeNewValue(t, a);
+            if (obs != MaxBuffer::NothingObserved)
+            {
+                double max = maxbuffer.getMaxAmplitude();
+                Label newLabel;
+                newLabel.phoneme = (obs == MaxBuffer::BObserved ? "B" : "D");
+                newLabel.rect.setCoords(maxbuffer.getObsStart(), max, maxbuffer.getObsEnd(), -max);
+                if (newLabel.rect.width() < mMinLabelWidth) mMinLabelWidth = newLabel.rect.width();
+                newLabel.index = estimateLabelIndex(newLabel.phoneme);
+                mLabels.push_back(newLabel);
+                maxbuffer.clearObs();
+            }
+        }
+        else maxbuffer.newValue(t, a);
+    }
+    for (PatternBuffer::PatternObservation* obs = maxbuffer.popObservation(); nullptr != obs; obs = maxbuffer.popObservation())
+    {
+        Label newLabel;
+        newLabel.phoneme = QString::number(obs->patternIndex);
+        newLabel.rect.setCoords(obs->start, obs->maxA, obs->end, -obs->maxA);
+        if (newLabel.rect.width() < mMinLabelWidth) mMinLabelWidth = newLabel.rect.width();
+        newLabel.index = estimateLabelIndex(newLabel.phoneme);
+        mLabels.push_back(newLabel);
+    }*/
+}
+
+void SoundWindow::createLabellingData()
+{
+    /*int n, m, b=1, nLabels = mLabels.size(), *labelIndices = new int[nLabels], *labelsAndGaps = new int[2*nLabels];
+    for (n=0; n < nLabels; ++n) labelIndices[n] = n;
+    while (0!=b)
+    {
+        b=0;
+        for (n=1; n < nLabels; ++n) if (mLabels[labelIndices[n-1]].rect.left() > mLabels[labelIndices[n]].rect.left())
+        {
+            b = labelIndices[n-1];
+            labelIndices[n-1] = labelIndices[n];
+            labelIndices[n] = b;
+        }
+    }
+    double avDelta = 0.0;
+    for (n=1; n < nLabels; ++n) avDelta += mLabels[labelIndices[n]].rect.left() - mLabels[labelIndices[n-1]].rect.right();
+    avDelta /= (nLabels - 1);
+    for (n=m=0; n < nLabels; ++n)
+    {
+        if (n > 0 && mLabels[labelIndices[n]].rect.left() - mLabels[labelIndices[n-1]].rect.right() > avDelta) labelsAndGaps[m++] = -1;
+        labelsAndGaps[m++] = labelIndices[n];
+    }
+    nLabels = m;
+    std::vector<int> labelIndexVectors[AL_Z + 1];
+    for (n=0; n < nLabels; ++n)
+    {
+        if (labelsAndGaps[n] == -1) continue;
+        if (mLabels[labelsAndGaps[n]].phoneme == "A") labelIndexVectors[AL_A].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "C") labelIndexVectors[AL_C].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "E")
+        {
+            if (n == nLabels - 1 || labelsAndGaps[n+1] == -1) labelIndexVectors[AL_E1].push_back(n);
+            else labelIndexVectors[AL_E2].push_back(n);
+        }
+        else if (mLabels[labelsAndGaps[n]].phoneme == "F") labelIndexVectors[AL_F].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "H") labelIndexVectors[AL_H].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "I") labelIndexVectors[AL_I].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "J") labelIndexVectors[AL_J].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "L") labelIndexVectors[AL_L].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "M") labelIndexVectors[AL_M].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "N") labelIndexVectors[AL_N].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "O") labelIndexVectors[AL_O].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Q") labelIndexVectors[AL_Q].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "R") labelIndexVectors[AL_R].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "S") labelIndexVectors[AL_S].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "U") labelIndexVectors[AL_U].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "AU") labelIndexVectors[AL_AU].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "W") labelIndexVectors[AL_W].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "X") labelIndexVectors[AL_X].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Y") labelIndexVectors[AL_Y].push_back(n);
+        else if (mLabels[labelsAndGaps[n]].phoneme == "Z") labelIndexVectors[AL_Z].push_back(n);
+    }
+    mControl->InitializeAssignmentData(AL_Z + 1, OscillatorArray::NumOscillators);
+    SoundRecordAndDrawControl::AssignmentElement* assignments = mControl->GetAssignmentData(n);
+    const OscillatorArray::Results& oscillatorResults = mOscillatorDiagram->getData();
+    for (m=0, n = AL_A; n <= AL_Z; ++n)
+    {
+        int count = 0;
+        if (!labelIndexVectors[n].empty()) assignments[n].phoneme = mLabels[labelIndexVectors[n][0]].phoneme;
+        for (int index : labelIndexVectors[n])
+        {
+            while (m > 0 && m > mLabels[index].rect.left()) --m;
+            while (m < oscillatorResults.numTimeSteps && m < mLabels[index].rect.left()) ++m;
+            for (++count; m < oscillatorResults.numTimeSteps && m < mLabels[index].rect.right(); ++m, ++count) for (int i=0; i < OscillatorArray::NumOscillators; ++i)
+                assignments[n].data[i] += oscillatorResults.data[m][i];
+        }
+        for (int i=0; i < OscillatorArray::NumOscillators; ++i) assignments[n].data[i] /= count;
+    }
+    delete[] labelIndices;
+    delete[] labelsAndGaps;*/
+}
+
+void SoundWindow::ApplyBoxFilter()
+{
+    BoxFilterDialog dialog;
+    if (dialog.exec() == QDialog::Rejected) return;
+    const int filterRadius = dialog.getResult(), nData = Daten->GetDSL();
+    double **filteredData = Create(nData, 2), Sum = 0.0;
+    int l, c, r;
+    for (r=0, c = -filterRadius, l = - 2 * filterRadius - 1; c < nData; ++r, ++c, ++l)
+    {
+        if (r < nData) Sum += Daten->GetValue(r, 1);
+        if (c >= 0)
+        {
+            if (l >= 0) Sum -= Daten->GetValue(l, 1);
+            filteredData[c][0] = Daten->GetValue(c, 0);
+            filteredData[c][1] = Sum;
+        }
+    }
+
+    SoundWindow* newWindow = new SoundWindow(mControl, mControl->GetMW(), mFilename, mSampleRate);
+    newWindow->setWindowTitle(newWindow->windowTitle() + " BoxFilter " + QString::number(filterRadius));
+    newWindow->setData(filteredData, nData);
+    newWindow->mLabels = mLabels;
+    mControl->GetMW()->showMDIChild(newWindow);
+}
+
+void SoundWindow::ApplyDiffMaxTransfo()
+{
+    const double radius_s = 0.005;
+    const int radius = static_cast<int>(radius_s * mSampleRate), nData = Daten->GetDSL();
+    double** transformedData = Create(nData, 2), t, a, step = 1.0 / mSampleRate;
+    MaxBuffer maxbuffer(2 * radius_s);
+    int c, r;
+    for (r=0, c = -radius; c < nData; r++, c++)
+    {
+        if (r < nData)
+        {
+            t = Daten->GetValue(r, 0);
+            a = abs(Daten->GetValue(r, 1));
+        }
+        else
+        {
+            t += step;
+            a = 0.0;
+        }
+        if (c >= 0)
+        {
+            transformedData[c][0] = Daten->GetValue(c, 0);
+            transformedData[c][1] = maxbuffer.searchBroadest(t, a, Daten->GetValue(c, 0));
+        }
+        else maxbuffer.newValue(t, a);
+    }
+    SoundWindow* newWindow = new SoundWindow(mControl, mControl->GetMW(), mFilename, mSampleRate);
+    newWindow->setWindowTitle(newWindow->windowTitle() + " DiffMaxTransformed");
+    newWindow->setData(transformedData, nData);
+    //newWindow->mLabels = mLabels;
+    for (int i=0; i<10; ++i)
+    {
+        QString text;
+        double start, end, max;
+        maxbuffer.getBroadest(i, start, end, max, text);
+        if (text.isEmpty()) break;
+        Label l;
+        l.phoneme = text;
+        l.rect.setCoords(start, max, end, 0.0);
+        newWindow->mLabels.push_back(l);
+    }
+    mControl->GetMW()->showMDIChild(newWindow);
+}
+
+void SoundWindow::clearLabels()
+{
+    if (!isSaved())
+    {
+        QMessageBox::StandardButton pressedButton = QMessageBox::question(this, "Clear labels", "Do you really want to clear the labels without saving them?",
+                                                                          QMessageBox::Yes | QMessageBox::Save | QMessageBox::Cancel);
+        if (pressedButton == QMessageBox::Save) SaveLabels();
+        else if (pressedButton == QMessageBox::Cancel) return;
+    }
+    mLabels.clear();
+    Paint();
+}
+
+void SoundWindow::editPhoneme()
+{
+    int index;
+    for (index = 0; index < mLabels.size(); ++index) if (mLabels[index].isSelected) break;
+    if (index == mLabels.size()) return;
+    NameSelectionDialog dialog;
+    dialog.SetText(mLabels[index].phoneme);
+    if (dialog.exec() != QDialog::Rejected)
+    {
+        mLabels[index].phoneme = dialog.GetName();
+        Changed();
+        Paint();
     }
 }
