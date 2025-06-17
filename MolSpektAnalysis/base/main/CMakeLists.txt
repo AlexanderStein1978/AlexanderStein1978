@@ -4,7 +4,7 @@ project(MolSpektAnalysis)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(MolSpektAnalysis
 	main.cpp
@@ -12,5 +12,5 @@ add_executable(MolSpektAnalysis
 
 target_link_libraries(MolSpektAnalysis
 	MolSpektAnalysisMainWindow
-	Qt5::Widgets
+	Qt6::Widgets
 )

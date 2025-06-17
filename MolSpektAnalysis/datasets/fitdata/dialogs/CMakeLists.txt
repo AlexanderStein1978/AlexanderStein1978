@@ -4,7 +4,7 @@ project(FitDataDialogs)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(FitDataDialogs STATIC
 	include/coupledpotfitimportdialog.h
@@ -23,5 +23,5 @@ target_include_directories(FitDataDialogs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 
 target_link_libraries(FitDataDialogs
 	MolSpektAnalysisMainWindow
-	Qt5::Widgets
+	Qt6::Widgets
 )
