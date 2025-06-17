@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(FCF STATIC
 	include/fcfjdep.h
@@ -24,5 +24,5 @@ target_link_libraries(FCF
     MolSpektAnalysisMainWindow
 	TableWindow
 	Wavefuncs
-	Qt5::Widgets
+	Qt6::Widgets
 )

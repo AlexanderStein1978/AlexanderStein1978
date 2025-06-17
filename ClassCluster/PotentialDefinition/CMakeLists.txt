@@ -4,7 +4,7 @@ project(PotentialDefinition)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
 
 add_library(PotentialDefinition STATIC
     include/potentialdefinerinputdata.h

@@ -4,7 +4,7 @@ project(Wavefuncs)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(Wavefuncs STATIC
 	include/CoupledSineWaveFunc.h
@@ -21,5 +21,5 @@ target_link_libraries(Wavefuncs
 	Molecule
 	Potential
 	Residualfit
-	Qt5::Widgets
+	Qt6::Widgets
 )

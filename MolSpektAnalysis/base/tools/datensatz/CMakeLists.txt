@@ -4,7 +4,7 @@ project(Datensatz)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(Datensatz STATIC
 	include/marker.h
@@ -15,4 +15,4 @@ add_library(Datensatz STATIC
 
 target_include_directories(Datensatz PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(Datensatz Qt5::Widgets)
+target_link_libraries(Datensatz Qt6::Widgets)

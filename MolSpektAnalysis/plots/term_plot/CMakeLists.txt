@@ -4,7 +4,7 @@ project(TermPlot)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(TermPlot STATIC
 	include/TermPlot.h
@@ -18,5 +18,5 @@ target_link_libraries(TermPlot
 	DiagWindow
 	FitData
 	Tools
-	Qt5::Widgets
+	Qt6::Widgets
 )

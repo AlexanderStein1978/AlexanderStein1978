@@ -4,7 +4,7 @@ project(FitData)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(FitData STATIC
 	include/fitdata.h
@@ -18,5 +18,5 @@ target_link_libraries(FitData
 	FitDataSortFuncs
 	FitDataStructs
 	TableWindow
-	Qt5::Widgets
+	Qt6::Widgets
 )

@@ -6,7 +6,7 @@ add_definitions(-DDATA_DIRECTORY="${CMAKE_SOURCE_DIR}/ClassCluster/Data")
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(FitExecMain
     datasortfunctor.h
@@ -24,5 +24,5 @@ target_link_libraries(FitExecMain
     ParticleWatch
     Simulation
     TestHelper
-    Qt5::Widgets
+    Qt6::Widgets
 )
