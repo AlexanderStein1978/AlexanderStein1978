@@ -31,6 +31,10 @@
 #include <QMessageBox>
 
 
+using std::isnan;
+using std::isinf;
+
+
 AddSpectrum::AddSpectrum(MainWindow* MW, AddDialog *D) : DiagWindow(AddSpect, MW), m_contrast(0), Data(0), Ri(0.0), Ra(0.0), Res(0.0), PTData(0), OTData(0), UEn(0),
     m_IntensF(0), m_ownResidualFit(false)
 {
