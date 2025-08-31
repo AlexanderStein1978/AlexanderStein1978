@@ -4,7 +4,7 @@ project(ClassCluster)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster
     main.cpp
@@ -17,5 +17,5 @@ target_link_libraries(ClassCluster
     MolSpektAnalysisMainWindow
     ParticleWatch
     Simulation
-    Qt6::Widgets
+    Qt5::Widgets
 )

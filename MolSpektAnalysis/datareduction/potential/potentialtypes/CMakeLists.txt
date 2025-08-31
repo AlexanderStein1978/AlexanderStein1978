@@ -4,7 +4,7 @@ project(PotentialTypes)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialTypes STATIC
 	include/AnaPot.h
@@ -28,5 +28,5 @@ target_link_libraries(PotentialTypes PRIVATE
 	Potential
 	PotentialStructs
 	Tools
-	Qt6::Widgets
+	Qt5::Widgets
 )

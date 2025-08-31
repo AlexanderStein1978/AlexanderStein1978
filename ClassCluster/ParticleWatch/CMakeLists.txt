@@ -4,7 +4,7 @@ project(ParticleWatch)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(ParticleWatch STATIC
     include/particlewatchtable.h
@@ -24,5 +24,5 @@ target_link_libraries(ParticleWatch PRIVATE
 	MonteCarloSim
     Simulation
     TableWindow
-    Qt6::Widgets
+    Qt5::Widgets
 )

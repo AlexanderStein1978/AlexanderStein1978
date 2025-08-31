@@ -6,7 +6,7 @@ project(MolSpektAnalysis_test)
 
 include(GoogleTest)
 
-find_package(Qt6 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 
 add_executable(MolSpektAnalysis_test
 	integrationtest.h
@@ -26,7 +26,7 @@ target_link_libraries(MolSpektAnalysis_test
 	Residualfit
 	TableWindow
 	Tools
-	Qt6::Core
+	Qt5::Core
 )
 
 gtest_add_tests(TARGET MolSpektAnalysis_test)

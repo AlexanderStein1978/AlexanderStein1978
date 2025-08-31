@@ -4,7 +4,7 @@ project(IntensityHistogram)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(IntensityHistogram STATIC
 	include/intensityhistogram.h
@@ -16,5 +16,5 @@ target_include_directories(IntensityHistogram PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(IntensityHistogram
 	DiagWindow
 	Spektrum
-	Qt6::Widgets
+	Qt5::Widgets
 )

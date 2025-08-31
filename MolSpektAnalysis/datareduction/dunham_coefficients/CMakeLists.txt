@@ -4,7 +4,7 @@ project(DunhamCoefficients)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(DunhamCoefficients STATIC
 	include/duntable.h
@@ -20,5 +20,5 @@ target_link_libraries(DunhamCoefficients
 	Molecule
 	TableWindow
 	Tools
-	Qt6::Widgets
+	Qt5::Widgets
 )
