@@ -4,7 +4,7 @@ project(FitDataSortFuncs)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitDataSortFuncs STATIC
 	include/sortbyltabandprogfunctor.h
@@ -21,5 +21,5 @@ target_include_directories(FitDataSortFuncs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/i
 
 target_link_libraries(FitDataSortFuncs
 	MolSpektAnalysisMainWindow
-	Qt6::Widgets
+	Qt5::Widgets
 )

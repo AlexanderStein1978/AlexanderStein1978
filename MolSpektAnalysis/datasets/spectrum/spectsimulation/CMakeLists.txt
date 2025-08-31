@@ -4,7 +4,7 @@ project(SpectSimulation)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(SpectSimulation STATIC
 	include/simulationstateproperty.h
@@ -24,5 +24,5 @@ target_link_libraries(SpectSimulation
 	MolSpektAnalysisMainWindow
 	Potential
 	Templates
-	Qt6::Widgets
+	Qt5::Widgets
 )

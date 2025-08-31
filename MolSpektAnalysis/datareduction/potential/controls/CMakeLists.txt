@@ -4,7 +4,7 @@ project(PotentialControls)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(PotentialControls STATIC
 	include/CreateAnaPotSeriesControl.h
@@ -24,5 +24,5 @@ target_include_directories(PotentialControls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/
 target_link_libraries(PotentialControls
 	MolSpektAnalysisMainWindow
 	TableWindow
-	Qt6::Widgets
+	Qt5::Widgets
 )

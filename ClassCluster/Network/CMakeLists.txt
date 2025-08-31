@@ -4,7 +4,7 @@ project(Network)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Network REQUIRED)
+find_package(Qt5 COMPONENTS Network REQUIRED)
 
 add_library(Network STATIC
 	include/network.h
@@ -20,5 +20,5 @@ target_include_directories(Network PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(Network
 	Logging
 	Simulation
-	Qt6::Network
+	Qt5::Network
 )

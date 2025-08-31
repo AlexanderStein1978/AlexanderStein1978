@@ -4,7 +4,7 @@ project(DiagWindow)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(DiagWindow STATIC
 	include/DiagWindow.h
@@ -19,5 +19,5 @@ target_link_libraries(DiagWindow
     MdiChild
 	MolSpektAnalysisMainWindow
 	Tools
-	Qt6::Widgets
+	Qt5::Widgets
 )

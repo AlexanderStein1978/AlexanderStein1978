@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(Spektrum STATIC
     include/exportlineprofiledialog.h
@@ -36,5 +36,5 @@ target_link_libraries(Spektrum
     Progressions
     SpectSimulation
     TermPlot
-    Qt6::Widgets
+    Qt5::Widgets
 )

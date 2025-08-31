@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 
 include(GoogleTest)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(ClassCluster_test
     test_Calculation.cpp
@@ -24,7 +24,7 @@ target_link_libraries(ClassCluster_test
     TestHelper
     Tools
     gtest
-    Qt6::Widgets
+    Qt5::Widgets
 )
 
 gtest_add_tests(TARGET ClassCluster_test)

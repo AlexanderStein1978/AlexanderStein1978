@@ -4,7 +4,7 @@ project(Simulation)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 
 add_library(Simulation STATIC
     include/vector.h
@@ -39,6 +39,6 @@ target_link_libraries(Simulation
     TableWindow
     Templates
     Tools
-    Qt6::Network
-    Qt6::Widgets
+    Qt5::Network
+    Qt5::Widgets
 )

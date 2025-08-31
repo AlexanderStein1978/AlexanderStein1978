@@ -4,7 +4,7 @@ project(AboutMolSpektAnalysis)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(AboutMolSpektAnalysis STATIC
 	include/about.h
@@ -15,5 +15,5 @@ target_include_directories(AboutMolSpektAnalysis PUBLIC ${CMAKE_CURRENT_SOURCE_D
 
 target_link_libraries(AboutMolSpektAnalysis
 	Tools
-	Qt6::Widgets
+	Qt5::Widgets
 )

@@ -4,7 +4,7 @@ project(FitDataStructs)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitDataStructs STATIC
 	assign_vs_comptrans.h
@@ -14,4 +14,4 @@ add_library(FitDataStructs STATIC
 
 target_include_directories(MolSpektAnalysisStructs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(FitDataStructs Qt6::Widgets)
+target_link_libraries(FitDataStructs Qt5::Widgets)
