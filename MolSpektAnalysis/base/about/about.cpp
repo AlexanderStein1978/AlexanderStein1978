@@ -44,7 +44,7 @@ About::About()
    To solve the molecular Schr&ouml;dingers equation (central field) the algorithm from\
    <a href=\"http://www.ams.org/journals/mcom/1961-15-076/S0025-5718-1961-0129566-X/\">J. W. Cooley, <i>Mathematics of Computation</i>, <b>15</b>, 363 (1961)</a>\
    is used.</p>\
-<p>The program is free to use, the source code can be found on <a href=\"https://github.com/AlexanderStein1978/AlexanderStein1978\" Github</a>\
+<p>The program is free to use, it is licensed under the <a href=\"https://www.gnu.org/licenses/lgpl-3.0.de.html\">GNU LGPL v3</a> and the source code can be found on <a href=\"https://github.com/AlexanderStein1978/AlexanderStein1978\" Github</a>\
    If you have suggestions for improvements you can send it to me, but I cannot guarantee that I will find the time to implement all.\
    The same is true for bugs you observe. Especially, if it is a bug which significantly hampers your work, if it is a bug which leads to wrong results\
    or is a reproducible crash, I would be grateful for the information. The more significant information you provide, the easier you make it to me to\
@@ -52,7 +52,7 @@ About::About()
 <p>I do not mind if you ask me questions how to use this program.</p>\
 <p>If this program should significantly help you creating results you use for publications,\
    I would be grateful if you could cite one of our articles significant parts of the results published in were created under the use of this program:</p>\
-   You can reach to me at <a href=\"mailto:webmaster@alexandersteinchanneler1978.com</a>.\
+   You can reach to me at <a href=\"mailto:webmaster@alexandersteinchanneler1978.com\"</a>.\
 <ul>\
 <li><a href=\"http://link.springer.com/article/10.1140/epjd%2Fe2008-00089-y\">A. Stein, A. Pashov, P. F. Staanum, H. Kn&ouml;ckel and E. Tiemann,\
     <i>The European Physical Journal D</i>, <b>48</b>, 177 (2008)</a></li>\
