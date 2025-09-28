@@ -4,31 +4,31 @@ MolSpektAnalysis
 
 Author: Alexander Stein
 
-This is a program I have developed during the work on my diploma and PHD thesises in the
-group of Prof. Tiemann as a tool for the analysis of my spectrosopic results.
+This is a program I have developed during the work on my diploma and PHD thesis in the
+group of Prof. Tiemann as a tool for the analysis of my spectroscopic results.
 
-The program was partly developed under hughe time pressure and is thus by far not free from bugs.
+The program was partly developed under huge time pressure and is thus by far not free from bugs.
 Because of this I do not provide any warranty for the use, if you use it you do it purely on your own risk.
 
-I give you the advise to save your results regularily, this program is not free from crashes.
+I give you the advise to save your results regularly, this program is not free from crashes.
 
-If intendend to be used seriosly, you should double check at least a significant sample of your results
+If intended to be used seriously, you should double check at least a significant sample of your results
 obtained with this program using an independent method.
 
 The program is made using Qt.
 For numerical calculations, especially any kinds of fits, I often exercised Numerical Recipes.
-To solve the molecular Schrödingers equation (central field) the algrithm from
+To solve the molecular Schrödingers equation (central field) the algorithm from
 J. W. Cooley, Mathematics of Computation, 15, 363 (1961)
 is used.
-The program is free to use, the source code and the newes version as binaries for Windows and Linux can be
-obtained on request from me (AlexanderStein@t-online.de, AlexanderStein1978@outlook.de or
-Alexander.Stein@alumni-uni-hannover.de).
-If you have suggestions for improvements you can send it to me, but I cannot guarantee that I will find the
-time to implement all. The same is true for bugs you observe. Especially, if it is a bug which
-significantly hamperes your work, if it is a bug which leads to wrong results or is a reproducible crash,
-I would be greateful for the information. The more significant information you provide, the easier you make
-it to me to reproduce the bug, the more likely is it, that I will find the time to fix it and will provide
-you the improved version.
+The program is free to use, it is licensed under the GNU LGPL v3 which can be found at "https://www.gnu.org/licenses/lgpl-3.0.de.html">. The source code is to be found at "https://github.com/AlexanderStein1978/AlexanderStein1978" 
+If you have suggestions for improvements you can send it to me, but I cannot guarantee that I will find the time to implement all.
+The same is true for bugs you observe. Especially, if it is a bug which significantly hampers your work, if it is a bug which leads to wrong results
+or is a reproducible crash, I would be grateful for the information. The more significant information you provide, the easier you make it to me to
+reproduce the bug, the more likely is it, that I will find the time to fix it and will provide you the improved version.
+I do not mind if you ask me questions how to use this program.
+If this program should significantly help you creating results you use for publications,
+I would be grateful if you could cite one of our articles significant parts of the results published in were created under the use of this program:
+You can reach to me at "webmaster@alexandersteinchanneler1978.com"
 
 I do not mind if you ask me questions how to use this program.
 
