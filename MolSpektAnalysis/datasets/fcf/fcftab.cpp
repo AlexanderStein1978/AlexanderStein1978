@@ -1,13 +1,9 @@
 //
-// C++ Implementation: FCFTab
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2007 - 2020
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
 
 #include "fcftab.h"
 #include "MainWindow.h"
