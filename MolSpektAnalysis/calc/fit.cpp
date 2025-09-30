@@ -26,16 +26,16 @@ QTextStream* DebugStream;
 #include "ResidualFit.h"
 #include "LocalPerturbation.h"
 
-#include "../../NR_C301/code/gamma.h"
-#include "../../NR_C301/code/incgammabeta.h"
-#include "../../NR_C301/code/fitab.h"
-#include "../../NR_C301/code/svd.h"
-#include "../../NR_C301/code/fitsvd.h"
-#include "../../NR_C301/code/ludcmp.h"
-#include "../../NR_C301/code/gaussj.h"
-#include "../../NR_C301/code/fitmrq.h"
-#include "../../NR_C301/code/amoeba.h"
-#include "../../NR_C301/code/fourier.h"
+#include "../../Numerical-Recipes/src/include/gamma.h"
+#include "../../Numerical-Recipes/src/include/incgammabeta.h"
+#include "../../Numerical-Recipes/src/include/fitab.h"
+#include "../../Numerical-Recipes/src/include/svd.h"
+#include "../../Numerical-Recipes/src/include/fitsvd.h"
+#include "../../Numerical-Recipes/src/include/ludcmp.h"
+#include "../../Numerical-Recipes/src/include/gaussj.h"
+#include "../../Numerical-Recipes/src/include/fitmrq.h"
+#include "../../Numerical-Recipes/src/include/amoeba.h"
+#include "../../Numerical-Recipes/src/include/fourier.h"
 
 #include <limits>
 #include <cmath>

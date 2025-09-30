@@ -11,7 +11,7 @@
 	@author Alexander Stein <AlexanderStein@t-online.de>
 */
 
-#include "../../../NR_C301/code/nr3.h"
+#include "../../../Numerical-Recipes/src/include/nr3.h"
 
 class Transition;
 class MLRPot;
