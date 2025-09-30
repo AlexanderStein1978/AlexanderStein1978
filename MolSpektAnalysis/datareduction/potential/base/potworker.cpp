@@ -23,6 +23,10 @@
 #include <QMutex>
 
 
+using std::isnan;
+using std::isinf;
+
+
 PotWorker::PotWorker(PotFit *fit, PotentialType PotType) : noExtensions(false)
 {
     Type = PotType;
