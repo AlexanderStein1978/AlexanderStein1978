@@ -1,3 +1,10 @@
+//
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+//
+// Copyright: See README file that comes with this source code
+//
+//
+
 #include "network.h"
 #include "window.h"
 #include <QTcpSocket>

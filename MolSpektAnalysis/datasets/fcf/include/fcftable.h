@@ -1,15 +1,9 @@
 //
-// C++ Interface: fcftable
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-/**
-	@author Alexander Stein <AlexanderStein@t-online.de>
-*/
 
 
 #ifndef FCFTABLE_H

@@ -1,8 +1,5 @@
 //
-// C++ Interface: Line profile
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2021 - 2021
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //

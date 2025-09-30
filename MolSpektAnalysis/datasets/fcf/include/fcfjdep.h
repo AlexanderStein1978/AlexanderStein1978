@@ -1,13 +1,9 @@
 //
-// C++ Interface: FCFJDep
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2010 - 2019
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
 
 #ifndef FCFJDEP_H
 #define FCFJDEP_H

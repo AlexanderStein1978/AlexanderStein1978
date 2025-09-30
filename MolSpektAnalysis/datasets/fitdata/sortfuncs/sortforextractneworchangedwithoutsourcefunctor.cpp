@@ -1,13 +1,9 @@
 //
-// C++ Implementation: SortForExtractNewOrChangedWithoutSourceFunctor
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
 
 #include "sortforextractneworchangedwithoutsourcefunctor.h"
 #include "fitdata.h"

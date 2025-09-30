@@ -1,3 +1,10 @@
+//
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+//
+// Copyright: See README file that comes with this source code
+//
+//
+
 #include "potentialdefinerinputdata.h"
 
 PotentialDefinerInputData::PotentialDefinerInputData() : mNumPoints(0), mParticleIndex(0), mFirstBound(nullptr), mSecondBound(nullptr), mThirdBound(nullptr), mFourthBound(nullptr),

@@ -1,15 +1,9 @@
 //
-// C++ Implementation: termtable
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
-// Description: 
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2017
-//
-// Copyright: See COPYING file that comes with this distribution
+// Copyright: See README file that comes with this source code
 //
 //
-
 
 #include "termdata.h"
 #include "utils.h"

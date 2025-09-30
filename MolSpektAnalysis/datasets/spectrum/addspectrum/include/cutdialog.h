@@ -1,8 +1,5 @@
 //
-// C++ Interface: cutdialog
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2016
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //

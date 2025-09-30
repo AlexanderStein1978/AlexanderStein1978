@@ -1,8 +1,5 @@
 //
-// C++ Interface: LocalPerturbation
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2011 - 2021
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //

@@ -1,10 +1,8 @@
 //
-// C++ Implementation: MainWindow
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
+// Copyright: See README file that comes with this source code
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2016
-//
-// Copyright: See README file that is delivered together with this source code
 //
 //
 
