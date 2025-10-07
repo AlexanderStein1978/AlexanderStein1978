@@ -11,7 +11,7 @@
 #include <QString>
 
 
-const QString MAVersion("0.2.8.0");
+const QString MAVersion("0.2.9.0");
 
 #ifdef Q_WS_WIN
 const QString DIRSEP("\\");

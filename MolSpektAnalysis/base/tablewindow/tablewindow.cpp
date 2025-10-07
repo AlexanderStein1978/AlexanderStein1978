@@ -114,7 +114,7 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 			L->addWidget(JMLabel, 1, 2);
 			JMax = new QLineEdit(this);
 			L->addWidget(JMax, 1, 3);
-			Tab = new QTableWidget(this);
+			table = new MTable(this);
 			L->addWidget(Tab, 2, 0, 1, 4);
 			setFilter("Fit datasets (*.fdat)");
 			setFileExt(".fdat");
@@ -589,30 +589,34 @@ bool TableWindow::readData(QString Filename)
 		else if (Buffer.left(7) == "Max J: ") JMax->setText(Buffer.right(Buffer.length() - 7));
 	}
     QRegExp specialSectionStart = GetStartSpecialPartRegExp();
-	Tab->blockSignals(true);
-    bool Success = true;
-	for (r=0, cc = Tab->columnCount(); !S.atEnd(); r++)
+	bool Success = true;
+	if (Typ == FitDataSet) Success = readData(S);
+	else
 	{
-		if (Tab->rowCount() == r) Tab->setRowCount(r + 100);
-		if ((Buffer = S.readLine()).left(15) == "Column titles: ")
+		Tab->blockSignals(true);
+		for (r=0, cc = Tab->columnCount(); !S.atEnd(); r++)
 		{
-			if (Typ == -1)
+			if (Tab->rowCount() == r) Tab->setRowCount(r + 100);
+			if ((Buffer = S.readLine()).left(15) == "Column titles: ")
 			{
-				L = Buffer.right(Buffer.length() - 15).split(Spacer);
-				Tab->setColumnCount(cc = L.count());
-				Tab->setHorizontalHeaderLabels(L);
+				if (Typ == -1)
+				{
+					L = Buffer.right(Buffer.length() - 15).split(Spacer);
+					Tab->setColumnCount(cc = L.count());
+					Tab->setHorizontalHeaderLabels(L);
+				}
+				Buffer = S.readLine();
 			}
-			Buffer = S.readLine();
+			else if (!specialSectionStart.isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
+			L = Buffer.split(Spacer);
+			if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
+			for (n=0; n < lc; n++) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
+			while (n < cc) Tab->setItem(r, n++, new QTableWidgetItem(""));
 		}
-        else if (!specialSectionStart.isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
-		L = Buffer.split(Spacer);
-		if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
-		for (n=0; n < lc; n++) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
-		while (n < cc) Tab->setItem(r, n++, new QTableWidgetItem(""));
+		if (Typ != 4 && lc < cc) r--;
+		Tab->setRowCount(r);
+		Tab->blockSignals(false);
 	}
-	if (Typ != 4 && Typ != -3 && lc < cc) r--;
-	Tab->setRowCount(r);
-	Tab->blockSignals(false);
 	Saved();
 	//printf("Ende readData\n");
     return Success;
