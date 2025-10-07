@@ -11,17 +11,18 @@
 
 class QTableWidget;
 class QString;
+class FitDataCore;
 
 
 class SortForExtractNewOrChangedWithoutSourceFunctor
 {
 public:
-    SortForExtractNewOrChangedWithoutSourceFunctor(const QTableWidget * const i_Tab, const QString* const i_SourceOffsetNames, const double* const i_SourceOffset,
+    SortForExtractNewOrChangedWithoutSourceFunctor(const FitDataCore * const i_Tab, const QString* const i_SourceOffsetNames, const double* const i_SourceOffset,
                                                    const int i_NSourceOffset);
     bool operator()(const int n, const int m);
 
 private:
-    const QTableWidget* const m_Tab;
+    const FitDataCore* const m_Tab;
     const QString* const m_SourceOffsetNames;
     const double* const m_SourceOffset;
     const int m_NSourceOffset;
