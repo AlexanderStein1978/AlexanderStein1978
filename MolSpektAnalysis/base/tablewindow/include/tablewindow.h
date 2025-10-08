@@ -1,8 +1,5 @@
 //
-// C++ Interface: tablewindow
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2019
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -107,6 +104,7 @@ protected:
 	void setMaxParFits(int Max);
     bool checkAllConnections(int FileColumn);
     void shrinkAllSpectRefs(int FileColumn);
+	virtual bool readData(QTextStream& S) = 0;
 
     virtual inline QRegExp GetStartSpecialPartRegExp() const
     {

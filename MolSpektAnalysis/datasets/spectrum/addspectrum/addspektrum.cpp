@@ -1,13 +1,9 @@
 //
-// C++ Implementation: AddSpectrum
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2009 - 2020
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
 
 #include "addspektrum.h"
 #include "markedpeak.h"
@@ -29,6 +25,10 @@
 #include <cmath>
 
 #include <QMessageBox>
+
+
+using std::isnan;
+using std::isinf;
 
 
 AddSpectrum::AddSpectrum(MainWindow* MW, AddDialog *D) : DiagWindow(AddSpect, MW), m_contrast(0), Data(0), Ri(0.0), Ra(0.0), Res(0.0), PTData(0), OTData(0), UEn(0),

@@ -1,15 +1,9 @@
 //
-// C++ Implementation: MonteCarloSim
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
-// Description: 
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
-//
-// Copyright: See COPYING file that comes with this distribution
+// Copyright: See README file that comes with this source code
 //
 //
-
 
 #include "montecarlosim.h"
 #include "potential.h"

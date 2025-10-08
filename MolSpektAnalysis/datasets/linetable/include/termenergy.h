@@ -1,13 +1,9 @@
 //
-// C++ Interface: TermEnergy
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2019
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
 
 #ifndef TERMENERGY_H
 #define TERMENERGY_H

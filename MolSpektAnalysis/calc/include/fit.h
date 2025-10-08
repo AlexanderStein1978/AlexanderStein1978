@@ -1,8 +1,5 @@
 //
-// C++ Interface: fit
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2008 - 2020
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -14,7 +11,7 @@
 	@author Alexander Stein <AlexanderStein@t-online.de>
 */
 
-#include "../../../NR_C301/code/nr3.h"
+#include "../../../Numerical-Recipes/src/include/nr3.h"
 
 class Transition;
 class MLRPot;

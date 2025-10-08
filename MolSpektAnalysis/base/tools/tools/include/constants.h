@@ -1,8 +1,5 @@
 //
-// C++ Interface: constants
-//
-//
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2006 - 2020
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -14,7 +11,7 @@
 #include <QString>
 
 
-const QString MAVersion("0.2.8.0");
+const QString MAVersion("0.2.9.0");
 
 #ifdef Q_WS_WIN
 const QString DIRSEP("\\");
