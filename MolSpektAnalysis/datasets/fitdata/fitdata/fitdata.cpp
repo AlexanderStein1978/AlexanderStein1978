@@ -156,9 +156,8 @@ void FitData::clearMarkedLevels()
 
 void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const FitData * const i_fitDataToCopyFrom)
 {
-    int currentRow = fitDataCore->rowCount(), NewRowCount = currentRow + i_numLines, oldNC = fitDataCore->columnCount(), newNC = i_fitDataToCopyFrom->fitDataCore->columnCount();
+    int currentRow = fitDataCore->rowCount(), NewRowCount = currentRow + i_numLines;
     table->blockSignals(true);
-    if (newNC > oldNC) Tab->setColumnCount(newNC);
     if (currentRow > 0)
     {
         LineTable** newSources = new LineTable*[NewRowCount];
@@ -342,7 +341,7 @@ QList< LevelComb > FitData::getAvLevelComb(int iso, int comp, int vmin, int vmax
 {
     QList<LevelComb> R;
     LevelComb c;
-    int n, m, N = Tab->rowCount();
+    int n, m, N = fitDataCore->rowCount();
     for (n=0; n<N; n++) 
     {
         const BaseData* rowData = fitDataCore->getData(n);
@@ -590,16 +589,15 @@ void FitData::getData(TableLine*& Lines, int& NLines, int *&RowN,
 void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *RowN, int mv, int *Mv, int mJ, int JD, int F,
                       int Iso, bool OnlyAssignedVss, ElState* state)
 {
-    int n, b, m, MCT = 0, *CompTrans = 0, i, NR = Tab->rowCount();
+    int n, b, m, MCT = 0, *CompTrans = 0, i, NR = fitDataCore->rowCount(), nSel, *Rows;
     ElState *XState = (molecule != 0 ? molecule->getStateP(0) : 0);
     TermTable *TT = (XState != 0 ? XState->getTermTable(false) : 0);
     Transition* Trans;
-    QList<QTableWidgetSelectionRange> SL = Tab->selectedRanges();
     bool *RV = new bool[NR], *RS = new bool[NR];
-    bool WFact = (Tab->columnCount() > 12 ? Tab->horizontalHeaderItem(12)->text() == "WFact" : false);
     getViewnRows(RV);
+    table->getSelectedRows(Rows, nSel);
     for (n=0; n < NR; n++) RS[n] = false;
-    for (n=0; n < SL.count(); n++) for (m=SL[n].topRow(); m <= SL[n].bottomRow(); m++) RS[m] = true;
+    for (n=0; n < nSel; n++) RS[Rows[n]] = true;
     if (TT != 0) TT->getCompT(MCT, CompTrans);
     for (n=m=0; m < NLines && n < i_SAL; n++)
     {
@@ -667,12 +665,13 @@ void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *Ro
     delete[] RV;
     delete[] RS;
     delete[] CompTrans;
+    delete[] Rows;
     NLines = m;
 }
 
 bool FitData::checkSourceConnections()
 {
-    int n, N = Tab->rowCount(), CNSources = NSources;
+    int n, N = fitDataCore->rowCount(), CNSources = NSources;
     QMap<QString, LineTable*>& Translations = MW->getLineTableTranslations();
     bool result = true;
     if (Sources == 0)
@@ -950,7 +949,7 @@ bool FitData::readData(QString Filename)
                 }
                 IsoTab *Iso = molecule->getIso();
                 fitDataCore->setRowCount(NR);
-                int NC = Tab->columnCount(), vs;
+                int vs;
                 QList<int> stateList;
                 if (Sources != 0) delete[] Sources;
                 Sources = new LineTable*[NSources = NR];
@@ -1391,31 +1390,26 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
 
 int FitData::getNumLines(int* mv, int mJ)
 {
-    int n, R, J, N = Tab->rowCount() - NMarkedLevels;
-    for (n=R=0; n<N; n++) if (Tab->item(n, 0) != 0 && Tab->item(n, 8) != 0 ? Tab->item(n, 8)->text().toDouble() != 0 : false) 
-        if (Tab->item(n, 2) != 0 ? ((J = Tab->item(n, 2)->text().toInt()) <= mJ ? 
-             Tab->item(n, 1)->text().toInt() <= mv[J] : false) : true) R++;
+    int n, R, J, N = fitDataCore->rowCount() - NMarkedLevels;
+    for (n=R=0; n<N; n++) if ((J = fitDataCore->getJ(n)) <= mJ && fitDataCore->get_v(n) < mv[J]) R++;
     return R;
 }
 
 int FitData::getNumLines(int JD, int F, int v, int mJ, int Iso)
 {
     int N = getNumLines(), n, R;
-    for (n=R=0; n<N; n++) if (Tab->item(n, 0) != 0 && Tab->item(n, 8) != 0 ? Tab->item(n, 8)->text().toDouble() != 0 : false)
-        if ((mJ > 0 && Tab->item(n, 2) != 0 ? Tab->item(n, 2)->text().toInt() <= mJ : true) && (JD >= 0 ? 
-            JD == abs((Tab->item(n, 2) != 0 ? Tab->item(n, 2)->text().toInt() : -1) 
-                    - (Tab->item(n, 4) != 0 ? Tab->item(n, 4)->text().toInt() : -1)) : true)
-            && (Iso == -1 || Tab->item(n, 0)->text().toInt() == Iso)
-            && (F != -2 ? (n < NSources ? FC[n] == F : F == -1) : true)
-             && (v >= 0 && Tab->item(n, 1) != 0 ? (v == Tab->item(n, 1)->text().toInt()) 
-                  : (v == -1 && Tab->item(n, 1) != 0 ? Tab->item(n, 1)->text().toInt() >= 0 : true))) R++;
+    for (n=R=0; n<N; n++) if (fitDataCore->getEnergy(n) != 0.0 && (mJ == 0 || fitDataCore->getJ(n) <= mJ)
+            && (JD == 0 || JD == abs(fitDataCore->getJ(n) - fitDataCore->getJs(n)))
+            && (Iso == -1 || fitDataCore->getIso(n) == Iso)
+            && (F == -2 || (n < NSources ? FC[n] == F : F == -1))
+             && (v >= 0 ? (v == fitDataCore->get_v(n)) : (v != -1 || fitDataCore->get_v(n) >= 0))) R++;
     return R;
 }
 
 int FitData::getNumLines() const
 {
-    int n, N=0, NR = Tab->rowCount() - NMarkedLevels;
-    for (n=0; n < NR; n++) if (Tab->item(n, 0) != 0 && Tab->item(n, 8) != 0 ? Tab->item(n, 8)->text().toDouble() != 0 : false) N++;
+    int n, N=0, NR = fitDataCore->rowCount() - NMarkedLevels;
+    for (n=0; n < NR; n++) if (fitDataCore->getEnergy(n) != 0.0) N++;
     return N;
 }
 
@@ -1427,11 +1421,10 @@ int FitData::getNumProgressions(int *mv, int mJ)
     for (n=0; n<N; n++) SA[S1[n]] = n;
     delete[] S1;
     LineTable *LTab = (NSources > 0 ? Sources[SA[0]] : 0);
-    for (l = Tab->item(SA[0], 6)->text().toInt(), n=1, R=m=0; n<N; n++)
+    for (l = fitDataCore->getProgression(n), n=1, R=m=0; n<N; n++)
     {
-        if (mJ > 0 ? ((J = Tab->item(SA[n], 2)->text().toInt()) <= mJ ? 
-             Tab->item(SA[n], 1)->text().toInt() > mv[J] : true) : false) continue;
-        if ((b = Tab->item(SA[n], 6)->text().toInt()) == l && (SA[n] < NSources ? LTab == Sources[SA[n]] : true)) m++;
+        if (mJ > 0 && ((J = fitDataCore->getJ(SA[n])) > mJ || fitDataCore->get_v(SA[n]) > mv[J])) continue;
+        if ((b = fitDataCore->getProgression(SA[n])) == l && (SA[n] >= NSources || LTab == Sources[SA[n]])) m++;
         else
         {
             if (m>0 && l>0)
@@ -1446,48 +1439,48 @@ int FitData::getNumProgressions(int *mv, int mJ)
     }
     if (m>0) R++;
     //printf("\n");
-    delete SA;
+    delete[] SA;
     return R;
 }
 
 void FitData::getSourceOffset(QStringList& Names, double*& Offsets)
 {
-    int n, m, N = Tab->rowCount();
+    int n, m, N = fitDataCore->rowCount();
     QString Buffer;
     for (n=0; n<N; n++)
     {
-        for (m=0, Buffer = Tab->item(n, 5)->text(); (m < Names.count() ? Buffer != Names[m] : false); m++) ;
+        for (m=0, Buffer = fitDataCore->getSource(n).c_str(); m < Names.count() && Buffer != Names[m]; m++) ;
         if (m == Names.count() && !Buffer.isEmpty()) Names.append(Buffer);
-        for (m=0, Buffer = Tab->item(n, 7)->text(); (m < Names.count() ? Buffer != Names[m] : false); m++) ;
+        for (m=0, Buffer = fitDataCore->getSourceFile(n).c_str(); (m < Names.count() && Buffer != Names[m]); m++) ;
         if (m == Names.count() && !Buffer.isEmpty()) Names.append(Buffer);
     }
     if (Names.count() > 0) Offsets = new double[Names.count()];
     for (m=0; m < Names.count(); m++) Offsets[m] = 0.0;
     for (n=0; n < NSourceOffset; n++)
     {
-        for (m=0; (m < Names.count() ? SourceOffsetNames[n] != Names[m] : false); m++) ;
+        for (m=0; m < Names.count() && SourceOffsetNames[n] != Names[m]; m++) ;
         if (m < Names.count()) Offsets[m] = SourceOffset[n];
     }
 }
 
 QStringList FitData::getSources()
 {
-    int n, N = Tab->rowCount();
+    int n, N = fitDataCore->rowCount();
     QStringList RList;
     QString Buffer;
-    for (n=0; n<N; n++) if (!RList.contains(Buffer = Tab->item(n, 5)->text())) RList.append(Buffer);
+    for (n=0; n<N; n++) if (!RList.contains(Buffer = fitDataCore->getSource(n).c_str())) RList.append(Buffer);
     return RList;
 }
 
 void FitData::getUncertaintyStats(QList< double >& Uncert, QList< int >& Numbers)
 {
-    int i, n, N = Tab->rowCount(), vM = getvMax(), JM = getJMax();
+    int i, n, N = fitDataCore->rowCount(), vM = getvMax(), JM = getJMax();
     double U;
     for (n=0; n<N; n++) 
-        if (Tab->item(n, 1)->text().toInt() <= vM 
-            && Tab->item(n, 2)->text().toInt() <= JM) 
+        if (fitDataCore->get_v(n) <= vM
+            && fitDataCore->getJ(n) <= JM)
     {
-        U = Tab->item(n, 9)->text().toDouble();
+        U = fitDataCore->getUncertainty(n);
         for (i=0; (i < Uncert.count() ? U > Uncert[i] : false); i++) ;
         if (i < Uncert.count() ? U == Uncert[i] : false) Numbers[i]++;
         else
@@ -1500,14 +1493,14 @@ void FitData::getUncertaintyStats(QList< double >& Uncert, QList< int >& Numbers
 
 double FitData::getUncertaintyOfvibLevel(int v, int I, Spektrum* Source)
 {
-    int cv = 1000, cI = 1000, av, aI, n, m=0, M, N = Tab->rowCount(), dI, dv;
+    int cv = 1000, cI = 1000, av, aI, n, m=0, M, N = fitDataCore->rowCount(), dI, dv;
     double U;
     QList<double> Unc;
     QList<int> Num;
-    for (n=0; n<N; n++) if (Tab->item(n, 5)->text() == Source->getName())
+    for (n=0; n<N; n++) if (fitDataCore->getSource(n) == Source->getName().toStdString())
     {
-        av = Tab->item(n, 1)->text().toInt();
-        aI = Tab->item(n, 0)->text().toInt();
+        av = fitDataCore->get_v(n);
+        aI = fitDataCore->getIso(n);
         if (abs(aI - I) < abs(cI - I) || (abs(aI - I) == abs(cI - I) 
             && abs(av - v) < abs(cv - v)))
         {
@@ -1519,11 +1512,11 @@ double FitData::getUncertaintyOfvibLevel(int v, int I, Spektrum* Source)
     dI = abs(cI - I);
     dv = abs(cv - v);
     for (n=0; n<N; n++) 
-        if (Tab->item(n, 5)->text() == Source->getName() 
-            && abs(Tab->item(n, 0)->text().toInt() - I) <= dI
-            && abs(Tab->item(n, 1)->text().toInt() - v) <= dv)
+        if (fitDataCore->getSource(n) == Source->getName().toStdString()
+            && abs(fitDataCore->getIso(n) - I) <= dI
+            && abs(fitDataCore->get_v(n) - v) <= dv)
     {
-        for (m=0, U = Tab->item(n, 9)->text().toDouble(); 
+        for (m=0, U = fitDataCore->getUncertainty(n);
              m < Unc.count() && Unc[m] != U; m++) ;
         if (m < Unc.count()) Num[m]++;
         else
@@ -1538,15 +1531,17 @@ double FitData::getUncertaintyOfvibLevel(int v, int I, Spektrum* Source)
 
 void FitData::removeDataFSource()
 {
-    int n, m, N = Tab->rowCount(), NC = Tab->columnCount();
+    int n, m, N = fitDataCore->rowCount();
     QStringList S;
     QDialog *D;
     QGridLayout *L;
     QPushButton *O, *C;
     QComboBox *B;
-    QString b;
+    QString qb;
+    std::string b;
+    std::vector<int> list;
     int c;
-    for (n=0; n<N; n++) if (!S.contains(b = Tab->item(n, 5)->text())) S.append(b);
+    for (n=0; n<N; n++) if (!S.contains(qb = fitDataCore->getSource(n).c_str())) S.append(qb);
     D = new QDialog(this);
     D->setWindowTitle("MolSpektAnalysis");
     L = new QGridLayout(D);
@@ -1561,67 +1556,82 @@ void FitData::removeDataFSource()
     connect(O, SIGNAL(clicked()), D, SLOT(accept()));
     connect(C, SIGNAL(clicked()), D, SLOT(reject()));
     c = D->exec();
-    b = B->currentText();
+    b = B->currentText().toStdString();
     delete D;
     if (c == QDialog::Rejected) return;
-    for (n=0; Tab->item(n, 5)->text() != b; n++) ;
-    Tab->blockSignals(true);
-    for (m=n+1; m<N; m++) if (Tab->item(m, 5)->text() != b)
+    for (n=0; fitDataCore->getSource(n) != b; n++) ;
+    table->blockSignals(true);
+    for (m=n; m<N; m++)
     {
-        for (c=0; c < NC; c++) Tab->setItem(n, c, Tab->takeItem(m, c));
-        if (n < NSources)
+        if (fitDataCore->getSource(n) != b)
         {
-            if (m < NSources)
+            if (n < NSources)
             {
-                Sources[n] = Sources[m];
-                FC[n] = FC[m];
-                LineElStates[n] = LineElStates[m];
+                if (m < NSources)
+                {
+                    Sources[n] = Sources[m];
+                    FC[n] = FC[m];
+                    LineElStates[n] = LineElStates[m];
+                }
+                else
+                {
+                    Sources[n] = 0;
+                    FC[n] = -1;
+                    LineElStates[n] = 0;
+                }
             }
-            else
-            {
-                Sources[n] = 0;
-                FC[n] = -1;
-                LineElStates[n] = 0;
-            }
+            n++;
         }
-        n++;
+        else list.push_back(n);
     }
     NSources = n;
-    Tab->setRowCount(n);
-    Tab->blockSignals(false);
+    fitDataCore->deleteRows(list.data(), list.size());
+    fitDataCore->blockSignals(false);
 }
 
 void FitData::RemoveDoubled()
 {
-    int NR = Tab->rowCount(), n, m, c, NC = Tab->columnCount();
+    int NR = fitDataCore->rowCount(), n, m, c;
     int *SA = new int[NR], *S1 = heapSort(sortIefJFreqv), *CompT, MCT;
+    bool* toDel = new bool[NR];
+    std::vector<int> delList;
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
     if (TT != 0) TT->getCompT(MCT, CompT);
-    Tab->blockSignals(true);
-    for (n=0; n < NR; n++) SA[S1[n]] = n;
+    table->blockSignals(true);
+    for (n=0; n < NR; n++)
+    {
+        SA[S1[n]] = n;
+        toDel[n] = false;
+    }
     for (m=0, n=1; n < NR; n++) 
     {
-        if (fabs(Tab->item(SA[m], 8)->text().toDouble() - Tab->item(SA[n], 8)->text().toDouble()) < 3e-3
-            && Tab->item(SA[m], 0)->text().toInt() == Tab->item(SA[n], 0)->text().toInt()
-             && (Tab->item(SA[m], 1)->text().toInt() == Tab->item(SA[n], 1)->text().toInt()
-             || (Tab->item(SA[m], 3)->text().toInt() < 0 && Tab->item(SA[n], 3)->text().toInt() < 0))
-             && Tab->item(SA[m], 2)->text().toInt() == Tab->item(SA[n], 2)->text().toInt()
-             && Tab->item(SA[m], 4)->text().toInt() == Tab->item(SA[n], 4)->text().toInt()
-             && (n < NSources ? FC[m] == FC[n] || FC[m] < 0 || FC[n] < 0 || FC[m] > MCT || FC[n] > MCT || CompT[FC[m]] < 0 
-                        || CompT[FC[n]] < 0 : true)) 
+        if (fabs(fitDataCore->getEnergy(SA[m]) - fitDataCore->getEnergy(SA[n])) < 3e-3
+            && fitDataCore->getIso(SA[m]) == fitDataCore->getIso(SA[n])
+             && (fitDataCore->get_v(SA[m]) == fitDataCore->get_v(SA[n])
+             || (stoi(fitDataCore->get_vs(SA[m])) < 0 && stoi(fitDataCore->get_vs(SA[n])) < 0))
+             && fitDataCore->getJ(SA[m]) == fitDataCore->getJ(SA[n])
+             && fitDataCore->getJs(SA[m]) == fitDataCore->getJs(SA[n])
+             && (n >= NSources || FC[m] == FC[n] || FC[m] < 0 || FC[n] < 0 || FC[m] > MCT || FC[n] > MCT || CompT[FC[m]] < 0 || CompT[FC[n]] < 0))
         {
-            if (Tab->item(SA[m], 7)->text() == Tab->item(SA[n], 7)->text() || Tab->item(SA[n], 7)->text() == "")
-                Tab->setItem(SA[n], 0, 0);
+            if (fitDataCore->getSourceFile(SA[m]) == fitDataCore->getSourceFile(SA[n]) || fitDataCore->getSourceFile(SA[n]) == "")
+            {
+                toDel[n] = true;
+                delList.push_back(n);
+            }
             else 
             {
-                if (Tab->item(SA[m], 7)->text() == "") Tab->setItem(SA[m], 0, 0);
+                if (fitDataCore->getSourceFile(SA[m]) == "")
+                {
+                    toDel[n] = true;
+                    delList.push_back(n);
+                }
                 m=n;
             }
         }
         else m=n;
     }
-    for (n=0; (n < NR ? Tab->item(n, 0) != 0 : false); n++) ;
-    for (m=n+1; m < NR; m++) if (Tab->item(m, 0) != 0)
+    for (n=0; (n < NR && toDel[n] == false); n++) ;
+    for (m=n+1; m < NR; m++) if (toDel[n] == false)
     {
         if (n < NSources)
         {
@@ -1638,15 +1648,15 @@ void FitData::RemoveDoubled()
                 LineElStates[n] = 0;
             }
         }
-        for (c=0; c < NC; c++) Tab->setItem(n, c, Tab->takeItem(m, c));
         n++;
     }
     if (n < NSources) NSources = n;
-    Tab->setRowCount(n);
-    Tab->blockSignals(false);
+    fitDataCore->deleteRows(delList.data(), delList.size());
+    table->blockSignals(false);
     Changed();
     delete[] SA;
     delete[] S1;
+    delete[] toDel;
 }
 
 void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
