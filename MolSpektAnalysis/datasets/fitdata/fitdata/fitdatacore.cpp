@@ -382,8 +382,7 @@ int FitDataCore::addMarkedLevel(int& TE, Spektrum* Source)
 {
 	beginInsertRows();
 	int R = mData.size();
-    mData.resize(R+1);
-	BaseData* element = mData[R];
+	BaseData* element = new BaseData;
 	element->isotope = TE.Iso;
 	element->v = TE.v;
 	element->J = TE.J;
@@ -395,6 +394,7 @@ int FitDataCore::addMarkedLevel(int& TE, Spektrum* Source)
 	element->obs_calc = TE.dev;
 	element->devR = TE.DevR;
 	element->secondState = TE.State->getName();
+	mData.push_back(element);
 	endInsertRows();
     return R;
 }
@@ -405,16 +405,24 @@ int FitDataCore::addRow(const int cr)
 	int r=0, nr = mData.size();
 	const_iterator<BaseData*> it;
 	for (it = mData.begin(); r < cr; ++r) ++it;
-	mData.insert(it, new TermEnergy);
+	mData.insert(it, new BaseData);
 	endInsertRows();
 	return nr;
 }
 
-void FitDataCore::addRow(const BaseData& data)
+void FitDataCore::addRow(const BaseData* data)
 {
 	beginInsertRows();
 	mData.push_back(data);
 	endInsertRows();
+}
+
+void FitDataCore::setRow(BaseData *const data, const int row)
+{
+	delete mData[row];
+	mData[row] = data;
+	QModelIndex index1 = createIndex(row, fdcIso), index2 = createIndex(row, fdcLineElState);
+	emit dataChanged(index1, index2, Qt::EditRole);
 }
 
 void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDataCore& data)
@@ -443,10 +451,25 @@ void FitDataCore::deleteRows(const int *indices, const int numRows)
 {
 	beginRemoveRows();
 	int numDeleted = 0, size = mData.size(), i, j;
-	for (i=0; i < rowEnd; ++i) mData[indices[i]] = nullptr;
+	for (i=0; i < rowEnd; ++i)
+	{
+		delete mData[indices[i]];
+		mData[indices[i]] = nullptr;
+	}
 	for (i=0; i < mData[i] == nullptr && i < size; ++i) ;
 	for (j=i+1; j < size; j++) if (mData[j] != nullptr) mData[i++] = mData[j];
 	mData.resize(i);
+	endRemoveRows();
+}
+
+void FitDataCore::deleteRow(const int index)
+{
+	beginRemoveRows();
+	int count = 0;
+	std::vector<BaseData*>::const_iterator it;
+	for (it = mData.begin(); it != mData.end() && count < index; ++it) ++count;
+	delete mData[*it];
+	mData.erase(it);
 	endRemoveRows();
 }
 
@@ -469,7 +492,7 @@ const std::string & FitDataCore::get_vs(const int row) const
 
 void FitDataCore::set_vs(const int row, const std::string& vs)
 {
-	mData[row] = vs;
+	mData[row]->vs = vs;
 	QModelIndex index = createIndex(row, fdcvs);
 	emit dataChanged(index, index, Qt::EditRole);
 }
@@ -479,14 +502,35 @@ int FitDataCore::getJ(const int row) const
 	return mData[row]->J;
 }
 
+void FitDataCore::setJ(const int row, const int J)
+{
+	mData[row]->J = J;
+	QModelIndex index = createIndex(row, fdcJ);
+	emit dataChanged(index, index, Qt::EditRole);
+}
+
 int FitDataCore::getJs(const int row) const
 {
 	return mData[row]->Js;
 }
 
+void FitDataCore::setJs(const int row, const int Js)
+{
+	mData[row]->Js = Js;
+	QModelIndex index = createIndex(row, fdcJs);
+	emit dataChanged(index, index, Qt::EditRole);
+}
+
 int FitDataCore::getIso(const int row) const
 {
 	return mData[row]->isotope;
+}
+
+void FitDataCore::setIso(const int row, const int iso)
+{
+	mData[row]->isotope = iso;
+	QModelIndex index = createIndex(row, fdcIso);
+	emit dataChanged(index, index, Qt::EditRole);
 }
 
 const std::string & FitDataCore::getSource(const int row) const
@@ -506,6 +550,11 @@ const std::string & FitDataCore::getSourceFile(const int row) const
 	return mData[row]->file;
 }
 
+void double FitDataCore::getObsCalc(const int row) const
+{
+	return mData[row]->obs_calc;
+}
+
 void FitDataCore::setObsCalc(const int row, const double obsCalc)
 {
 	mData[row]->obs_calc = obsCalc;
@@ -523,9 +572,23 @@ double FitDataCore::getUncertainty(const int row) const
 	return mData[row]->uncert;
 }
 
+void FitDataCore::setUncertainty(const int row, const double uncertainty)
+{
+	mData[row]->uncert = uncertainty;
+	QModelIndex index = createIndex(row, fdcUncert);
+	emit dataChanged(index, index, Qt::EditRole);
+}
+
 double FitDataCore::getEnergy(const int row) const
 {
 	return mData[row]->energy;
+}
+
+void FitDataCore::setEnergy(const int row, const double energy)
+{
+	mData[row]->energy = energy;
+	QModelIndex index = createIndex(row, fdcEnergy);
+	emit dataChanged(index, index, Qt::EditRole);
 }
 
 int FitDataCore::getProgression(const int row) const
@@ -533,11 +596,23 @@ int FitDataCore::getProgression(const int row) const
 	return mData[row]->prog;
 }
 
+void FitDataCore::setProgression(const int row, const int progression)
+{
+	mData[row]->prog = progression;
+	QModelIndex index = createIndex(row, fdcProg);
+	emit dataChanged(index, index, Qt::EditRole);
+}
+
 void FitDataCore::setSecondState(const int row, const std::string& state)
 {
 	mData[row]->secondState = state;
 	QModelIndex index = createIndex(row, fdcLineElState);
 	emit dataChanged(index, index, Qt::EditRole);
+}
+
+double FitDataCore::getDevRatio(const int row) const
+{
+	return mData[row]->devR;
 }
 
 void FitDataCore::setDevRatio(const int row, const double DevR)

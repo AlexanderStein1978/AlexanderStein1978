@@ -9,19 +9,19 @@
 #define SORTFUNCTIONS_H
 
 
-class QTableWidget;
+class FitDataCore;
 
 
-bool sortByProg(const QTableWidget *const Tab, const int n, const int m);
-bool sortIvJFreqF(const QTableWidget *const Tab, const int n, const int m);
-bool SortvsIvJ(const QTableWidget *const Tab, const int n, const int m);
-bool sortIefJFreq(const QTableWidget *const Tab, const int n, const int m);
-bool sortIefJvFreq(const QTableWidget *const Tab, const int n, const int m);
-bool sortIefJFreqv(const QTableWidget *const Tab, const int n, const int m);
-bool sortbyDeviation(const QTableWidget *const Tab, const int n, const int m);
-bool sortbyDevR(const QTableWidget *const Tab, const int n, const int m);
-bool sortforTFGS(const QTableWidget *const Tab, const int n, const int m);
-bool sortByElState(const QTableWidget *const Tab, const int n, const int m);
-bool sortForExtractNewOrChanged(const QTableWidget* const Tab, const int n, const int m);
+bool sortByProg(const FitDataCore *const Tab, const int n, const int m);
+bool sortIvJFreqF(const FitDataCore *const Tab, const int n, const int m);
+bool SortvsIvJ(const FitDataCore *const Tab, const int n, const int m);
+bool sortIefJFreq(const FitDataCore *const Tab, const int n, const int m);
+bool sortIefJvFreq(const FitDataCore *const Tab, const int n, const int m);
+bool sortIefJFreqv(const FitDataCore *const Tab, const int n, const int m);
+bool sortbyDeviation(const FitDataCore *const Tab, const int n, const int m);
+bool sortbyDevR(const FitDataCore *const Tab, const int n, const int m);
+bool sortforTFGS(const FitDataCore *const Tab, const int n, const int m);
+bool sortByElState(const FitDataCore *const Tab, const int n, const int m);
+bool sortForExtractNewOrChanged(const FitDataCore* const Tab, const int n, const int m);
 
 #endif
