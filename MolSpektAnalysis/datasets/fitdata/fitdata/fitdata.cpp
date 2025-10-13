@@ -7,6 +7,7 @@
 
 #include "fitdata.h"
 #include "fitdatasortfunctions.h"
+#include "fitdatacoresortfunctor.h"
 #include "sortforextractneworchangedwithoutsourcefunctor.h"
 #include "sortbyltabandprogfunctor.h"
 #include "linetable.h"
@@ -310,7 +311,7 @@ void FitData::DeleteRows()
         }
     }
     bool* deleted = new bool[R];
-    memset(deleted, 0, R);
+    memset(deleted, 0, sizeof(bool) * R);
     for (n=0; n < N; ++n) deleted[Rows[n]] = true;
     for (j=0; j < N && !deleted[n]; j++) ;
     for (k=j+1; k < n; k++) if (!deleted[n])
@@ -570,7 +571,7 @@ void FitData::getData(TableLine*& Lines, int& NLines, int JD, int F, int v, int 
 }
 
 void FitData::getData(TableLine*& Lines, int& NLines, int *&RowN,
-                      bool sortFuncs(const QTableWidget *const Tab, const int n, const int m), int *mv, int mJ)
+                      bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv, int mJ)
 {
     if ((NLines = (mv != 0 ? getNumLines(mv, mJ) : getNumLines())) != 0)
     {
@@ -1661,24 +1662,24 @@ void FitData::RemoveDoubled()
 
 void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
 {
-    int n, c, N = Tab->rowCount(), C = Tab->columnCount();
-    Tab->blockSignals(true);
+    int n, N = fitDataCore->rowCount();
+    table->blockSignals(true);
     for (n = N - NMarkedLevels; n<N; n++)
     {
-        if (Tab->item(n, 0)->text().toInt() != TE.Iso) continue;
-        if (Tab->item(n, 1)->text().toInt() != TE.v) continue;
-        if (Tab->item(n, 2)->text().toInt() != TE.J) continue;
-        if (Tab->item(n, 5)->text() != Source->getName()) continue;
-        if (Tab->item(n, 7)->text() != Source->getFileName()) continue;
-        if (fabs(Tab->item(n, 8)->text().toDouble() - TE.E) < 1e-4) break;
+        if (fitDataCore->getIso(n) != TE.Iso) continue;
+        if (fitDataCore->get_v(n) != TE.v) continue;
+        if (fitDataCore->getJ(n) != TE.J) continue;
+        if (fitDataCore->getSource(n) != Source->getName().toStdString()) continue;
+        if (fitDataCore->getSourceFile(n) != Source->getFileName().toStdString()) continue;
+        if (fabs(fitDataCore->getEnergy(n) - TE.E) < 1e-4) break;
     }
     if (n==N)
     {
-        printf("FitData::removeMarkedLevel error: Levels cannot be found!");
+        printf("FitData::removeMarkedLevel error: Level cannot be found!");
         return;
     }
-    for (n++; n<N; n++) for (c=0; c<C; c++) Tab->setItem(n-1, c, Tab->takeItem(n, c));
-    for (n=1; n < NSources; n++)
+    fitDataCore->deleteRow(n);
+    for (n+=1 ; n < NSources; n++)
     {
         FC[n-1] = FC[n];
         Sources[n-1] = Sources[n];
@@ -1692,68 +1693,76 @@ void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
         LineElStates[NSources - 1] = 0;
     }
     NMarkedLevels--;
-    Tab->setRowCount(N-1);
-    Tab->blockSignals(false);
+    table->blockSignals(false);
 }
 
 void FitData::removeSingleLines()
 {
-    int n, m, c, N = Tab->rowCount(), C = Tab->columnCount(), lc;
+    int n, m, c, N = fitDataCore->rowCount(), lc;
     int *SA = new int[N], *S1 = heapSort(sortByProg);
+    bool* del = new bool[N];
+    memset(del, 0, sizeof(bool) * N);
     for (n=0; n<N; n++) SA[S1[n]] = n;
     delete[] S1;
-    Tab->blockSignals(true);
-    for (n = lc = 1; n < N - NMarkedLevels; n++, lc++) 
-        if (Tab->item(n, 6)->text().toInt() != Tab->item(n-1, 6)->text().toInt() || Sources[n-1] != Sources[n]) 
+    table->blockSignals(true);
+    for (n = lc = 1; n < N - NMarkedLevels; n++, lc++) if (fitDataCore->getProgression(SA[n]) != fitDataCore->getProgression(SA[n-1]) || Sources[SA[n-1]] != Sources[SA[n]])
     {
-        if (lc == 1 && Tab->item(n-1, 3)->text() != "TE" && Tab->item(n-1, 3)->text().toInt() >= -1) Tab->setItem(n-1, 0, 0);
+        if (lc == 1 && fitDataCore->get_vs(SA[n-1]) != "TE" && stoi(fitDataCore->get_vs(SA[n-1])) >= -1) del[SA[n]] = true;
         lc = 0;
     }
-    if (lc == 1) Tab->setItem(n-1, 0, 0);
-    for (n=0; (n<N ? Tab->item(n, 0) != 0 : false); n++) ;
-    for (m=n+1; m<N; m++) if (Tab->item(m, 0) != 0)
+    if (lc == 1) del[SA[n-1]] = true;
+    for (n=0; n<N && !del[n]; n++) ;
+    for (m=n+1; m<N; m++)
     {
-        for (c=0; c<C; c++) Tab->setItem(n, c, Tab->takeItem(m, c));
-        if (m < NSources)
+        if (!del[m])
         {
-            LineElStates[n] = LineElStates[m];
-            FC[n] = FC[m];
-            Sources[n++] = Sources[m];
+            if (m < NSources)
+            {
+                LineElStates[n] = LineElStates[m];
+                FC[n] = FC[m];
+                Sources[n++] = Sources[m];
+            }
+            else if (n < NSources)
+            {
+                LineElStates[n] = 0;
+                FC[n] = -1;
+                Sources[n++] = 0;
+            }
+            else n++;
         }
-        else if (n < NSources)
-        {
-            LineElStates[n] = 0;
-            FC[n] = -1;
-            Sources[n++] = 0;
-        }
-        else n++;
+        else fitDataCore->deleteRow(n);
     }
-    Tab->setRowCount(n);
-    Tab->blockSignals(false);
+    table->blockSignals(false);
     if (n < NSources) NSources = n;
     Changed();
 }
 
 void FitData::selectDataFSource(QString Source)
 {
-    int n, t, N = Tab->rowCount(), C = Tab->columnCount() - 1;
-    QList<QTableWidgetSelectionRange> L = Tab->selectedRanges();
-    Tab->blockSignals(true);
-    for (n=0; n < L.count(); n++) Tab->setRangeSelected(L[n], false);
+    int n, t, N = fitDataCore->rowCount(), C = fitDataCore->columnCount();
+    std::string source = Source.toStdString();
+    QItemSelectionModel* model = new QItemSelectionModel;
+    table->blockSignals(true);
     for (n=0; n < N; n++)
     {
-        while (n<N ? Tab->item(n, 5)->text() != Source : false) n++;
+        while (n<N && fitDataCore->getSource(n) != source) n++;
         t=n;
-        while (n<N ? Tab->item(n, 5)->text() == Source : false) n++;
-        if (n>t) Tab->setRangeSelected(QTableWidgetSelectionRange(t, 0, n-1, C), true);
+        while (n<N && fitDataCore->getSource(n) == source) n++;
+        if (n>t)
+        {
+            QModelIndex topLeft = fitDataCore->getIndex(t, 0), bottomRight = fitDataCore->getIndex(n-1, C);
+            QItemSelection newSelection(topLeft, bottomRight);
+            model->select(newSelection, QItemSelectionModel::Select);
+        }
     }
-    Tab->blockSignals(false);
+    table->setSelectionModel(model);
+    table->blockSignals(false);
     emit SelChanged();
 }
 
 void FitData::addData(TableLine* Lines, int NLines)
 {
-    int n, m = Tab->rowCount(), sigDig, i, j;
+    int n, m = fitDataCore->rowCount(), sigDig, i, j;
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
     int *CompZ = (TT != 0 ? TT->getCompZ() : 0), NFC = (TT != 0 ? TT->getNumComp() : 1);
     if (Sources != 0)
@@ -1792,38 +1801,36 @@ void FitData::addData(TableLine* Lines, int NLines)
             LineElStates[n] = 0;
         }
     }
-    Tab->blockSignals(true);
-    Tab->setRowCount(NSources);
+    table->blockSignals(true);
+    fitDataCore->setRowCount(NSources);
     for (n=0; n < NLines; n++, m++)
     {
         FC[m] = (CompZ != 0 && Lines[n].FC >= 0 && Lines[n].FC < NFC ? CompZ[Lines[n].FC] : Lines[n].FC);
-        Tab->setItem(m, 0, new QTableWidgetItem(QString::number(Lines[n].Iso)));
-        Tab->setItem(m, 1, new QTableWidgetItem(QString::number(Lines[n].vss)));
-        Tab->setItem(m, 2, new QTableWidgetItem(QString::number(Lines[n].Jss)));
-        Tab->setItem(m, 3, 
-                   new QTableWidgetItem((Lines[n].vs != -1 ? QString::number(Lines[n].vs)
-                                                      : (Lines[n].isTE ? "TE" : "nA"))));
-        Tab->setItem(m, 4, new QTableWidgetItem(QString::number(Lines[n].Js)));
-        if ((Sources[n] = Lines[n].LTab) != 0) Tab->setItem(m, 5, new QTableWidgetItem(Sources[n]->getName()));
-        else if (!Lines[n].SourceName.isEmpty()) Tab->setItem(m, 5, new QTableWidgetItem(Lines[n].SourceName)); 
+        fitDataCore->setIso(m, Lines[n].Iso);
+        fitDataCore->set_v(m, Lines[n].vss);
+        fitDataCore->setJ(m, Lines[n].Jss);
+        fitDataCore->set_vs(m, (Lines[n].vs != -1 ? std::to_string(Lines[n].vs) : (Lines[n].isTE ? "TE" : "nA")));
+        fitDataCore->setJs(m, Lines[n].Js);
+        if ((Sources[n] = Lines[n].LTab) != 0) fitDataCore->setSource(m, Sources[n]->getName().toStdString());
+        else if (!Lines[n].SourceName.isEmpty()) fitDataCore->setSource(m, Lines[n].SourceName.toStdString());
         else
         {
             i = Lines[n].File.lastIndexOf(QRegExp("[\\/]")) + 1;
             j = Lines[n].File.indexOf('.', i);
-            Tab->setItem(m, 5, new QTableWidgetItem(Lines[n].File.mid(i, j-i)));
+            fitDataCore->setSource(m, Lines[n].File.mid(i, j-i).toStdString());
         }
         LineElStates[m] = Lines[n].State;
         if (LineElStates[m] == 0 && Sources[m] != 0) LineElStates[m] = Sources[m]->getElState();
-        Tab->setItem(m, 6, new QTableWidgetItem(QString::number(Lines[n].PN)));
-        Tab->setItem(m, 7, new QTableWidgetItem(Lines[n].File));
+        fitDataCore->setProgression(m, Lines[n].PN);
+        fitDataCore->setSourceFile(m, Lines[n].File.toStdString());
         sigDig = -int(floor(log10(Lines[n].err)));
         if (sigDig < 4) sigDig = 4;
-        Tab->setItem(m, 8, new QTableWidgetItem(QString::number(Lines[n].WN, 'f', sigDig)));
-        Tab->setItem(m, 9, new QTableWidgetItem(QString::number(Lines[n].err, 'f', sigDig)));
-        Tab->setItem(m, 10, new QTableWidgetItem(QString::number(Lines[n].dev, 'f', sigDig)));
-        Tab->setItem(m, 11, new QTableWidgetItem(QString::number(Lines[n].DevR, 'f', 4)));
+        fitDataCore->setEnergy(m, Lines[n].WN);
+        fitDataCore->setUncertainty(m, Lines[n].err);
+        fitDataCore->setObsCalc(m, Lines[n].dev);
+        fitDataCore->setDevRatio(m, Lines[n].DevR);
     }
-    Tab->blockSignals(false);
+    table->blockSignals(false);
     delete[] Lines;
     Changed();
 }
@@ -1885,7 +1892,7 @@ void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
     Tab->blockSignals(true);
     for (i=0; i<N; ++i)
     {
-        Tab->item(i, fdcObsCalc)->setText(zero);
+        Tab->item(i, FitDataCore::fdcObsCalc)->setText(zero);
         Tab->item(i, fdcDevR)->setText(zero);
         intSort[inSort[i]] = i;
     }
@@ -2788,4 +2795,9 @@ ResidualFit* FitData::getResidualFit(ElState * const i_state, const int i_Iso, c
     for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
         if ((*it)->getIso() == i_Iso && (*it)->getv() == i_v && (*it)->getComp() == i_comp && (*it)->getStateName() == i_state->getName()) return *it;
     return 0;
+}
+
+int *FitData::heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const
+{
+    return utils::heapSort(FitDataCoreSortFunctor(Tab, sortFuncs), getNumLines());
 }

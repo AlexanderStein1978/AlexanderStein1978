@@ -44,7 +44,7 @@ class FitData : public TableWindow
 		
         void getData(TableLine *&Lines, int &NLines, int JD = -1, int F = -2, int v = -2, int mJ = 0, int Iso = -1, ElState* state = 0);
 		void getData(TableLine *&Lines, int &NLines, int *&RowN,
-                     bool sortFuncs(const QTableWidget *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
+                     bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
 		void setData(TableLine *Lines, int NLines);
 		void addData(TableLine *Lines, int NLines);
 		ElState *getElState() override;
@@ -175,6 +175,7 @@ class FitData : public TableWindow
         void prepareForExtractNewOrChanged(const FitData *const i_fitDataOld, const int i_NRnew, const int i_NROld, const bool i_withSources, const bool i_subtractSourceOffsets, int *const io_Onew, int *const io_Oold) const;
         sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld, const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
+		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
 		
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;

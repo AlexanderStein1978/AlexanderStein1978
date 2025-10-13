@@ -49,24 +49,33 @@ class FitDataCore : public QAbstractTableModel
 		void getJE(int *R, int N, int *J, double *E);
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
 		int addRow(const int cr);
-		void setRow(const BaseData& data, const int row);
+		void setRow(BaseData* const data, const int row);
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
+		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
 		int get_v(const int row) const;
 		void set_v(const int row, const int v);
 		const std::string& get_vs(const int row) const;
 		void set_vs(const int row, const std::string& vs);
 		int getJ(const int row) const;
+		void setJ(const int row, const int J);
 		int getJs(const int row) const;
+		void setJs(const int row, const int Js);
 		int getIso(const int row) const;
+		void setIso(const int row, const int iso);
 		const std::string& getSource(const int row) const;
 		void setSource(const int row, const std::string& source);
 		const std::string& getSourceFile(const int row) const;
 		void setSourceFile(const int row, const std::string& filename);
 		int getProgression(const int row) const;
+		void setProgression(const int row, const int progression);
 		double getEnergy(const int row) const;
+		void setEnergy(const int row, const double energy);
 		double getUncertainty(const int row) const;
+		void setUncertainty(const int row, const double uncertainty);
+		double getObsCalc(const int row) const;
 		void setObsCalc(const int row, const double obsCalc);
+		double getDevRatio(const int row) const;
 		void setDevRatio(const int row, const double DevR);
 		const std::string& getOtherState(const int row) const;
 		void setSecondState(const int row, const std::string& state);
@@ -89,6 +98,11 @@ class FitDataCore : public QAbstractTableModel
 		inline const BaseData* getData(const int row) const
 		{
 			return mData[row];
+		}
+
+		inline QModelIndex getIndex(const int row, const int column) const
+		{
+			return createIndex(row, column);
 		}
 
 	private:

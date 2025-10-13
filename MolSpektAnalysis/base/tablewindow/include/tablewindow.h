@@ -104,7 +104,7 @@ protected:
 	void setMaxParFits(int Max);
     bool checkAllConnections(int FileColumn);
     void shrinkAllSpectRefs(int FileColumn);
-	virtual bool readData(QTextStream& S) = 0;
+	virtual bool readData(QTextStream& S);
 
     virtual inline QRegExp GetStartSpecialPartRegExp() const
     {
