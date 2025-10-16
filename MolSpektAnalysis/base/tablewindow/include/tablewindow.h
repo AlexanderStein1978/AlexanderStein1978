@@ -105,6 +105,7 @@ protected:
     bool checkAllConnections(int FileColumn);
     void shrinkAllSpectRefs(int FileColumn);
 	virtual bool readData(QTextStream& S);
+	virtual inline void writeData(QTextStream&) {}
 
     virtual inline QRegExp GetStartSpecialPartRegExp() const
     {

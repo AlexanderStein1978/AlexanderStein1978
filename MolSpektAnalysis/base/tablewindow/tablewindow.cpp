@@ -590,7 +590,11 @@ bool TableWindow::readData(QString Filename)
 	}
     QRegExp specialSectionStart = GetStartSpecialPartRegExp();
 	bool Success = true;
-	if (Typ == FitDataSet) Success = readData(S);
+	if (Typ == FitDataSet)
+	{
+		Buffer = readData(S);
+		if (!Buffer.isEmpty()) Success = ReadSpecialPart(S, Buffer);
+	}
 	else
 	{
 		Tab->blockSignals(true);
@@ -649,7 +653,8 @@ bool TableWindow::writeData(QString Filename)
 	}
 	for (c=0; c<C; c++) L << ((I = Tab->horizontalHeaderItem(c)) != 0 ? I->text() : "?");
 	S << "Column titles: " << L.join(Spacer) << "\n";
-	for (r=0; r < R; r++) 
+	if (Typ == FitDataSet) writeData(S);
+	else for (r=0; r < R; r++)
 	{
 		L.clear();
 		for (c=0; c < C; c++) L << ((I = Tab->item(r, c)) != 0 ? I->text() : "");
