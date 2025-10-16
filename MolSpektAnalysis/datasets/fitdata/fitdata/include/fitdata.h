@@ -161,6 +161,7 @@ class FitData : public TableWindow
 
         virtual bool ReadSpecialPart(QTextStream& i_stream, const QString& i_startString) override;
 		bool readData(QTextStream& S) override;
+		void writeData(QTextStream& S) override;
 
 	signals:
 		void AssignmentsAccepted(FitData*);
@@ -180,10 +181,9 @@ class FitData : public TableWindow
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;
 		LineTable **Sources;
-		int NMarkedLevels, NSources, *FC, lRow, NSourceOffset;
+		int NMarkedLevels, *FC, lRow, NSourceOffset;
 		QString *SourceOffsetNames;
 		double *SourceOffset;
-		QPixmap *NewPix;
         QList<ResidualFit*> residualFits;
 };
 

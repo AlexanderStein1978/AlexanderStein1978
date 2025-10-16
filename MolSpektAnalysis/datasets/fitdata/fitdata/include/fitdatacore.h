@@ -18,6 +18,8 @@ class TermEnergy;
 class Spektrum;
 class IsoTab;
 
+class QTextStream;
+
 class FitDataCore : public QAbstractTableModel
 {
 	public:
@@ -27,6 +29,7 @@ class FitDataCore : public QAbstractTableModel
 		FitDataCore(QObject *parent = 0);
 		~FitDataCore();
 		QString readData(QTextStream& S);
+		void writeData(QTextStream& S);
 		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 		void setRowCount(const int count);
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -49,6 +52,7 @@ class FitDataCore : public QAbstractTableModel
 		void getJE(int *R, int N, int *J, double *E);
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
 		int addRow(const int cr);
+		void addRow(BaseData* const data);
 		void setRow(BaseData* const data, const int row);
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
 		void deleteRow(const int index);
@@ -75,10 +79,11 @@ class FitDataCore : public QAbstractTableModel
 		void setUncertainty(const int row, const double uncertainty);
 		double getObsCalc(const int row) const;
 		void setObsCalc(const int row, const double obsCalc);
-		double getDevRatio(const int row) const;
-		void setDevRatio(const int row, const double DevR);
+		float getDevRatio(const int row) const;
+		void setDevRatio(const int row, const float DevR);
 		const std::string& getOtherState(const int row) const;
 		void setSecondState(const int row, const std::string& state);
+		void setRWError(const QString& headerText);
 
 		inline int *getIsoZ() const
 		{
@@ -90,14 +95,14 @@ class FitDataCore : public QAbstractTableModel
 			return numStates;
 		}
 
-		inline void setColumnCount(const int newCount)
-		{
-			mColumnCount = newCount;
-		}
-
-		inline const BaseData* getData(const int row) const
+		inline BaseData* getData(const int row) const
 		{
 			return mData[row];
+		}
+
+		inline void setData(const int row, BaseData * const data)
+		{
+			mData[row] = data;
 		}
 
 		inline QModelIndex getIndex(const int row, const int column) const
@@ -105,11 +110,18 @@ class FitDataCore : public QAbstractTableModel
 			return createIndex(row, column);
 		}
 
+		inline int getNSources() const
+		{
+			return NSources;
+		}
+
 	private:
-		int *Z, *CompZ, numStates, mColumnCount;
+		int *Z, *CompZ, numStates, NSources;
 		std::vector<BaseData*> mData;
 		IsoTab *Iso;
 		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
+		QString RWError;
+		QPixmap *NewPix;
 };
 
 #endif
