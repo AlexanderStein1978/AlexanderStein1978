@@ -62,7 +62,7 @@ FitData::FitData(ElState* nState, MainWindow* MW, Molecule* M): TableWindow(MDIC
 	connect(table, SIGNAL(SelChanged()), this, SIGNAL(SelChanged()));
     Sources = 0;
     LineElStates = 0;
-    NMarkedLevels = NSources = NSourceOffset = 0;
+    NMarkedLevels = NSourceOffset = 0;
     FC = 0;
     lRow = -1;
     SourceOffset = 0;
@@ -98,7 +98,7 @@ void FitData::AddRow()
 {
     if (table == 0) return;
     table->blockSignals(true);
-    int r, cr = table->currentIndex().row(), nr = fitDataCore->addRow(cr),  *FCB = new int[nr + 1];
+    int r, cr = table->currentIndex().row(), nr = fitDataCore->addRow(cr),  *FCB = new int[nr + 1], NSources = fitDataCore->getNSources();
     LineTable **SB = new LineTable*[nr+1];
     ElState **StB = new ElState*[nr+1];
     if (cr == -1) cr = 0;
@@ -151,7 +151,7 @@ void FitData::clearMarkedLevels()
 
 void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const FitData * const i_fitDataToCopyFrom)
 {
-    int currentRow = fitDataCore->rowCount(), NewRowCount = currentRow + i_numLines;
+    int currentRow = fitDataCore->rowCount(), NewRowCount = currentRow + i_numLines, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
     if (currentRow > 0)
     {
@@ -187,7 +187,8 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
     fitDataCore->addData(i_numLines, i_Lines, i_fitDataToCopyFrom->fitDataCore);
     for (int n=0; n < i_numLines; ++n)
     {
-        if (i_Lines[n] < i_fitDataToCopyFrom->NSources)
+        int oNSources = i_fitDataToCopyFrom->fitDataCore->getNSources();
+        if (i_Lines[n] < oNSources)
         {
             Sources[currentRow] = i_fitDataToCopyFrom->Sources[i_Lines[n]];
             FC[currentRow] = i_fitDataToCopyFrom->FC[i_Lines[n]];
@@ -231,7 +232,7 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
 
 bool FitData::containsState(ElState *State)
 {
-    int n;
+    int n, NSources = fitDataCore->getNSources();;
     for (n=0; n < NSources; ++n) if (LineElStates[n] == State) return true;
     return false;
 }
@@ -240,7 +241,7 @@ void FitData::DeleteRows()
 {
     if (table == 0) return;
     table->blockSignals(true);
-    int j, k, n, R = fitDataCore->rowCount(), *Rows = nullptr, N=0;
+    int j, k, n, R = fitDataCore->rowCount(), *Rows = nullptr, N=0, NSources = fitDataCore->getNSources();
     table->getSelectedRows(Rows, N);
     if (NSources > 0) 
     {
@@ -356,7 +357,7 @@ QList< LevelComb > FitData::getAvLevelComb(int iso, int comp, int vmin, int vmax
 void FitData::deleteRows(int* rows, int N)
 {
     int n, m, NR = fitDataCore->rowCount();
-    int mb = NR - NMarkedLevels;
+    int mb = NR - NMarkedLevels, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
     if (NSources > 0) 
     {
@@ -470,7 +471,7 @@ void FitData::findWrongData()
     }
     if (lRow == -1) lRow = NR;
     const BaseData* rowData = fitDataCore->getData(r);
-    int vs;
+    int vs, NSources = fitDataCore->getNSources();
     for (r = lRow + 1; r != lRow; r++) 
     {
         if (r >= NR) if (lRow == (r=0)) break;
@@ -505,7 +506,7 @@ void FitData::findWrongData()
 
 QList< int > FitData::getaFC()
 {
-    int i, j;
+    int i, j, NSources = fitDataCore->getNSources();
     QList<int> R;
     for (i=0; i < NSources; i++)
     {
@@ -584,7 +585,7 @@ void FitData::getData(TableLine*& Lines, int& NLines, int *&RowN,
 void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *RowN, int mv, int *Mv, int mJ, int JD, int F,
                       int Iso, bool OnlyAssignedVss, ElState* state)
 {
-    int n, b, m, MCT = 0, *CompTrans = 0, i, NR = fitDataCore->rowCount(), nSel, *Rows;
+    int n, b, m, MCT = 0, *CompTrans = 0, i, NR = fitDataCore->rowCount(), nSel, *Rows, NSources = fitDataCore->getNSources();
     ElState *XState = (molecule != 0 ? molecule->getStateP(0) : 0);
     TermTable *TT = (XState != 0 ? XState->getTermTable(false) : 0);
     Transition* Trans;
@@ -604,13 +605,13 @@ void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *Ro
         Lines[m].vss = row->v;
         if (OnlyAssignedVss && Lines[m].vss < 0) continue;
         Lines[m].Jss = row->J;
-        if ((mJ > 0 ? Lines[m].Jss > mJ : false) || (Mv != 0 ? (mv >= 0 ? Lines[m].vss < mv : false) 
+        if ((mJ > 0 && Lines[m].Jss > mJ) || (Mv != 0 ? (mv >= 0 && Lines[m].vss < mv)
              || (Lines[m].Jss <= mJ ? Lines[m].vss > Mv[Lines[m].Jss] : true) 
                 : (mv >= 0 ? Lines[m].vss != mv : mv == -1 && Lines[m].vss >= 0)))
             continue;
         Lines[m].Js = row->Js;
-        if (JD != -1 ? fabs(Lines[m].Js - Lines[m].Jss) != JD : false) continue;
-        if (F != -2 ? (SA[n] < NSources ? FC[SA[n]] != F : F != -1): false) continue;
+        if (JD != -1 && fabs(Lines[m].Js - Lines[m].Jss) != JD) continue;
+        if (F != -2 && (SA[n] < NSources ? FC[SA[n]] != F : F != -1)) continue;
         if (row->vs == "TE")
         {
             Lines[m].vs = -1;
@@ -626,7 +627,7 @@ void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *Ro
             Lines[m].isTE = false;
             Lines[m].vs = (row->vs == "nA" ? -1 : b);
         }
-        Lines[m].FC = ((SA[n] < NSources ? FC[SA[n]] >= 0 : false) ? 
+        Lines[m].FC = ((SA[n] < NSources && FC[SA[n]] >= 0) ?
             (FC[SA[n]] <= MCT && CompTrans != 0 ? CompTrans[FC[SA[n]]] : FC[SA[n]]) : 0);
         //printf("Lines[%d].FC=%d\n", m, Lines[m].FC);
         Lines[m].LTab = (SA[n] < NSources ? Sources[SA[n]] : 0);
@@ -666,7 +667,7 @@ void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *Ro
 
 bool FitData::checkSourceConnections()
 {
-    int n, N = fitDataCore->rowCount(), CNSources = NSources;
+    int n, N = fitDataCore->rowCount(), NSources = fitDataCore->getNSources();
     QMap<QString, LineTable*>& Translations = MW->getLineTableTranslations();
     bool result = true;
     if (Sources == 0)
@@ -675,12 +676,12 @@ bool FitData::checkSourceConnections()
         FC = new int[N];
         LineElStates = new ElState*[N];
     }
-    else if (CNSources < N)
+    else if (NSources < N)
     {
         LineTable**SB = new LineTable*[NSources = N];
         int *FCB = new int[N];
         ElState **StB = new ElState*[N];
-        for (n=0; n < CNSources; ++n)
+        for (n=0; n < NSources; ++n)
         {
             SB[n] = Sources[n];
             FCB[n] = FC[n];
@@ -886,6 +887,7 @@ bool FitData::readData(QTextStream& S)
 
 bool FitData::readData(QString Filename)
 {
+    int NSources = fitDataCore->getNSources();
     if (NSourceOffset > 0)
     {
         delete[] SourceOffset;
@@ -944,7 +946,7 @@ bool FitData::readData(QString Filename)
                 }
                 IsoTab *Iso = molecule->getIso();
                 fitDataCore->setRowCount(NR);
-                int vs;
+                int vs, NSources = fitDataCore->getNSources();
                 QList<int> stateList;
                 if (Sources != 0) delete[] Sources;
                 Sources = new LineTable*[NSources = NR];
@@ -955,23 +957,23 @@ bool FitData::readData(QString Filename)
                 table->blockSignals(true);
                 for (r=0; r < NR && !S.atEnd(); ++r)
                 {
-                    BaseData data;
+                    BaseData* data = new BaseData;
                     QStringList Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
                     if (Buffer.size() < 12) break;
 
-                    data.isotope = Iso->getIsoIndex(Buffer[0].toInt(), Buffer[1].toInt());
-                    data.v = Buffer[2].toInt();
-                    if (data.v > mv) mv = data.v;
-                    data.J = Buffer[3].toInt();
-                    if (data.J > mJ) mJ = data.J;
-                    data.vs = Buffer[4].toStdString();
-                    data.Js = Buffer[5].toInt();
+                    data->isotope = Iso->getIsoIndex(Buffer[0].toInt(), Buffer[1].toInt());
+                    data->v = Buffer[2].toInt();
+                    if (data->v > mv) mv = data->v;
+                    data->J = Buffer[3].toInt();
+                    if (data->J > mJ) mJ = data->J;
+                    data->vs = Buffer[4].toStdString();
+                    data->Js = Buffer[5].toInt();
                     if (S.atEnd()) break;
                     vs = Buffer[4].toInt();
                     Buffer = S.readLine().split(' ', Qt::SkipEmptyParts);
                     if (Buffer.size() < 3) break;
-                    data.energy = Buffer[0].toDouble();
-                    data.uncert = Buffer[1].toDouble();
+                    data->energy = Buffer[0].toDouble();
+                    data->uncert = Buffer[1].toDouble();
                     if (vs < 0 && !stateList.contains(vs)) stateList.push_back(vs);
                     FC[r] = -1;
                     Sources[r] = 0;
@@ -1314,6 +1316,7 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
     }
     else
     {
+        int NSources = fitDataCore->getNSources();
         SortByLTabAndProgFunctor SortOperator(fitDataCore, Sources, NSources, MW, molecule);
         int *fsa = utils::heapSort(SortOperator, NR), *Pos = new int[NR], m = 0, NP, PNum, F=0, v;
         for (n=0; n < NR; ++n) Pos[fsa[n]]=n;
@@ -1392,7 +1395,7 @@ int FitData::getNumLines(int* mv, int mJ)
 
 int FitData::getNumLines(int JD, int F, int v, int mJ, int Iso)
 {
-    int N = getNumLines(), n, R;
+    int N = getNumLines(), n, R, NSources = fitDataCore->getNSources();
     for (n=R=0; n<N; n++) if (fitDataCore->getEnergy(n) != 0.0 && (mJ == 0 || fitDataCore->getJ(n) <= mJ)
             && (JD == 0 || JD == abs(fitDataCore->getJ(n) - fitDataCore->getJs(n)))
             && (Iso == -1 || fitDataCore->getIso(n) == Iso)
@@ -1410,7 +1413,7 @@ int FitData::getNumLines() const
 
 int FitData::getNumProgressions(int *mv, int mJ)
 {
-    int n, m, l, b, R, J, N = getNumLines();
+    int n, m, l, b, R, J, N = getNumLines(), NSources = fitDataCore->getNSources();
     if (N==0) return 0;
     int *S1 = heapSort(sortByProg), *SA = new int[N];
     for (n=0; n<N; n++) SA[S1[n]] = n;
@@ -1476,8 +1479,8 @@ void FitData::getUncertaintyStats(QList< double >& Uncert, QList< int >& Numbers
             && fitDataCore->getJ(n) <= JM)
     {
         U = fitDataCore->getUncertainty(n);
-        for (i=0; (i < Uncert.count() ? U > Uncert[i] : false); i++) ;
-        if (i < Uncert.count() ? U == Uncert[i] : false) Numbers[i]++;
+        for (i=0; (i < Uncert.count() && U > Uncert[i]); i++) ;
+        if (i < Uncert.count() && U == Uncert[i]) Numbers[i]++;
         else
         {
             Uncert.insert(i, U);
@@ -1535,7 +1538,7 @@ void FitData::removeDataFSource()
     QString qb;
     std::string b;
     std::vector<int> list;
-    int c;
+    int c, NSources = fitDataCore->getNSources();
     for (n=0; n<N; n++) if (!S.contains(qb = fitDataCore->getSource(n).c_str())) S.append(qb);
     D = new QDialog(this);
     D->setWindowTitle("MolSpektAnalysis");
@@ -1586,7 +1589,7 @@ void FitData::removeDataFSource()
 
 void FitData::RemoveDoubled()
 {
-    int NR = fitDataCore->rowCount(), n, m, c;
+    int NR = fitDataCore->rowCount(), n, m, c, NSources = fitDataCore->getNSources();
     int *SA = new int[NR], *S1 = heapSort(sortIefJFreqv), *CompT, MCT;
     bool* toDel = new bool[NR];
     std::vector<int> delList;
@@ -1656,7 +1659,7 @@ void FitData::RemoveDoubled()
 
 void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
 {
-    int n, N = fitDataCore->rowCount();
+    int n, N = fitDataCore->rowCount(), NSources = fitDataCore->getNSources();
     table->blockSignals(true);
     for (n = N - NMarkedLevels; n<N; n++)
     {
@@ -1692,7 +1695,7 @@ void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
 
 void FitData::removeSingleLines()
 {
-    int n, m, c, N = fitDataCore->rowCount(), lc;
+    int n, m, c, N = fitDataCore->rowCount(), lc, NSources = fitDataCore->getNSources();
     int *SA = new int[N], *S1 = heapSort(sortByProg);
     bool* del = new bool[N];
     memset(del, 0, sizeof(bool) * N);
@@ -1756,7 +1759,7 @@ void FitData::selectDataFSource(QString Source)
 
 void FitData::addData(TableLine* Lines, int NLines)
 {
-    int n, m = fitDataCore->rowCount(), sigDig, i, j;
+    int n, m = fitDataCore->rowCount(), sigDig, i, j, NSources = fitDataCore->getNSources();
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
     int *CompZ = (TT != 0 ? TT->getCompZ() : 0), NFC = (TT != 0 ? TT->getNumComp() : 1);
     if (Sources != 0)
@@ -1837,7 +1840,7 @@ void FitData::setData(TableLine* Lines, int NLines)
         delete[] Sources;
         delete[] FC;
         delete[] LineElStates;
-        NSources = 0;
+        fitDataCore->setNSources(0);
         Sources = 0;
         LineElStates = 0;
         FC = 0;
@@ -1920,6 +1923,7 @@ void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
 
 void FitData::setElState(ElState* nState)
 {
+    int NSources = fitDataCore->getNSources();
     State = nState;
     for (int n=0; n < NSources; ++n) if (0 == LineElStates[n])
     {
@@ -1931,7 +1935,7 @@ void FitData::setElState(ElState* nState)
 void FitData::setMolecule(Molecule *Mol)
 {
     TableWindow::setMolecule(Mol);
-    int n;
+    int n, NSources = fitDataCore->getNSources();
     for (n=0; n < NSources; n++) LineElStates[n] = Mol->getState(fitDataCore->getOtherState(n).c_str());
     for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
         (*it)->SetState(Mol->getState(*(*it)->getStateName()));
@@ -1939,7 +1943,7 @@ void FitData::setMolecule(Molecule *Mol)
 
 void FitData::setFC(int nFC)
 {
-    int n, N, *Rows;
+    int n, N, *Rows, NSources = fitDataCore->getNSources();
     table->getSelectedRows(Rows, N);
     if (N > 0)
     {
@@ -1993,7 +1997,7 @@ void FitData::setSourceOffset(QStringList& Names, double* Offsets)
 void FitData::setUncertainty(double Uncertainty, bool Min)
 {
     table->blockSignals(true);
-    int n, m, i, N, *Rows;
+    int n, m, i, N, *Rows, NSources = fitDataCore->getNSources();
     double cU;
     table->getSelectedRows(Rows, N);
     double U = Uncertainty;
@@ -2050,7 +2054,7 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
     {
         for (m=0; m < NSources; m++) if (Sources[m]->getTransition()->getLowerState() == State)
         {
-            for (i=0; (i < SL.count() ? SL[i] != Sources[m] : false); i++) ;
+            for (i=0; (i < SL.count() && SL[i] != Sources[m]); i++) ;
             if (i == SL.count())
             {
                 SL.append(Sources[m]);
@@ -2097,7 +2101,7 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
 
 void FitData::setUncertainty(int* Rows, double* Uncertainties, int N)
 {
-    int n, i;
+    int n, i, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
     QList<LineTable*> SL;
     QList<int> CL;
@@ -2173,7 +2177,7 @@ void FitData::setMCSEnergies(double* MCSE, int* Rows, int NR)
 
 void FitData::sortTab(int* S2)
 {
-    int i, P1=0, n, N = Tab->rowCount(), AFC[2];
+    int i, P1=0, n, N = Tab->rowCount(), AFC[2], NSources = fitDataCore->getNSources();
     BaseData *AIt[2];
     LineTable *AS[2];
     ElState *ASt[2];
@@ -2232,7 +2236,7 @@ void FitData::sortTab(int* S2)
 
 void FitData::sortByLTabAndProg()
 {
-    SortByLTabAndProgFunctor sortFunct(fitDataCore, Sources, NSources, MW, molecule);
+    SortByLTabAndProgFunctor sortFunct(fitDataCore, Sources, fitDataCore->getNSources(), MW, molecule);
     sortTab(utils::heapSort(sortFunct, fitDataCore->rowCount()));
 }
 
@@ -2245,7 +2249,7 @@ void FitData::updateData()
     }
     TSDialog Diag(this, molecule, State);
     if (Diag.exec() == QDialog::Rejected) return;
-    int rr, r = 0, l, n, m, N = Diag.getNumSelected(), NL[N], MJ = 0, Mv = 0, *FCB, NR = fitDataCore->rowCount();
+    int rr, r = 0, l, n, m, N = Diag.getNumSelected(), NL[N], MJ = 0, Mv = 0, *FCB, NR = fitDataCore->rowCount(), NSources = fitDataCore->getNSources();
     if (N == 0 && !Diag.getUpdateSA()) return;
     LineTable *L[N], **SB;
     ElState **StB;
@@ -2513,7 +2517,7 @@ void FitData::writeData(QTextStream& S)
 bool FitData::writeData(QString Filename)
 {
     bool Success;
-    int n, N = fitDataCore->rowCount(), NSources = fitDataCore->getNSources();
+    int n, N = fitDataCore->rowCount(), NSources = fitDataCore->getNSources(), c;
     std::string B;
     if (NMarkedLevels > 0)
     {
@@ -2537,7 +2541,7 @@ bool FitData::writeData(QString Filename)
         for (n = NSources; n<N; n++)
         {
             Sources[n] = nullptr;
-            LineElStates[n] = (molecule != 0 && C > fdcLineElState ? molecule->getState(fitDataCore->getOtherState(n).c_str()) : nullptr);
+            LineElStates[n] = (molecule != 0 ? molecule->getState(fitDataCore->getOtherState(n).c_str()) : nullptr);
             B = fitDataCore->get_vs(n);
             FC[n] = (B == "TE" ? -1 : -1 - stoi(B));
         }
@@ -2549,7 +2553,8 @@ bool FitData::writeData(QString Filename)
     table->blockSignals(true);
     for (n=0; n < NSources; n++) if (FC[n] >= 0)
     {
-        B = fitDataCore->get_vs(n), ch = to_string(B == "TE" ? -1 : (B == "nA" ? -10 : stoi(B))) + 1000 * (FC[n] + 1);
+        B = fitDataCore->get_vs(n);
+        std::string ch = to_string(B == "TE" ? -1 : (B == "nA" ? -10 : stoi(B)) + 1000 * (FC[n] + 1));
         fitDataCore->set_vs(n, ch);
     }
     QString MolPath = molecule->getFileName();
@@ -2568,7 +2573,7 @@ bool FitData::writeData(QString Filename)
     if (molecule != 0) for (n=0; n<N; ++n)
     {
         QString CurPath = fitDataCore->getSourceFile(n).c_str();
-        std::string absPath = getAbsolutePath(CurPath, MolPath);
+        std::string absPath = getAbsolutePath(CurPath, MolPath).toStdString();
         fitDataCore->setSourceFile(n, absPath);
     }
     table->blockSignals(false);
@@ -2594,10 +2599,10 @@ bool FitData::writeExPotFitInput(QString Filename)
     IsoTab *Iso = molecule->getIso();
     if (Iso == 0) return false;
     QFile File(Filename);
-    int nIso = Iso->numIso, n, N = Tab->rowCount(), I, sI, MsI = 0, *StA = 0, SourceI = 0;
+    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, sI, MsI = 0, *StA = 0, SourceI = 0, NSources = fitDataCore->getNSources(), NumStates = molecule->getNumStates();
     QString IsoStr[nIso], B;
-    ElState *stateArray[molecule->getNumStates()];
-    for (sI=0; sI < molecule->getNumStates(); ++sI) stateArray[sI] = 0;
+    ElState *stateArray[NumStates];
+    for (sI=0; sI < NumStates; ++sI) stateArray[sI] = 0;
     if (LineElStates != 0) for (n=0; n < NSources; ++n)
     {
         for (sI = 0; stateArray[sI] != LineElStates[n] && stateArray[sI] != 0; ++sI) ;
@@ -2623,26 +2628,26 @@ bool FitData::writeExPotFitInput(QString Filename)
     for (n=0; n < nIso; n++) 
         IsoStr[n] = ("    " + QString::number(Iso->mNumIso1[n])).right(5)
                   + ("    " + QString::number(Iso->mNumIso2[n])).right(5);
-    QString FileName;
+    std::string FileName;
     for (n=0; n<N; n++)
     {
-        I = Tab->item(n, 0)->text().toInt();
-        B = Tab->item(n, 3)->text();
+        I = fitDataCore->getIso(n);
+        B = fitDataCore->get_vs(n).c_str();
         if (NSourceOffset > 0)
         {
-            FileName = Tab->item(n, fdcFile)->text();
-            for (SourceI = 0; SourceI < NSourceOffset && FileName.indexOf(SourceOffsetNames) == -1; ++SourceI) ;
+            FileName = fitDataCore->getSourceFile(n);
+            for (SourceI = 0; SourceI < NSourceOffset && FileName.find(SourceOffsetNames[SourceI].toStdString()) == std::string::npos; ++SourceI) ;
         }
         if (StA != 0 && n < NSources) for (sI = 0; stateArray[sI] != LineElStates[n]; ++sI) ;
-        WS << IsoStr[I] + ("     " + Tab->item(n, 1)->text()).right(5) 
-              + ("     " + Tab->item(n, 2)->text()).right(5) 
+        WS << IsoStr[I] + ("     " + QString::number(fitDataCore->get_v(n))).right(5)
+              + ("     " + QString::number(fitDataCore->getJ(n))).right(5)
               + ("     " + (StA != 0 && n < NSources ? QString::number(StA[sI]) :
                                                        (B.indexOf("TE") >= 0 || B.indexOf("nA") >= 0 ? "-1" : B))).right(5)
-              + ("     " + Tab->item(n, 4)->text()).right(5) + IsoStr[I]
+              + ("     " + QString::number(fitDataCore->getJs(n))).right(5) + IsoStr[I]
               + "    0    0    0    0\n"
               + ("               "
-                        + (SourceI < NSourceOffset ? QString::number(Tab->item(n, 8)->text().toDouble() - SourceOffset[SourceI], 'f', 4) : Tab->item(n, 8)->text())).right(15)
-              + ("               " + Tab->item(n, 9)->text()).right(15) + "    2\n";
+                        + (QString::number(SourceI < NSourceOffset ? fitDataCore->getEnergy(n) - SourceOffset[SourceI] : fitDataCore->getEnergy(n), 'f', 9))).right(15)
+              + ("               " + QString::number(fitDataCore->getUncertainty(n), 'f', 9)).right(15) + "    2\n";
     }
     File.close();
     delete Iso;
@@ -2664,7 +2669,7 @@ bool FitData::writeTFGS(QString Filename)
         delete Iso;
         return false;
     }
-    int nIso = Iso->numIso, n, N = Tab->rowCount(), I, vo = 0, *S1 = heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
+    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
     int lI = -1, SI = 0, lSI = -1, PN, lPN = -1, wv, nDig;
     double WN, err;
     QString IsoStr[nIso], B;
@@ -2691,16 +2696,15 @@ bool FitData::writeTFGS(QString Filename)
     delete Iso;
     for (n=0; n<N; n++)
     {
-        WN = Tab->item(SA[n], 8)->text().toDouble();
-        B = Tab->item(SA[n], 9)->text();
-        nDig = B.length() - B.indexOf('.') - 1;
-        err = B.toDouble();
-        PN = Tab->item(SA[n], 6)->text().toInt();
-        Js = Tab->item(SA[n], 4)->text().toInt();
-        I = Tab->item(SA[n], 0)->text().toInt();
-        B = Tab->item(SA[n], 3)->text();
-        vs = (B != "nA" ? B.toInt() : -1);
-        if (B == "TE")
+        WN = fitDataCore->getEnergy(SA[n]);
+        err =  fitDataCore->getUncertainty(SA[n]);
+        nDig = FitDataCore::getNumDecimalPlaces(err);
+        PN = fitDataCore->getProgression(SA[n]);
+        Js = fitDataCore->getJs(SA[n]);
+        I = fitDataCore->getIso(SA[n]);
+        std::string vsSt = fitDataCore->get_vs(SA[n]);
+        vs = (vsSt != "nA" ? stoi(vsSt) : -1);
+        if (vsSt == "TE")
         {
             wv = 9999;
             WN *= -1.0;
@@ -2713,7 +2717,7 @@ bool FitData::writeTFGS(QString Filename)
                 if (SI == lSI && lvs == vs && Js == lJs && lI == I) vo += 100;
                 else vo = 0;
             }
-            B = Tab->item(SA[n], 5)->text();
+            B = fitDataCore->getSource(SA[n]).c_str();
             SI = SourceList.indexOf(B);
             if (SI == -1)
             {
@@ -2722,9 +2726,9 @@ bool FitData::writeTFGS(QString Filename)
             }
             wv = 1000 * (SI + 1) + vo + vs;
         }
-        B = Tab->item(SA[n], 2)->text();
-        S << IsoStr[I] << ("    " + QString::number(wv)).right(5) << ("    " + (wv != 9999 ? QString::number(Js) : B)).right(5)
-          << ("     " + Tab->item(SA[n], 1)->text()).right(5)  << ("     " + B).right(5) + IsoStr[I] << "    0    0    0    0\n";
+        int Jss = fitDataCore->getJ(SA[n]);
+        S << IsoStr[I] << ("    " + QString::number(wv)).right(5) << ("    " + (wv != 9999 ? QString::number(Js) : QString::number(Jss))).right(5)
+          << ("     " + QString::number(fitDataCore->get_v(SA[n]))).right(5)  << ("     " + QString::number(Jss)).right(5) + IsoStr[I] << "    0    0    0    0\n";
         S << ("              " + QString::number(WN, 'f', nDig)).right(15) 
           << ("              " + QString::number(err, 'f', nDig)).right(15) << "    2\n";
         lvs = vs;
@@ -2762,5 +2766,5 @@ ResidualFit* FitData::getResidualFit(ElState * const i_state, const int i_Iso, c
 
 int *FitData::heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const
 {
-    return utils::heapSort(FitDataCoreSortFunctor(Tab, sortFuncs), getNumLines());
+    return utils::heapSort(FitDataCoreSortFunctor(fitDataCore, sortFuncs), getNumLines());
 }

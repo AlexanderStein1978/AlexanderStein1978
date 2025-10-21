@@ -17,18 +17,9 @@
 #include <QPixmap>
 #include <QPainter>
 
-#include <cmath>
-
 
 FitDataCore::FitDataCore(QObject *parent) : QAbstractTableModel(parent)
 {
-	Data = 0;
-	Iso = 0;
-	numComp = numStates = 0;
-	Z = 0;
-	vStart = 0;
-	CompZ = 0;
-	MixCoeff = 0;
 	NewPix = new QPixmap(10, 10);
     QPainter P(NewPix);
     P.setPen(QColor(255, 0, 0));
@@ -38,9 +29,6 @@ FitDataCore::FitDataCore(QObject *parent) : QAbstractTableModel(parent)
 
 FitDataCore::~FitDataCore()
 {
-	if (Iso != 0) delete Iso;
-	if (Z != 0) delete[] Z;
-	if (CompZ != 0) delete[] CompZ;
 	for (auto it = mData.begin(); it != mData.end(); ++it) delete *it;
 	delete NewPix;
 }
@@ -49,7 +37,7 @@ QString FitDataCore::readData(QTextStream& S)
 {
 	QString Buffer;
 	QString Spacer = "\t";
-	for (int r=0; !S.atEnd(); r++)
+	while(!S.atEnd())
 	{
 		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
 		const QStringList L = Buffer.split(Spacer);
@@ -132,7 +120,7 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 	int row = index.row(), column = index.column(), numDigits;
 	if (role == Qt::DecorationRole && row >= NSources) return *NewPix;
 	if (role != Qt::DisplayRole) return QVariant();
-	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = 2 - static_cast<int>(log10(mData[row]->uncert));
+	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(mData[row]->uncert);
 	switch (column)
 	{
 		case fdcIso:
@@ -227,74 +215,18 @@ bool FitDataCore::setData(const QModelIndex& index, const QVariant& value, int r
 	return true;
 }
 
-void FitDataCore::getJE(int* R, int N, int* J, double* E)
-{
-	int I, C, v, n, lI, lC;
-	for (n=I=C=v=lI=lC=0; n<N; n++)
-	{
-		while (I < numIso ? R[n] >= vStart[I][0][0] : false) I++;
-		I--;
-		if (I != lI) C=v=0;
-		while (C < numComp ? R[n] >= vStart[I][C][0] : false) C++;
-		C--;
-		if (C != lC) v=0;
-		while (v < numv ? R[n] >= vStart[I][C][v] : false) v++;
-		v--;
-		J[n] = R[n] - vStart[I][C][v];
-		E[n] = Data[C][I][v][J[n]];
-		lI = I;
-		lC = C;
-	}
-}
-
-void FitDataCore::getRows(int C, int I, int v, int* J, int N, int* R)
-{
-	int n;
-	for (n=0; n<N; n++) R[n] = vStart[I][C][v] + J[n];
-}
-
-int* FitDataCore::getCompZ()
-{
-	return CompZ;
-}
-
-double ****FitDataCore::getData()
-{
-	return Data;
-}
-
-void FitDataCore::GetIsoZ(int IsoI, int &NIso1, int &NIso2)
-{
-	if (Iso == 0 || Z == 0) NIso1 = NIso2 = 0;
-	else
-	{
-		NIso1 = Iso->mNumIso1[Z[IsoI]];
-		NIso2 = Iso->mNumIso2[Z[IsoI]];
-	}
-}
-
 int FitDataCore::getMaxJ()
 {
 	int MJ=0;
-	for (auto it = mData.begin(); it != mData.end(); ++it) if (it->J > MJ) MJ = it->J;
+	for (auto it = mData.begin(); it != mData.end(); ++it) if ((*it)->J > MJ) MJ = (*it)->J;
 	return MJ;
 }
 
 int FitDataCore::getMaxv()
 {
 	int Mv=0;
-	for (auto it = mData.begin(); it != mData.end(); ++it) if (it->v > Mv) Mv = it->v;
+	for (auto it = mData.begin(); it != mData.end(); ++it) if ((*it)->v > Mv) Mv = (*it)->v;
 	return Mv;
-}
-
-int FitDataCore::getNumComp()
-{
-	return numComp;
-}
-
-int FitDataCore::getNumIso()
-{
-	return numIso;
 }
 
 QVariant FitDataCore::headerData(int section, Qt::Orientation orientation, int role) const
@@ -358,74 +290,6 @@ void FitDataCore::setRowCount(const int count)
 		mData.resize(count);
 		endRemoveRows();
 	}
-}
-
-void FitDataCore::setData(double ****nData, int nC, int nI, int mv, int mJ, int *CZ, int nMixC, double *****newMixC)
-{
-	int r, I, C, v, J;
-	if (Data != 0)
-	{
-		beginRemoveRows(QModelIndex(), 0, numRows - 1);
-		Destroy(Data, numComp, numIso, numv);
-		Destroy(vStart, numIso, numComp);
-		if (MixCoeff != 0)
-		{
-			beginRemoveColumns(QModelIndex(), 6, 5 + numStates);
-			Destroy(MixCoeff, numComp, numIso, numv, numJ);
-			MixCoeff = 0;
-			numStates = 0;
-			endRemoveColumns();
-		}
-		Data = 0;
-		vStart = 0;
-		numRows = numIso = numComp = numv = numJ = 0;
-		delete[] CompZ;
-		endRemoveRows();
-	}
-	if (CZ != 0) CompZ = CZ;
-	else
-	{
-		CompZ = new int[nC];
-		for (r=0; r < nC; r++) CompZ[r] = r;
-	}
-	vStart = CreateInt(nI, nC, mv+1);
-	for (r=I=0; I < nI; I++) for (C=0; C < nC; C++) for (v=0; v <= mv; v++) 
-	{
-		vStart[I][C][v] = r;
-		for (J=0; J <= mJ; J++) if (nData[C][I][v][J] != 0.0) r++;
-	}
-	beginInsertRows(QModelIndex(), 0, r-1);
-	numRows = r;
-	Data = nData;
-	numComp = nC;
-	numIso = nI;
-	numv = mv + 1;
-	numJ = mJ + 1;
-	if (nMixC > 0)
-	{
-		beginInsertColumns(QModelIndex(), 6, 5 + nMixC);
-		numStates = nMixC;
-		MixCoeff = newMixC;
-		endInsertColumns();
-	}
-	endInsertRows();
-}
-
-void FitDataCore::setIso(IsoTab *nIso)
-{
-	if (Iso != 0) delete Iso;
-	Iso = nIso;
-}
-
-void FitDataCore::setIsoZ(int *nZ)
-{
-	if (Z != 0) delete[] Z;
-	Z = nZ;
-}
-
-IsoTab *FitDataCore::getIso()
-{
-	return Iso;
 }
 
 int FitDataCore::addMarkedLevel(TermEnergy& TE, Spektrum* Source)
@@ -620,6 +484,15 @@ void FitDataCore::setSource(const int row, const std::string& source)
 const std::string & FitDataCore::getSourceFile(const int row) const
 {
 	return mData[row]->file;
+}
+
+void FitDataCore::setSourceFile(const int row, const std::string& filename)
+{
+	mData[row]->file = filename;
+	QModelIndex index = createIndex(row, fdcFile);
+	QVector<int> roles;
+	roles.push_back(Qt::EditRole);
+	emit dataChanged(index, index, roles);
 }
 
 double FitDataCore::getObsCalc(const int row) const

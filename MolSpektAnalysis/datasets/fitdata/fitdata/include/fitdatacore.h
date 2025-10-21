@@ -10,7 +10,10 @@
 
 
 #include <QAbstractTableModel>
+
 #include <vector>
+#include <cmath>
+
 
 struct BaseData;
 
@@ -37,19 +40,8 @@ class FitDataCore : public QAbstractTableModel
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		std::vector<BaseData*> getData();
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-		void setData(double ****nData, int numComp, int numIso, int maxv, int maxJ,
-					 int *CompZ = 0, int nStates = 0, double *****nMixKoeff = 0);
-		void setIso(IsoTab *Iso);
-		IsoTab *getIso();
-		void setIsoZ(int *Z);
-		void GetIsoZ(int IsoI, int &NIso1, int &NIso2);
-		int *getCompZ();
-		int getNumComp();
-		int getNumIso();
 		int getMaxJ();
 		int getMaxv();
-		void getRows(int C, int I, int v, int *J, int N, int *R);
-		void getJE(int *R, int N, int *J, double *E);
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
 		int addRow(const int cr);
 		void addRow(BaseData* const data);
@@ -84,16 +76,7 @@ class FitDataCore : public QAbstractTableModel
 		const std::string& getOtherState(const int row) const;
 		void setSecondState(const int row, const std::string& state);
 		void setRWError(const QString& headerText);
-
-		inline int *getIsoZ() const
-		{
-			return Z;
-		}
-		
-		inline int getnumStates() const
-		{
-			return numStates;
-		}
+		int getNumDecimalPlaces(const int row) const;
 
 		inline BaseData* getData(const int row) const
 		{
@@ -115,10 +98,20 @@ class FitDataCore : public QAbstractTableModel
 			return NSources;
 		}
 
+		inline void setNSources(const int N)
+		{
+			NSources = N;
+		}
+
+		inline static int getNumDecimalPlaces(const double uncertainty)
+		{
+			return 2 - static_cast<int>(log10(uncertainty));
+		}
+
 	private:
-		int *Z, *CompZ, numStates, NSources;
+
+		int NSources;
 		std::vector<BaseData*> mData;
-		IsoTab *Iso;
 		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
 		QString RWError;
 		QPixmap *NewPix;
