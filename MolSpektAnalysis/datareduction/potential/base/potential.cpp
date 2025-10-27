@@ -686,7 +686,6 @@ void Potential::exportWaveFunction(int NumWFPoints)
                                         + " and J'=" + QString::number(J) + " does not exist!");
     }
     Destroy(WF, NC, Nv);
-    delete Iso;
     delete D;
 }
 
@@ -5353,7 +5352,6 @@ double Potential::guessBe()
     double Re, E;
     getMinimum(Re, E);
     double Be = 1e18 * C_h / (M_PI * M_PI * 8.0 * Iso->redMass[Iso->refIso] * Re * Re * C_u * C_c);
-    delete Iso;
     return Be;
 }
 

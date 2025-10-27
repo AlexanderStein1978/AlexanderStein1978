@@ -19,7 +19,6 @@ struct BaseData;
 
 class TermEnergy;
 class Spektrum;
-class IsoTab;
 
 class QTextStream;
 
@@ -45,7 +44,10 @@ class FitDataCore : public QAbstractTableModel
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
 		int addRow(const int cr);
 		void addRow(BaseData* const data);
+		void addRow(const QStringList& L);
 		void setRow(BaseData* const data, const int row);
+		void setRow(const QStringList& L, const int row);
+		BaseData* getRow(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
 		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
@@ -75,8 +77,8 @@ class FitDataCore : public QAbstractTableModel
 		void setDevRatio(const int row, const float DevR);
 		const std::string& getOtherState(const int row) const;
 		void setSecondState(const int row, const std::string& state);
+		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setRWError(const QString& headerText);
-		int getNumDecimalPlaces(const int row) const;
 
 		inline BaseData* getData(const int row) const
 		{
@@ -109,6 +111,7 @@ class FitDataCore : public QAbstractTableModel
 		}
 
 	private:
+		static BaseData* convertToBaseData(const QStringList& L);
 
 		int NSources;
 		std::vector<BaseData*> mData;

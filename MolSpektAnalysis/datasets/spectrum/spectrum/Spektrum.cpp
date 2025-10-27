@@ -1285,7 +1285,6 @@ void Spektrum::PictureClicked(QPoint *P)
 		}
 		addMarker(false);
 	}
-	if (IsoT != 0) delete IsoT;
     Paint();
 }
 
@@ -2902,7 +2901,6 @@ void Spektrum::MarkProgression(IntProg &P)
 		P.marker[n]->uncertainty = 0.0;
 		P.marker[n]->FC = P.FC;
 	}
-	if (Iso != 0) delete Iso;
 	//if (P.satellite) printf("MarkProgression: satellite\n");
 }
 	
@@ -3369,7 +3367,6 @@ void Spektrum::FindEmissionLines(Molecule* mol, int Iso, ElState* EState, double
 			}
 		}
 	}
-	delete IsoT;
 	delete[] Js;
 	delete[] Jss;
 	delete[] DD;
@@ -3554,7 +3551,6 @@ void Spektrum::assignBandByDoubletPartners()
 		Progs[n].marker[0]->vs = -1;
 		Progs[n].marker[0]->vss = bv;
 	}
-	delete Iso;
 	delete[] Progs;
 	ContinueProgressions();
 }
@@ -5059,7 +5055,6 @@ void Spektrum::FindLinesFromTable(LineTable *LTab)
 		}
 		else if (marker[m].Marked) marker[m].overlap = true;
 	}
-	delete Iso;
 	delete[] Lines;
 	addMarker(false);
 	if (MW != 0) MW->setActive(this);

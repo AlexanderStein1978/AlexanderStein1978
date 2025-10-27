@@ -154,7 +154,6 @@ void FCFTable::UpdateMolData()
 		LSBox->addItem(Text = molecule->getState(i));
 		USBox->addItem(Text);
 	}
-	delete IT;
 }
 
 void FCFTable::ViewChanged(int i)

@@ -15,7 +15,6 @@
 
 
 class Molecule;
-class IsoTab;
 
 class QListWidget;
 class QRadioButton;

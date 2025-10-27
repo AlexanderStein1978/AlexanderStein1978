@@ -19,7 +19,7 @@ class Molecule;
 class MainWindow;
 class Marker;
 class Progression;
-class IsoTab;
+struct IsoTab;
 class Spektrum;
 class Progression;
 class TableLine;

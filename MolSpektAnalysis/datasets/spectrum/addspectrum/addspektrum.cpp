@@ -895,7 +895,6 @@ void AddSpectrum::stateChanged()
                 ResFit = newResidualFit;
                 ResFit->setFitData(NPoints, points, isoTab->relRedMass[Iso], State->getOmega(), mol->getJStep(Iso), State->getBe());
                 setEnergyReference();
-                delete isoTab;
             }
             else
             {

@@ -88,7 +88,6 @@ LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableWindow(L
 LineTable::~LineTable()
 {
 	//printf("LineTable::~LineTable\n");
-	if (Iso != 0) delete Iso;
 	if (SelE != 0)
 	{
 		delete[] SelE;
@@ -101,7 +100,6 @@ LineTable::~LineTable()
 void LineTable::setMolecule(Molecule *Mol)
 {
 	TableWindow::setMolecule(Mol);
-	if (Iso != 0) delete Iso;
 	if (Mol != 0) Iso = Mol->getIso();
 	else Iso = 0;
 	//printf("Ende von LineTable::setMolecule\n");
@@ -819,7 +817,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 	if (Filename.isEmpty()) return false;
 	if (molecule == 0) return false;
 	if (ShowUpTermTable() == 0) return false;
-	IsoTab *Iso = molecule->getIso();
 	if (Iso == 0) return false;
 	int i, n = 0, m, ND = 0, NFD = 0, nIso = Iso->numIso, uIA[3], uIB[3], use = 0;
 	QString **Data = termTable->getData(ND, n);
@@ -963,7 +960,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 					     + L1.right(L1.length() - 25);
 				else if (i==2)
 				{
-					delete Iso;
 					delete[] D;
 					return true;
 				}
@@ -1003,7 +999,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 						   + L1.right(L1.length() - 20);
 						break;
 					case 2:
-						delete Iso;
 						delete[] D;
 						return true;
 						break;
@@ -1022,8 +1017,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 				if (FD[m].J != Buffer.mid(25, 5).toInt()) FD[m].ef = true;
 				else FD[m].ef = false;
 				Buffer = RS.readLine();
-				for (i = 0; (i < nIso ? iA != Iso->mNumIso1[i] || iB != Iso->mNumIso2[i] 
-									  : false); i++) ;
+				for (i = 0; i < nIso && (iA != Iso->mNumIso1[i] || iB != Iso->mNumIso2[i]); ++i) ;
 				if (i < nIso)
 				{
 					FD[m].E = Buffer.left(15).toDouble();
@@ -1036,7 +1030,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 						FD[p1] = FD[p2];
 						FD[p2] = TBuff;
 					}
-					m++;
+					++m;
 				}
 			}
 			File.close();
@@ -1044,7 +1038,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		else if (R==2)
 		{
 			delete[] D;
-			delete Iso;
 			return true;
 		}
 	}
@@ -1111,7 +1104,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 							delete[] LL;
 							delete[] FD;
 							delete[] D;
-							delete Iso;
 							return true;
 							break;
 					}
@@ -1155,7 +1147,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 	delete[] FD;
 	delete[] D;
 	delete[] OUnc;
-	delete Iso;
 	return true;
 }
 
@@ -1515,7 +1506,6 @@ void LineTable::W2AI(QString sldc)
     }
 	S << "0\n";
 	Destroy(Data, N);
-	delete IsoT;
 	delete[] Iso;
 	delete[] ZIC;
 	delete[] ZII1;
@@ -3298,7 +3288,6 @@ void LineTable::Shiftvsup()
 
 void LineTable::ShiftIso()
 {
-	IsoTab *Iso = (molecule != 0 ? molecule->getIso() : 0);
 	int M = ((Iso != 0 ? Iso->numIso : 0) - 1) * 10;
 	if (M == -10)
 	{

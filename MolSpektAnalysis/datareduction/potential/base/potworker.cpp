@@ -221,7 +221,6 @@ PotWorker::~PotWorker()
     }
     if (points != 0) delete[] points;
     //printf("nach del aPot\n"); 
-    if (IsoT != 0) delete IsoT;
     if (L!=0) Destroy(L, numSplinePoints);
     delete Lock;
     delete BLLock;
@@ -2488,7 +2487,6 @@ double PotWorker::IsoMFit(double**** E, double**** MaxErr, double& FQSv, int Iso
 bool PotWorker::setMolData(IsoTab* nIsoT, double* nMU, double* nIsoF)
 {
     if (Fit->isRunning()) return false;
-    if (IsoT != 0) delete IsoT;
     if (NIso > 0)
     {
         delete[] MU;

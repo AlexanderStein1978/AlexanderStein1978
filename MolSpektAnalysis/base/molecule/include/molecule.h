@@ -18,10 +18,11 @@
 #include "elstate.h"
 #include "MainWindow.h"
 #include "mdichild.h"
+#include "isotab.h"
 
 
 class LineTable;
-class IsoTab;
+
 
 class Molecule : public MDIChild
 {
@@ -99,6 +100,7 @@ private slots:
 private:
 	int getTransitionIndex(int SIndex1, int SIndex2);
 	Atom *atom1, *atom2;
+	IsoTab mIsoTab;
 	ElState *States[MaxStates];
 	Transition *Transitions[MaxTransitions];
 	QComboBox *BAtom1, *BAtom2, *RefIso;

@@ -7,7 +7,6 @@
 
 #include "fitdatacore.h"
 #include "utils.h"
-#include "isotab.h"
 #include "basedata.h"
 #include "termenergy.h"
 #include "Spektrum.h"
@@ -33,6 +32,61 @@ FitDataCore::~FitDataCore()
 	delete NewPix;
 }
 
+BaseData * FitDataCore::convertToBaseData(const QStringList& L)
+{
+	BaseData *data = new BaseData;
+	int lc = L.count();
+	for (int n=0; n < lc && n <= fdcLineElState; n++)
+	{
+		switch(n)
+		{
+			case fdcIso:
+				data->isotope = static_cast<char>(L[n].toInt());
+				break;
+			case fdcv:
+				data->v = static_cast<ushort>(L[n].toInt());
+				break;
+			case fdcJ:
+				data->J = static_cast<ushort>(L[n].toInt());
+				break;
+			case fdcvs:
+				data->vs = L[n].toStdString();
+				break;
+			case fdcJs:
+				data->Js = static_cast<ushort>(L[n].toInt());
+				break;
+			case fdcSource:
+				data->source = L[n].toStdString();
+				break;
+			case fdcProg:
+				data->prog = L[n].toInt();
+				break;
+			case fdcFile:
+				data->file = L[n].toStdString();
+				break;
+			case fdcEnergy:
+				data->energy = L[n].toDouble();
+				break;
+			case fdcUncert:
+				data->uncert = L[n].toDouble();
+				break;
+			case fdcObsCalc:
+				data->obs_calc = L[n].toDouble();
+				break;
+			case fdcDevR:
+				data->devR = L[n].toFloat();
+				break;
+			case fdcLineElState:
+				data->secondState = L[n].toStdString();
+				break;
+			default:
+				// not possible
+			break;
+		}
+	}
+	return data;
+}
+
 QString FitDataCore::readData(QTextStream& S)
 {
 	QString Buffer;
@@ -41,59 +95,14 @@ QString FitDataCore::readData(QTextStream& S)
 	{
 		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
 		const QStringList L = Buffer.split(Spacer);
-		BaseData *data = new BaseData;
-		int lc = L.count();
-		for (int n=0; n < lc && n <= fdcLineElState; n++)
-		{
-			switch(n)
-			{
-				case fdcIso:
-					data->isotope = static_cast<char>(L[n].toInt());
-					break;
-				case fdcv:
-					data->v = static_cast<ushort>(L[n].toInt());
-					break;
-				case fdcJ:
-					data->J = static_cast<ushort>(L[n].toInt());
-					break;
-				case fdcvs:
-					data->vs = L[n].toStdString();
-					break;
-				case fdcJs:
-					data->Js = static_cast<ushort>(L[n].toInt());
-					break;
-				case fdcSource:
-					data->source = L[n].toStdString();
-					break;
-				case fdcProg:
-					data->prog = L[n].toInt();
-					break;
-				case fdcFile:
-					data->file = L[n].toStdString();
-					break;
-				case fdcEnergy:
-					data->energy = L[n].toDouble();
-					break;
-				case fdcUncert:
-					data->uncert = L[n].toDouble();
-					break;
-				case fdcObsCalc:
-					data->obs_calc = L[n].toDouble();
-					break;
-				case fdcDevR:
-					data->devR = L[n].toFloat();
-					break;
-				case fdcLineElState:
-					data->secondState = L[n].toStdString();
-					break;
-				default:
-					// not possible
-					break;
-			}
-		}
-		mData.push_back(data);
+		mData.push_back(convertToBaseData(L));
 	}
 	return "";
+}
+
+void FitDataCore::setRow(const QStringList& L, const int row)
+{
+	setRow(convertToBaseData(L), row);
 }
 
 void FitDataCore::writeData(QTextStream& S)
@@ -101,7 +110,7 @@ void FitDataCore::writeData(QTextStream& S)
 	QString Spacer = "\t";
 	for (auto it = mData.begin(); it != mData.end(); ++it)
 	{
-		int numDigits = 2 - static_cast<int>(log10((*it)->uncert));
+		int numDigits = getNumDecimalPlaces((*it)->uncert);
 		S << static_cast<int>((*it)->isotope) << Spacer << (*it)->v << Spacer << (*it)->J << Spacer << (*it)->vs.c_str() << Spacer << (*it)->Js << Spacer << (*it)->source.c_str() << Spacer << (*it)->prog
 		  << Spacer << (*it)->file.c_str() << Spacer << QString::number((*it)->energy, 'f', numDigits) << Spacer << QString::number((*it)->uncert, 'f', numDigits) << Spacer
 		  << QString::number((*it)->obs_calc, 'f', numDigits) << Spacer << QString::number((*it)->devR, 'f', 3) << Spacer << (*it)->secondState.c_str() << '\n';
@@ -118,13 +127,22 @@ int FitDataCore::columnCount(const QModelIndex &parent) const
 QVariant FitDataCore::data(const QModelIndex &index, int role) const
 {
 	int row = index.row(), column = index.column(), numDigits;
-	if (role == Qt::DecorationRole && row >= NSources) return *NewPix;
-	if (role != Qt::DisplayRole) return QVariant();
+	if (role == Qt::DecorationRole)
+	{
+		if (column == fdcIso && nullptr != mData[row]->IsoIcon) return *mData[row]->IsoIcon;
+		if (row >= NSources) return *NewPix;
+	}
+	if (role == Qt::TextAlignmentRole)
+	{
+		if (column == fdcSource || column == fdcFile || column == fdcLineElState) return Qt::AlignLeft;
+		return Qt::AlignRight;
+	}
+	if (role != Qt::DisplayRole && role != Qt::EditRole) return QVariant();
 	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(mData[row]->uncert);
 	switch (column)
 	{
 		case fdcIso:
-			return mData[row]->isotope;
+			return QVariant();
 		case fdcv:
 			return mData[row]->v;
 		case fdcJ:
@@ -332,6 +350,11 @@ void FitDataCore::addRow(BaseData* const data)
 	endInsertRows();
 }
 
+void FitDataCore::addRow(const QStringList& L)
+{
+	addRow(convertToBaseData(L));
+}
+
 void FitDataCore::setRow(BaseData *const data, const int row)
 {
 	delete mData[row];
@@ -340,6 +363,11 @@ void FitDataCore::setRow(BaseData *const data, const int row)
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index1, index2, roles);
+}
+
+BaseData * FitDataCore::getRow(const int row) const
+{
+	return mData[row];
 }
 
 void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDataCore& data)
@@ -576,6 +604,15 @@ void FitDataCore::setDevRatio(const int row, const float DevR)
 	QModelIndex index = createIndex(row, fdcDevR);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
+	emit dataChanged(index, index, roles);
+}
+
+void FitDataCore::setIsoIcon(const int row, const QPixmap *const Icon)
+{
+	mData[row]->IsoIcon = Icon;
+	QModelIndex index = createIndex(row, fdcIso);
+	QVector<int> roles;
+	roles.push_back(Qt::DecorationRole);
 	emit dataChanged(index, index, roles);
 }
 

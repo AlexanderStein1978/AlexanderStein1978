@@ -2612,18 +2612,10 @@ bool FitData::writeExPotFitInput(QString Filename)
     if (MsI > 0)
     {
         EsPotFitInputElStateAssignDialog D(this, stateArray, MsI + 1);
-        if (D.exec() == QDialog::Rejected)
-        {
-            delete Iso;
-            return true;
-        }
+        if (D.exec() == QDialog::Rejected) return true;
         if (!D.IsAssignmentFromTabSelected()) StA = D.GetAssignment();
     }
-    if (!File.open(QIODevice::WriteOnly))
-    {
-        delete Iso;
-        return false;
-    }
+    if (!File.open(QIODevice::WriteOnly)) return false;
     QTextStream WS(&File);
     for (n=0; n < nIso; n++) 
         IsoStr[n] = ("    " + QString::number(Iso->mNumIso1[n])).right(5)
@@ -2650,7 +2642,6 @@ bool FitData::writeExPotFitInput(QString Filename)
               + ("               " + QString::number(fitDataCore->getUncertainty(n), 'f', 9)).right(15) + "    2\n";
     }
     File.close();
-    delete Iso;
     if (StA != 0) delete[] StA;
     return true;
 }
@@ -2664,11 +2655,7 @@ bool FitData::writeTFGS(QString Filename)
     Atom *atom1 = molecule->getAtom1(), *atom2 = molecule->getAtom2();
     if (atom1 == 0 || atom2 == 0) return false;
     QFile File(Filename);
-    if (!File.open(QIODevice::WriteOnly))
-    {
-        delete Iso;
-        return false;
-    }
+    if (!File.open(QIODevice::WriteOnly)) return false;
     int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
     int lI = -1, SI = 0, lSI = -1, PN, lPN = -1, wv, nDig;
     double WN, err;
@@ -2693,7 +2680,6 @@ bool FitData::writeTFGS(QString Filename)
       << "  0.0              1           constant zero, switch of quantum numbers\n";
     for (n=0; n < nIso; n++)
         IsoStr[n] = ("    " + QString::number(Iso->mNumIso1[n])).right(5) + ("    " + QString::number(Iso->mNumIso2[n])).right(5);
-    delete Iso;
     for (n=0; n<N; n++)
     {
         WN = fitDataCore->getEnergy(SA[n]);
@@ -2767,4 +2753,154 @@ ResidualFit* FitData::getResidualFit(ElState * const i_state, const int i_Iso, c
 int *FitData::heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const
 {
     return utils::heapSort(FitDataCoreSortFunctor(fitDataCore, sortFuncs), getNumLines());
+}
+
+void FitData::setTabDimensions(int NRows, int)
+{
+    fitDataCore->setRowCount(NRows);
+}
+
+void FitData::getTabDimensions(int& NRows, int& NCols)
+{
+    NRows = fitDataCore->rowCount();
+    NCols = fitDataCore->columnCount();
+}
+
+void FitData::setRowData(int Row, QString* Data)
+{
+    QStringList L;
+    int NC = fitDataCore->columnCount();
+    L.reserve(NC);
+    for (int n=0; n < NC; ++n) L.push_back(Data[n]);
+    fitDataCore->setRow(L, Row);
+}
+
+bool FitData::checkAllConnections()
+{
+    bool result = true;
+    if (!checkSourceConnections()) result = false;
+    if (!checkAllConnections(FitDataCore::fdcFile)) result = false;
+    return result;
+}
+
+bool FitData::checkAllConnections(int)
+{
+    bool ret = true, changed = false;
+    Spektrum *Spectrum = new Spektrum(MW);
+    QString SpektPath, NewPath;
+    QStringList CheckedPaths, Replacements;
+    int n, i, N = fitDataCore->rowCount();
+    table->blockSignals(true);
+    for (n=0; n < N; ++n) if ((SpektPath = QString(fitDataCore->getSourceFile(n).c_str())).indexOf('(') == -1)
+    {
+        if ((i = CheckedPaths.indexOf(SpektPath)) == -1)
+        {
+            if (Spectrum->readData(SpektPath)) NewPath = Spectrum->getFileName();
+            else
+            {
+                NewPath = SpektPath;
+                ret = false;
+            }
+            CheckedPaths << SpektPath;
+            Replacements << NewPath;
+        }
+        else NewPath = Replacements[i];
+        if (NewPath != SpektPath)
+        {
+            fitDataCore->setSourceFile(n, NewPath.toStdString());
+            changed = true;
+        }
+    }
+    table->blockSignals(false);
+    if (changed) Changed();
+    delete Spectrum;
+    return ret;
+}
+
+void FitData::copyRows(int& numRows, int& numColums, int *& Rows, QString **& Data)
+{
+    int r, numDigits;
+	if (Data != 0) Destroy(Data, numRows);
+	table->getSelectedRows(Rows, numRows);
+    numColums = Tab->columnCount();
+	Data = CreateQString(numRows, numColums);
+	for (r=0; r <  numRows; r++)
+    {
+        numDigits = fitDataCore->getNumDecimalPlaces(r);
+        Data[r][FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(r)));
+        Data[r][FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(r)));
+        Data[r][FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(r)));
+        Data[r][FitDataCore::fdcvs] = fitDataCore->get_vs(r).c_str();
+        Data[r][FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(r)));
+        Data[r][FitDataCore::fdcSource] = fitDataCore->getSource(r).c_str();
+        Data[r][FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(r));
+        Data[r][FitDataCore::fdcFile] = fitDataCore->getSourceFile(r).c_str();
+        Data[r][FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(r), 'f', numDigits);
+        Data[r][FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(r), 'f', numDigits);
+        Data[r][FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(r), 'f', numDigits);
+        Data[r][FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(r), 'f', 3);
+        Data[r][FitDataCore::fdcLineElState] = fitDataCore->getOtherState(r).c_str();
+    }
+}
+
+void FitData::copyRows(int& numRows, int& numColums, QString **& Data)
+{
+	int *Rows;
+	copyRows(numRows, numColums, Rows, Data);
+    delete[] Rows;
+}
+
+void FitData::cutRows(int& numRows, int& numColums, QString **& Data)
+{
+    int *Rows;
+	copyRows(numRows, numColums, Rows, Data);
+    fitDataCore->deleteRows(Rows, numRows);
+    delete[] Rows;
+}
+
+void FitData::insertRows(int numRows, int numColumns, QString ** Data)
+{
+    for (int r=0; r < numRows; ++r)
+    {
+        QStringList L;
+        for (int c=0; c < numColumns; ++c) L << Data[r][c];
+        fitDataCore->addRow(L);
+    }
+}
+
+void FitData::MarkLines(int* rN, int N)
+{
+    int n=0, r1, MC = fitDataCore->columnCount() - 1;
+	QItemSelectionModel* model = new QItemSelectionModel;
+    QModelIndex topIndex = fitDataCore->getIndex(rN[0], 0);
+	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
+	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
+	{
+		r1 = rN[n];
+		rN[n] = rN[n-1];
+		rN[n-1] = r1;
+	}
+	for (n=0; n<N; )
+	{
+		for (r1 = rN[n++]; n<N && rN[n] == rN[n-1] + 1; n++) ;
+        QModelIndex topLeft = fitDataCore->getIndex(r1, 0), bottomRight = fitDataCore->getIndex(rN[n-1], MC);
+        QItemSelection newSelection(topLeft, bottomRight);
+        model->select(newSelection, QItemSelectionModel::Select);
+	}
+	table->setSelectionModel(model);
+    table->blockSignals(false);
+	if (!isVisible()) show();
+	activateWindow();
+	table->setFocus();
+}
+
+void FitData::setIsoIcon(int Col, int c)
+{
+    if (IsoIcon == 0) return;
+	int r, n, N = fitDataCore->rowCount();
+	for (r=0; r<N; r++)
+	{
+		n = (c==0 ? Tab->item(r, Col)->text().toInt() : (Tab->item(r, Col)->text().toInt() - 1) / 10);
+		Tab->item(r, Col)->setIcon(IsoIcon[ n]);
+	}
 }

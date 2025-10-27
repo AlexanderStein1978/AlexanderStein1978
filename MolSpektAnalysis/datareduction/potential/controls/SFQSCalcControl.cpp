@@ -10,7 +10,6 @@
 #include "potential.h"
 #include "fitdata.h"
 #include "utils.h"
-#include "isotab.h"
 #include "elstate.h"
 #include "MainWindow.h"
 

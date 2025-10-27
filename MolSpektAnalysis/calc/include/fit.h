@@ -15,7 +15,7 @@
 
 class Transition;
 class MLRPot;
-class IsoTab;
+struct IsoTab;
 class ResidualFit;
 struct SplinePoint;
 class Spline;

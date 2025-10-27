@@ -22,7 +22,7 @@
 #include <QThread>
 
 class ElState;
-class IsoTab;
+struct IsoTab;
 class NaturalSpline;
 class AnaPot;
 class MTTPot;

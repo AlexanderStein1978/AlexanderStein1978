@@ -33,9 +33,9 @@ class TableWindow : public MDIChild
 public:
 	TableWindow(Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
     virtual ~TableWindow();
-	void setTabDimensions(int NRows, int NCols);
-	void getTabDimensions(int &NRows, int &NCols);
-	void setRowData(int Row, QString *Data);
+	virtual void setTabDimensions(int NRows, int NCols);
+	virtual void getTabDimensions(int &NRows, int &NCols);
+	virtual void setRowData(int Row, QString *Data);
 	virtual void setMolecule(Molecule *Mol);
 	Molecule *getMolecule();	
 	void setSource(QString nSource);
@@ -52,9 +52,9 @@ public:
 	void setHorizontalHeader(QStringList &Labels);
 	void setVerticalHeader(QStringList &Labels);
 	virtual void cutRows(int &numRows, int &numColumns, QString **&Data);
-	void copyRows(int &numRows, int &numColums, QString **&Data);
+	virtual void copyRows(int &numRows, int &numColums, QString **&Data);
 	virtual void insertRows(int numRows, int numColumns, QString **Data);
-	void MarkLines(int *rN, int N);
+	virtual void MarkLines(int *rN, int N);
 	void shiftCellValue(int n);
 	void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns);
 	void setViewnRows(MDIChild *Viewer, int NRows, int *Rows);
@@ -79,7 +79,7 @@ public:
 		return 0;
 	}
 	
-	inline int getNumColumns()
+	inline virtual int getNumColumns() const
 	{
 		if (Tab != 0) return Tab->columnCount();
 		return 0;
@@ -94,7 +94,7 @@ public slots:
 	
 protected:
 	void resizeEvent(QResizeEvent *e);
-	void setIsoIcon(int Col, int c = 0);
+	virtual void setIsoIcon(int Col, int c = 0);
     int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const;
 	virtual void sortTab(int *SortArray);
 	void getViewnRows(bool *RV);
@@ -102,7 +102,7 @@ protected:
 	void setNumParIt(int N);
 	int getNumParIt();
 	void setMaxParFits(int Max);
-    bool checkAllConnections(int FileColumn);
+    virtual bool checkAllConnections(int FileColumn);
     void shrinkAllSpectRefs(int FileColumn);
 	virtual bool readData(QTextStream& S);
 	virtual inline void writeData(QTextStream&) {}
@@ -126,7 +126,6 @@ protected:
 	QLineEdit *vMax, *JMax, *error, *Js, *Jss, *Temp, *Date, *Pot1, *Pot2, *NumParFits;
 	QPushButton *Calc;
 	QString Filename;
-	QPixmap getIsoIcon(int N);
 	QList<ViewList> ViewLists;
 	QProgressBar *Progress;
 
@@ -145,7 +144,6 @@ private:
 	QLineEdit *Source, *Name;
 	QString tSource, tvMax, tJMax, terror;
 	Type Typ;
-	QPixmap *IsoIcon;
 };
 
 #endif

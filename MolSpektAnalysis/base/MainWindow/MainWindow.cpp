@@ -3785,7 +3785,6 @@ void MainWindow::showIsotopologues()
 	}
 	Tab->setWindowTitle("Isotopomers of " + S1 + S2);
 	Tab->show();
-	delete Iso;
 }
 
 void MainWindow::showLevelNumbers()
@@ -3833,7 +3832,6 @@ void MainWindow::showLevelNumbers()
 	//printf("Vor Destroy\n");
 	Destroy(Level, Iso->numIso, NS, mv + 1);
 	Destroy(Numbers, Iso->numIso);
-	delete Iso;
 	//printf("Ende showLevelNumbers\n");
 }
 
@@ -4816,7 +4814,6 @@ void MainWindow::fitScatNodePos()
 			Tab->setItem(n, i, new QTableWidgetItem(QString::number(NodePos[i][n], 'f', 3)));
 	workspace->addSubWindow(Tab);
 	Tab->show();
-	delete IsoT;
 	//printf("Vor Destroy\n");
 	Destroy(NodePos, NI);
 }
@@ -4995,7 +4992,6 @@ void MainWindow::addCalculatedLevels()
 	if (D->exec() == QDialog::Rejected)
 	{
 		delete D;
-		delete Iso;
 		return;
 	}
     int v, vM = vE->text().toInt(), I = IsoB->currentIndex(), JM = JMaxE->text().toInt(), comp = CompB->currentIndex();
@@ -5004,11 +5000,7 @@ void MainWindow::addCalculatedLevels()
 	bool Max = MaxB->isChecked(), AllIso;
 	double Err = ErrE->text().toDouble();
 	delete D;
-	if (TT == 0) 
-	{
-		delete Iso;
-		return;
-	}
+	if (TT == 0) return;
 	if (I == Iso->numIso)
 	{
 		I = Iso->numIso - 1;
@@ -5022,11 +5014,9 @@ void MainWindow::addCalculatedLevels()
 		{
 			QMessageBox::information(this, "MolSpectAnalysis", "Error: Levels for the isotopologue " + Iso->getIsoName(I)
 		                         + " are not available in the term energy table \"" + TT->getName() + "\"!");
-			delete Iso;
 			return;
 		}
 	}
-	delete Iso;
 	if (vM > TT->getMaxv()) 
 	{
 		if (!Max)
@@ -5193,7 +5183,6 @@ void MainWindow::showNumLevels()
 	W->setItem(Iso->numIso, NC, new QTableWidgetItem(QString::number(GS)));
 	workspace->addSubWindow(W);
 	W->show();
-	delete Iso;
 	Destroy(LN, NI);
 }
 
@@ -5761,7 +5750,6 @@ void MainWindow::fitIsoMass()
 	}
 	delete[] IsoL;
 	delete D;
-	delete Iso;
 }
 
 void MainWindow::fitTangToenniesPot()
@@ -6145,7 +6133,6 @@ void MainWindow::Assignvs()
                             }
                             WarningMSG += isoTab->getIsoName(n);
                         }
-                        delete isoTab;
                         WarningMSG += "!\n";
                     }
                     if (QMessageBox::question(this, "MolSpektAnalysis", WarningMSG + "Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
@@ -6790,8 +6777,8 @@ void MainWindow::importCoupledPotfitOutput()
 	Buffer = S.readAll();
 	QStringList SL = Buffer.split('\n');
 	for (n=0; n<10; n++) NL[n] = 0;
-	for (N=0; (N < SL.count() ? SL[N].left(11) != " bad lines:" : false); N++)
-		NL[SL[N].mid(11, 1).toInt()]++;
+	for (N=0; N < SL.count() && SL[N].left(11) != " bad lines:"; ++N)
+		++NL[SL[N].mid(11, 1).toInt()];
 	TableLine *TL[10];
 	int Mv[10], MJ[10];
 	for (n=0; n < 10; n++) if (NL[n] > 0) 
@@ -6804,8 +6791,8 @@ void MainWindow::importCoupledPotfitOutput()
 		s = SL[n].mid(11, 1).toInt();
 		i1 = SL[n].left(3).toInt();
 		i2 = SL[n].mid(3, 3).toInt();
-		for (m=0; (m < Iso->numIso ? (Iso->mNumIso1[m] != i1 || Iso->mNumIso2[m] != i2)
-					&& (Iso->mNumIso1[m] != i2 || Iso->mNumIso2[m] != i1) : false); m++) ;
+		for (m=0; m < Iso->numIso && (Iso->mNumIso1[m] != i1 || Iso->mNumIso2[m] != i2)
+					&& (Iso->mNumIso1[m] != i2 || Iso->mNumIso2[m] != i1); ++m) ;
 		TL[s][NL[s]].Iso = m;
 		if ((TL[s][NL[s]].vss = SL[n].mid(6, 3).toInt()) > Mv[s]) Mv[s] = TL[s][NL[s]].vss;
 		TL[s][NL[s]].vs = SL[n].mid(9, 3).toInt();
@@ -6932,7 +6919,6 @@ void MainWindow::importCoupledTermTable()
 		TT->setData(Data, 1, NI, Nv - 1, NJ - 1, 0, NStates, MixC);
 		TT->show();
 		delete[] States;
-		delete Iso;
 		return;
 	}
 	Nc = new int[NStates];
@@ -7134,7 +7120,6 @@ void MainWindow::importCoupledTermTable()
 	}
 	delete[] MC;
 	delete[] DA;
-	delete Iso;
 	delete[] Nc;
 	delete[] S;
 	delete[] L;
@@ -7242,7 +7227,6 @@ void MainWindow::importCoupledWaveFunctions()
 		WFile.setFileName(IsoDirs[0] + WFDir[n]);
 		WFile.open(QIODevice::ReadOnly);
 		S.setDevice(&WFile);
-		if (IsoT != 0) delete IsoT;
 		IsoT = Mol->getIso();
 		S.readLine();
 		for (NCoeff = 0; !S.atEnd() && NCoeff < 1000; NCoeff++)
@@ -7362,7 +7346,6 @@ void MainWindow::importCoupledWaveFunctions()
 	SWF->setSource(PotFile);
 	Pot->setCouplingData(SWF, NChan, States, Components);
 	delete[] IsoDirs;
-	delete IsoT;
 }
 
 void MainWindow::importDunhamAsen()

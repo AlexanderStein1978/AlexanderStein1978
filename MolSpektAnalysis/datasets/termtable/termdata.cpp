@@ -28,7 +28,6 @@ TermData::~TermData()
 		Destroy(Data, numComp, numIso, numv);
 		Destroy(vStart, numIso, numComp);
 	}
-	if (Iso != 0) delete Iso;
 	if (Z != 0) delete[] Z;
 	if (CompZ != 0) delete[] CompZ;
 }
@@ -230,7 +229,6 @@ void TermData::setData(double ****nData, int nC, int nI, int mv, int mJ, int *CZ
 
 void TermData::setIso(IsoTab *nIso)
 {
-	if (Iso != 0) delete Iso;
 	Iso = nIso;
 }
 

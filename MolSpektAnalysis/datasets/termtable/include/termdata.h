@@ -11,7 +11,7 @@
 
 #include <QAbstractTableModel>
 
-class IsoTab;
+struct IsoTab;
 
 
 class TermData : public QAbstractTableModel

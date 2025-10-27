@@ -41,7 +41,6 @@ class FitData : public TableWindow
 	public:
 		FitData(ElState *State = 0, MainWindow* MW = 0, Molecule* M = 0);
 		~FitData();
-		
         void getData(TableLine *&Lines, int &NLines, int JD = -1, int F = -2, int v = -2, int mJ = 0, int Iso = -1, ElState* state = 0);
 		void getData(TableLine *&Lines, int &NLines, int *&RowN,
                      bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
@@ -105,14 +104,15 @@ class FitData : public TableWindow
         void sortByLTabAndProg();
         void setResidualFit(ResidualFit *i_residualFit);
         ResidualFit* getResidualFit(ElState* const i_state, const int Iso, const int v, const int comp);
-
-        inline bool checkAllConnections()
-        {
-            bool result = true;
-            if (!checkSourceConnections()) result = false;
-            if (!TableWindow::checkAllConnections(FitDataCore::fdcFile)) result = false;
-            return result;
-        }
+		void setTabDimensions(int NRows, int NCols) override;
+		void getTabDimensions(int &NRows, int &NCols) override;
+		void setRowData(int Row, QString *Data) override;
+        bool checkAllConnections();
+		void copyRows(int &numRows, int &numColums, QString **&Data) override;
+		void cutRows(int &numRows, int &numColums, QString **&Data) override;
+		void insertRows(int numRows, int numColumns, QString **Data) override;
+		void MarkLines(int *rN, int N) override;
+		void setIsoIcon(int Col, int c = 0) override;
 
         void shrinkAllSpectRefs()
         {
@@ -173,11 +173,15 @@ class FitData : public TableWindow
                      int mJ = 0, int JD = -1, int F = -2, int Iso = -1, bool OnlyAssignedVss = false, ElState* state = 0);
 		void sortTab(int *SArray) override;
         void copyDataFromTable(const int i_numLines, int* const i_Lines, const FitData* const i_fitDataToCopyFrom);
-        void prepareForExtractNewOrChanged(const FitData *const i_fitDataOld, const int i_NRnew, const int i_NROld, const bool i_withSources, const bool i_subtractSourceOffsets, int *const io_Onew, int *const io_Oold) const;
-        sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld, const bool i_withSources, const bool i_subtractSourceOffset) const;
+        void prepareForExtractNewOrChanged(const FitData *const i_fitDataOld, const int i_NRnew, const int i_NROld, const bool i_withSources, const bool i_subtractSourceOffsets, int *const io_Onew,
+										   int *const io_Oold) const;
+        sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld, const bool i_withSources,
+																	   const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
 		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
-		
+		bool checkAllConnections(int FileColumn) override;
+		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
+
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;
 		LineTable **Sources;

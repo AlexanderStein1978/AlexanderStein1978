@@ -22,7 +22,6 @@
 #include "molecule.h"
 #include "utils.h"
 #include "Spektrum.h"
-#include "isotab.h"
 #include "heapsort.h"
 
 
@@ -30,7 +29,6 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 {
 	//printf("TableWindow::TableWindow: typ=%d\n", typ);
 	QLabel *NL = 0, *SL = 0;
-	IsoIcon = 0;
 	molecule = 0;
 	setMolecule(M);
 	Typ = typ;
@@ -686,7 +684,7 @@ void TableWindow::MarkLines(int* rN, int N)
 	}
 	for (n=0; n<N; )
 	{
-		for (r1 = rN[n++]; (n<N ? rN[n] == rN[n-1] + 1 : false); n++) ;
+		for (r1 = rN[n++]; n<N  && rN[n] == rN[n-1] + 1; n++) ;
 		Tab->setRangeSelected(QTableWidgetSelectionRange(r1, 0, rN[n-1], MC), true);
 	}
 	if (!isVisible()) show();
@@ -707,20 +705,14 @@ QString TableWindow::getSource() const
 int TableWindow::getvMax()
 {
 	QString T;
-	if (Typ == 1 || Typ == -3 ? !(T = vMax->text()).isEmpty() : false) return T.toInt();
+	if ((Typ == 1 || Typ == -3) && !(T = vMax->text()).isEmpty()) return T.toInt();
 	return -1;
-}
-
-QPixmap TableWindow::getIsoIcon(int N)
-{
-	if (IsoIcon != 0) return IsoIcon[N];
-	return QPixmap();
 }
 
 int TableWindow::getJMax()
 {
 	QString T;
-	if (Typ == 1 || Typ == -3 ? !(T = JMax->text()).isEmpty() : false) return T.toInt();
+	if ((Typ == 1 || Typ == -3) && !(T = JMax->text()).isEmpty()) return T.toInt();
 	return -1;
 }
 
@@ -801,23 +793,6 @@ void TableWindow::setMolecule(Molecule *mol)
 	if (mol == molecule) return;
 	molecule = mol;
 	if (mol == 0) return;
-	IsoTab *Iso = mol->getIso();
-	if (IsoIcon != 0) delete[] IsoIcon;
-	IsoIcon = new QPixmap[Iso->numIso];
-	QFont F;
-	QPainter P;
-	int w, h, n;
-	for (n=0; n < Iso->numIso; n++)
-	{
-		w = TextWidth(F, Iso->texName[n]);
-		h = TextHeight(F, Iso->texName[n]);
-		IsoIcon[n] = QPixmap(w, h);
-		IsoIcon[n].fill();
-		P.begin(IsoIcon + n);
-		WriteText(P, 0, h, Iso->texName[n], F, 0);
-		P.end();
-	}
-	delete Iso;
 }
 
 void TableWindow::setName()

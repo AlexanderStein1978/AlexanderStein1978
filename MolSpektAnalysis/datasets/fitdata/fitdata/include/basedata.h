@@ -25,6 +25,7 @@ struct BaseData
 	double obs_calc = 0.0;
 	float devR = 0.0f;
 	std::string secondState;
+	const QPixmap* IsoIcon = nullptr;
 };
 
 #endif
