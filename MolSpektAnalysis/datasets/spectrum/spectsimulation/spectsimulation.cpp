@@ -70,7 +70,6 @@ SpectSimulation::SpectSimulation(MainWindow *mw)
 SpectSimulation::~SpectSimulation()
 {
 	if (Lines != 0) delete[] Lines;
-	if (Iso != 0) delete Iso;
 }
 
 void SpectSimulation::cExcProfile(double Cf, double I, double Lf, double &Rs, double &Re, 

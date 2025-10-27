@@ -217,7 +217,6 @@ void FCFJDep::molChanged(int i)
 	int n, N;
 	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->getIsoName(n));
 	IsoB->setCurrentIndex(Iso->refIso);
-	delete Iso;
 	for (n=0, N = Mol->getNumStates(); n<N; n++)
 	{
 		S = Mol->getStateP(n);

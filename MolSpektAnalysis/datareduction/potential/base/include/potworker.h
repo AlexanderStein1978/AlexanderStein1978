@@ -24,7 +24,7 @@ class QMutex;
 
 class PotFit;
 class AnaPot;
-class IsoTab;
+struct IsoTab;
 
 struct SplinePoint;
 struct TermEnergy;

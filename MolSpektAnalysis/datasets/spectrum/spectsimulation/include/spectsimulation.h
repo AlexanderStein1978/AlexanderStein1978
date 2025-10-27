@@ -13,7 +13,7 @@
 
 class Molecule;
 class ElState;
-class IsoTab;
+struct IsoTab;
 
 struct SimLine;
 

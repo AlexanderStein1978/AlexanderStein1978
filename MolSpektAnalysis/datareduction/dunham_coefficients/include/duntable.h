@@ -13,7 +13,7 @@
 #include "tablewindow.h"
 #include "elstate.h"
 
-class IsoTab;
+struct IsoTab;
 class TableLine;
 class TermTable;
 class Transition;
