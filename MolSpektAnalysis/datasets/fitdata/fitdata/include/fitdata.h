@@ -113,6 +113,7 @@ class FitData : public TableWindow
 		void insertRows(int numRows, int numColumns, QString **Data) override;
 		void MarkLines(int *rN, int N) override;
 		void shiftCellValue(int v) override;
+		bool containsDataForMoreThanOneState() const;
 
         void shrinkAllSpectRefs()
         {
@@ -146,15 +147,7 @@ class FitData : public TableWindow
 
         inline void sortByLineElState()
         {
-            if (Tab->columnCount() > FitDataCore::fdcLineElState)
-            {
-                sortTab(heapSort(sortByElState));
-            }
-        }
-
-        inline bool containsDataForMoreThanOneState()
-        {
-            return (Tab->columnCount() > FitDataCore::fdcLineElState && LineElStates != 0);
+            sortTab(heapSort(sortByElState));
         }
 
     protected:

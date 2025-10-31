@@ -11,13 +11,14 @@
 #include "termenergy.h"
 #include "Spektrum.h"
 #include "elstate.h"
+#include "molecule.h"
 
 #include <QTextStream>
 #include <QPixmap>
 #include <QPainter>
 
 
-FitDataCore::FitDataCore(QObject *parent) : QAbstractTableModel(parent)
+FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol)
 {
 	NewPix = new QPixmap(10, 10);
     QPainter P(NewPix);
@@ -129,7 +130,16 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 	int row = index.row(), column = index.column(), numDigits;
 	if (role == Qt::DecorationRole)
 	{
-		if (column == fdcIso && nullptr != mData[row]->IsoIcon) return *mData[row]->IsoIcon;
+		if (column == fdcIso && nullptr != molecule)
+		{
+			if (nullptr == mData[row]->IsoIcon)
+			{
+				int n = mData[row]->isotope / 10 - 1;
+				IsoTab* Iso = molecule->getIso();
+				if (0 <= n && n < Iso->numIso) mData[row]->IsoIcon = &Iso->IsoImage[n];
+			}
+			return *mData[row]->IsoIcon;
+		}
 		if (row >= NSources) return *NewPix;
 	}
 	if (role == Qt::TextAlignmentRole)
@@ -142,7 +152,7 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 	switch (column)
 	{
 		case fdcIso:
-			return QVariant();
+			return mData[row]->isotope;
 		case fdcv:
 			return mData[row]->v;
 		case fdcJ:
@@ -620,4 +630,17 @@ void FitDataCore::setRWError(const QString& headerText)
 {
 	RWError = headerText;
 	emit headerDataChanged(Qt::Horizontal, fdcLineElState, fdcLineElState);
+}
+
+void FitDataCore::setMolecule(Molecule* const mol)
+{
+	if (mol != molecule)
+	{
+		molecule = mol;
+		for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = nullptr;
+		QModelIndex first = createIndex(0, fdcIso), last = createIndex(mData.size() - 1, fdcIso);
+		QVector<int> roles;
+		roles.push_back(Qt::DecorationRole);
+		emit dataChanged(first, last, roles);
+	}
 }
