@@ -3043,3 +3043,93 @@ void FitData::ContentChanged(const QModelIndex& topLeft, const QModelIndex& bott
     }
 	delete[] IT;
 }
+
+void FitData::exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns)
+{
+	int n, r, c, NR = fitDataCore->rowCount(), NC = fitDataCore->columnCount();
+	QFile F(FileName);
+	F.open(QIODevice::WriteOnly);
+	QTextStream S(&F);
+	if (selectedCells)
+	{
+        QModelIndexList L = table->getSelectedIndexes();
+		bool *verticalCells = new bool[NR], *horizontalCells = new bool[NC], **cells = CreateBool(NR, NC);
+        int top, bottom, left, right;
+        for (n=0; n < NR; ++n) verticalCells[n] = false;
+        for (n=0; n < NC; ++n) horizontalCells[n] = false;
+        for (r=0; r < NR; ++r) for (c=0; c < NC; ++c) cells[r][c] = false; 
+        for (auto it = L.begin(); it != L.end(); ++it)
+        {
+            r = it->row();
+            c = it->column();
+            verticalCells[r] = true;
+            horizontalCells[c] = true;
+            cells[r][c] = true;
+        }
+        for (top=0; top < NR; ++top) if (verticalCells[top]) break;
+        for (bottom = NR - 1; bottom >= 0; --bottom) if (verticalCells[bottom]) break;
+        for (left=0; left < NC; ++left) if (horizontalCells[left]) break;
+        for (right = NC - 1; right >= 0; --right) if (horizontalCells[right]) break;
+		if (exchangeRowsColumns)
+		{
+			for (r = top; r <= bottom; ++r) if (verticalCells[r]) S << '\t' << fitDataCore->headerData(r, Qt::Vertical).toByteArray(); 
+			S << '\n';
+			for (c = left; c <= right; ++c)
+			{
+				S << fitDataCore->headerData(c, Qt::Horizontal).toByteArray() << '\t';
+				for (r = top; r <= bottom; ++r)
+                {
+					if (cells[r][c])
+                    {
+                        switch(c)
+                        {
+                            
+                    }
+                    else S << '\t';
+					S << (r < bottom ? '\t' : '\n');
+			}
+		}
+		else for (n=0; n < L.count(); n++)
+		{
+			for (c = L[n].leftColumn(); c <= L[n].rightColumn(); c++)
+				S << '\t' << Tab->horizontalHeaderItem(c)->text();
+			S << '\n';
+			for (r = L[n].topRow(); r <= L[n].bottomRow(); r++)
+			{
+				if (VHI) S << Tab->verticalHeaderItem(r)->text() << '\t';
+				for (c = L[n].leftColumn(); c <= L[n].rightColumn(); c++)
+					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "")
+					  << (c < L[n].rightColumn() ? '\t' : '\n');
+			}
+		}
+	}
+	else
+	{
+		if (exchangeRowsColumns) 
+		{
+			if (VHI) for (r=0; r < Tab->rowCount(); r++)
+				S << '\t' << Tab->verticalHeaderItem(r)->text();
+			S << '\n';
+			for (c=0; c < Tab->columnCount(); c++)
+			{
+				S << Tab->horizontalHeaderItem(c)->text() << '\t';
+				for (r=0; r < Tab->rowCount(); r++) 
+					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "") 
+					  << (r < Tab->rowCount() - 1 ? '\t' : '\n');
+			}
+		}
+		else 
+		{
+			for (c=0; c < Tab->columnCount(); c++)
+				S << '\t' << Tab->horizontalHeaderItem(c)->text();
+			S << '\n';
+			for (r=0; r < Tab->rowCount(); r++) 
+			{
+				if (VHI) S << Tab->verticalHeaderItem(r)->text() << '\t';
+				for (c=0; c < Tab->columnCount(); c++)
+					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "") 
+					  << (c < Tab->columnCount() - 1 ? '\t' : '\n');
+			}
+		}
+	}
+}
