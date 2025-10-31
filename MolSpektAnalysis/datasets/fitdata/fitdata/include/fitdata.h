@@ -159,6 +159,9 @@ class FitData : public TableWindow
 	signals:
 		void AssignmentsAccepted(FitData*);
 		
+	private slots:
+		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+		
 	private:
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger} sortForExtractNewOrChangedOrder;
 
