@@ -718,12 +718,13 @@ int TableWindow::getJMax()
 
 void TableWindow::setIsoIcon(int Col, int c)
 {
-	if (IsoIcon == 0) return;
+	if (Tab == nullptr || molecule == nullptr) return;
+	IsoTab* Iso = molecule->getIso();
 	int r, n, N = Tab->rowCount();
 	for (r=0; r<N; r++)
 	{
 		n = (c==0 ? Tab->item(r, Col)->text().toInt() : (Tab->item(r, Col)->text().toInt() - 1) / 10); 
-		Tab->item(r, Col)->setIcon(IsoIcon[n]);
+		Tab->item(r, Col)->setIcon(Iso->IsoImage[n]);
 	}
 }
 

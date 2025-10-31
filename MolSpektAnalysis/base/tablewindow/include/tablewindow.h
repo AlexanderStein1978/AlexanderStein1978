@@ -55,7 +55,7 @@ public:
 	virtual void copyRows(int &numRows, int &numColums, QString **&Data);
 	virtual void insertRows(int numRows, int numColumns, QString **Data);
 	virtual void MarkLines(int *rN, int N);
-	void shiftCellValue(int n);
+	virtual void shiftCellValue(int n);
 	void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns);
 	void setViewnRows(MDIChild *Viewer, int NRows, int *Rows);
 	void search(int column, int value, int smeqla);
