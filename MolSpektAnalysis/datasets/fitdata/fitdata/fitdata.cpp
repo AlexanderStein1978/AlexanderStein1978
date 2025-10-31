@@ -86,10 +86,12 @@ int FitData::addMarkedLevel(TermEnergy& TE, Spektrum *Source)
 {
     NMarkedLevels++;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int R = fitDataCore->addMarkedLevel(TE, Source);
     table->blockSignals(false);
     setBlockChangeSignal(true);
     Changed();
+    fitDataCore->blockSignals(false);
     setBlockChangeSignal(false);
     return R;
 }
@@ -98,6 +100,7 @@ void FitData::AddRow()
 {
     if (table == 0) return;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int r, cr = table->currentIndex().row(), nr = fitDataCore->addRow(cr),  *FCB = new int[nr + 1], NSources = fitDataCore->getNSources();
     LineTable **SB = new LineTable*[nr+1];
     ElState **StB = new ElState*[nr+1];
@@ -136,6 +139,7 @@ void FitData::AddRow()
     Sources = SB;
     FC = FCB;
     LineElStates = StB;
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -153,6 +157,7 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
 {
     int currentRow = fitDataCore->rowCount(), NewRowCount = currentRow + i_numLines, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     if (currentRow > 0)
     {
         LineTable** newSources = new LineTable*[NewRowCount];
@@ -201,6 +206,7 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
             LineElStates[currentRow++] = 0;
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     bool different = (NSourceOffset != i_fitDataToCopyFrom->NSourceOffset);
     if (!different) for (int i=0; i < NSourceOffset; ++i) if (SourceOffset[i] != i_fitDataToCopyFrom->SourceOffset[i] || SourceOffsetNames[i] != i_fitDataToCopyFrom->SourceOffsetNames[i]) different = true;
@@ -241,6 +247,7 @@ void FitData::DeleteRows()
 {
     if (table == 0) return;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int j, k, n, R = fitDataCore->rowCount(), *Rows = nullptr, N=0, NSources = fitDataCore->getNSources();
     table->getSelectedRows(Rows, N);
     if (NSources > 0) 
@@ -329,6 +336,7 @@ void FitData::DeleteRows()
     delete[] deleted;
     fitDataCore->deleteRows(Rows, N);
     delete[] Rows;
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -359,6 +367,7 @@ void FitData::deleteRows(int* rows, int N)
     int n, m, NR = fitDataCore->rowCount();
     int mb = NR - NMarkedLevels, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     if (NSources > 0) 
     {
         for (n=0; (n<N ? (rows[n] < NSources ? Sources[rows[n]] == 0 : true) : false); n++) ;
@@ -445,6 +454,7 @@ void FitData::deleteRows(int* rows, int N)
     }
     if (NSources > n) NSources = n;
     fitDataCore->deleteRows(rows, N);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -1074,6 +1084,7 @@ bool FitData::readData(QString Filename)
         return !Error;
     }
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int n, N = fitDataCore->rowCount(), b;
     if (Sources != 0) delete[] Sources;
     Sources = new LineTable*[NSources = N];
@@ -1101,6 +1112,7 @@ bool FitData::readData(QString Filename)
             else LineElStates[n] = molecule->getState(fitDataCore->getOtherState(n).c_str());
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     emit propertiesChanged();
     return true;
@@ -1169,6 +1181,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
     int vc[MC+1];
     QString B;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (m=n=0, I = c = Jss = Js = -1; m <= NR; m++)
     {
         if (m < NR && I == fitDataCore->getIso(SA[m]) && Jss == fitDataCore->getJ(SA[m]) && Js == fitDataCore->getJs(SA[m])) continue;
@@ -1261,6 +1274,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
             else NE = 0;
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] S1;
     delete[] SA;
@@ -1559,6 +1573,7 @@ void FitData::removeDataFSource()
     if (c == QDialog::Rejected) return;
     for (n=0; fitDataCore->getSource(n) != b; n++) ;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (m=n; m<N; m++)
     {
         if (fitDataCore->getSource(n) != b)
@@ -1585,6 +1600,7 @@ void FitData::removeDataFSource()
     NSources = n;
     fitDataCore->deleteRows(list.data(), list.size());
     fitDataCore->blockSignals(false);
+    table->blockSignals(false);
 }
 
 void FitData::RemoveDoubled()
@@ -1596,6 +1612,7 @@ void FitData::RemoveDoubled()
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
     if (TT != 0) TT->getCompT(MCT, CompT);
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n < NR; n++)
     {
         SA[S1[n]] = n;
@@ -1650,6 +1667,7 @@ void FitData::RemoveDoubled()
     }
     if (n < NSources) NSources = n;
     fitDataCore->deleteRows(delList.data(), delList.size());
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
     delete[] SA;
@@ -1661,6 +1679,7 @@ void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
 {
     int n, N = fitDataCore->rowCount(), NSources = fitDataCore->getNSources();
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n = N - NMarkedLevels; n<N; n++)
     {
         if (fitDataCore->getIso(n) != TE.Iso) continue;
@@ -1690,6 +1709,7 @@ void FitData::removeMarkedLevel(TermEnergy& TE, Spektrum* Source)
         LineElStates[NSources - 1] = 0;
     }
     NMarkedLevels--;
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
 }
 
@@ -1702,6 +1722,7 @@ void FitData::removeSingleLines()
     for (n=0; n<N; n++) SA[S1[n]] = n;
     delete[] S1;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n = lc = 1; n < N - NMarkedLevels; n++, lc++) if (fitDataCore->getProgression(SA[n]) != fitDataCore->getProgression(SA[n-1]) || Sources[SA[n-1]] != Sources[SA[n]])
     {
         if (lc == 1 && fitDataCore->get_vs(SA[n-1]) != "TE" && stoi(fitDataCore->get_vs(SA[n-1])) >= -1) del[SA[n]] = true;
@@ -1729,6 +1750,7 @@ void FitData::removeSingleLines()
         }
         else fitDataCore->deleteRow(n);
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     if (n < NSources) NSources = n;
     Changed();
@@ -1740,6 +1762,7 @@ void FitData::selectDataFSource(QString Source)
     std::string source = Source.toStdString();
     QItemSelectionModel* model = new QItemSelectionModel;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n < N; n++)
     {
         while (n<N && fitDataCore->getSource(n) != source) n++;
@@ -1753,6 +1776,7 @@ void FitData::selectDataFSource(QString Source)
         }
     }
     table->setSelectionModel(model);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     emit SelChanged();
 }
@@ -1799,6 +1823,7 @@ void FitData::addData(TableLine* Lines, int NLines)
         }
     }
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     fitDataCore->setRowCount(NSources);
     for (n=0; n < NLines; n++, m++)
     {
@@ -1827,6 +1852,7 @@ void FitData::addData(TableLine* Lines, int NLines)
         fitDataCore->setObsCalc(m, Lines[n].dev);
         fitDataCore->setDevRatio(m, Lines[n].DevR);
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] Lines;
     Changed();
@@ -1835,6 +1861,7 @@ void FitData::addData(TableLine* Lines, int NLines)
 void FitData::setData(TableLine* Lines, int NLines)
 {
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     if (Sources != 0)
     {
         delete[] Sources;
@@ -1848,6 +1875,8 @@ void FitData::setData(TableLine* Lines, int NLines)
     fitDataCore->setRowCount(0);
     addData(Lines, NLines);
     setNewCreated();
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
 }
 
 void FitData::setDev(double* dev, double* DevR)
@@ -1855,11 +1884,13 @@ void FitData::setDev(double* dev, double* DevR)
     int n, m, N = fitDataCore->rowCount(), mJ = getJMax(), mv = getvMax();
     QString Buffer;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=m=0; n<N; n++) if (fitDataCore->get_v(n) <= mv && fitDataCore->getJ(n) <= mJ)
     {
         fitDataCore->setObsCalc(n, dev[m]);
         fitDataCore->setDevRatio(n, DevR[m++]);
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -1869,11 +1900,13 @@ void FitData::setDev(double* dev, int* RowN, int N)
     int n;
     QString Buffer;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n<N; n++)
     {
         fitDataCore->setObsCalc(RowN[n], dev[n]);
         fitDataCore->setDevRatio(RowN[n], dev[n] / fitDataCore->getUncertainty(RowN[n]));
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -1883,6 +1916,7 @@ void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
     int *inSort = heapSort(sortIefJvFreq), i, e, N = getNumLines(), *intSort = new int[N], I, DJ, J, v;
     double E, ObsCalc;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (i=0; i<N; ++i)
     {
         fitDataCore->setObsCalc(i, 0.0);
@@ -1915,6 +1949,7 @@ void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
             TL[SortArray[e].state][SortArray[e].line].isSelected = true;
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] inSort;
     delete[] intSort;
@@ -1959,6 +1994,7 @@ void FitData::setFC(int nFC)
 void FitData::setRWErr(double* RWErr)
 {
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int n, N = fitDataCore->rowCount();
     QString Buffer;
     for (n=0; n<N; n++)
@@ -1967,6 +2003,7 @@ void FitData::setRWErr(double* RWErr)
         fitDataCore->setSecondState(n, QString::number(RWErr[n], 'f', Buffer.length() - Buffer.indexOf('.') - 1).toStdString());
     }
     fitDataCore->setRWError("RWErr");
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
 }
 
@@ -2001,6 +2038,7 @@ void FitData::setSourceOffset(QStringList& Names, double* Offsets)
 void FitData::setUncertainty(double Uncertainty, bool Min)
 {
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int n, m, i, N, *Rows, NSources = fitDataCore->getNSources();
     double cU;
     table->getSelectedRows(Rows, N);
@@ -2099,6 +2137,7 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
             delete[] Err[n];
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -2107,6 +2146,7 @@ void FitData::setUncertainty(int* Rows, double* Uncertainties, int N)
 {
     int n, i, NSources = fitDataCore->getNSources();
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     QList<LineTable*> SL;
     QList<int> CL;
     for (n=0; n<N; n++) if (Rows[n] < NSources && Sources[Rows[n]] != 0)
@@ -2151,6 +2191,7 @@ void FitData::setUncertainty(int* Rows, double* Uncertainties, int N)
         delete[] Jss[n];
         delete[] Err[n];
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -2158,11 +2199,13 @@ void FitData::setUncertainty(int* Rows, double* Uncertainties, int N)
 void FitData::setWeightFactors(int N, int* Rows, double* Factors)
 {
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     int n, NR = fitDataCore->rowCount();
     std::string Buffer = "1.0";
     fitDataCore->setRWError("WFact");
     for (n=0; n < NR; n++) fitDataCore->setSecondState(n, Buffer);
     for (n=0; n<N; n++) fitDataCore->setUncertainty(Rows[n], Factors[n]);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] Rows;
     delete[] Factors;
@@ -2173,7 +2216,9 @@ void FitData::setMCSEnergies(double* MCSE, int* Rows, int NR)
 {
     int n;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n < NR; n++) fitDataCore->setEnergy(Rows[n], MCSE[n]);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] MCSE;
     delete[] Rows;
@@ -2186,6 +2231,7 @@ void FitData::sortTab(int* S2)
     LineTable *AS[2];
     ElState *ASt[2];
     Tab->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (i=0; i<N; i++) if (S2[i] != i)
     {
         AIt[P1] = fitDataCore->getData(i);
@@ -2233,6 +2279,7 @@ void FitData::sortTab(int* S2)
             LineElStates[i] = ASt[P1];
         }    
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     delete[] S2;
     Changed();
@@ -2264,6 +2311,7 @@ void FitData::updateData()
     memset(Del, 0, NR * sizeof(bool));
     for (n=0; n<N; n++) L[n] = Diag.getSelected(n);
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     if (Diag.getKeepOther())
     {
         for (n=0; n < NSources; n++)
@@ -2471,6 +2519,7 @@ void FitData::updateData()
             delete[] TL;
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     SB = Sources;
     Sources = new LineTable*[r];
@@ -2487,7 +2536,9 @@ void FitData::updateEnergy(int N, int *r, double *Energy)
 {
     int n;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n<N; n++) fitDataCore->setEnergy(r[n], Energy[n]);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -2496,12 +2547,14 @@ void FitData::updateLevels(int N, int *r, double *Energy, int *vs, int *vss)
 {
     int n;
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n<N; n++) 
     {
         fitDataCore->setEnergy(r[n], Energy[n]);
         fitDataCore->set_v(r[n], vss[n]);
         fitDataCore->set_vs(r[n], (vs[n] == -1 ? "TE" : QString::number(vs[n]).toStdString()));
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     Changed();
 }
@@ -2555,6 +2608,7 @@ bool FitData::writeData(QString Filename)
         emit AssignmentsAccepted(this);
     }
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n < NSources; n++) if (FC[n] >= 0)
     {
         B = fitDataCore->get_vs(n);
@@ -2580,6 +2634,7 @@ bool FitData::writeData(QString Filename)
         std::string absPath = getAbsolutePath(CurPath, MolPath).toStdString();
         fitDataCore->setSourceFile(n, absPath);
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     if ((NSourceOffset > 0 || residualFits.size() > 0) && Success)
     {
@@ -2795,6 +2850,7 @@ bool FitData::checkAllConnections(int)
     QStringList CheckedPaths, Replacements;
     int n, i, N = fitDataCore->rowCount();
     table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (n=0; n < N; ++n) if ((SpektPath = QString(fitDataCore->getSourceFile(n).c_str())).indexOf('(') == -1)
     {
         if ((i = CheckedPaths.indexOf(SpektPath)) == -1)
@@ -2815,6 +2871,7 @@ bool FitData::checkAllConnections(int)
             changed = true;
         }
     }
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
     if (changed) Changed();
     delete Spectrum;
@@ -2830,20 +2887,20 @@ void FitData::copyRows(int& numRows, int& numColums, int *& Rows, QString **& Da
 	Data = CreateQString(numRows, numColums);
 	for (r=0; r <  numRows; r++)
     {
-        numDigits = fitDataCore->getNumDecimalPlaces(r);
-        Data[r][FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(r)));
-        Data[r][FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(r)));
-        Data[r][FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(r)));
-        Data[r][FitDataCore::fdcvs] = fitDataCore->get_vs(r).c_str();
-        Data[r][FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(r)));
-        Data[r][FitDataCore::fdcSource] = fitDataCore->getSource(r).c_str();
-        Data[r][FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(r));
-        Data[r][FitDataCore::fdcFile] = fitDataCore->getSourceFile(r).c_str();
-        Data[r][FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(r), 'f', numDigits);
-        Data[r][FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(r), 'f', numDigits);
-        Data[r][FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(r), 'f', numDigits);
-        Data[r][FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(r), 'f', 3);
-        Data[r][FitDataCore::fdcLineElState] = fitDataCore->getOtherState(r).c_str();
+        numDigits = fitDataCore->getNumDecimalPlaces(Rows[r]);
+        Data[r][FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(Rows[r])));
+        Data[r][FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(Rows[r])));
+        Data[r][FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(Rows[r])));
+        Data[r][FitDataCore::fdcvs] = fitDataCore->get_vs(Rows[r]).c_str();
+        Data[r][FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(Rows[r])));
+        Data[r][FitDataCore::fdcSource] = fitDataCore->getSource(Rows[r]).c_str();
+        Data[r][FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(Rows[r]));
+        Data[r][FitDataCore::fdcFile] = fitDataCore->getSourceFile(Rows[r]).c_str();
+        Data[r][FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(Rows[r]), 'f', numDigits);
+        Data[r][FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(Rows[r]), 'f', numDigits);
+        Data[r][FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(Rows[r]), 'f', numDigits);
+        Data[r][FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(Rows[r]), 'f', 3);
+        Data[r][FitDataCore::fdcLineElState] = fitDataCore->getOtherState(Rows[r]).c_str();
     }
 }
 
@@ -2877,6 +2934,8 @@ void FitData::MarkLines(int* rN, int N)
     int n=0, r1, MC = fitDataCore->columnCount() - 1;
 	QItemSelectionModel* model = new QItemSelectionModel;
     QModelIndex topIndex = fitDataCore->getIndex(rN[0], 0);
+    table->blockSignals(true);
+    fitDataCore->blockSignals(false);
 	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
 	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
 	{
@@ -2892,6 +2951,7 @@ void FitData::MarkLines(int* rN, int N)
         model->select(newSelection, QItemSelectionModel::Select);
 	}
 	table->setSelectionModel(model);
+    fitDataCore->blockSignals(false);
     table->blockSignals(false);
 	if (!isVisible()) show();
 	activateWindow();
@@ -2901,6 +2961,8 @@ void FitData::MarkLines(int* rN, int N)
 void FitData::shiftCellValue(int v)
 {
     QModelIndexList L = table->getSelectedIndexes();
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (auto it = L.begin(); it != L.end(); ++it)
     {
         int row = it->row();
@@ -2944,6 +3006,8 @@ void FitData::shiftCellValue(int v)
                 break;
         }
     }
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
 }
 
 bool FitData::containsDataForMoreThanOneState() const
@@ -2953,3 +3017,29 @@ bool FitData::containsDataForMoreThanOneState() const
     return false;
 }
 
+void FitData::ContentChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>&)
+{
+    int startRow = topLeft.row(), endRow = bottomRight.row(), numDigits, r, N = fitDataCore->columnCount();
+	QString *IT = new QString[N];
+    {
+        for (r = startRow; r <= endRow; ++r)
+        {
+            numDigits = fitDataCore->getNumDecimalPlaces(r);
+            IT[FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(r)));
+            IT[FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(r)));
+            IT[FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(r)));
+            IT[FitDataCore::fdcvs] = fitDataCore->get_vs(r).c_str();
+            IT[FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(r)));
+            IT[FitDataCore::fdcSource] = fitDataCore->getSource(r).c_str();
+            IT[FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(r));
+            IT[FitDataCore::fdcFile] = fitDataCore->getSourceFile(r).c_str();
+            IT[FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(r), 'f', numDigits);
+            IT[FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(r), 'f', numDigits);
+            IT[FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(r), 'f', numDigits);
+            IT[FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(r), 'f', 3);
+            IT[FitDataCore::fdcLineElState] = fitDataCore->getOtherState(r).c_str();
+            emit TabRowChanged(IT, N);
+        }
+    }
+	delete[] IT;
+}
