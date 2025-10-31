@@ -2894,13 +2894,50 @@ void FitData::MarkLines(int* rN, int N)
 	table->setFocus();
 }
 
-void FitData::setIsoIcon(int Col, int c)
+void FitData::shiftCellValue(int v)
 {
-    if (IsoIcon == 0) return;
-	int r, n, N = fitDataCore->rowCount();
-	for (r=0; r<N; r++)
-	{
-		n = (c==0 ? Tab->item(r, Col)->text().toInt() : (Tab->item(r, Col)->text().toInt() - 1) / 10);
-		Tab->item(r, Col)->setIcon(IsoIcon[ n]);
-	}
+    QModelIndexList L = table->getSelectedIndexes();
+    for (auto it = L.begin(); it != L.end(); ++it)
+    {
+        int row = it->row();
+        switch (it->column())
+        {
+            case FitDataCore::fdcIso:
+                fitDataCore->setIso(row, fitDataCore->getIso(row) + v);
+                break;
+            case FitDataCore::fdcv:
+                fitDataCore->set_v(row, fitDataCore->get_v(row) + v);
+                break;
+            case FitDataCore::fdcJ:
+                fitDataCore->setJ(row, fitDataCore->getJ(row) + v);
+                break;
+            case FitDataCore::fdcvs:
+                fitDataCore->set_vs(row, std::to_string(stoi(fitDataCore->get_vs(row)) + v));
+                break;
+            case FitDataCore::fdcJs:
+                fitDataCore->setJs(row, fitDataCore->getJs(row) + v);
+                break;
+            case FitDataCore::fdcProg:
+                fitDataCore->setProgression(row, fitDataCore->getProgression(row) + v);
+                break;
+            case FitDataCore::fdcEnergy:
+                fitDataCore->setEnergy(row, fitDataCore->getEnergy(row) + v);
+                break;
+            case FitDataCore::fdcUncert:
+                fitDataCore->setUncertainty(row, fitDataCore->getUncertainty(row) + v);
+                break;
+            case FitDataCore::fdcObsCalc:
+                fitDataCore->setObsCalc(row, fitDataCore->getObsCalc(row) + v);
+                break;
+            case FitDataCore::fdcDevR:
+                fitDataCore->setDevRatio(row, fitDataCore->getDevRatio(row) + v);
+                break;
+            case FitDataCore::fdcLineElState:
+                fitDataCore->setSecondState(row, std::to_string(stoi(fitDataCore->getOtherState(row))+ v));
+                break;
+            default:
+                // nothing to do
+                break;
+        }
+    }
 }

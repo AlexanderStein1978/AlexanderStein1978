@@ -20,6 +20,11 @@ public:
 	MTable(QWidget *parent = 0);
 	void getSelectedRows(int *Rows, int N);
 	
+	inline QModelIndexList getSelectedIndexes()
+	{
+		return selectedIndexes();
+	}
+
 protected slots:
 	
 	inline void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -27,7 +32,7 @@ protected slots:
 		QTableView::selectionChanged(selected, deselected);
 		emit SelChanged();
 	}
-	
+
 signals:
 	void SelChanged();
 };

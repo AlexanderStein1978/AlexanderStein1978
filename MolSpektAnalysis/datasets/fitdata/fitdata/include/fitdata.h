@@ -112,7 +112,7 @@ class FitData : public TableWindow
 		void cutRows(int &numRows, int &numColums, QString **&Data) override;
 		void insertRows(int numRows, int numColumns, QString **Data) override;
 		void MarkLines(int *rN, int N) override;
-		void setIsoIcon(int Col, int c = 0) override;
+		void shiftCellValue(int v) override;
 
         void shrinkAllSpectRefs()
         {
