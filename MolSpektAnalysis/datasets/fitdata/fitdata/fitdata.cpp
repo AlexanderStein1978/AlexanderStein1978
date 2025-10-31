@@ -1934,11 +1934,15 @@ void FitData::setElState(ElState* nState)
 
 void FitData::setMolecule(Molecule *Mol)
 {
-    TableWindow::setMolecule(Mol);
-    int n, NSources = fitDataCore->getNSources();
-    for (n=0; n < NSources; n++) LineElStates[n] = Mol->getState(fitDataCore->getOtherState(n).c_str());
-    for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
-        (*it)->SetState(Mol->getState(*(*it)->getStateName()));
+    if (molecule != Mol)
+    {
+        int n, NSources = fitDataCore->getNSources();
+        for (n=0; n < NSources; n++) LineElStates[n] = Mol->getState(fitDataCore->getOtherState(n).c_str());
+        for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
+            (*it)->SetState(Mol->getState(*(*it)->getStateName()));
+        fitDataCore->setMolecule(Mol);
+        TableWindow::setMolecule(Mol);
+    }
 }
 
 void FitData::setFC(int nFC)
@@ -2941,3 +2945,11 @@ void FitData::shiftCellValue(int v)
         }
     }
 }
+
+bool FitData::containsDataForMoreThanOneState() const
+{
+    int N = fitDataCore->rowCount();
+    for (int i=1; i<N; ++i) if (LineElStates[i] != LineElStates[0]) return true;
+    return false;
+}
+

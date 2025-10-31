@@ -305,7 +305,7 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 			printf("TableWindow::TableWindow: Error: The type %d is not a valid type for a tablewindow!", typ);
 			break;
 	}
-	if (Typ != 0) 
+	if (Typ != TermEnergyTable && Typ != FitDataSet) 
 	{
 		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(Changed()));
 		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(tabItemChanged(QTableWidgetItem*)));
@@ -791,9 +791,11 @@ double TableWindow::getError()
 
 void TableWindow::setMolecule(Molecule *mol)
 {
-	if (mol == molecule) return;
-	molecule = mol;
-	if (mol == 0) return;
+	if (mol != molecule)
+	{
+		molecule = mol;
+		Changed();
+	}
 }
 
 void TableWindow::setName()

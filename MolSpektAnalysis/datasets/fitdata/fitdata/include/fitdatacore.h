@@ -19,6 +19,7 @@ struct BaseData;
 
 class TermEnergy;
 class Spektrum;
+class Molecule;
 
 class QTextStream;
 
@@ -28,7 +29,7 @@ class FitDataCore : public QAbstractTableModel
 		enum FitDataColumn {fdcIso, fdcv, fdcJ, fdcvs, fdcJs, fdcSource, fdcProg, fdcFile, fdcEnergy,
         fdcUncert, fdcObsCalc, fdcDevR, fdcLineElState};
 
-		FitDataCore(QObject *parent = 0);
+		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
 		QString readData(QTextStream& S);
 		void writeData(QTextStream& S);
@@ -79,6 +80,7 @@ class FitDataCore : public QAbstractTableModel
 		void setSecondState(const int row, const std::string& state);
 		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setRWError(const QString& headerText);
+		void setMolecule(Molecule* const mol);
 
 		inline BaseData* getData(const int row) const
 		{
@@ -109,6 +111,11 @@ class FitDataCore : public QAbstractTableModel
 		{
 			return 2 - static_cast<int>(log10(uncertainty));
 		}
+		
+		inline Molecule* getMolecule() const
+		{
+			return molecule;
+		}
 
 	private:
 		static BaseData* convertToBaseData(const QStringList& L);
@@ -118,6 +125,7 @@ class FitDataCore : public QAbstractTableModel
 		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
 		QString RWError;
 		QPixmap *NewPix;
+		Molecule* molecule;
 };
 
 #endif
