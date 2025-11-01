@@ -3083,23 +3083,68 @@ void FitData::exportTableData(QString FileName, bool selectedCells, bool exchang
                     {
                         switch(c)
                         {
-                            
+                            case FitDataCore::fdcIso:
+                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getIso(r)));
+                                break;
+                            case FitDataCore::fdcv:
+                                S << '\t' << QString::number(static_cast<int>(fitDataCore->get_v(r)));
+                                break;
+                            case FitDataCore::fdcJ:
+                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getJ(r)));
+                                break;
+                            case FitDataCore::fdcvs:
+                                S << '\t' << fitDataCore->get_vs(r).c_str();
+                                break;
+                            case FitDataCore::fdcJs:
+                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getJs(r)));
+                                break;
+                            case FitDataCore::fdcSource:
+                                S << '\t' << fitDataCore->getSource(r).c_str();
+                                break;
+                            case FitDataCore::fdcProg:
+                                S << '\t' << QString::number(fitDataCore->getProgression(r));
+                                break;
+                            case FitDataCore::fdcFile:
+                                S << '\t' << fitDataCore->getSourceFile(r).c_str();
+                                break;
+                            case FitDataCore::fdcEnergy:
+                                S << '\t' 
+                                  << QString::number(fitDataCore->getEnergy(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
+                                break;
+                            case FitDataCore::fdcUncert:
+                            {
+                                double u = fitDataCore->getUncertainty(r);
+                                S << '\t' << QString::number(u, 'f', fitDataCore->getNumDecimalPlaces(u));
+                                break;
+                            }
+                            case FitDataCore::fdcObsCalc:
+                                S << '\t' 
+                                  << QString::number(fitDataCore->getObsCalc(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
+                                break;
+                            case FitDataCore::fdcDevR:
+                                S << '\t' << QString::number(static_cast<double>(fitDataCore->getDevRatio(r)), 'f', 3);
+                                break;
+                            case FitDataCore::fdcLineElState:
+                                S << '\t' << fitDataCore->getOtherState(r).c_str();
+                        }
                     }
                     else S << '\t';
 					S << (r < bottom ? '\t' : '\n');
+                }
 			}
 		}
-		else for (n=0; n < L.count(); n++)
+		else for (n=0; n < L.count(); ++n)
 		{
-			for (c = L[n].leftColumn(); c <= L[n].rightColumn(); c++)
-				S << '\t' << Tab->horizontalHeaderItem(c)->text();
+			for (c = left; c <= right; ++c) S << '\t' << fitDataCore->headerData(c, Qt::Horizontal).toByteArray();
 			S << '\n';
-			for (r = L[n].topRow(); r <= L[n].bottomRow(); r++)
+			for (r = top; r <= bottom; ++r)
 			{
-				if (VHI) S << Tab->verticalHeaderItem(r)->text() << '\t';
-				for (c = L[n].leftColumn(); c <= L[n].rightColumn(); c++)
-					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "")
-					  << (c < L[n].rightColumn() ? '\t' : '\n');
+				S << fitDataCore->headerData(r, Qt::Vertical).toByteArray() << '\t';
+				for (c = left; c <= right; ++c) if (cells[r][c])
+                {
+                    
+                }    
+                S  << (c < right ? '\t' : '\n');
 			}
 		}
 	}

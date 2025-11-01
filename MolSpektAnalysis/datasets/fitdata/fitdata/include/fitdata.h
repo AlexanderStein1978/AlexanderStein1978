@@ -164,20 +164,22 @@ class FitData : public TableWindow
 		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 		
 	private:
-        typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger} sortForExtractNewOrChangedOrder;
+        typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
+			sortForExtractNewOrChangedOrder;
 
         void getData(TableLine *Lines, int *SA, int i_SAL, int& NLines, int *RowN = 0, int mv = -1, int *Mv = 0,
                      int mJ = 0, int JD = -1, int F = -2, int Iso = -1, bool OnlyAssignedVss = false, ElState* state = 0);
 		void sortTab(int *SArray) override;
         void copyDataFromTable(const int i_numLines, int* const i_Lines, const FitData* const i_fitDataToCopyFrom);
-        void prepareForExtractNewOrChanged(const FitData *const i_fitDataOld, const int i_NRnew, const int i_NROld, const bool i_withSources, const bool i_subtractSourceOffsets, int *const io_Onew,
-										   int *const io_Oold) const;
-        sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld, const bool i_withSources,
-																	   const bool i_subtractSourceOffset) const;
+        void prepareForExtractNewOrChanged(const FitData *const i_fitDataOld, const int i_NRnew, const int i_NROld, const bool i_withSources,
+										   const bool i_subtractSourceOffsets, int *const io_Onew, int *const io_Oold) const;
+        sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld,
+																	   const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
 		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
 		bool checkAllConnections(int FileColumn) override;
 		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
+		void writeCell(QTextStream& S, const int r, const int c) const;
 
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;
