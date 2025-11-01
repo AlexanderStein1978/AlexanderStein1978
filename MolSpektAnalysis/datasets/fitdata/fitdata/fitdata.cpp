@@ -60,6 +60,8 @@ FitData::FitData(ElState* nState, MainWindow* MW, Molecule* M): TableWindow(MDIC
 	table->horizontalHeader()->setVisible(true);
 	table->verticalHeader()->setVisible(true);
 	connect(table, SIGNAL(SelChanged()), this, SIGNAL(SelChanged()));
+    connect(fitDataCore, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)),
+            this, SLOT(ContentChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
     Sources = 0;
     LineElStates = 0;
     NMarkedLevels = NSourceOffset = 0;
@@ -2725,7 +2727,7 @@ bool FitData::writeTFGS(QString Filename)
     delete[] S1;
     S << ("    " + QString::number(N)).right(5) << "   0" << ("    " + QString::number(atom1->getnIso())).right(5)
       << ("    " + QString::number(atom2->getnIso())).right(5) << ("    " + QString::number(State->getOmega())).right(5) 
-      << "    0    1     levels, Dunham parameters, isotope A and B, omega, select dublicates (=0 no, =1 best, = 2 average)\n";
+      << "    0    1     levels, Dunham parameters, isotope A and B, omega, select duplicates (=0 no, =1 best, = 2 average)\n";
     for (n=0; n < atom1->getnIso(); n++) 
         S << ("    " + QString::number(atom1->getnNuc(n))).right(5) 
           << ("            " + QString::number(atom1->getIsoMass(n), 'f', 8)).right(13) << "           0.0\n";
@@ -2878,30 +2880,31 @@ bool FitData::checkAllConnections(int)
     return ret;
 }
 
+void FitData::BaseDataToQStringArray(const BaseData& data, QString *const array)
+{
+    int numDigits = FitDataCore::getNumDecimalPlaces(data.uncert);
+    array[FitDataCore::fdcIso] = QString::number(static_cast<int>(data.isotope));
+    array[FitDataCore::fdcv] = QString::number(static_cast<int>(data.v));
+    array[FitDataCore::fdcJ] = QString::number(static_cast<int>(data.J));
+    array[FitDataCore::fdcvs] = data.vs.c_str();
+    array[FitDataCore::fdcJs] = QString::number(static_cast<int>(data.Js));
+    array[FitDataCore::fdcSource] = data.source.c_str();
+    array[FitDataCore::fdcProg] = QString::number(data.prog);
+    array[FitDataCore::fdcFile] = data.file.c_str();
+    array[FitDataCore::fdcEnergy] = QString::number(data.energy, 'f', numDigits);
+    array[FitDataCore::fdcUncert] = QString::number(data.uncert, 'f', numDigits);
+    array[FitDataCore::fdcObsCalc] = QString::number(data.obs_calc, 'f', numDigits);
+    array[FitDataCore::fdcDevR] = QString::number(data.obs_calc, 'f', 3);
+    array[FitDataCore::fdcLineElState] = data.secondState.c_str();
+}
+
 void FitData::copyRows(int& numRows, int& numColums, int *& Rows, QString **& Data)
 {
-    int r, numDigits;
 	if (Data != 0) Destroy(Data, numRows);
 	table->getSelectedRows(Rows, numRows);
     numColums = Tab->columnCount();
 	Data = CreateQString(numRows, numColums);
-	for (r=0; r <  numRows; r++)
-    {
-        numDigits = fitDataCore->getNumDecimalPlaces(Rows[r]);
-        Data[r][FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(Rows[r])));
-        Data[r][FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(Rows[r])));
-        Data[r][FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(Rows[r])));
-        Data[r][FitDataCore::fdcvs] = fitDataCore->get_vs(Rows[r]).c_str();
-        Data[r][FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(Rows[r])));
-        Data[r][FitDataCore::fdcSource] = fitDataCore->getSource(Rows[r]).c_str();
-        Data[r][FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(Rows[r]));
-        Data[r][FitDataCore::fdcFile] = fitDataCore->getSourceFile(Rows[r]).c_str();
-        Data[r][FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(Rows[r]), 'f', numDigits);
-        Data[r][FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(Rows[r]), 'f', numDigits);
-        Data[r][FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(Rows[r]), 'f', numDigits);
-        Data[r][FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(Rows[r]), 'f', 3);
-        Data[r][FitDataCore::fdcLineElState] = fitDataCore->getOtherState(Rows[r]).c_str();
-    }
+	for (int r=0; r <  numRows; ++r) BaseDataToQStringArray(*fitDataCore->getRow(Rows[r]), Data[r]);
 }
 
 void FitData::copyRows(int& numRows, int& numColums, QString **& Data)
@@ -3019,27 +3022,12 @@ bool FitData::containsDataForMoreThanOneState() const
 
 void FitData::ContentChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>&)
 {
-    int startRow = topLeft.row(), endRow = bottomRight.row(), numDigits, r, N = fitDataCore->columnCount();
+    int startRow = topLeft.row(), endRow = bottomRight.row(), r, N = fitDataCore->columnCount();
 	QString *IT = new QString[N];
+    for (r = startRow; r <= endRow; ++r)
     {
-        for (r = startRow; r <= endRow; ++r)
-        {
-            numDigits = fitDataCore->getNumDecimalPlaces(r);
-            IT[FitDataCore::fdcIso] = QString::number(static_cast<int>(fitDataCore->getIso(r)));
-            IT[FitDataCore::fdcv] = QString::number(static_cast<int>(fitDataCore->get_v(r)));
-            IT[FitDataCore::fdcJ] = QString::number(static_cast<int>(fitDataCore->getJ(r)));
-            IT[FitDataCore::fdcvs] = fitDataCore->get_vs(r).c_str();
-            IT[FitDataCore::fdcJs] = QString::number(static_cast<int>(fitDataCore->getJs(r)));
-            IT[FitDataCore::fdcSource] = fitDataCore->getSource(r).c_str();
-            IT[FitDataCore::fdcProg] = QString::number(fitDataCore->getProgression(r));
-            IT[FitDataCore::fdcFile] = fitDataCore->getSourceFile(r).c_str();
-            IT[FitDataCore::fdcEnergy] = QString::number(fitDataCore->getEnergy(r), 'f', numDigits);
-            IT[FitDataCore::fdcUncert] = QString::number(fitDataCore->getUncertainty(r), 'f', numDigits);
-            IT[FitDataCore::fdcObsCalc] = QString::number(fitDataCore->getObsCalc(r), 'f', numDigits);
-            IT[FitDataCore::fdcDevR] = QString::number(fitDataCore->getDevRatio(r), 'f', 3);
-            IT[FitDataCore::fdcLineElState] = fitDataCore->getOtherState(r).c_str();
-            emit TabRowChanged(IT, N);
-        }
+        BaseDataToQStringArray(*fitDataCore->getRow(r), IT);
+        emit TabRowChanged(IT, N);
     }
 	delete[] IT;
 }
@@ -3079,55 +3067,7 @@ void FitData::exportTableData(QString FileName, bool selectedCells, bool exchang
 				S << fitDataCore->headerData(c, Qt::Horizontal).toByteArray() << '\t';
 				for (r = top; r <= bottom; ++r)
                 {
-					if (cells[r][c])
-                    {
-                        switch(c)
-                        {
-                            case FitDataCore::fdcIso:
-                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getIso(r)));
-                                break;
-                            case FitDataCore::fdcv:
-                                S << '\t' << QString::number(static_cast<int>(fitDataCore->get_v(r)));
-                                break;
-                            case FitDataCore::fdcJ:
-                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getJ(r)));
-                                break;
-                            case FitDataCore::fdcvs:
-                                S << '\t' << fitDataCore->get_vs(r).c_str();
-                                break;
-                            case FitDataCore::fdcJs:
-                                S << '\t' << QString::number(static_cast<int>(fitDataCore->getJs(r)));
-                                break;
-                            case FitDataCore::fdcSource:
-                                S << '\t' << fitDataCore->getSource(r).c_str();
-                                break;
-                            case FitDataCore::fdcProg:
-                                S << '\t' << QString::number(fitDataCore->getProgression(r));
-                                break;
-                            case FitDataCore::fdcFile:
-                                S << '\t' << fitDataCore->getSourceFile(r).c_str();
-                                break;
-                            case FitDataCore::fdcEnergy:
-                                S << '\t' 
-                                  << QString::number(fitDataCore->getEnergy(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
-                                break;
-                            case FitDataCore::fdcUncert:
-                            {
-                                double u = fitDataCore->getUncertainty(r);
-                                S << '\t' << QString::number(u, 'f', fitDataCore->getNumDecimalPlaces(u));
-                                break;
-                            }
-                            case FitDataCore::fdcObsCalc:
-                                S << '\t' 
-                                  << QString::number(fitDataCore->getObsCalc(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
-                                break;
-                            case FitDataCore::fdcDevR:
-                                S << '\t' << QString::number(static_cast<double>(fitDataCore->getDevRatio(r)), 'f', 3);
-                                break;
-                            case FitDataCore::fdcLineElState:
-                                S << '\t' << fitDataCore->getOtherState(r).c_str();
-                        }
-                    }
+					if (cells[r][c]) writeCell(S, r, c);
                     else S << '\t';
 					S << (r < bottom ? '\t' : '\n');
                 }
@@ -3140,41 +3080,91 @@ void FitData::exportTableData(QString FileName, bool selectedCells, bool exchang
 			for (r = top; r <= bottom; ++r)
 			{
 				S << fitDataCore->headerData(r, Qt::Vertical).toByteArray() << '\t';
-				for (c = left; c <= right; ++c) if (cells[r][c])
-                {
-                    
-                }    
+				for (c = left; c <= right; ++c) if (cells[r][c]) writeCell(S, r, c);     
                 S  << (c < right ? '\t' : '\n');
 			}
 		}
+		delete[] horizontalCells;
+        delete[] verticalCells;
+        Destroy(cells, NR);
 	}
 	else
 	{
 		if (exchangeRowsColumns) 
 		{
-			if (VHI) for (r=0; r < Tab->rowCount(); r++)
-				S << '\t' << Tab->verticalHeaderItem(r)->text();
+			for (r=0; r < NR; ++r)	S << '\t' << fitDataCore->headerData(r, Qt::Vertical).toByteArray();
 			S << '\n';
-			for (c=0; c < Tab->columnCount(); c++)
+			for (c=0; c < NC; ++c)
 			{
-				S << Tab->horizontalHeaderItem(c)->text() << '\t';
-				for (r=0; r < Tab->rowCount(); r++) 
-					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "") 
-					  << (r < Tab->rowCount() - 1 ? '\t' : '\n');
+				S << fitDataCore->headerData(c, Qt::Horizontal).toByteArray() << '\t';
+				for (r=0; r < NR; ++r)
+                {
+					writeCell(S, r, c); 
+                    S  << (r < NR - 1 ? '\t' : '\n');
+                }
 			}
 		}
 		else 
 		{
-			for (c=0; c < Tab->columnCount(); c++)
-				S << '\t' << Tab->horizontalHeaderItem(c)->text();
+			for (c=0; c < NC; c++) S << '\t' << fitDataCore->headerData(c, Qt::Horizontal).toByteArray();
 			S << '\n';
-			for (r=0; r < Tab->rowCount(); r++) 
+			for (r=0; r < NR; r++) 
 			{
-				if (VHI) S << Tab->verticalHeaderItem(r)->text() << '\t';
-				for (c=0; c < Tab->columnCount(); c++)
-					S << (Tab->item(r, c) != 0 ? Tab->item(r, c)->text() : "") 
-					  << (c < Tab->columnCount() - 1 ? '\t' : '\n');
+				S << fitDataCore->headerData(r, Qt::Vertical).toByteArray() << '\t';
+				for (c=0; c < NC; c++)
+                {
+					writeCell(S, r, c); 
+					S  << (c < NC - 1 ? '\t' : '\n');
+                }
 			}
 		}
 	}
+}
+
+void FitData::writeCell(QTextStream& S, const int r, const int c) const
+{
+    switch(c)
+    {
+        case FitDataCore::fdcIso:
+            S << '\t' << QString::number(static_cast<int>(fitDataCore->getIso(r)));
+            break;
+        case FitDataCore::fdcv:
+            S << '\t' << QString::number(static_cast<int>(fitDataCore->get_v(r)));
+            break;
+        case FitDataCore::fdcJ:
+            S << '\t' << QString::number(static_cast<int>(fitDataCore->getJ(r)));
+            break;
+        case FitDataCore::fdcvs:
+            S << '\t' << fitDataCore->get_vs(r).c_str();
+            break;
+        case FitDataCore::fdcJs:
+            S << '\t' << QString::number(static_cast<int>(fitDataCore->getJs(r)));
+            break;
+        case FitDataCore::fdcSource:
+            S << '\t' << fitDataCore->getSource(r).c_str();
+            break;
+        case FitDataCore::fdcProg:
+            S << '\t' << QString::number(fitDataCore->getProgression(r));
+            break;
+        case FitDataCore::fdcFile:
+            S << '\t' << fitDataCore->getSourceFile(r).c_str();
+            break;
+        case FitDataCore::fdcEnergy:
+            S << '\t' << QString::number(fitDataCore->getEnergy(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
+            break;
+        case FitDataCore::fdcUncert:
+        {
+            double u = fitDataCore->getUncertainty(r);
+            S << '\t' << QString::number(u, 'f', fitDataCore->getNumDecimalPlaces(u));
+            break;
+        }
+        case FitDataCore::fdcObsCalc:
+            S << '\t' << QString::number(fitDataCore->getObsCalc(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
+            break;
+        case FitDataCore::fdcDevR:
+            S << '\t' << QString::number(static_cast<double>(fitDataCore->getDevRatio(r)), 'f', 3);
+            break;
+        case FitDataCore::fdcLineElState:
+            S << '\t' << fitDataCore->getOtherState(r).c_str();
+    }
 }
