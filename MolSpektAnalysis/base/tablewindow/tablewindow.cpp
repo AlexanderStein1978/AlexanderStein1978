@@ -953,8 +953,10 @@ void TableWindow::setCellText(QString Text)
 {
     QList<QTableWidgetSelectionRange> selectedRanges = Tab->selectedRanges();
     int n, r, c;
-    for (n=0; n < selectedRanges.size(); ++n) for (r = selectedRanges[n].topRow(); r <= selectedRanges[n].bottomRow(); r++)
+	table->blockSignals(true);
+    for (n=0; n < selectedRanges.size(); ++n) for (r = selectedRanges[n].topRow(); r <= selectedRanges[n].bottomRow(); ++r)
         for (c = selectedRanges[n].leftColumn(); c <= selectedRanges[n].rightColumn(); ++c) Tab->item(r, c)->setText(Text);
+	table->blockSignals(false);
 }
 
 void TableWindow::setData(QString **Data, int NR, int NC)

@@ -114,12 +114,11 @@ class FitData : public TableWindow
 		void MarkLines(int *rN, int N) override;
 		void shiftCellValue(int v) override;
 		bool containsDataForMoreThanOneState() const;
-		void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns);
-
-        void shrinkAllSpectRefs()
-        {
-            TableWindow::shrinkAllSpectRefs(FitDataCore::fdcFile);
-        }
+		void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
+		QString **getData(int &NRows, int &NCols) override;
+		void setCellText(QString Text) override;
+		void setData(QString **Data, int NRows, int NCols) override;
+        void shrinkAllSpectRefs(int=0) override;
 		
 		inline void sortIvJF()
 		{

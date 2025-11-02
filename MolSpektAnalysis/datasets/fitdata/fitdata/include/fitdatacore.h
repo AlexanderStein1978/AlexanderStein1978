@@ -28,6 +28,8 @@ class FitDataCore : public QAbstractTableModel
 	public:
 		enum FitDataColumn {fdcIso, fdcv, fdcJ, fdcvs, fdcJs, fdcSource, fdcProg, fdcFile, fdcEnergy,
         fdcUncert, fdcObsCalc, fdcDevR, fdcLineElState};
+		
+		static BaseData* convertToBaseData(const QStringList& L);
 
 		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
@@ -81,6 +83,7 @@ class FitDataCore : public QAbstractTableModel
 		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setRWError(const QString& headerText);
 		void setMolecule(Molecule* const mol);
+		void shrinkAllSpectRefs();
 
 		inline BaseData* getData(const int row) const
 		{
@@ -118,8 +121,6 @@ class FitDataCore : public QAbstractTableModel
 		}
 
 	private:
-		static BaseData* convertToBaseData(const QStringList& L);
-
 		int NSources;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
