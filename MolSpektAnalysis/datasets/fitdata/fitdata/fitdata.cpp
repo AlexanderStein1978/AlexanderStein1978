@@ -2564,8 +2564,15 @@ void FitData::updateLevels(int N, int *r, double *Energy, int *vs, int *vss)
 void FitData::updateRow(TableLine* Line)
 {
     int n, N = fitDataCore->rowCount();
-    for (n=0; n<N; n++) if (fitDataCore->getEnergy(n) == Line->WN && fitDataCore->getIso(n) == Line->Iso && fitDataCore->get_v(n) == Line->vss && fitDataCore->getJ(n) == Line->Jss)
-        fitDataCore->setUncertainty(n, Line->err);
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
+    for (n=0; n<N; ++n)
+        if (fitDataCore->getEnergy(n) == Line->WN && fitDataCore->getIso(n) == Line->Iso && fitDataCore->get_v(n) == Line->vss
+            && fitDataCore->getJ(n) == Line->Jss)
+    fitDataCore->setUncertainty(n, Line->err);
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
 }
 
 void FitData::writeData(QTextStream& S)
@@ -2832,8 +2839,13 @@ void FitData::setRowData(int Row, QString* Data)
     QStringList L;
     int NC = fitDataCore->columnCount();
     L.reserve(NC);
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (int n=0; n < NC; ++n) L.push_back(Data[n]);
     fitDataCore->setRow(L, Row);
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
 }
 
 bool FitData::checkAllConnections()
@@ -2912,24 +2924,35 @@ void FitData::copyRows(int& numRows, int& numColums, QString **& Data)
 	int *Rows;
 	copyRows(numRows, numColums, Rows, Data);
     delete[] Rows;
+    Changed();
 }
 
 void FitData::cutRows(int& numRows, int& numColums, QString **& Data)
 {
     int *Rows;
 	copyRows(numRows, numColums, Rows, Data);
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     fitDataCore->deleteRows(Rows, numRows);
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
     delete[] Rows;
+    Changed();
 }
 
 void FitData::insertRows(int numRows, int numColumns, QString ** Data)
 {
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
     for (int r=0; r < numRows; ++r)
     {
         QStringList L;
         for (int c=0; c < numColumns; ++c) L << Data[r][c];
         fitDataCore->addRow(L);
     }
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
 }
 
 void FitData::MarkLines(int* rN, int N)
@@ -2938,7 +2961,7 @@ void FitData::MarkLines(int* rN, int N)
 	QItemSelectionModel* model = new QItemSelectionModel;
     QModelIndex topIndex = fitDataCore->getIndex(rN[0], 0);
     table->blockSignals(true);
-    fitDataCore->blockSignals(false);
+    fitDataCore->blockSignals(true);
 	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
 	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
 	{
@@ -3011,6 +3034,7 @@ void FitData::shiftCellValue(int v)
     }
     fitDataCore->blockSignals(false);
     table->blockSignals(false);
+    Changed();
 }
 
 bool FitData::containsDataForMoreThanOneState() const
@@ -3168,3 +3192,57 @@ void FitData::writeCell(QTextStream& S, const int r, const int c) const
             S << '\t' << fitDataCore->getOtherState(r).c_str();
     }
 }
+
+QString ** FitData::getData(int& NRows, int& NCols)
+{
+    int r, NR = fitDataCore->rowCount(), NC = fitDataCore->columnCount();
+	if (NRows <= 0 || NRows > NR) NRows = NR;
+	if (NCols <= 0 || NCols > NC) NCols = NC;
+	QString **Data = CreateQString(NRows, NCols);
+	for (r=0; r < NRows; ++r) BaseDataToQStringArray(*fitDataCore->getRow(r), Data[r]);
+	return Data;
+}
+
+void FitData::setCellText(QString Text)
+{
+    QModelIndexList L = table->getSelectedIndexes();
+    std::string text = Text.toStdString();
+    table->blockSignals(true);
+    fitDataCore->blockSignals(true);
+    for (auto it = L.begin(); it != L.end(); ++it)
+    {
+        int column = it->column();
+        if (column == FitDataCore::fdcvs) fitDataCore->set_vs(it->row(), text);
+        else if (column == FitDataCore::fdcSource) fitDataCore->setSource(it->row(), text);
+        else if (column == FitDataCore::fdcFile) fitDataCore->setSourceFile(it->row(), text);
+        else if (column == FitDataCore::fdcLineElState) fitDataCore->setSecondState(it->row(), text);
+    }
+    fitDataCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
+}
+
+void FitData::setData(QString ** Data, int NRows, int NCols)
+{
+    int r, c, NC = fitDataCore->columnCount();
+    QStringList L;
+	table->blockSignals(true);
+    fitDataCore->blockSignals(true);
+	Tab->setRowCount(NRows);
+	for (r=0; r < NRows; r++)
+    {
+        for (c=0; c < NC; c++)
+        {
+            if (c < NCols) L << Data[r][c];
+            else L << "";
+        }
+        fitDataCore->setRow(FitDataCore::convertToBaseData(L), r);
+        L.clear();
+	}
+	fitDataCore->blockSignals(false);
+	table->blockSignals(false);
+	Changed();
+}
+
+
+

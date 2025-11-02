@@ -46,9 +46,9 @@ public:
 	void setJMax(int JM);
 	double getError();
 	bool isAssigned();
-	QString **getData(int &NRows, int &NCols);
+	virtual QString **getData(int &NRows, int &NCols);
 	QStringList getHorizontalHeaderLabels();
-	void setData(QString **Data, int NRows, int NCols);
+	virtual void setData(QString **Data, int NRows, int NCols);
 	void setHorizontalHeader(QStringList &Labels);
 	void setVerticalHeader(QStringList &Labels);
 	virtual void cutRows(int &numRows, int &numColumns, QString **&Data);
@@ -66,7 +66,7 @@ public:
 	virtual void DeleteRows();
 	virtual void AddRow();
 	virtual void RemoveDoubled();
-    void setCellText(QString Text);
+    virtual void setCellText(QString Text);
 	
 	inline virtual ElState *getElState()
 	{
@@ -103,7 +103,7 @@ protected:
 	int getNumParIt();
 	void setMaxParFits(int Max);
     virtual bool checkAllConnections(int FileColumn);
-    void shrinkAllSpectRefs(int FileColumn);
+    virtual void shrinkAllSpectRefs(int FileColumn);
 	virtual bool readData(QTextStream& S);
 	virtual inline void writeData(QTextStream&) {}
 

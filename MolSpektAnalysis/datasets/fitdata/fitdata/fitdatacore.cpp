@@ -644,3 +644,14 @@ void FitDataCore::setMolecule(Molecule* const mol)
 		emit dataChanged(first, last, roles);
 	}
 }
+
+void FitDataCore::shrinkAllSpectRefs()
+{
+	int n, m;
+    QString FileName;
+    for (n=0; n < Tab->rowCount(); ++n) if (Tab->item(n, FileColumn) != 0)
+    {
+        FileName = Tab->item(n, FileColumn)->text();
+        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
+    }
+}
