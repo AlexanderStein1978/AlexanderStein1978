@@ -118,7 +118,6 @@ class FitData : public TableWindow
 		QString **getData(int &NRows, int &NCols) override;
 		void setCellText(QString Text) override;
 		void setData(QString **Data, int NRows, int NCols) override;
-        void shrinkAllSpectRefs(int=0) override;
 		
 		inline void sortIvJF()
 		{
@@ -181,6 +180,7 @@ class FitData : public TableWindow
 		bool checkAllConnections(int FileColumn) override;
 		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
 		void writeCell(QTextStream& S, const int r, const int c) const;
+		void shrinkAllSpectRefs(int=0) override;
 
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;

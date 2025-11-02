@@ -647,11 +647,11 @@ void FitDataCore::setMolecule(Molecule* const mol)
 
 void FitDataCore::shrinkAllSpectRefs()
 {
-	int n, m;
+	int m, N = mData.size();
     QString FileName;
-    for (n=0; n < Tab->rowCount(); ++n) if (Tab->item(n, FileColumn) != 0)
+    for (auto it = mData.begin(); it != mData.end(); ++it)
     {
-        FileName = Tab->item(n, FileColumn)->text();
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
+        FileName = (*it)->file.c_str();
+        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1).toStdString();
     }
 }
