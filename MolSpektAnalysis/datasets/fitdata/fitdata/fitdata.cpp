@@ -3244,5 +3244,9 @@ void FitData::setData(QString ** Data, int NRows, int NCols)
 	Changed();
 }
 
+void FitData::shrinkAllSpectRefs(int)
+{
+    fitDataCore->shrinkAllSpectRefs();
+}
 
 
