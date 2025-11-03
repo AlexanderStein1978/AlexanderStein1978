@@ -3228,7 +3228,7 @@ void FitData::setData(QString ** Data, int NRows, int NCols)
     QStringList L;
 	table->blockSignals(true);
     fitDataCore->blockSignals(true);
-	Tab->setRowCount(NRows);
+	fitDataCore->setRowCount(NRows);
 	for (r=0; r < NRows; r++)
     {
         for (c=0; c < NC; c++)
@@ -3249,4 +3249,11 @@ void FitData::shrinkAllSpectRefs(int)
     fitDataCore->shrinkAllSpectRefs();
 }
 
+QStringList FitData::getHorizontalHeaderLabels()
+{
+    int c, C = fitDataCore->columnCount();
+	QStringList R;
+	for (c=0; c<C; c++) R << fitDataCore->headerData(c, Qt::Horizontal).toString();
+	return R;
+}
 

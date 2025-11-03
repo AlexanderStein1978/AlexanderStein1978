@@ -84,6 +84,10 @@ class FitDataCore : public QAbstractTableModel
 		void setRWError(const QString& headerText);
 		void setMolecule(Molecule* const mol);
 		void shrinkAllSpectRefs();
+		void search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
+					const bool completeCell = false) const;
 
 		inline BaseData* getData(const int row) const
 		{

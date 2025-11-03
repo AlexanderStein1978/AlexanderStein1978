@@ -118,6 +118,10 @@ class FitData : public TableWindow
 		QString **getData(int &NRows, int &NCols) override;
 		void setCellText(QString Text) override;
 		void setData(QString **Data, int NRows, int NCols) override;
+		QStringList getHorizontalHeaderLabels() override;
+		void search(int column, int value, int smeqla) override;
+		void search(int column, double value, int smeqla) override;
+		void search(QString Text, int column=-1, bool completeCell = false) override;
 		
 		inline void sortIvJF()
 		{
