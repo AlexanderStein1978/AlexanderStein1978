@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QPixmap>
 #include <QPainter>
+#include <QMessageBox>
 
 
 FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol)
@@ -654,4 +655,454 @@ void FitDataCore::shrinkAllSpectRefs()
         FileName = (*it)->file.c_str();
         if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1).toStdString();
     }
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	switch (smeqla)
+	{
+		case 0:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value == static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value == static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value == static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value == stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value == static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value == mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value == static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value == static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value == static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value == static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 1:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 2:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value < static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value < static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value < static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value < stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value < static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value < mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value < static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value < static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value < static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value < static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 3:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->v))) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > abs(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > abs(mData[Rows[n]]->prog)) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->energy))) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->uncert))) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->obs_calc))) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 4:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->v))) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > abs(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > abs(mData[Rows[n]]->prog)) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->energy))) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->uncert))) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->obs_calc))) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > abs(static_cast<int>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+	}
+	if (Result.empty()) QMessageBox::information(this, "MolSpektAnalysis", "A number fullfilling the condition could not be found.");
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	switch (smeqla)
+	{
+		case 0:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value == static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value == static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value == static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value == static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value == static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value == mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value == mData[Rows[n]]->energy) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value == mData[Rows[n]]->uncert) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value == mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value == static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 1:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > mData[Rows[n]]->energy) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > mData[Rows[n]]->uncert) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 2:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value < static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value < static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value < static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value < static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value < static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value < mData[Rows[n]]->prog) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value < mData[Rows[n]]->energy) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value < mData[Rows[n]]->uncert) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value < mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value < static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 3:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->v))) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > abs(static_cast<double>(stoi(mData[Rows[n]]->vs)))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->prog))) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > abs(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > abs(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > abs(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
+						break;
+					default:
+						// not reasonable
+						break;
+				}
+			}
+			break;
+		case 4:
+            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+			{
+				switch (c)
+				{
+					case fdcIso:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
+						break;
+					case fdcv:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->v))) Result << createIndex(n, c);
+						break;
+					case fdcJ:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
+						break;
+					case fdcvs:
+						if (value > abs(static_cast<double>(stoi(mData[Rows[n]]->vs)))) Result << createIndex(n, c);
+						break;
+					case fdcJs:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
+						break;
+					case fdcProg:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->prog))) Result << createIndex(n, c);
+						break;
+					case fdcEnergy:
+						if (value > abs(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
+						break;
+					case fdcUncert:
+						if (value > abs(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
+						break;
+					case fdcObsCalc:
+						if (value > abs(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
+						break;
+					case fdcDevR:
+						if (value > abs(static_cast<double>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
+						break;
+				}
+			}
+			break;
+	}
+	if (Result.empty()) QMessageBox::information(this, "MolSpektAnalysis", "A number fullfilling the condition could not be found.");
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
+					 	 const bool completeCell = false) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+		
+	
+	if (Result.empty()) QMessageBox::information(this, "MolSpektAnalysis", "The text \'" + Text + "\' could not be found in the table.");
 }
