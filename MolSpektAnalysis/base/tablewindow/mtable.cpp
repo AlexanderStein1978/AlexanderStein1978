@@ -17,6 +17,12 @@ MTable::MTable(QWidget* parent): QTableView(parent)
 void MTable::getSelectedRows(int* Rows, int NR)
 {
 	QModelIndexList L = selectedIndexes();
+	if (0 == L.size())
+	{
+		Rows = nullptr;
+		NR = 0;
+		return;
+	}
 	int n, N = L.count(), M=0, r;
 	for (n=0; n<N; n++) if ((r = L[n].row()) > M) M=r;
 	bool *B = new bool[M];
