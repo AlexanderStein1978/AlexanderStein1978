@@ -191,7 +191,7 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
         LineElStates = new ElState*[NewRowCount];
     }
     NSources = NewRowCount;
-    fitDataCore->addData(i_numLines, i_Lines, i_fitDataToCopyFrom->fitDataCore);
+    fitDataCore->addData(i_numLines, i_Lines, *i_fitDataToCopyFrom->fitDataCore);
     for (int n=0; n < i_numLines; ++n)
     {
         int oNSources = i_fitDataToCopyFrom->fitDataCore->getNSources();

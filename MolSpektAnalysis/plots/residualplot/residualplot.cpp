@@ -1516,13 +1516,13 @@ void ResidualPlot::sourceBoxChanged()
 		for (n=m=0; n < NIso; n++) if (nv[n] > 0) 
 		{
 			//printf("addIso %d, m=%d\n", n, m);
-			IsoBox->addItem(IT->getIsoName(IsoZ[n]));
+			IsoBox->addItem(IT->Isoname[IsoZ[n]]);
 			if (n < Iso) m++;
 		}
 	}
 	else for (n=m=0; n < NIso; n++) if (nv[n] > 0)
 	{
-		IsoBox->addItem(IT->getIsoName(n));
+		IsoBox->addItem(IT->Isoname[n]);
 		if (n < Iso) m++;
 	}
 	if (m >= IsoBox->count()) m=0;

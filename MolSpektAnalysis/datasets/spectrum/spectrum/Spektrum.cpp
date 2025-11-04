@@ -5040,7 +5040,7 @@ void Spektrum::FindLinesFromTable(LineTable *LTab)
 			marker[m].DisplayData = true;
 			marker[m].FC = Lines[n].FC;
 			marker[m].Iso = Lines[n].Iso;
-			marker[m].IsoName = Iso->getIsoName(Lines[n].Iso);
+			marker[m].IsoName = Iso->Isoname[Lines[n].Iso];
 			marker[m].Js = Lines[n].Js;
 			marker[m].Jss = Lines[n].Jss;
 			marker[m].LState = LS;

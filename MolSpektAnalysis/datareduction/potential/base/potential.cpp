@@ -649,7 +649,7 @@ void Potential::exportWaveFunction(int NumWFPoints)
     L->addWidget(OK, 6, 0);
     L->addWidget(Cancel, 6, 1);
     WaveFuncs->getIso(NI, I);
-    for (n=0; n < NI; n++) IB->addItem(Iso->getIsoName(I[n]));
+    for (n=0; n < NI; n++) IB->addItem(Iso->Isoname[I[n]]);
     IB->setEditable(false);
     connect(OK, SIGNAL(clicked()), D, SLOT(accept()));
     connect(Cancel, SIGNAL(clicked()), D, SLOT(reject()));
@@ -669,7 +669,7 @@ void Potential::exportWaveFunction(int NumWFPoints)
                     QFile F(FileName);
                     F.open(QIODevice::WriteOnly);
                     QTextStream S(&F);
-                    S << "Isotopologue " << Iso->getIsoName(I[i]) << ", v'=" << QString::number(v) << ", J'=" 
+                    S << "Isotopologue " << Iso->Isoname[I[i]] << ", v'=" << QString::number(v) << ", J'=" 
                       << QString::number(J) << "\n"; 
                     for (n=0, r = rmin / a0_Angstrom; n < NumWFPoints; n++, r+=h)
                     {
@@ -1124,7 +1124,7 @@ void Potential::exportAsymptoticLevels(QString FileName, int numv, int maxJ, int
     IsoTab *IsoT = Worker->getIsoT();
     for (I=0; I<NI; I++)
     {
-        S << "Isotopologue " + IsoT->getIsoName(I) + ":\n";
+        S << "Isotopologue " + IsoT->Isoname[I] + ":\n";
         for (J=JStart[I]; (J < NJ ? EL[I][J] != NULL : false); J += JStep[I])
         {
             S << "J=" + QString::number(J) + ":\n";
@@ -5453,7 +5453,7 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
     RS << "Potential\tC6\tC8\tC10\tRmin\tDe\tD0\tn\tb\tRm\tTm\tnC\tRi\tRa";
     for (n=0; n < NIso; n++) 
     {
-        RS << "\t" << IsoT->getIsoName(n);
+        RS << "\t" << IsoT->Isoname[n];
         IsoS1[n] = "  AtomMass_A=" + QString::number(IsoT->mIso1[n], 'f', 8) + "\n";
         IsoS2[n] = "  AtomMass_B=" + QString::number(IsoT->mIso2[n], 'f', 8) + "\n";
     }

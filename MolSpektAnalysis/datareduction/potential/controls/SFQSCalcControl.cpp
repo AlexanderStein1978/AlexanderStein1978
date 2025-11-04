@@ -9,6 +9,7 @@
 #include "SFQSCalcControl.h"
 #include "potential.h"
 #include "fitdata.h"
+#include "isotab.h"
 #include "utils.h"
 #include "elstate.h"
 #include "MainWindow.h"
