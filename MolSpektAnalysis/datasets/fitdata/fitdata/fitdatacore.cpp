@@ -1092,8 +1092,8 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 	if (Result.empty()) QMessageBox::information(this, "MolSpektAnalysis", "A number fullfilling the condition could not be found.");
 }
 
-void FitDataCore::search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
-					 	 const bool completeCell = false) const
+void FitDataCore::search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column,
+					 	 const bool completeCell) const
 {
 	int firstColumn = column, lastColumn = column, c;
 	if (column == -1)
@@ -1102,7 +1102,10 @@ void FitDataCore::search(const int* const Rows, const int NRows, const QString& 
 		lastColumn = columnCount() - 1;
 	}
 	for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
-		
-	
+	{
+		QModelIndex index = createIndex(Rows[n], c);
+		QString field = data(index).toString();
+		if (completeCell ? field == Text : field.indexOf(Text) >= 0) Result << index; 
+	}
 	if (Result.empty()) QMessageBox::information(this, "MolSpektAnalysis", "The text \'" + Text + "\' could not be found in the table.");
 }
