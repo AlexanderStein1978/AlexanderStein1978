@@ -125,7 +125,7 @@ class FitDataCore : public QAbstractTableModel
 		}
 
 	private:
-		int NSources;
+		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
 		QString RWError;
