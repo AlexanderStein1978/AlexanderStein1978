@@ -215,7 +215,7 @@ void FCFJDep::molChanged(int i)
 	ElState *S;
 	QString SN;
 	int n, N;
-	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->getIsoName(n));
+	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->Isoname[n]);
 	IsoB->setCurrentIndex(Iso->refIso);
 	for (n=0, N = Mol->getNumStates(); n<N; n++)
 	{

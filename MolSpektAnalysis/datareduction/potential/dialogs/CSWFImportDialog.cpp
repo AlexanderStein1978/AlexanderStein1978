@@ -201,7 +201,7 @@ void CSWFImportDialog::molChanged(int i)
     for (n=0; n < Iso->numIso; n++)
     {
         IL1.append(n);
-        IsoBox->addItem(Iso->IsoName(n));
+        IsoBox->addItem(Iso->Isoname[n]);
     }
 }
 
