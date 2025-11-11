@@ -62,6 +62,8 @@ FitData::FitData(ElState* nState, MainWindow* MW, Molecule* M): TableWindow(MDIC
 	connect(table, SIGNAL(SelChanged()), this, SIGNAL(SelChanged()));
     connect(fitDataCore, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)),
             this, SLOT(ContentChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+    connect(table->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(HeaderItemDoubleClicked(int)));
+    connect(table->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(HeaderItemClicked(int)));
     Sources = 0;
     LineElStates = 0;
     NMarkedLevels = NSourceOffset = 0;
@@ -3249,4 +3251,52 @@ void FitData::shrinkAllSpectRefs(int)
     fitDataCore->shrinkAllSpectRefs();
 }
 
-
+void FitData::HeaderItemDoubleClicked(const int index)
+{
+    if (lastClickedHeaderIndex != index) return;
+    switch(index)
+    {
+        case FitDataCore::fdcIso:
+            sortTab(heapSort(sortByIsoColumn));
+            break;
+        case FitDataCore::fdcv:
+            sortTab(heapSort(sortBy_vColumn));
+            break;
+        case FitDataCore::fdcJ:
+            sortTab(heapSort(sortByJColumn));
+            break;
+        case FitDataCore::fdcvs:
+            sortTab(heapSort(sortBy_vsColumn));
+            break;
+        case FitDataCore::fdcJs:
+            sortTab(heapSort(sortByJsColumn));
+            break;
+        case FitDataCore::fdcSource:
+            sortTab(heapSort(sortBySourceColumn));
+            break;
+        case FitDataCore::fdcProg:
+            sortTab(heapSort(sortByProgressionColumn));
+            break;
+        case FitDataCore::fdcFile:
+            sortTab(heapSort(sortByFileColumn));
+            break;
+        case FitDataCore::fdcEnergy:
+            sortTab(heapSort(sortByEnergyColumn));
+            break;
+        case FitDataCore::fdcUncert:
+            sortTab(heapSort(sortByUncertaintyColumn));
+            break;
+        case FitDataCore::fdcObsCalc:
+            sortTab(heapSort(sortbyDeviation));
+            break;
+        case FitDataCore::fdcDevR:
+            sortTab(heapSort(sortbyDevR));
+            break;
+        case FitDataCore::fdcLineElState:
+            sortTab(heapSort(sortByElState));
+            break;
+        default:
+            // should not happen
+            break;
+    }
+}
