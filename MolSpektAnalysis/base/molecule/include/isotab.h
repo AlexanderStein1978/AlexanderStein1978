@@ -25,6 +25,7 @@ struct IsoTab
     int numIso = 0, *mNumIso1 = nullptr, *mNumIso2 = nullptr, refIso = 0, *JStep = nullptr;
     double *relNA = nullptr, *redMass = nullptr, *relRedMass = nullptr, *rootRRM = nullptr, *mIso1 = nullptr, *mIso2 = nullptr;
     QPixmap *IsoImage = nullptr;
+    bool moleculeOwned = false;
 };
 
 #endif

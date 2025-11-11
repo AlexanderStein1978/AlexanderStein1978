@@ -4977,7 +4977,7 @@ void MainWindow::addCalculatedLevels()
     La->addWidget(OK = new QPushButton("OK", D), 7, 0);
     La->addWidget(Cancel = new QPushButton("Cancel", D), 7, 1);
 	for (n=0; n<N; n++) TTB->addItem(St->getTermTableName(n));
-	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->getIsoName(n));
+	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->Isoname[n]);
 	IsoB->addItem("All isotopologues");
     CompB->addItem("e levels");
     if (St->getLambda() == 1)
@@ -5012,7 +5012,7 @@ void MainWindow::addCalculatedLevels()
 		if (AllIso) I = TT->getNumIso() - 1;
 		else
 		{
-			QMessageBox::information(this, "MolSpectAnalysis", "Error: Levels for the isotopologue " + Iso->getIsoName(I)
+			QMessageBox::information(this, "MolSpectAnalysis", "Error: Levels for the isotopologue " + Iso->Isoname[I]
 		                         + " are not available in the term energy table \"" + TT->getName() + "\"!");
 			return;
 		}
@@ -5162,7 +5162,7 @@ void MainWindow::showNumLevels()
     ColumnHeads << "Sum";
     W->setHorizontalHeaderLabels(ColumnHeads);
 	for (I=0; I < Iso->numIso; I++)
-		W->setVerticalHeaderItem(I, new QTableWidgetItem(Iso->getIsoName(I)));
+		W->setVerticalHeaderItem(I, new QTableWidgetItem(Iso->Isoname[I]));
 	W->setVerticalHeaderItem(Iso->numIso, new QTableWidgetItem("Sum"));
 	for (I = GS = 0; I < NI; I++)
 	{
@@ -5262,7 +5262,7 @@ void MainWindow::exportPotPoints()
 	QComboBox *AdCorrIsoB = new QComboBox(D);
 	L->addWidget(AdCorrIsoB, 6, 1);
 	AdCorrIsoB->setEditable(false);
-	if (Iso != 0 && Pot->isAdCorrA()) for (n=0; n < Iso->numIso; n++) AdCorrIsoB->addItem(Iso->getIsoName(n));
+	if (Iso != 0 && Pot->isAdCorrA()) for (n=0; n < Iso->numIso; n++) AdCorrIsoB->addItem(Iso->Isoname[n]);
 	else
 	{
 		ADCorr->setEnabled(false);
@@ -5492,7 +5492,7 @@ void MainWindow::exportObservedLevelLists()
 				for (J=0; (J < NJ ? !Data[s][m][I][v][J] : false); J++) ;
 			if (v < nv || J < NJ)
 			{
-				File.setFileName(WDir + "Level" + StL[s]->getName() + (m<2 ? "LIF" : "Abs") + (Iso != 0 ? Iso->getIsoName(I) : "") 
+				File.setFileName(WDir + "Level" + StL[s]->getName() + (m<2 ? "LIF" : "Abs") + (Iso != 0 ? Iso->Isoname[I] : "") 
 									+ (m==0 || m==2 ? "e.dat" : "f.dat"));
 				File.open(QIODevice::WriteOnly);
 				Str.setDevice(&File);
@@ -5735,7 +5735,7 @@ void MainWindow::fitIsoMass()
 	L->setRowMinimumHeight(2, 20);
 	L->addWidget(OK, 3, 0);
 	L->addWidget(Cancel, 3, 1);
-	for (i=0; i < NI; i++) IsoB->addItem(Iso->getIsoName(i));
+	for (i=0; i < NI; i++) IsoB->addItem(Iso->Isoname[i]);
 	IsoB->setEditable(false);
 	SE->setValidator(new QDoubleValidator(1e-10, 1e-2, 0, SE));
 	connect(OK, SIGNAL(clicked()), D, SLOT(accept()));
@@ -5744,7 +5744,7 @@ void MainWindow::fitIsoMass()
 	{
         FQS = Pot->FitIsoMass(IsoL[IsoB->currentIndex()], SE->text().toDouble(), IsoMass, NumPoints);
 		QMessageBox::information(this, "MolSpektAnalysis", "The resulting mass of the isotopologue " 
-								+ Iso->getIsoName(IsoL[IsoB->currentIndex()]) + " is " 
+								+ Iso->Isoname[IsoL[IsoB->currentIndex()]] + " is " 
 								+ QString::number(IsoMass, 'f', 12) + " u, the obtained chisq is "
 								+ QString::number(FQS, 'g', 3) + '.');
 	}
@@ -6131,7 +6131,7 @@ void MainWindow::Assignvs()
                                 if (n == LAvIso) WarningMSG += " and ";
                                 else WarningMSG += ", ";
                             }
-                            WarningMSG += isoTab->getIsoName(n);
+                            WarningMSG += isoTab->Isoname[n];
                         }
                         WarningMSG += "!\n";
                     }

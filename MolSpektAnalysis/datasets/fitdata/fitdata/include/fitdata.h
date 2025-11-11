@@ -118,6 +118,11 @@ class FitData : public TableWindow
 		QString **getData(int &NRows, int &NCols) override;
 		void setCellText(QString Text) override;
 		void setData(QString **Data, int NRows, int NCols) override;
+		QStringList getHorizontalHeaderLabels() override;
+		void search(int column, int value, int smeqla) override;
+		void search(int column, double value, int smeqla) override;
+		void search(QString Text, int column=-1, bool completeCell = false) override;
+		void shrinkAllSpectRefs(int=0) override;
 		
 		inline void sortIvJF()
 		{
@@ -186,7 +191,8 @@ class FitData : public TableWindow
 		bool checkAllConnections(int FileColumn) override;
 		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
 		void writeCell(QTextStream& S, const int r, const int c) const;
-		void shrinkAllSpectRefs(int=0) override;
+		void startSearch(int& N, int*& Rows) const;
+		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;

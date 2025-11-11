@@ -34,7 +34,7 @@ FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWindow(FranckCondonTable, MW, 
 	Trans = 0;
 	IsoTab *IsoT = M->getIso();
 	int i;
-	for (i=0; i < (nIso = IsoT->numIso); i++) Iso->addItem(IsoT->IsoName(i));
+	for (i=0; i < (nIso = IsoT->numIso); i++) Iso->addItem(IsoT->Isoname[i]);
 	connect(Iso, SIGNAL(currentIndexChanged(int)), this, SLOT(IsoChanged(int)));
 	connect(JsB, SIGNAL(currentIndexChanged(int)), this, SLOT(JsChanged()));
 	connect(JssB, SIGNAL(currentIndexChanged(int)), this, SLOT(JssChanged()));

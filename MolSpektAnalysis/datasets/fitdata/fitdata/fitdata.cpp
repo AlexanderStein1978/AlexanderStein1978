@@ -193,7 +193,7 @@ void FitData::copyDataFromTable(const int i_numLines, int *const i_Lines, const 
         LineElStates = new ElState*[NewRowCount];
     }
     NSources = NewRowCount;
-    fitDataCore->addData(i_numLines, i_Lines, i_fitDataToCopyFrom->fitDataCore);
+    fitDataCore->addData(i_numLines, i_Lines, *i_fitDataToCopyFrom->fitDataCore);
     for (int n=0; n < i_numLines; ++n)
     {
         int oNSources = i_fitDataToCopyFrom->fitDataCore->getNSources();
@@ -2963,7 +2963,6 @@ void FitData::MarkLines(int* rN, int N)
 	QItemSelectionModel* model = new QItemSelectionModel;
     QModelIndex topIndex = fitDataCore->getIndex(rN[0], 0);
     table->blockSignals(true);
-    fitDataCore->blockSignals(true);
 	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
 	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
 	{
@@ -2979,7 +2978,6 @@ void FitData::MarkLines(int* rN, int N)
         model->select(newSelection, QItemSelectionModel::Select);
 	}
 	table->setSelectionModel(model);
-    fitDataCore->blockSignals(false);
     table->blockSignals(false);
 	if (!isVisible()) show();
 	activateWindow();
@@ -3230,7 +3228,7 @@ void FitData::setData(QString ** Data, int NRows, int NCols)
     QStringList L;
 	table->blockSignals(true);
     fitDataCore->blockSignals(true);
-	Tab->setRowCount(NRows);
+	fitDataCore->setRowCount(NRows);
 	for (r=0; r < NRows; r++)
     {
         for (c=0; c < NC; c++)
@@ -3298,5 +3296,65 @@ void FitData::HeaderItemDoubleClicked(const int index)
         default:
             // should not happen
             break;
+    }
+}
+
+QStringList FitData::getHorizontalHeaderLabels()
+{
+    int c, C = fitDataCore->columnCount();
+	QStringList R;
+	for (c=0; c<C; c++) R << fitDataCore->headerData(c, Qt::Horizontal).toString();
+	return R;
+}
+
+void FitData::search(int column, int value, int smeqla)
+{
+    QModelIndexList Result;
+    int *Rows, N;
+    startSearch(N, Rows);
+    fitDataCore->search(Rows, N, column, value, smeqla, Result);
+    finishSearch(Rows, Result);
+}
+
+void FitData::search(int column, double value, int smeqla)
+{
+    QModelIndexList Result;
+    int *Rows, N;
+    startSearch(N, Rows);
+    fitDataCore->search(Rows, N, column, value, smeqla, Result);
+    finishSearch(Rows, Result);
+}
+
+void FitData::search(QString Text, int column, bool completeCell)
+{
+    QModelIndexList Result;
+    int *Rows, N;
+    startSearch(N, Rows);
+    fitDataCore->search(Rows, N, Text, Result, column, completeCell);
+    finishSearch(Rows, Result);
+}
+
+void FitData::startSearch(int& N, int *& Rows) const
+{
+    table->getSelectedRows(Rows, N);
+    if (nullptr == Rows)
+    {
+        N = fitDataCore->rowCount();
+        Rows = new int[N];
+        for (int n=0; n<N; ++n) Rows[n] = n;
+    }
+}
+
+void FitData::finishSearch(int *const Rows, const QModelIndexList& Result) const
+{
+    delete[] Rows;
+    if (Result.size() > 0)
+    {
+        QItemSelectionModel* model = new QItemSelectionModel;
+        for (auto it = Result.begin(); it != Result.end(); ++it) model->select(*it, QItemSelectionModel::Select);
+        table->blockSignals(true);
+        table->setSelectionModel(model);
+        table->scrollTo(Result[0]);
+        table->blockSignals(false);
     }
 }

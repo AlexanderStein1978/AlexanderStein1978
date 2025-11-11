@@ -1050,6 +1050,7 @@ IsoTab *Molecule::getIso()
 		double NA, m1, m2;
 		QString B;
 		TermTable *xmTerm = (States[0]->getNumTermTables() > 0 ? States[0]->getTermTable() : 0);
+		mIsoTab.moleculeOwned = true;
 		n = atom1->getnIso();
 		if (atom1 == atom2)
 		{
@@ -1910,7 +1911,8 @@ void Molecule::UpdateStateBox()
 void Molecule::shrinkAllSpectRefs()
 {
     int n, m;
-    for (n=0; n < numStates; ++n) for (m=0; m < States[n]->getNumFitDataSets(); ++m) if (States[n]->getFitData(m) != 0) States[n]->getFitData(m)->shrinkAllSpectRefs();
+    for (n=0; n < numStates; ++n) for (m=0; m < States[n]->getNumFitDataSets(); ++m) if (States[n]->getFitData(m) != 0)
+		States[n]->getFitData(m)->shrinkAllSpectRefs();
     for (n=0; n < numTransitions; ++n) for (m=0; m < Transitions[n]->getNumLineTables(); ++m) if (Transitions[n]->getLineTable(m) != 0)
         Transitions[n]->getLineTable(m)->shrinkAllSpectRefs();
 }

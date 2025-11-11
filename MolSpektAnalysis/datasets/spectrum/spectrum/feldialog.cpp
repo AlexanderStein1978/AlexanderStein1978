@@ -138,6 +138,6 @@ void FELDialog::StateChanged(QString Name)
 	State = Mol->getStateP(n);
 	IsoBox->blockSignals(true);
 	IsoBox->clear();
-	for (n=0; n < Mol->getNumIso(); n++) if (DataA(Mol, State, n)) IsoBox->addItem(Iso->getIsoName(n));
+	for (n=0; n < Mol->getNumIso(); n++) if (DataA(Mol, State, n)) IsoBox->addItem(Iso->Isoname[n]);
 	IsoBox->blockSignals(false);
 }
