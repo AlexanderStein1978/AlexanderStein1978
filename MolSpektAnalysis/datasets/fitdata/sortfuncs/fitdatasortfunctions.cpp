@@ -198,3 +198,83 @@ bool sortForExtractNewOrChanged(const FitDataCore * const Tab, const int n, cons
     if (E1 < E2) return true;
     return false;
 }
+
+bool sortByIsoColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getIso(n) < Tab->getIso(m)) return true;
+    return false;
+}
+
+bool sortBy_vColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->get_v(n) < Tab->get_v(m)) return true;
+    return false;
+}
+
+bool sortByJColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getJ(n) < Tab->getJ(m)) return true;
+    return false;
+}
+
+bool sortBy_vsColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->get_vs(n) < Tab->get_vs(m)) return true;
+    return false;
+}
+
+bool sortByJsColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getJs(n) < Tab->getJs(m)) return true;
+    return false;
+}
+
+bool sortBySourceColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getSource(n) < Tab->getSource(m)) return true;
+    return false;
+}
+
+bool sortByProgressionColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getProgression(n) < Tab->getProgression(m)) return true;
+    return false;
+}
+
+bool sortByFileColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getSourceFile(n) < Tab->getSourceFile(m)) return true;
+    return false;
+}
+
+bool sortByEnergyColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getEnergy(n) < Tab->getEnergy(m)) return true;
+    return false;
+}
+
+bool sortByUncertaintyColumn(const FitDataCore *const Tab, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (Tab->getUncertainty(n) < Tab->getUncertainty(m)) return true;
+    return false;
+}

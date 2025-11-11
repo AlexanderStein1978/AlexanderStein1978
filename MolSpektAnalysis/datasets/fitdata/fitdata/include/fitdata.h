@@ -160,6 +160,7 @@ class FitData : public TableWindow
 		
 	private slots:
 		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+		void HeaderItemClicked(const int index);
 		
 	private:
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
@@ -185,7 +186,7 @@ class FitData : public TableWindow
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;
 		LineTable **Sources;
-		int NMarkedLevels, *FC, lRow, NSourceOffset;
+		int NMarkedLevels, *FC, lRow, NSourceOffset, lastClickedHeaderIndex = -1;
 		QString *SourceOffsetNames;
 		double *SourceOffset;
         QList<ResidualFit*> residualFits;
