@@ -318,7 +318,6 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 TableWindow::~TableWindow()
 {
 	int n;
-	if (IsoIcon != 0) delete[] IsoIcon;
 	for (n=0; n < ViewLists.count(); n++) delete[] ViewLists[n].ViewnRows;
 }
 

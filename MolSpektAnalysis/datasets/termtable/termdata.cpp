@@ -30,6 +30,7 @@ TermData::~TermData()
 	}
 	if (Z != 0) delete[] Z;
 	if (CompZ != 0) delete[] CompZ;
+	if (Iso != nullptr && !Iso->moleculeOwned) delete Iso;
 }
 
 int TermData::columnCount(const QModelIndex &parent) const
@@ -229,6 +230,7 @@ void TermData::setData(double ****nData, int nC, int nI, int mv, int mJ, int *CZ
 
 void TermData::setIso(IsoTab *nIso)
 {
+	if (Iso != nullptr && !Iso->moleculeOwned) delete Iso;
 	Iso = nIso;
 }
 

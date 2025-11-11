@@ -286,7 +286,9 @@ bool TermTable::readData(QString FileName)
 				}
 			}
 			IsoM = ic;
-			IsoTab *IsoT = new IsoTab(ic);
+			IsoTab *IsoT = new IsoTab;
+			IsoT->numIso = ic;
+			IsoT->createArrays();
 			int *Z = new int[ic];
 			for (i=0; i < ic; i++)
 			{

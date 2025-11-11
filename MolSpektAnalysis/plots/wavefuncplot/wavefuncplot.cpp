@@ -146,7 +146,7 @@ void WaveFuncPlot::PotChanged(QString PName)
 		if ((N = IsoBox->count()) == Iso->numIso) iso = IsoBox->currentIndex();
 		else 
 		{
-			for (n=0, IsoN = IsoBox->currentText(); (n < N ? IsoN != Iso->getIsoName(n) : false); n++) ;
+			for (n=0, IsoN = IsoBox->currentText(); (n < N ? IsoN != Iso->Isoname[n] : false); n++) ;
 			iso = (n<N ? n : Iso->refIso);
 		}
 		if (SWF == 0)
@@ -154,7 +154,7 @@ void WaveFuncPlot::PotChanged(QString PName)
 			if (IsoBox->currentText().toInt() == iso || N < Iso->numIso)
 			{
 				IsoBox->clear();
-				for (i=0; i < Iso->numIso; i++) IsoBox->addItem(Iso->getIsoName(i));
+				for (i=0; i < Iso->numIso; i++) IsoBox->addItem(Iso->Isoname[i]);
 				IsoBox->setCurrentIndex(iso);
 			}
 			JBox->setEditable(true);
@@ -166,7 +166,7 @@ void WaveFuncPlot::PotChanged(QString PName)
 			IsoBox->clear();
 			for (n=0; n<N; n++)
 			{
-				IsoBox->addItem(Iso->getIsoName(I[n]));
+				IsoBox->addItem(Iso->Isoname[I[n]]);
 				if (I[n] == iso) IsoBox->setCurrentIndex(n);
 			}
 			JBox->blockSignals(true);
@@ -180,7 +180,7 @@ void WaveFuncPlot::PotChanged(QString PName)
 		{
 			Mol = mol;
 			IsoBox->clear();
-			for (i=0; i < Iso->numIso; i++) IsoBox->addItem(Iso->getIsoName(i));
+			for (i=0; i < Iso->numIso; i++) IsoBox->addItem(Iso->Isoname[i]);
 			IsoBox->setCurrentIndex(Iso->refIso);
 			JBox->setEditable(true);
 		}
@@ -191,7 +191,7 @@ void WaveFuncPlot::PotChanged(QString PName)
 			IsoBox->clear();
 			for (n=0; n<N; n++)
 			{
-				IsoBox->addItem(Iso->getIsoName(I[n]));
+				IsoBox->addItem(Iso->Isoname[I[n]]);
 				if (I[n] == Iso->refIso) IsoBox->setCurrentIndex(n);
 			}
 			JBox->blockSignals(true);

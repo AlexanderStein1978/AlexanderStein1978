@@ -47,7 +47,7 @@ public:
 	double getError();
 	bool isAssigned();
 	virtual QString **getData(int &NRows, int &NCols);
-	QStringList getHorizontalHeaderLabels();
+	virtual QStringList getHorizontalHeaderLabels();
 	virtual void setData(QString **Data, int NRows, int NCols);
 	void setHorizontalHeader(QStringList &Labels);
 	void setVerticalHeader(QStringList &Labels);
@@ -58,9 +58,9 @@ public:
 	virtual void shiftCellValue(int n);
 	virtual void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns);
 	void setViewnRows(MDIChild *Viewer, int NRows, int *Rows);
-	void search(int column, int value, int smeqla);
-	void search(int column, double value, int smeqla);
-	void search(QString Text, int column=-1, bool completeCell = false);
+	virtual void search(int column, int value, int smeqla);
+	virtual void search(int column, double value, int smeqla);
+	virtual void search(QString Text, int column=-1, bool completeCell = false);
 	void setEditable(bool Editable);
 	virtual void getViewnE(int *&Js, double *&E, int &N);
 	virtual void DeleteRows();
