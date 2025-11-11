@@ -160,7 +160,12 @@ class FitData : public TableWindow
 		
 	private slots:
 		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
-		void HeaderItemClicked(const int index);
+		void HeaderItemDoubleClicked(const int index);
+
+		void HeaderItemClicked(const int index)
+		{
+			lastClickedHeaderIndex = index;
+		}
 		
 	private:
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
