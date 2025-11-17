@@ -93,12 +93,17 @@ QString FitDataCore::readData(QTextStream& S)
 {
 	QString Buffer;
 	QString Spacer = "\t";
+	beginInsertRows(QModelIndex(), 0, 1);
 	while(!S.atEnd())
 	{
+		Buffer = S.readLine();
 		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
 		const QStringList L = Buffer.split(Spacer);
 		mData.push_back(convertToBaseData(L));
 	}
+	endInsertRows();
+	beginInsertRows(QModelIndex(), 1, mData.size() - 1);
+	endInsertRows();
 	return "";
 }
 
@@ -682,7 +687,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value == static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value == stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						if (value == stdStringToInt(mData[Rows[n]]->vs), -1) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value == static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -723,7 +728,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						if (value > stdStringToInt(mData[Rows[n]]->vs), -1) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -764,7 +769,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value < static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value < stoi(mData[Rows[n]]->vs)) Result << createIndex(n, c);
+						if (value < stdStringToInt(mData[Rows[n]]->vs, -1)) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value < static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -805,7 +810,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > abs(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						if (value > abs(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
@@ -846,7 +851,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > abs(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						if (value > abs(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
@@ -901,7 +906,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value == static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value == static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						if (value == static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value == static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -942,7 +947,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						if (value > static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -983,7 +988,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value < static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value < static_cast<double>(stoi(mData[Rows[n]]->vs))) Result << createIndex(n, c);
+						if (value < static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value < static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
@@ -1024,7 +1029,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > abs(static_cast<double>(stoi(mData[Rows[n]]->vs)))) Result << createIndex(n, c);
+						if (value > abs(static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1)))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
@@ -1065,7 +1070,7 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
 						break;
 					case fdcvs:
-						if (value > abs(static_cast<double>(stoi(mData[Rows[n]]->vs)))) Result << createIndex(n, c);
+						if (value > abs(static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1)))) Result << createIndex(n, c);
 						break;
 					case fdcJs:
 						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);

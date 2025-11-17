@@ -493,7 +493,7 @@ void FitData::findWrongData()
         J = rowData->J;
         I = rowData->isotope;
         c = (rowData->Js == J ? 1 : 0);
-        vs = stoi(B = rowData->vs);
+        vs = stdStringToInt(B = rowData->vs, -1);
         if (c == 1 && l == 0 ) 
             if (B == "TE" || vs < -1 ? true : (r < NSources ?
                 (Sources[r] != 0 ? ((Tr = Sources[r]->getTransition()) != 0 ? 
@@ -631,7 +631,7 @@ void FitData::getData(TableLine* Lines, int* SA, int i_SAL, int& NLines, int *Ro
             Lines[m].vs = -1;
             Lines[m].isTE = true;
         }
-        else if ((b = stoi(row->vs)) < -1)
+        else if ((b = stdStringToInt(row->vs), -1) < -1)
         {
             Lines[m].vs = b;
             Lines[m].isTE = true;
@@ -1022,7 +1022,7 @@ bool FitData::readData(QString Filename)
                     {
                         ElState** StateArray = new ElState*[N];
                         for (int n=0; n<N; ++n) StateArray[n] = molecule->getStateP(BoxArray[n]->currentIndex());
-                        for (r=0; r < NR; ++r) fitDataCore->setSecondState(r, (LineElStates[r] = StateArray[stateList.indexOf(stoi(fitDataCore->get_vs(r)))])->getName().toStdString());
+                        for (r=0; r < NR; ++r) fitDataCore->setSecondState(r, (LineElStates[r] = StateArray[stateList.indexOf(stdStringToInt(fitDataCore->get_vs(r), -1))])->getName().toStdString());
                         delete[] StateArray;
                     }
                     delete D;
@@ -1101,7 +1101,7 @@ bool FitData::readData(QString Filename)
         if (n>0 && fitDataCore->getSource(n) == fitDataCore->getSource(n-1)) Sources[n] = Sources[n-1];
         else Sources[n] = (molecule != 0 && !SaveMemory ? molecule->getLineTable(fitDataCore->getSource(n).c_str()) : 0);
         if (Sources[n] != 0) LineElStates[n] = Sources[n]->getElState();
-        if ((b = stoi(fitDataCore->get_vs(n))) == -1) fitDataCore->set_vs(n, "TE");
+        if ((b = stdStringToInt(fitDataCore->get_vs(n), -1, -1)) == -1) fitDataCore->set_vs(n, "TE");
         if (b >= 990)
         {
             FC[n] = (b + 10) / 1000 - 1;
@@ -1202,7 +1202,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
                     {
                         if (fabs(E[i] - LE) < fabs(E[i] - LLE))
                         {
-                            if (j-2 >= n ? lv == fitDataCore->get_v(SA[j-2]) && (k = stoi(fitDataCore->get_vs(SA[j-2]))) < -1 - MC : false)
+                            if (j-2 >= n ? lv == fitDataCore->get_v(SA[j-2]) && (k = stdStringToInt(fitDataCore->get_vs(SA[j-2]), -1, -1)) < -1 - MC : false)
                             {
                                 fitDataCore->set_vs(SA[j-1], std::to_string(k-1));
                                 FC[SA[j-1]] = -k;
@@ -1216,10 +1216,10 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
                         }
                         else
                         {
-                            if ((k = stoi(fitDataCore->get_vs(SA[j-1]))) < -1 - MC) fc = -k;
+                            if ((k = stdStringToInt(fitDataCore->get_vs(SA[j-1]), -1, -1)) < -1 - MC) fc = -k;
                             else
                             {
-                                if (j-2 >= n && lv == fitDataCore->get_v(SA[j-2]) && (k = stoi(fitDataCore->get_vs(SA[j-2]))) < -1 - MC) fc = -k;
+                                if (j-2 >= n && lv == fitDataCore->get_v(SA[j-2]) && (k = stdStringToInt(fitDataCore->get_vs(SA[j-2]), -1, -1)) < -1 - MC) fc = -k;
                                 else fc = MC + 1;
                             }
                         }
@@ -1229,7 +1229,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
             }
             else
             {
-                if (j>0 && lv == va[i] && (k = stoi(fitDataCore->get_vs(SA[j-1]))) < -1 - MC) fc = -k;
+                if (j>0 && lv == va[i] && (k = stdStringToInt(fitDataCore->get_vs(SA[j-1]), -1, -1)) < -1 - MC) fc = -k;
                 else fc = MC + 1;
                 va[i] = -1;
             }
@@ -1297,7 +1297,7 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
         for (n = 0, NumIso = NumComp = 1; n < NR; n++)
         {
             if ((b[n][0] = fitDataCore->getIso(n)) >= NumIso) NumIso = b[n][0] + 1;
-            if (disComp && (b[n][3] = (FC[n] >= 0 ? FC[n] : -1 - stoi(fitDataCore->get_vs(n)))) >= NumComp) NumComp = b[n][3] + 1;
+            if (disComp && (b[n][3] = (FC[n] >= 0 ? FC[n] : -1 - stdStringToInt(fitDataCore->get_vs(n), -1, -1))) >= NumComp) NumComp = b[n][3] + 1;
             if (!disComp || b[n][3] < 0) b[n][3] = 0;
             if ((b[n][1] = fitDataCore->get_v(n)) >= Nv) Nv = b[n][1] + 1;
             if ((b[n][2] = fitDataCore->getJ(n)) >= NJ) NJ = b[n][2] + 1;
@@ -1344,7 +1344,7 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
         {
             if ((maxv >= 0 && fitDataCore->get_v(n) > maxv) || (n < NSources && Sources[n] == 0)) continue;
             if ((m = fitDataCore->getIso(n)) >= NumIso) NumIso = m+1;
-            if (disComp && (m = (FC != 0 && n < NSources && FC[n] >= 0 ? FC[n] : -1 - stoi(fitDataCore->get_vs(n)))) >= NumComp) NumComp = m+1;
+            if (disComp && (m = (FC != 0 && n < NSources && FC[n] >= 0 ? FC[n] : -1 - stdStringToInt(fitDataCore->get_vs(n), -1, -1))) >= NumComp) NumComp = m+1;
             if (disElSt)
             {
                 QList<ElState*>::const_iterator it;
@@ -1387,7 +1387,7 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
             }
             if (disComp)
             {
-                F = (FC != 0 && Pos[n] < NSources && FC[Pos[n]] >= 0 ? FC[Pos[n]] : -1 - stoi(fitDataCore->get_vs(Pos[n])));
+                F = (FC != 0 && Pos[n] < NSources && FC[Pos[n]] >= 0 ? FC[Pos[n]] : -1 - stdStringToInt(fitDataCore->get_vs(Pos[n]), -1, -1));
                 if (F<0) F=0;
             }
             for (st = 0; st < StatesList.size() && StatesList[st] != LineElStates[Pos[n]]; ++st) ;
@@ -1627,7 +1627,7 @@ void FitData::RemoveDoubled()
         if (fabs(fitDataCore->getEnergy(SA[m]) - fitDataCore->getEnergy(SA[n])) < 3e-3
             && fitDataCore->getIso(SA[m]) == fitDataCore->getIso(SA[n])
              && (fitDataCore->get_v(SA[m]) == fitDataCore->get_v(SA[n])
-             || (stoi(fitDataCore->get_vs(SA[m])) < 0 && stoi(fitDataCore->get_vs(SA[n])) < 0))
+             || (stdStringToInt(fitDataCore->get_vs(SA[m]), -1, -1) < 0 && stdStringToInt(fitDataCore->get_vs(SA[n]), -1, -1) < 0))
              && fitDataCore->getJ(SA[m]) == fitDataCore->getJ(SA[n])
              && fitDataCore->getJs(SA[m]) == fitDataCore->getJs(SA[n])
              && (n >= NSources || FC[m] == FC[n] || FC[m] < 0 || FC[n] < 0 || FC[m] > MCT || FC[n] > MCT || CompT[FC[m]] < 0 || CompT[FC[n]] < 0))
@@ -1729,7 +1729,7 @@ void FitData::removeSingleLines()
     fitDataCore->blockSignals(true);
     for (n = lc = 1; n < N - NMarkedLevels; n++, lc++) if (fitDataCore->getProgression(SA[n]) != fitDataCore->getProgression(SA[n-1]) || Sources[SA[n-1]] != Sources[SA[n]])
     {
-        if (lc == 1 && fitDataCore->get_vs(SA[n-1]) != "TE" && stoi(fitDataCore->get_vs(SA[n-1])) >= -1) del[SA[n]] = true;
+        if (lc == 1 && fitDataCore->get_vs(SA[n-1]) != "TE" && stdStringToInt(fitDataCore->get_vs(SA[n-1]), -1) >= -1) del[SA[n]] = true;
         lc = 0;
     }
     if (lc == 1) del[SA[n-1]] = true;
@@ -2611,7 +2611,7 @@ bool FitData::writeData(QString Filename)
             Sources[n] = nullptr;
             LineElStates[n] = (molecule != 0 ? molecule->getState(fitDataCore->getOtherState(n).c_str()) : nullptr);
             B = fitDataCore->get_vs(n);
-            FC[n] = (B == "TE" ? -1 : -1 - stoi(B));
+            FC[n] = (B == "TE" ? -1 : -1 - stdStringToInt(B, -1, -1));
         }
         table->blockSignals(false);
         NMarkedLevels = 0;
@@ -2623,7 +2623,7 @@ bool FitData::writeData(QString Filename)
     for (n=0; n < NSources; n++) if (FC[n] >= 0)
     {
         B = fitDataCore->get_vs(n);
-        std::string ch = to_string(B == "TE" ? -1 : (B == "nA" ? -10 : stoi(B)) + 1000 * (FC[n] + 1));
+        std::string ch = to_string(B == "TE" ? -1 : (B == "nA" ? -10 : stdStringToInt(B, -1)) + 1000 * (FC[n] + 1));
         fitDataCore->set_vs(n, ch);
     }
     QString MolPath = molecule->getFileName();
@@ -2636,7 +2636,7 @@ bool FitData::writeData(QString Filename)
     Success = TableWindow::writeData(Filename);
     for (n=0; n < NSources; n++) if (FC[n] >= 0)
     {
-        std::string vs = (c = stoi(fitDataCore->get_vs(n)) - 1000 * (FC[n] + 1)) == -1 ? "TE" : (c == -10 ? "nA" : to_string(c));
+        std::string vs = (c = stdStringToInt(fitDataCore->get_vs(n), -1) - 1000 * (FC[n] + 1)) == -1 ? "TE" : (c == -10 ? "nA" : to_string(c));
         fitDataCore->set_vs(n, vs);
     }
     if (molecule != 0) for (n=0; n<N; ++n)
@@ -2759,7 +2759,7 @@ bool FitData::writeTFGS(QString Filename)
         Js = fitDataCore->getJs(SA[n]);
         I = fitDataCore->getIso(SA[n]);
         std::string vsSt = fitDataCore->get_vs(SA[n]);
-        vs = (vsSt != "nA" ? stoi(vsSt) : -1);
+        vs = (vsSt != "nA" ? stdStringToInt(vsSt, -1) : -1);
         if (vsSt == "TE")
         {
             wv = 9999;
@@ -3004,7 +3004,7 @@ void FitData::shiftCellValue(int v)
                 fitDataCore->setJ(row, fitDataCore->getJ(row) + v);
                 break;
             case FitDataCore::fdcvs:
-                fitDataCore->set_vs(row, std::to_string(stoi(fitDataCore->get_vs(row)) + v));
+                fitDataCore->set_vs(row, std::to_string(stdStringToInt(fitDataCore->get_vs(row), -1) + v));
                 break;
             case FitDataCore::fdcJs:
                 fitDataCore->setJs(row, fitDataCore->getJs(row) + v);
@@ -3025,7 +3025,7 @@ void FitData::shiftCellValue(int v)
                 fitDataCore->setDevRatio(row, fitDataCore->getDevRatio(row) + v);
                 break;
             case FitDataCore::fdcLineElState:
-                fitDataCore->setSecondState(row, std::to_string(stoi(fitDataCore->getOtherState(row))+ v));
+                fitDataCore->setSecondState(row, std::to_string(stdStringToInt(fitDataCore->getOtherState(row), -1) + v));
                 break;
             default:
                 // nothing to do

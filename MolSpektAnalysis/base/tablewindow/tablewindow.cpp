@@ -113,7 +113,7 @@ TableWindow::TableWindow(Type typ, MainWindow *mw, Molecule *M) : MDIChild(typ, 
 			JMax = new QLineEdit(this);
 			L->addWidget(JMax, 1, 3);
 			table = new MTable(this);
-			L->addWidget(Tab, 2, 0, 1, 4);
+			L->addWidget(table, 2, 0, 1, 4);
 			setFilter("Fit datasets (*.fdat)");
 			setFileExt(".fdat");
 			connect(vMax, SIGNAL(editingFinished()), this, SLOT(Changed()));

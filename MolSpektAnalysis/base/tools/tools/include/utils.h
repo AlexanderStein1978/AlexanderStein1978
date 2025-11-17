@@ -9,6 +9,7 @@
 #define UTILS
 
 #include <cstring>
+#include <string>
 
 #define sqr(x) ((x)*(x))
 
@@ -17,6 +18,7 @@ class QString;
 
 QString **CreateQString(const int &i, const int &j);
 void Destroy(QString **v, const int &i);
+int stdStringToInt(const std::string& string, const int errorValue = 0, const int overflowValue = -1);
 
 inline double **Create(const int &I, const int &J, bool initialize = false)
 {
