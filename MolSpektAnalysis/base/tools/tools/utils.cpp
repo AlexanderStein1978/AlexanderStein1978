@@ -26,3 +26,19 @@ void Destroy(QString **v, const int &I)
 	for (i=0; i<I; i++) delete[] v[i];
 	delete[] v;
 }
+
+int stdStringToInt(const std::string& string, const int errorValue, const int overflowValue)
+{
+	try
+	{
+		return stoi(string);
+	}
+	catch (std::invalid_argument const&)
+	{
+		return errorValue;
+	}
+	catch (std::out_of_range&)
+	{
+		return overflowValue;
+	}
+}
