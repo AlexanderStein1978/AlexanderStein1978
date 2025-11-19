@@ -516,7 +516,7 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const
 	{
 		if (n>0) Text(PD, x, y, w, h, T.left(n), F, O, write);
 		else w=h=0;
-		if (s < 0 && (T.length() > n+2 ? T[n+1] == '{' : false))
+		if (s < 0 && T.length() > n+2 && T[n+1] == '{')
 		{
 			m = T.indexOf('}', n+2);
 			o = T.indexOf('{', m+1);
@@ -535,8 +535,8 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const
 		{
             if (s<0)
 			{
-				o = n + 1;
-				p = m = n + 2;
+				o = n + 2;
+				p = m = n + 4;
 			}
 			else switch (s)
 			{

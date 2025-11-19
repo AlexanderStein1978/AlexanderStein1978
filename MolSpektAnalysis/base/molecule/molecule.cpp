@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QGridLayout>
+#include <QPainter>
 
 
 Molecule::Molecule(MainWindow *mw) : MDIChild(MDIChild::MolData, mw, "Molecules (*.mol)", ".mol")
@@ -1152,12 +1153,25 @@ IsoTab *Molecule::getIso()
 				}
 			}
 		}
-		for (i = 0; i < mIsoTab.numIso; i++)
+		for (i = 0; i < mIsoTab.numIso; ++i)
 		{
 			mIsoTab.relRedMass[i] = mIsoTab.redMass[mIsoTab.refIso] / mIsoTab.redMass[i];
 			mIsoTab.rootRRM[i] = sqrt(mIsoTab.relRedMass[i]);
 			if (mIsoTab.mNumIso1[i] == mIsoTab.mNumIso2[i] && *mIsoTab.chSymb1 == *mIsoTab.chSymb2) mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + "2";
 			else mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + QString::number(mIsoTab.mNumIso2[i]) + *mIsoTab.chSymb2;
+		}
+		int w, h;
+		QFont F;
+		QPainter P;
+		for (n=0; n < mIsoTab.numIso; ++n)
+		{
+			w = TextWidth(F, mIsoTab.texName[n]);
+			h = TextHeight(F, mIsoTab.texName[n]);
+			mIsoTab.IsoImage[n] = QPixmap(w, h);
+			mIsoTab.IsoImage[n].fill();
+			P.begin(mIsoTab.IsoImage + n);
+			WriteText(P, 0, h, mIsoTab.texName[n], F, 0);
+			P.end();
 		}
 	}
 	return &mIsoTab;

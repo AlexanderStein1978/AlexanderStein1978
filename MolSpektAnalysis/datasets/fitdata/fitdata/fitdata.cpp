@@ -1116,9 +1116,11 @@ bool FitData::readData(QString Filename)
             else LineElStates[n] = molecule->getState(fitDataCore->getOtherState(n).c_str());
         }
     }
+    fitDataCore->setNSources(NSources);
     fitDataCore->blockSignals(false);
     table->blockSignals(false);
     emit propertiesChanged();
+    Saved();
     return true;
 }
 
@@ -3236,7 +3238,7 @@ void FitData::setData(QString ** Data, int NRows, int NCols)
             if (c < NCols) L << Data[r][c];
             else L << "";
         }
-        fitDataCore->setRow(FitDataCore::convertToBaseData(L), r);
+        fitDataCore->setRow(fitDataCore->convertToBaseData(L), r);
         L.clear();
 	}
 	fitDataCore->blockSignals(false);
