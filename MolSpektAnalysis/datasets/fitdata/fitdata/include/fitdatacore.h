@@ -28,8 +28,6 @@ class FitDataCore : public QAbstractTableModel
 	public:
 		enum FitDataColumn {fdcIso, fdcv, fdcJ, fdcvs, fdcJs, fdcSource, fdcProg, fdcFile, fdcEnergy,
         fdcUncert, fdcObsCalc, fdcDevR, fdcLineElState};
-		
-		static BaseData* convertToBaseData(const QStringList& L);
 
 		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
@@ -88,6 +86,7 @@ class FitDataCore : public QAbstractTableModel
 		void search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const;
 		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
 					const bool completeCell = false) const;
+		BaseData* convertToBaseData(const QStringList& L) const;
 
 		inline BaseData* getData(const int row) const
 		{

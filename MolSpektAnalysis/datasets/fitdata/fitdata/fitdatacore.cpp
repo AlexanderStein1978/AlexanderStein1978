@@ -34,16 +34,19 @@ FitDataCore::~FitDataCore()
 	delete NewPix;
 }
 
-BaseData * FitDataCore::convertToBaseData(const QStringList& L)
+BaseData * FitDataCore::convertToBaseData(const QStringList& L) const
 {
 	BaseData *data = new BaseData;
 	int lc = L.count();
+	IsoTab * Iso = nullptr;
+	if (nullptr != molecule) Iso = molecule->getIso();
 	for (int n=0; n < lc && n <= fdcLineElState; n++)
 	{
 		switch(n)
 		{
 			case fdcIso:
 				data->isotope = static_cast<char>(L[n].toInt());
+				if (nullptr != Iso) data->IsoIcon = &Iso->IsoImage[data->isotope];
 				break;
 			case fdcv:
 				data->v = static_cast<ushort>(L[n].toInt());
@@ -93,16 +96,18 @@ QString FitDataCore::readData(QTextStream& S)
 {
 	QString Buffer;
 	QString Spacer = "\t";
-	beginInsertRows(QModelIndex(), 0, 1);
+	while (S.readLine().left(15) != "Column titles: ") ;
+	beginInsertRows(QModelIndex(), -1, -1);
 	while(!S.atEnd())
 	{
 		Buffer = S.readLine();
 		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
 		const QStringList L = Buffer.split(Spacer);
+		if (L.size() < 10) continue;
 		mData.push_back(convertToBaseData(L));
 	}
 	endInsertRows();
-	beginInsertRows(QModelIndex(), 1, mData.size() - 1);
+	beginInsertRows(QModelIndex(), 0, mData.size() - 2);
 	endInsertRows();
 	return "";
 }
@@ -314,13 +319,13 @@ void FitDataCore::setRowCount(const int count)
 	int currentSize = mData.size();
 	if (count > currentSize)
 	{
-		beginInsertRows(QModelIndex(), currentSize, count - 1);
+		beginInsertRows(QModelIndex(), currentSize, count - 2);
 		mData.resize(count);
 		endInsertRows();
 	}
 	else if (count < currentSize)
 	{
-		beginRemoveRows(QModelIndex(), count, currentSize - 1);
+		beginRemoveRows(QModelIndex(), count, currentSize - 2);
 		mData.resize(count);
 		endRemoveRows();
 	}
@@ -329,7 +334,7 @@ void FitDataCore::setRowCount(const int count)
 int FitDataCore::addMarkedLevel(TermEnergy& TE, Spektrum* Source)
 {
 	int R = mData.size();
-	beginInsertRows(QModelIndex(), R, R+1);
+	beginInsertRows(QModelIndex(), R-1, R-1);
 	BaseData* element = new BaseData;
 	element->isotope = static_cast<char>(TE.Iso);
 	element->v = TE.v;
@@ -349,7 +354,7 @@ int FitDataCore::addMarkedLevel(TermEnergy& TE, Spektrum* Source)
 
 int FitDataCore::addRow(const int cr)
 {
-	beginInsertRows(QModelIndex(), cr, cr);
+	beginInsertRows(QModelIndex(), cr - 1, cr - 1);
 	int r=0, nr = mData.size();
 	std::vector<BaseData*>::const_iterator it;
 	for (it = mData.begin(); r < cr; ++r) ++it;
@@ -361,7 +366,7 @@ int FitDataCore::addRow(const int cr)
 void FitDataCore::addRow(BaseData* const data)
 {
 	int rc = mData.size();
-	beginInsertRows(QModelIndex(), rc, rc);
+	beginInsertRows(QModelIndex(), rc - 1, rc - 1);
 	mData.push_back(data);
 	endInsertRows();
 }
@@ -389,7 +394,7 @@ BaseData * FitDataCore::getRow(const int row) const
 void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDataCore& data)
 {
 	int dataSize = mData.size();
-	beginInsertRows(QModelIndex(), dataSize, dataSize + data.mData.size());
+	beginInsertRows(QModelIndex(), dataSize, dataSize + data.mData.size() - 2);
 	auto it = data.mData.begin();
 	int r=0;
 	for (int i=0; i < i_numLines; ++i)
@@ -643,7 +648,12 @@ void FitDataCore::setMolecule(Molecule* const mol)
 	if (mol != molecule)
 	{
 		molecule = mol;
-		for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = nullptr;
+		if (nullptr != mol)
+		{
+			IsoTab* Iso = mol->getIso();
+			for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = &Iso->IsoImage[(*it)->isotope];
+		}
+		else for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = nullptr;
 		QModelIndex first = createIndex(0, fdcIso), last = createIndex(mData.size() - 1, fdcIso);
 		QVector<int> roles;
 		roles.push_back(Qt::DecorationRole);
