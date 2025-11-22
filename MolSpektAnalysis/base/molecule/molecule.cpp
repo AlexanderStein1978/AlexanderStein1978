@@ -1160,17 +1160,17 @@ IsoTab *Molecule::getIso()
 			if (mIsoTab.mNumIso1[i] == mIsoTab.mNumIso2[i] && *mIsoTab.chSymb1 == *mIsoTab.chSymb2) mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + "2";
 			else mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + QString::number(mIsoTab.mNumIso2[i]) + *mIsoTab.chSymb2;
 		}
-		int w, h;
+		int w, h, groundOffset;
 		QFont F;
 		QPainter P;
 		for (n=0; n < mIsoTab.numIso; ++n)
 		{
 			w = TextWidth(F, mIsoTab.texName[n]);
-			h = TextHeight(F, mIsoTab.texName[n]);
+			h = TextHeight(F, mIsoTab.texName[n], &groundOffset);
 			mIsoTab.IsoImage[n] = QPixmap(w, h);
 			mIsoTab.IsoImage[n].fill();
 			P.begin(mIsoTab.IsoImage + n);
-			WriteText(P, 0, h, mIsoTab.texName[n], F, 0);
+			WriteText(P, 0, h - groundOffset, mIsoTab.texName[n], F, 0);
 			P.end();
 		}
 	}

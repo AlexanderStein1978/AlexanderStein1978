@@ -41,7 +41,7 @@ public:
 	bool isSaved();
 	virtual bool isAssigned();
 	void setMainWindow(MainWindow *MW);
-	int TextHeight(QFont Font, QString Text);
+	int TextHeight(QFont Font, QString Text, int* groundOffset = nullptr);
 	int TextWidth(QFont Font, QString Text);
 	void WriteText(QPainter &P, int x, int y, QString Text, QFont Font, int Orientation);
 	virtual void Print(QPrinter &P);
@@ -104,8 +104,7 @@ signals:
 	void fileNameChanged();
 	void propertiesChanged();
 private:
-	void Text(QPainter &P, int x, int y, int &w, int &h, QString T, const QFont F, int O, 
-					 bool write);
+	void Text(QPainter &P, int x, int y, int &w, int &h, int& groundOffset, QString T, const QFont F, int O, bool write);
 	
     bool m_fileNameChanged, blockChangeSignal;
 	bool changed;
