@@ -902,6 +902,7 @@ bool FitData::readData(QTextStream& S)
 bool FitData::readData(QString Filename)
 {
     int NSources = fitDataCore->getNSources();
+    bool Error = false;
     if (NSourceOffset > 0)
     {
         delete[] SourceOffset;
@@ -916,14 +917,12 @@ bool FitData::readData(QString Filename)
         delete *it;
     }
     residualFits.clear();
-
     if (!TableWindow::readData(Filename)) 
     {
         QFile F(Filename);
         F.open(QIODevice::ReadOnly);
         QTextStream S(&F);
         int r, c, NR = S.readLine().left(5).toInt(), mv = 0, mJ=0;
-        bool Error = false;
         if (NR == 0)
         {
             QString B = S.readLine();
@@ -1084,43 +1083,46 @@ bool FitData::readData(QString Filename)
         }
         setvMax(mv);
         setJMax(mJ);
-        emit propertiesChanged();
-        return !Error;
     }
-    table->blockSignals(true);
-    fitDataCore->blockSignals(true);
-    int n, N = fitDataCore->rowCount(), b;
-    if (Sources != 0) delete[] Sources;
-    Sources = new LineTable*[NSources = N];
-    if (FC == 0) delete[] FC;
-    FC = new int[N];
-    if (LineElStates != 0) delete[] LineElStates;
-    LineElStates = new ElState*[N];
-    for (n=0; n<N; n++)
+    else
     {
-        if (n>0 && fitDataCore->getSource(n) == fitDataCore->getSource(n-1)) Sources[n] = Sources[n-1];
-        else Sources[n] = (molecule != 0 && !SaveMemory ? molecule->getLineTable(fitDataCore->getSource(n).c_str()) : 0);
-        if (Sources[n] != 0) LineElStates[n] = Sources[n]->getElState();
-        if ((b = stdStringToInt(fitDataCore->get_vs(n), -1, -1)) == -1) fitDataCore->set_vs(n, "TE");
-        if (b >= 990)
+        table->blockSignals(true);
+        fitDataCore->blockSignals(true);
+        int n, N = fitDataCore->rowCount(), b;
+        if (Sources != 0) delete[] Sources;
+        Sources = new LineTable*[NSources = N];
+        if (FC == 0) delete[] FC;
+        FC = new int[N];
+        if (LineElStates != 0) delete[] LineElStates;
+        LineElStates = new ElState*[N];
+        for (n=0; n<N; n++)
         {
-            FC[n] = (b + 10) / 1000 - 1;
-            fitDataCore->set_vs(n, (b -= 1000 * (FC[n] + 1)) == -1 ? "TE" : (b == -10 ? "nA" : std::to_string(b)));
+            if (n>0 && fitDataCore->getSource(n) == fitDataCore->getSource(n-1)) Sources[n] = Sources[n-1];
+            else Sources[n] = (molecule != 0 && !SaveMemory ? molecule->getLineTable(fitDataCore->getSource(n).c_str()) : 0);
+            if (Sources[n] != 0) LineElStates[n] = Sources[n]->getElState();
+            if ((b = stdStringToInt(fitDataCore->get_vs(n), -1, -1)) == -1) fitDataCore->set_vs(n, "TE");
+            if (b >= 990)
+            {
+                FC[n] = (b + 10) / 1000 - 1;
+                fitDataCore->set_vs(n, (b -= 1000 * (FC[n] + 1)) == -1 ? "TE" : (b == -10 ? "nA" : std::to_string(b)));
+            }
+            else FC[n] = -1;
+            if (molecule != 0)
+            {
+                QString Path = fitDataCore->getSourceFile(n).c_str(), MolPath = molecule->getFileName();
+                fitDataCore->setSourceFile(n, getAbsolutePath(Path, MolPath).toStdString());
+                if (n>0 && fitDataCore->getOtherState(n) == fitDataCore->getOtherState(n-1)) LineElStates[n] = LineElStates[n-1];
+                else LineElStates[n] = molecule->getState(fitDataCore->getOtherState(n).c_str());
+            }
         }
-        else FC[n] = -1;
-        if (molecule != 0)
-        {
-            QString Path = fitDataCore->getSourceFile(n).c_str(), MolPath = molecule->getFileName();
-            fitDataCore->setSourceFile(n, getAbsolutePath(Path, MolPath).toStdString());
-            if (n>0 && fitDataCore->getOtherState(n) == fitDataCore->getOtherState(n-1)) LineElStates[n] = LineElStates[n-1];
-            else LineElStates[n] = molecule->getState(fitDataCore->getOtherState(n).c_str());
-        }
+        fitDataCore->blockSignals(false);
+        table->blockSignals(false);
     }
     fitDataCore->setNSources(NSources);
-    fitDataCore->blockSignals(false);
-    table->blockSignals(false);
+    updateSources();
     emit propertiesChanged();
     Saved();
+    if (Error) return false;
     return true;
 }
 
@@ -1964,25 +1966,41 @@ void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
 
 void FitData::setElState(ElState* nState)
 {
-    int NSources = fitDataCore->getNSources();
     State = nState;
-    for (int n=0; n < NSources; ++n) if (0 == LineElStates[n])
-    {
-        LineElStates[n] = nState;
-        fitDataCore->setSecondState(n, nState->getName().toStdString());
-    }
+    if (nullptr != State) setMolecule(State->getMolecule());
 }
 
 void FitData::setMolecule(Molecule *Mol)
 {
     if (molecule != Mol)
     {
-        int n, NSources = fitDataCore->getNSources();
-        for (n=0; n < NSources; n++) LineElStates[n] = Mol->getState(fitDataCore->getOtherState(n).c_str());
+        updateSources();
         for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
             (*it)->SetState(Mol->getState(*(*it)->getStateName()));
         fitDataCore->setMolecule(Mol);
         TableWindow::setMolecule(Mol);
+    }
+}
+
+void FitData::updateSources()
+{
+    if (molecule == 0) return;
+    int n, NSources = fitDataCore->getNSources();
+    for (n=0; n < NSources; n++)
+    {
+        std::string stateName;
+        Sources[n] = molecule->getLineTable(fitDataCore->getSource(n).c_str());
+        if (nullptr != Sources[n])
+        {
+            Transition* T = Sources[n]->getTransition();
+            if (nullptr != T)
+            {
+                ElState* UState = T->getUpperState();
+                stateName = UState->getName().toStdString();
+            }
+        }
+        fitDataCore->setSecondState(n, stateName);
+        LineElStates[n] = molecule->getState(fitDataCore->getOtherState(n).c_str());
     }
 }
 
@@ -2232,11 +2250,11 @@ void FitData::setMCSEnergies(double* MCSE, int* Rows, int NR)
 
 void FitData::sortTab(int* S2)
 {
-    int i, P1=0, n, N = Tab->rowCount(), AFC[2], NSources = fitDataCore->getNSources();
+    int i, P1=0, n, N = fitDataCore->rowCount(), AFC[2], NSources = fitDataCore->getNSources();
     BaseData *AIt[2];
     LineTable *AS[2];
     ElState *ASt[2];
-    Tab->blockSignals(true);
+    table->blockSignals(true);
     fitDataCore->blockSignals(true);
     for (i=0; i<N; i++) if (S2[i] != i)
     {
