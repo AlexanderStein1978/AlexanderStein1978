@@ -193,6 +193,7 @@ class FitData : public TableWindow
 		void writeCell(QTextStream& S, const int r, const int c) const;
 		void startSearch(int& N, int*& Rows) const;
 		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
+		void updateSources();
 
         ElState *State, **LineElStates;
 		FitDataCore* fitDataCore;
