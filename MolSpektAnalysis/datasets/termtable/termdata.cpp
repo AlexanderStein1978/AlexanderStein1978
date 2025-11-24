@@ -9,6 +9,8 @@
 #include "utils.h"
 #include "isotab.h"
 
+#include <QPixmap>
+
 
 TermData::TermData(QObject *parent) : QAbstractTableModel(parent)
 {
@@ -36,7 +38,7 @@ TermData::~TermData()
 int TermData::columnCount(const QModelIndex &parent) const
 {
 	if (parent.isValid()) return 0;
-	return 6 + numStates;
+	return 5 + numStates;
 }
 
 QVariant TermData::data(const QModelIndex &index, int role) const
@@ -44,34 +46,26 @@ QVariant TermData::data(const QModelIndex &index, int role) const
 	//printf("TermData::data\n");
 	if (!index.isValid() || Data == 0) return QVariant();
 	if (role == Qt::TextAlignmentRole) return Qt::AlignRight; 
-	if (role != Qt::DisplayRole) return QVariant();
 	int r = index.row(), c = index.column(), I, C, v, J, n;
-	//printf("r=%d, c=%d, role=%d\n", r, c, role);
 	for (I=1; (I < numIso ? r >= vStart[I][0][0] : false); I++) ;
 	I--;
-	if (c==0) 
-	{
-		if (Iso != 0) return (QString::number(Iso->mNumIso1[Z[I]]) + *Iso->chSymb1).toLatin1().data();
-		else return I;
-	}
-	if (c==1) 
-	{
-		if (Iso != 0) return (QString::number(Iso->mNumIso2[Z[I]]) + *Iso->chSymb2).toLatin1().data();
-		else return I;
-	}
+	if (role == Qt::DecorationRole && c == 0) return Iso->IsoImage[I];
+	if (role != Qt::DisplayRole) return QVariant();
+	//printf("r=%d, c=%d, role=%d\n", r, c, role);
+	if (c==0) return I;
 	for (C=1; (C < numComp ? r >= vStart[I][C][0] : false); C++) ;
 	C--;
-	if (c==2) return CompZ[C];
+	if (c==1) return CompZ[C];
 	for (v=1; (v < numv ? r >= vStart[I][C][v] : false); v++) ;
 	v--;
-	if (c==3) return v;
+	if (c==2) return v;
 	for (n=0, J = r - vStart[I][C][v]; n<=J; n++) if (Data[C][I][v][n] == 0.0) J++;
 	//printf("I=%d, numIso=%d, C=%d, numComp=%d, v=%d, numv=%d\n", I, numIso, C, numComp, v, numv);
 	//printf("vStart[%d][%d][%d]=%d\n", I, C, v, vStart[I][C][v]);
 	//printf("r=%d, numRows=%d, J=%d, numJ=%d\n", r, numRows, J, numJ);
-	if (c==4) return J;
-	if (c==5) return QString::number(Data[C][I][v][J], 'f', 4);
-	return QString::number(MixCoeff[C][I][v][J][c-6], 'f', 5);
+	if (c==3) return J;
+	if (c==4) return QString::number(Data[C][I][v][J], 'f', 4);
+	return QString::number(MixCoeff[C][I][v][J][c-5], 'f', 5);
 }
 
 void TermData::getJE(int* R, int N, int* J, double* E)
@@ -147,25 +141,22 @@ QVariant TermData::headerData(int section, Qt::Orientation orientation, int role
 	switch (section)
 	{
 		case 0:
-			return "Iso 1";
+			return "Isotope";
 			break;
 		case 1:
-			return "Iso 2";
-			break;
-		case 2:
 			return "component";
 			break;
-		case 3:
+		case 2:
 			return "v";
 			break;
-		case 4:
+		case 3:
 			return "J";
 			break;
-		case 5:
+		case 4:
 			return "term energy";
 			break;
 		default:
-			return "Mix C S" + QString::number(section - 6);
+			return "Mix C S" + QString::number(section - 5);
 			break;
 	}
 	return QVariant();
