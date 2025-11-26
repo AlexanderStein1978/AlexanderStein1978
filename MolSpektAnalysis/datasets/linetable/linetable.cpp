@@ -21,6 +21,7 @@
 #include <QCheckBox>
 
 #include "linetable.h"
+#include "linetablecore.h"
 #include "elstate.h"
 #include "molecule.h"
 #include "duntable.h"
@@ -45,9 +46,11 @@
 
 
 LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableWindow(LineTab, MW, M)
-{	
+{
 	setFilter("Line table (*.lines)");
 	setFileExt(".lines");
+	lineTableCore = new LineTableCore();
+	table->setModel(lineTableCore);
 	transition = T;
 	NR = 0;
 	lRow = -1;
@@ -66,22 +69,17 @@ LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableWindow(L
 	setName("newLineTable");
 	setSource("own work");
 	setWindowTitle("New line table");
-	Tab->setColumnCount(TableNormCols);
-	Tab->setRowCount(0);
-	Tab->setHorizontalHeaderLabels(HeaderLabels << "PN" << "v'" << "J'" << "v''" << "J''" 
-			<< "FC" << "wave number" << "error" << "isotope" << "file name" << "SNR" 
-			<< "Deviation" << "Comment");
-	Tab->setColumnWidth(CPN, 50);
-	Tab->setColumnWidth(Cvs, 50);
-	Tab->setColumnWidth(CJs, 50);
-	Tab->setColumnWidth(Cvss, 50);
-	Tab->setColumnWidth(CJss, 50);
-	Tab->setColumnWidth(CF, 30);
-	Tab->setColumnWidth(CWN, 150);
-    Tab->setColumnWidth(CFile, 250);
+	table->setColumnWidth(LineTableCore::CPN, 50);
+	table->setColumnWidth(LineTableCore::Cvs, 50);
+	table->setColumnWidth(LineTableCore::CJs, 50);
+	table->setColumnWidth(LineTableCore::Cvss, 50);
+	table->setColumnWidth(LineTableCore::CJss, 50);
+	table->setColumnWidth(LineTableCore::CF, 30);
+	table->setColumnWidth(LineTableCore::CWN, 150);
+    table->setColumnWidth(LineTableCore::CFile, 250);
 	resize(600, 600);
 	//connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(Changed()));
-	connect(Tab, SIGNAL(itemSelectionChanged()), this, SLOT(TabSelChanged()));
+	connect(table, SIGNAL(SelChanged()), this, SLOT(TabSelChanged()));
 	Saved();	
 }
 
@@ -94,6 +92,7 @@ LineTable::~LineTable()
 		delete[] SelJs;
 	}
 	if (SO != 0) delete[] SO;
+	delete lineTableCore;
 	//printf("Ende ~LineTable\n");
 }
 
@@ -114,7 +113,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 {
 	//printf("LineTable::UpdateMarker()\n");
 	Marker *marker; 
-	int i, j, nr = Tab->rowCount(), s, *n, N, iB = 0, **p, *lines, I, AM;
+	int i, j, nr = lineTableCore->rowCount(), s, *n, N, iB = 0, **p, *lines, I, AM;
 	if (nr < 2) return;
 	bool L = false;
 	double dB, **F;

@@ -1,0 +1,139 @@
+//
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+//
+// Copyright: See README file that comes with this source code
+//
+//
+
+#ifndef FITDATACORE_H
+#define FITDATACORE_H
+
+
+#include <QAbstractTableModel>
+
+#include <vector>
+#include <cmath>
+
+
+struct BaseData;
+
+class TermEnergy;
+class Spektrum;
+class Molecule;
+
+class QTextStream;
+
+
+class LineTableCore : public QAbstractTableModel
+{
+	public:
+
+		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC,
+				CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
+		const int TableNormCols = 12;
+
+		LineTableCore(Molecule* mol = nullptr, QObject *parent = 0);
+		~LineTableCore();
+		QString readData(QTextStream& S);
+		void writeData(QTextStream& S);
+		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+		void setRowCount(const int count);
+		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
+		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+		std::vector<BaseData*> getData();
+		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+		int getMaxJ();
+		int getMaxv();
+		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
+		int addRow(const int cr);
+		void addRow(BaseData* const data);
+		void addRow(const QStringList& L);
+		void setRow(BaseData* const data, const int row);
+		void setRow(const QStringList& L, const int row);
+		BaseData* getRow(const int row) const;
+		void addData(const int i_numLines, int *const i_Lines, const LineTableCore& data);
+		void deleteRow(const int index);
+		void deleteRows(const int *indices, const int numRows);
+		int get_v(const int row) const;
+		void set_v(const int row, const int v);
+		const std::string& get_vs(const int row) const;
+		void set_vs(const int row, const std::string& vs);
+		int getJ(const int row) const;
+		void setJ(const int row, const int J);
+		int getJs(const int row) const;
+		void setJs(const int row, const int Js);
+		int getIso(const int row) const;
+		void setIso(const int row, const int iso);
+		const std::string& getSource(const int row) const;
+		void setSource(const int row, const std::string& source);
+		const std::string& getSourceFile(const int row) const;
+		void setSourceFile(const int row, const std::string& filename);
+		int getProgression(const int row) const;
+		void setProgression(const int row, const int progression);
+		double getEnergy(const int row) const;
+		void setEnergy(const int row, const double energy);
+		double getUncertainty(const int row) const;
+		void setUncertainty(const int row, const double uncertainty);
+		double getObsCalc(const int row) const;
+		void setObsCalc(const int row, const double obsCalc);
+		float getDevRatio(const int row) const;
+		void setDevRatio(const int row, const float DevR);
+		const std::string& getOtherState(const int row) const;
+		void setSecondState(const int row, const std::string& state);
+		void setIsoIcon(const int row, const QPixmap* const Icon);
+		void setRWError(const QString& headerText);
+		void setMolecule(Molecule* const mol);
+		void shrinkAllSpectRefs();
+		void search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
+					const bool completeCell = false) const;
+		BaseData* convertToBaseData(const QStringList& L) const;
+
+		inline BaseData* getData(const int row) const
+		{
+			return mData[row];
+		}
+
+		inline void setData(const int row, BaseData * const data)
+		{
+			mData[row] = data;
+		}
+
+		inline QModelIndex getIndex(const int row, const int column) const
+		{
+			return createIndex(row, column);
+		}
+
+		inline int getNSources() const
+		{
+			return NSources;
+		}
+
+		inline void setNSources(const int N)
+		{
+			NSources = N;
+		}
+
+		inline static int getNumDecimalPlaces(const double uncertainty)
+		{
+			return 2 - static_cast<int>(log10(uncertainty));
+		}
+		
+		inline Molecule* getMolecule() const
+		{
+			return molecule;
+		}
+
+	private:
+		int NSources = 0;
+		std::vector<BaseData*> mData;
+		std::vector<TableCols> mColumns;
+		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
+		QString RWError;
+		QPixmap *NewPix;
+		Molecule* molecule;
+};
+
+#endif

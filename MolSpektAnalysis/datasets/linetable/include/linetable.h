@@ -24,6 +24,7 @@ class Spektrum;
 class Progression;
 class TableLine;
 class TermEnergy;
+class LineTableCore;
 
 struct vsOListElement;
 
@@ -33,11 +34,6 @@ class QStringList;
 class QTableWidgetItem;
 class QTableWidgetSelectionRange;
 //class QList<QTableWidgetSelectionRange>;
-
-
-enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC,
-				CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
-#define TableNormCols 13
 
 
 class LineTable : public TableWindow
@@ -168,8 +164,8 @@ private:
 	int NR, lRow, MaxPN, mvs, mJs, mIso, NpProg, NpL, *SelJs, NSel, *SO, NSO;
 	double Error, OvError, *SelE;
 	QString InFile, mSpectrum;
-	QStringList HeaderLabels;
 	TableWindow *termTable;
+	LineTableCore *lineTableCore;
 	IsoTab *Iso;
 	QList<QTableWidgetSelectionRange> SelR;
 };
