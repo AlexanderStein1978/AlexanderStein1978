@@ -9,6 +9,7 @@
 #include "fitdatasortfunctions.h"
 #include "fitdata.h"
 #include "tableline.h"
+#include "utils.h"
 
 #include <cmath>
 
@@ -28,7 +29,7 @@ bool sortIvJFreqF(const FitDataCore * const Tab, const int n, const int m)
     if (in > im) return false;
     if (Jsn < Jsm) return true;
     if (Jsn > Jsm) return false;
-    if ((in = stoi(Tab->get_vs(n))) < (im = stoi(Tab->get_vs(m))))
+    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m))))
         return true;
     if (in > im) return false;
     if (Jssn < Jssm) return true;
@@ -43,7 +44,7 @@ bool SortvsIvJ(const FitDataCore *const Tab, const int n, const int m)
     int in, im;
     if (n==-1) return false;
     if (m==-1) return true;
-    if ((in = stoi(Tab->get_vs(n))) > (im = stoi(Tab->get_vs(m))))
+    if ((in = stdStringToInt(Tab->get_vs(n))) > (im = stdStringToInt(Tab->get_vs(m))))
         return true;
     if (in < im) return false;
     if ((in = Tab->getIso(n)) < (im = Tab->getIso(m)))
@@ -111,7 +112,7 @@ bool sortIefJFreqv(const FitDataCore *const Tab, const int n, const int m)
     if (In > Im) return false;
     if ((in = Tab->get_v(n)) < (im = Tab->get_v(m))) return true;
     if (in > im) return false;
-    if ((in = stoi(Tab->get_vs(n))) < (im = stoi(Tab->get_vs(m)))) return true;
+    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m)))) return true;
     return false;
 }
 
@@ -154,7 +155,7 @@ bool sortforTFGS(const FitDataCore *const Tab, const int n, const int m)
     if (Sn > Sm) return false;
     if (Bn == "nA" && Bm != "nA") return true;
     if (Bn != "nA" && Bm == "nA") return false;
-    int vn = stoi(Bn), vm = stoi(Bm);
+    int vn = stdStringToInt(Bn), vm = stdStringToInt(Bm);
     if (vn < vm) return true;
     if (vn > vm) return false;
     int Jn = Tab->getJs(n), Jm = Tab->getJs(m);
