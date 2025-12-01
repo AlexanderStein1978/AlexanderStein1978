@@ -12,19 +12,10 @@
 
 struct BaseData
 {
-    char isotope = 0;
-	ushort v = 0;
-	ushort J = 0;
-	std::string vs;
-	ushort Js = 0;
-	std::string source;
-	int prog = 0;
-	std::string file;
-	double energy = 0.0;
-	double uncert = 0.0;
-	double obs_calc = 0.0;
-	float devR = 0.0f;
-	std::string secondState;
+    int progressionNumber = -1, vs = -1, Js = -1, vss = -1, Jss = -1, F = -1, isotop = -1;
+	double waveNumber = 0.0, uncertainty = 0.0, signalToNoiseRatio = 0.0, obsMinusCalc = 0.0, FCF = 0.0, upperEnergy = 0.0, averageUpperEnergy = 0.0, diffToAverageEnergy = 0.0;
+	double energyDiffToNextJ = 0.0, calculatedEnergy = 0.0, diffToCalculatedEnergy = 0.0;
+	QString File, Comment;
 	const QPixmap* IsoIcon = nullptr;
 };
 

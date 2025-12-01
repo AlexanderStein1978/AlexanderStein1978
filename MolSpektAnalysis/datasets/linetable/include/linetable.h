@@ -21,7 +21,6 @@ class Marker;
 class Progression;
 struct IsoTab;
 class Spektrum;
-class Progression;
 class TableLine;
 class TermEnergy;
 class LineTableCore;
