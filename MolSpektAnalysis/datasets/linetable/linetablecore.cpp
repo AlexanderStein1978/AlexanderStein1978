@@ -46,6 +46,82 @@ LineTableCore::~LineTableCore()
 	delete NewPix;
 }
 
+QStringList LineTableCore::convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector)
+{
+	QStringList Result;
+	for (auto it = headerVector.begin(); it != headerVector.end(); ++it)
+	{
+		switch(*it)
+		{
+			case CPN:
+				Result.push_back("PN");
+				break;
+			case Cvs:
+				Result.push_back("v'");
+				break;
+			case CJs:
+				Result.push_back("J'");
+				break;
+			case Cvss:
+				Result.push_back("v''");
+				break;
+			case CJss:
+				Result.push_back("J''");
+				break;
+			case CF:
+				Result.push_back("FC");
+				break;
+			case CWN:
+				Result.push_back("wave number");
+				break;
+			case Cerr:
+				Result.push_back("error");
+				break;
+			case CIso:
+				Result.push_back("isotope");
+				break;
+			case CFile:
+				Result.push_back("file name");
+				break;
+			case CSNR:
+				Result.push_back("SNR");
+				break;
+			case CDev:
+				Result.push_back("Deviation");
+				break;
+			case CC:
+				Result.push_back("Comment");
+				break;
+			default:
+				// do nothing for now
+				break;
+		}
+	}
+	return Result;
+}
+
+std::vector<LineTableCore::TableCols> LineTableCore::convertHeaderStringsToColumnVector(const QStringList& headerStrings)
+{
+	std::vector<TableCols> Result;
+	for (auto it = headerStrings.begin(); it != headerStrings.end(); ++it)
+	{
+		if (*it == "PN") Result.push_back(CPN);
+		else if (*it == "v'") Result.push_back(Cvs);
+		else if (*it == "J'") Result.push_back(CJs);
+		else if (*it == "v''") Result.push_back(Cvss);
+		else if (*it == "J''") Result.push_back(CJss);
+		else if (*it == "FC") Result.push_back(CF);
+		else if (*it == "wave number") Result.push_back(CWN);
+		else if (*it == "error") Result.push_back(Cerr);
+		else if (*it == "isotope") Result.push_back(CIso);
+		else if (*it == "file name") Result.push_back(CFile);
+		else if (*it == "SNR") Result.push_back(CSNR);
+		else if (*it == "Deviation") Result.push_back(CDev);
+		else if (*it == "Comment") Result.push_back(CC);
+	}
+	return Result;
+}
+
 BaseData * LineTableCore::convertToBaseData(const QStringList& L) const
 {
 	BaseData *data = new BaseData;
@@ -458,43 +534,29 @@ void LineTableCore::deleteRow(const int index)
 	endRemoveRows();
 }
 
-int LineTableCore::get_v(const int row) const
-{
-	return mData[row]->v;
-}
-
-void LineTableCore::set_v(const int row, const int v)
-{
-	mData[row]->v = v;
-	QModelIndex index = createIndex(row, fdcv);
-	QVector<int> roles;
-	roles.push_back(Qt::EditRole);
-	emit dataChanged(index, index, roles);
-}
-
-const std::string & LineTableCore::get_vs(const int row) const
+int LineTableCore::get_vs(const int row) const
 {
 	return mData[row]->vs;
 }
 
-void LineTableCore::set_vs(const int row, const std::string& vs)
+void LineTableCore::set_vs(const int row, const int vs)
 {
 	mData[row]->vs = vs;
-	QModelIndex index = createIndex(row, fdcvs);
+	QModelIndex index = createIndex(row, Cvs);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
 }
 
-int LineTableCore::getJ(const int row) const
+const int LineTableCore::get_vss(const int row) const
 {
-	return mData[row]->J;
+	return mData[row]->vss;
 }
 
-void LineTableCore::setJ(const int row, const int J)
+void LineTableCore::set_vss(const int row, const int vss)
 {
-	mData[row]->J = J;
-	QModelIndex index = createIndex(row, fdcJ);
+	mData[row]->vss = vss;
+	QModelIndex index = createIndex(row, Cvss);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
@@ -508,7 +570,35 @@ int LineTableCore::getJs(const int row) const
 void LineTableCore::setJs(const int row, const int Js)
 {
 	mData[row]->Js = Js;
-	QModelIndex index = createIndex(row, fdcJs);
+	QModelIndex index = createIndex(row, CJs);
+	QVector<int> roles;
+	roles.push_back(Qt::EditRole);
+	emit dataChanged(index, index, roles);
+}
+
+int LineTableCore::getJss(const int row) const
+{
+	return mData[row]->Jss;
+}
+
+void LineTableCore::setJss(const int row, const int Jss)
+{
+	mData[row]->Jss = Jss;
+	QModelIndex index = createIndex(row, CJss);
+	QVector<int> roles;
+	roles.push_back(Qt::EditRole);
+	emit dataChanged(index, index, roles);
+}
+
+int LineTableCore::getF(const int row) const
+{
+	return mData[row]->F;
+}
+
+void LineTableCore::setF(const int row, const int F)
+{
+	mData[row]->F = F;
+	QModelIndex index = createIndex(row, CF);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
@@ -522,7 +612,7 @@ int LineTableCore::getIso(const int row) const
 void LineTableCore::setIso(const int row, const int iso)
 {
 	mData[row]->isotope = iso;
-	QModelIndex index = createIndex(row, fdcIso);
+	QModelIndex index = createIndex(row, CIso);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
@@ -542,15 +632,15 @@ void LineTableCore::setSource(const int row, const std::string& source)
 	emit dataChanged(index, index, roles);
 }
 
-const std::string & LineTableCore::getSourceFile(const int row) const
+const std::string & LineTableCore::getFile(const int row) const
 {
 	return mData[row]->file;
 }
 
-void LineTableCore::setSourceFile(const int row, const std::string& filename)
+void LineTableCore::setFile(const int row, const std::string& filename)
 {
 	mData[row]->file = filename;
-	QModelIndex index = createIndex(row, fdcFile);
+	QModelIndex index = createIndex(row, CFile);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
@@ -558,13 +648,13 @@ void LineTableCore::setSourceFile(const int row, const std::string& filename)
 
 double LineTableCore::getObsCalc(const int row) const
 {
-	return mData[row]->obs_calc;
+	return mData[row]->obsMinusCalc;
 }
 
 void LineTableCore::setObsCalc(const int row, const double obsCalc)
 {
-	mData[row]->obs_calc = obsCalc;
-	QModelIndex index = createIndex(row, fdcObsCalc);
+	mData[row]->obsMinusCalc = obsCalc;
+	QModelIndex index = createIndex(row, CDev);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
@@ -589,15 +679,15 @@ void LineTableCore::setUncertainty(const int row, const double uncertainty)
 	emit dataChanged(index, index, roles);
 }
 
-double LineTableCore::getEnergy(const int row) const
+double LineTableCore::getWaveNumber(const int row) const
 {
-	return mData[row]->energy;
+	return mData[row]->waveNumber;
 }
 
-void LineTableCore::setEnergy(const int row, const double energy)
+void LineTableCore::setWaveNumber(const int row, const double waveNumber)
 {
-	mData[row]->energy = energy;
-	QModelIndex index = createIndex(row, fdcEnergy);
+	mData[row]->waveNumber = waveNumber;
+	QModelIndex index = createIndex(row, CWN);
 	QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);

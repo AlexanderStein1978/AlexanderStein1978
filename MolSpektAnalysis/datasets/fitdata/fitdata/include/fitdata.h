@@ -10,7 +10,7 @@
 #define FITDATA_H
 
 
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "levelcomb.h"
 #include "fitdatasortfunctions.h"
 #include "fitdatacore.h"
@@ -34,7 +34,7 @@ class QListWidget;
 enum {eLevel, fLevel};
 
 
-class FitData : public TableWindow
+class FitData : public TableViewWindow
 {
 	Q_OBJECT
 	

@@ -32,6 +32,9 @@ class LineTableCore : public QAbstractTableModel
 				CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
 		const int TableNormCols = 12;
 
+		static std::vector<TableCols> convertHeaderStringsToColumnVector(const QStringList& headerStrings);
+		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
+
 		LineTableCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~LineTableCore();
 		QString readData(QTextStream& S);
@@ -55,24 +58,26 @@ class LineTableCore : public QAbstractTableModel
 		void addData(const int i_numLines, int *const i_Lines, const LineTableCore& data);
 		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
-		int get_v(const int row) const;
-		void set_v(const int row, const int v);
-		const std::string& get_vs(const int row) const;
-		void set_vs(const int row, const std::string& vs);
-		int getJ(const int row) const;
-		void setJ(const int row, const int J);
+		int get_vs(const int row) const;
+		void set_vs(const int row, const int vs);
+		int get_vss(const int row) const;
+		void set_vss(const int row, const int vss);
 		int getJs(const int row) const;
 		void setJs(const int row, const int Js);
+		int getJss(const int row) const;
+		void setJss(const int row, const int Jss);
+		int getF(const int row) const;
+		void setF(const int row, const int F);
 		int getIso(const int row) const;
 		void setIso(const int row, const int iso);
 		const std::string& getSource(const int row) const;
 		void setSource(const int row, const std::string& source);
-		const std::string& getSourceFile(const int row) const;
-		void setSourceFile(const int row, const std::string& filename);
+		const QString& getFile(const int row) const;
+		void setFile(const int row, const QString& filename);
 		int getProgression(const int row) const;
 		void setProgression(const int row, const int progression);
-		double getEnergy(const int row) const;
-		void setEnergy(const int row, const double energy);
+		double getWaveNumber(const int row) const;
+		void setWaveNumber(const int row, const double waveNumber);
 		double getUncertainty(const int row) const;
 		void setUncertainty(const int row, const double uncertainty);
 		double getObsCalc(const int row) const;
@@ -90,6 +95,7 @@ class LineTableCore : public QAbstractTableModel
 		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
 					const bool completeCell = false) const;
 		BaseData* convertToBaseData(const QStringList& L) const;
+
 
 		inline BaseData* getData(const int row) const
 		{

@@ -156,7 +156,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 	else lines = Lines;
 	for (i=0; i<nLines; i++) 
 	{
-		T = Tab->item(lines[i], CFile)->text();
+		T = lineTableCore->getFile(lines[i]);
 		//if (T == "" && L) n[s]++;
 		for (s=0; s<N; s++) if (T.indexOf(SpektFile[s]) > -1) n[s]++;
 	}
@@ -169,7 +169,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 	for (s=0; s<N; s++) n[s]=0;
 	for (i=0, L = false; i < nLines; i++)
 	{
-		T = Tab->item(lines[i], CFile)->text();
+		T = lineTableCore->getFile(lines[i]);
 		if (T != "" || !L) 
 		{
 			for (s=0, L = false; (s<N ? T.indexOf(SpektFile[s]) == -1 : false); s++) ;
@@ -178,7 +178,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 		if (L)
 		{
 			//printf("i=%d, n[0]=%d\n", lines[i], n[0]);
-			F[s][n[s]] = Tab->item(lines[i], CWN)->text().toDouble();
+			F[s][n[s]] = lineTableCore->getWaveNumber(lines[i]);
 			p[s][n[s]++] = lines[i];
 		}
 	}
@@ -206,7 +206,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 			{
 				if (remove)
 				{
-					I = (Tab->item(p[s][i], CIso)->text().toInt() - 1)/10;
+					I = (lineTableCore->getIso(p[s][i]) - 1)/10;
 					if (I < 0 || I >= Iso->numIso) I = 0;
 					if (marker[j].IsoName == Iso->texName[I]) marker[j].DisplayData = false;
 				}
@@ -214,13 +214,13 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 				{
 					//printf("i=%d, j=%d\n", i, j);
 					//printf("p[%d][%d]=%d, Iso->numIso=%d\n", s, i, p[s][i], Iso->numIso);
-					marker[j].vs = Tab->item(p[s][i], Cvs)->text().toInt();
-					marker[j].Js = Tab->item(p[s][i], CJs)->text().toInt();
-					marker[j].vss = Tab->item(p[s][i], Cvss)->text().toInt();
-					marker[j].Jss = Tab->item(p[s][i], CJss)->text().toInt();
-					marker[j].Iso = (Tab->item(p[s][i], CIso)->text().toInt() - 1)/10;
-					marker[j].DD = Tab->item(p[s][i], CDev)->text().toDouble();
-					marker[j].FC = Tab->item(p[s][i], CF)->text().toInt();
+					marker[j].vs = lineTableCore->get_vs(p[s][i]);
+					marker[j].Js = lineTableCore->getJs(p[s][i]);
+					marker[j].vss = lineTableCore->get_vss(p[s][i]);
+					marker[j].Jss = lineTableCore->getJss(p[s][i]);
+					marker[j].Iso = (lineTableCore->getIso(p[s][i]) - 1)/10;
+					marker[j].DD = lineTableCore->getObsCalc(p[s][i]);
+					marker[j].FC = lineTableCore->getF(p[s][i]);
 					marker[j].Mol = molecule;
 					if (Iso != 0) 
 					{
@@ -268,7 +268,7 @@ int LineTable::getAnzahlLinien()
 {
     int N;
 	//printf("LineTable::getAnzahlLinien: name = %s\n", getName().toAscii().data());
-    for (N=0; (N < Tab->rowCount() ? Tab->item(N, 0)->icon().isNull() || 
+    for (N=0; (N < lineTableCore->rowCount() ? Tab->item(N, 0)->icon().isNull() ||
 		 Tab->item(N, Cvs)->text().isEmpty() : false); N++) ;// printf("N=%d\n", N);
     return N;
 }

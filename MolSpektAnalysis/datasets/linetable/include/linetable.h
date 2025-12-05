@@ -10,7 +10,7 @@
 
 
 #include "Transition.h"
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "linetablesortfunctions.h"
 
 #include <qmessagebox.h>
@@ -35,7 +35,7 @@ class QTableWidgetSelectionRange;
 //class QList<QTableWidgetSelectionRange>;
 
 
-class LineTable : public TableWindow
+class LineTable : public TableViewWindow
 {
 	Q_OBJECT
 	
