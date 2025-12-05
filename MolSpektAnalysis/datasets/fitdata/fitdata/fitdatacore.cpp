@@ -27,7 +27,7 @@ FitDataCore::~FitDataCore()
 {
 }
 
-FitDataBaseData * FitDataCore::convertToBaseData(const QStringList& L) const
+FitDataBaseData * FitDataCore::convertToFitDataCoreBaseData(const QStringList& L) const
 {
 	FitDataBaseData *data = new FitDataBaseData;
 	int lc = L.count();
@@ -38,44 +38,44 @@ FitDataBaseData * FitDataCore::convertToBaseData(const QStringList& L) const
 		switch(n)
 		{
 			case fdcIso:
-				data->isotope = static_cast<char>(L[n].toInt());
+				data->isotope = L[n].toInt();
 				if (nullptr != Iso) data->IsoIcon = &Iso->IsoImage[data->isotope];
 				break;
 			case fdcv:
-				data->v = static_cast<ushort>(L[n].toInt());
+				data->v = L[n].toInt();
 				break;
 			case fdcJ:
-				data->J = static_cast<ushort>(L[n].toInt());
+				data->J = L[n].toInt();
 				break;
 			case fdcvs:
-				data->vs = L[n].toStdString();
+				data->vs = L[n];
 				break;
 			case fdcJs:
-				data->Js = static_cast<ushort>(L[n].toInt());
+				data->Js = L[n].toInt();
 				break;
 			case fdcSource:
-				data->source = L[n].toStdString();
+				data->source = L[n];
 				break;
 			case fdcProg:
-				data->prog = L[n].toInt();
+				data->progressionNumber = L[n].toInt();
 				break;
 			case fdcFile:
-				data->file = L[n].toStdString();
+				data->file = L[n];
 				break;
 			case fdcEnergy:
 				data->energy = L[n].toDouble();
 				break;
 			case fdcUncert:
-				data->uncert = L[n].toDouble();
+				data->uncertainty = L[n].toDouble();
 				break;
 			case fdcObsCalc:
-				data->obs_calc = L[n].toDouble();
+				data->obsMinusCalc = L[n].toDouble();
 				break;
 			case fdcDevR:
-				data->devR = L[n].toFloat();
+				data->devR = L[n].toDouble();
 				break;
 			case fdcLineElState:
-				data->secondState = L[n].toStdString();
+				data->secondState = L[n];
 				break;
 			default:
 				// not possible
@@ -105,20 +105,16 @@ QString FitDataCore::readData(QTextStream& S)
 	return "";
 }
 
-void FitDataCore::setRow(const QStringList& L, const int row)
-{
-	setRow(convertToBaseData(L), row);
-}
-
 void FitDataCore::writeData(QTextStream& S)
 {
 	QString Spacer = "\t";
 	for (auto it = mData.begin(); it != mData.end(); ++it)
 	{
-		int numDigits = getNumDecimalPlaces((*it)->uncert);
-		S << static_cast<int>((*it)->isotope) << Spacer << (*it)->v << Spacer << (*it)->J << Spacer << (*it)->vs.c_str() << Spacer << (*it)->Js << Spacer << (*it)->source.c_str() << Spacer << (*it)->prog
-		  << Spacer << (*it)->file.c_str() << Spacer << QString::number((*it)->energy, 'f', numDigits) << Spacer << QString::number((*it)->uncert, 'f', numDigits) << Spacer
-		  << QString::number((*it)->obs_calc, 'f', numDigits) << Spacer << QString::number((*it)->devR, 'f', 3) << Spacer << (*it)->secondState.c_str() << '\n';
+		FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(*it);
+		int numDigits = getNumDecimalPlaces(element->uncertainty);
+		S << static_cast<int>(element->isotope) << Spacer << element->v << Spacer << element->J << Spacer << element->vs << Spacer << element->Js << Spacer << element->source << Spacer
+		  << element->progressionNumber << Spacer << element->file << Spacer << QString::number(element->energy, 'f', numDigits) << Spacer << QString::number(element->uncertainty, 'f', numDigits)
+		  << Spacer << QString::number(element->obsMinusCalc, 'f', numDigits) << Spacer << QString::number(element->devR, 'f', 3) << Spacer << element->secondState << '\n';
 	}
 	NSources = mData.size();
 }
@@ -152,40 +148,41 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 		return Qt::AlignRight;
 	}
 	if (role != Qt::DisplayRole && role != Qt::EditRole) return QVariant();
-	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(mData[row]->uncert);
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[row]);
+	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(element->uncertainty);
 	switch (column)
 	{
 		case fdcIso:
-			return mData[row]->isotope;
+			return element->isotope;
 		case fdcv:
-			return mData[row]->v;
+			return element->v;
 		case fdcJ:
-			return mData[row]->J;
+			return element->J;
 		case fdcvs:
-			return mData[row]->vs.c_str();
+			return element->vs;
 		case fdcJs:
-			return mData[row]->Js;
+			return element->Js;
 		case fdcSource:
-			return mData[row]->source.c_str();
+			return element->source;
 		case fdcProg:
-			return mData[row]->prog;
+			return element->progressionNumber;
 		case fdcFile:
-			return mData[row]->file.c_str();
+			return element->file;
 		case fdcEnergy:
 			if (!RWError.isEmpty())
 			{
-				numDigits = -int(floor(log10(mData[row]->uncert)));
+				numDigits = -int(floor(log10(element->uncertainty)));
 				if (numDigits < 4) numDigits = 4;
 			}
-			return QString::number(mData[row]->energy, 'f', numDigits);
+			return QString::number(element->energy, 'f', numDigits);
 		case fdcUncert:
-			return QString::number(mData[row]->uncert, 'f', numDigits);
+			return QString::number(element->uncertainty, 'f', numDigits);
 		case fdcObsCalc:
-			return QString::number(mData[row]->obs_calc, 'f', numDigits);
+			return QString::number(element->obsMinusCalc, 'f', numDigits);
 		case fdcDevR:
-			return QString::number(mData[row]->devR, 'f', 3);
+			return QString::number(element->devR, 'f', 3);
 		case fdcLineElState:
-			return mData[row]->secondState.c_str();
+			return element->secondState;
 		default:
 			return QVariant();
 			break;
@@ -196,46 +193,47 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 bool FitDataCore::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (role != Qt::EditRole) return false;
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[index.row()]);
 	switch (index.column())
 	{
 		case fdcIso:
-			mData[index.row()]->isotope = static_cast<ushort>(value.toUInt());
+			element->isotope = value.toUInt();
 			break;
 		case fdcv:
-			mData[index.row()]->v = static_cast<ushort>(value.toUInt());
+			element->v = value.toUInt();
 			break;
 		case fdcJ:
-			mData[index.row()]->J = static_cast<ushort>(value.toUInt());
+			element->J = value.toUInt();
 			break;
 		case fdcvs:
-			mData[index.row()]->vs = value.toString().toStdString();
+			element->vs = value.toString();
 			break;
 		case fdcJs:
-			mData[index.row()]->Js = static_cast<ushort>(value.toUInt());
+			element->Js = value.toUInt();
 			break;
 		case fdcSource:
-			mData[index.row()]->source = value.toString().toStdString();
+			element->source = value.toString();
 			break;
 		case fdcProg:
-			mData[index.row()]->prog = value.toInt();
+			element->progressionNumber = value.toInt();
 			break;
 		case fdcFile:
-			mData[index.row()]->file = value.toString().toStdString();
+			element->file = value.toString();
 			break;
 		case fdcEnergy:
-			mData[index.row()]->energy = value.toDouble();
+			element->energy = value.toDouble();
 			break;
 		case fdcUncert:
-			mData[index.row()]->uncert = value.toDouble();
+			element->uncertainty = value.toDouble();
 			break;
 		case fdcObsCalc:
-			mData[index.row()]->obs_calc = value.toDouble();
+			element->obsMinusCalc = value.toDouble();
 			break;
 		case fdcDevR:
-			mData[index.row()]->devR = value.toFloat();
+			element->devR = value.toDouble();
 			break;
 		case fdcLineElState:
-			mData[index.row()]->secondState = value.toString().toStdString();
+			element->secondState = value.toString();
 			break;
 		default:
 			return false;
