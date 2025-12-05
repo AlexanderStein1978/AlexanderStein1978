@@ -7,7 +7,7 @@
 
 #include "fitdatacore.h"
 #include "utils.h"
-#include "basedata.h"
+#include "fitdatabasedata.h"
 #include "termenergy.h"
 #include "Spektrum.h"
 #include "elstate.h"
@@ -19,24 +19,17 @@
 #include <QMessageBox>
 
 
-FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol)
+FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent, QRegExp("SourceOffsets:|Begin ResidualFit"))
 {
-	NewPix = new QPixmap(10, 10);
-    QPainter P(NewPix);
-    P.setPen(QColor(255, 0, 0));
-    P.setFont(QFont("Arial", 10));
-    P.drawText(0, 10, "N");
 }
 
 FitDataCore::~FitDataCore()
 {
-	for (auto it = mData.begin(); it != mData.end(); ++it) delete *it;
-	delete NewPix;
 }
 
-BaseData * FitDataCore::convertToBaseData(const QStringList& L) const
+FitDataBaseData * FitDataCore::convertToBaseData(const QStringList& L) const
 {
-	BaseData *data = new BaseData;
+	FitDataBaseData *data = new FitDataBaseData;
 	int lc = L.count();
 	IsoTab * Iso = nullptr;
 	if (nullptr != molecule) Iso = molecule->getIso();
