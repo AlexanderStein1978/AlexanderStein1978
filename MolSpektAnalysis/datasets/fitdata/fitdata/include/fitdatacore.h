@@ -41,10 +41,9 @@ class FitDataCore : public TableViewWindowCore
 		int getMaxJ();
 		int getMaxv();
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
-		void addRow(FitDataBaseData* const data) override;
+		void addRow(FitDataBaseData* const data) ;
 		void addRow(const QStringList& L) override;
-		void setRow(FitDataBaseData* const data, const int row) override;
-		void setRow(const QStringList& L, const int row) override;
+		void setRow(FitDataBaseData* const data, const int row);
 		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
 		const QString& get_vs(const int row) const;

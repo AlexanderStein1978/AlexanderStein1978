@@ -9,6 +9,9 @@
 #define TABLE_VIEW_WINDOW_CORE_H
 
 
+#include <QAbstractTableModel>
+
+
 struct BaseData;
 
 class TermEnergy;
@@ -20,7 +23,7 @@ class QTextStream;
 class TableViewWindowCore : public QAbstractTableModel
 {
 	public:
-		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QString readSpecialPartRegex = "");
+		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegExp readSpecialPartRegex = QRegExp());
 		~TableViewWindowCore();
 		QString readData(QTextStream& S);
 		void writeData(QTextStream& S);

@@ -7,9 +7,13 @@
 
 
 #include "tableviewwindowcore.h"
+#include "basedata.h"
+
+#include <QPixmap>
+#include <QPainter>
 
 
-TableViewWindowCore::TableViewWindowCore()
+TableViewWindowCore::TableViewWindowCore(Molecule* mol, QObject *parent, QRegExp readSpecialPartRegex) : QAbstractTableModel(parent), mStartSpecialPart(readSpecialPartRegex), molecule(mol)
 {
     NewPix = new QPixmap(10, 10);
     QPainter P(NewPix);
@@ -29,4 +33,9 @@ void TableViewWindowCore::EmitDataChanged(QModelIndex& index)
     QVector<int> roles;
 	roles.push_back(Qt::EditRole);
 	emit dataChanged(index, index, roles);
+}
+
+void TableViewWindowCore::setRow(const QStringList& L, const int row)
+{
+	setRow(convertToBaseData(L), row);
 }
