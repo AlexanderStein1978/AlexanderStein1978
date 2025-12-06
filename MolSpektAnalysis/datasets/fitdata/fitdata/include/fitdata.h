@@ -49,8 +49,6 @@ class FitData : public TableViewWindow
 		ElState *getElState() override;
 		void setElState(ElState *State);
         void setMolecule(Molecule *Mol) override;
-		int getMaxJ();
-		int getMaxv();
 		void updateData();
 		void updateRow(TableLine *Line);
 		void updateEnergy(int N, int *r, double *Energy);
@@ -68,7 +66,6 @@ class FitData : public TableViewWindow
 		void DeleteRows() override;
 		void removeDataFSource();
 		void removeSingleLines();
-		bool isDataAvailable();
 		bool readData(QString Filename) override;
 		bool writeData(QString Filename = "") override;
 		bool writeExPotFitInput(QString fileName);
@@ -196,7 +193,6 @@ class FitData : public TableViewWindow
 		void updateSources();
 
         ElState *State, **LineElStates;
-		FitDataCore* fitDataCore;
 		LineTable **Sources;
 		int NMarkedLevels, *FC, lRow, NSourceOffset, lastClickedHeaderIndex = -1;
 		QString *SourceOffsetNames;
