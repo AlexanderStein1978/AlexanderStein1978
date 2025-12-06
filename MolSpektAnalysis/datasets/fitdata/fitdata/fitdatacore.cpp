@@ -455,8 +455,8 @@ void FitDataCore::shrinkAllSpectRefs()
     QString FileName;
     for (auto it = mData.begin(); it != mData.end(); ++it)
     {
-        FileName = (*it)->file.c_str();
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1).toStdString();
+        FileName = (*it)->file;
+        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
     }
 }
 
@@ -471,207 +471,227 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 	switch (smeqla)
 	{
 		case 0:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value == static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value == static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value == static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value == stdStringToInt(mData[Rows[n]]->vs), -1) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value == static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value == mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value == static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value == static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value == static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value == static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value == element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value == element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value == element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value == element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value == element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value == element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value == static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value == static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value == static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value == static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 1:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > stdStringToInt(mData[Rows[n]]->vs), -1) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 2:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value < static_cast<int>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value < static_cast<int>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value < static_cast<int>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value < stdStringToInt(mData[Rows[n]]->vs, -1)) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value < static_cast<int>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value < mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value < static_cast<int>(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value < static_cast<int>(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value < static_cast<int>(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value < static_cast<int>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value < element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value < element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value < element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value < element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value < element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value < element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value < static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value < static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value < static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value < static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 3:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->v))) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > abs(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > abs(mData[Rows[n]]->prog)) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->energy))) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->uncert))) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->obs_calc))) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(static_cast<int>(element->energy))) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(static_cast<int>(element->uncertainty))) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(static_cast<int>(element->obsMinusCalc))) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(static_cast<int>(element->devR))) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 4:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->v))) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->J))) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > abs(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > abs(mData[Rows[n]]->prog)) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->energy))) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->uncert))) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->obs_calc))) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > abs(static_cast<int>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(mData[Rows[n]]->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(mData[Rows[n]]->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(mData[Rows[n]]->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(static_cast<int>(element->energy))) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(static_cast<int>(element->uncertainty))) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(static_cast<int>(element->obsMinusCalc))) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(static_cast<int>(element->devR))) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
@@ -690,204 +710,224 @@ void FitDataCore::search(const int* const Rows, const int NRows, const int colum
 	switch (smeqla)
 	{
 		case 0:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value == static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value == static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value == static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value == static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value == static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value == mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value == mData[Rows[n]]->energy) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value == mData[Rows[n]]->uncert) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value == mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value == static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value == static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value == static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value == static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value == static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value == static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value == static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value == element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value == element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value == element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value == element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 1:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > mData[Rows[n]]->energy) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > mData[Rows[n]]->uncert) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 2:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value < static_cast<double>(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value < static_cast<double>(mData[Rows[n]]->v)) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value < static_cast<double>(mData[Rows[n]]->J)) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value < static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value < static_cast<double>(mData[Rows[n]]->Js)) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value < mData[Rows[n]]->prog) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value < mData[Rows[n]]->energy) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value < mData[Rows[n]]->uncert) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value < mData[Rows[n]]->obs_calc) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value < static_cast<double>(mData[Rows[n]]->devR)) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value < static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value < static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value < static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value < static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value < static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value < static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value < element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value < element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value < element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value < element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 3:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->v))) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > abs(static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1)))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->prog))) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > abs(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > abs(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > abs(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
-						break;
-					default:
-						// not reasonable
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(static_cast<double>(element->isotope))) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(static_cast<double>(element->v))) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(static_cast<double>(element->J))) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(static_cast<double>(element->vs.toInt()))) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(static_cast<double>(element->Js))) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(static_cast<double>(element->progressionNumber))) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
 				}
 			}
 			break;
 		case 4:
-            for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+            for (int n=0; n < NRows; ++n)
 			{
-				switch (c)
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
 				{
-					case fdcIso:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->isotope))) Result << createIndex(n, c);
-						break;
-					case fdcv:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->v))) Result << createIndex(n, c);
-						break;
-					case fdcJ:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->J))) Result << createIndex(n, c);
-						break;
-					case fdcvs:
-						if (value > abs(static_cast<double>(stdStringToInt(mData[Rows[n]]->vs, -1)))) Result << createIndex(n, c);
-						break;
-					case fdcJs:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->Js))) Result << createIndex(n, c);
-						break;
-					case fdcProg:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->prog))) Result << createIndex(n, c);
-						break;
-					case fdcEnergy:
-						if (value > abs(mData[Rows[n]]->energy)) Result << createIndex(n, c); 
-						break;
-					case fdcUncert:
-						if (value > abs(mData[Rows[n]]->uncert)) Result << createIndex(n, c);
-						break;
-					case fdcObsCalc:
-						if (value > abs(mData[Rows[n]]->obs_calc)) Result << createIndex(n, c);
-						break;
-					case fdcDevR:
-						if (value > abs(static_cast<double>(mData[Rows[n]]->devR))) Result << createIndex(n, c);
-						break;
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(static_cast<double>(element->isotope))) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(static_cast<double>(element->v))) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(static_cast<double>(element->J))) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(static_cast<double>(element->vs.toInt()))) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(static_cast<double>(element->Js))) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(static_cast<double>(element->progressionNumber))) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(element->devR)) Result << createIndex(n, c);
+							break;
+					}
 				}
 			}
 			break;
