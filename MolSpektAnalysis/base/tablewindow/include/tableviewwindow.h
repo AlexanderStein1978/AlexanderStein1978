@@ -12,11 +12,21 @@
 #include "tablewindow.h"
 
 
+class TableViewWindowCore;
+
+
 class TableViewWindow : public TableWindow
 {
 public:
-    TableViewWindow(Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
+    TableViewWindow(TableViewWindowCore *const mCore, Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
     ~TableViewWindow();
+
+    int getMaxJ();
+    int getMaxv();
+    bool isDataAvailable();
+
+protected:
+    TableViewWindowCore *const mCore;
 };
 
 #endif
