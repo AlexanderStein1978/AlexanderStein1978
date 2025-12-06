@@ -17,7 +17,6 @@ struct FitDataBaseData : BaseData
 {
 	QString vs, source, secondState;
 	double devR = 0.0f;
-	const QPixmap* IsoIcon = nullptr;
 };
 
 #endif
