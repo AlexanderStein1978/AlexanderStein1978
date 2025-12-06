@@ -31,29 +31,30 @@ class FitDataCore : public TableViewWindowCore
 		~FitDataCore();
 		QString readData(QTextStream& S);
 		void writeData(QTextStream& S);
-		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-		void setRowCount(const int count);
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		std::vector<FitDataBaseData*> getDataAsFitDataBaseData();
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-		int getMaxJ();
-		int getMaxv();
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
-		void addRow(FitDataBaseData* const data) ;
 		void addRow(const QStringList& L) override;
+		int addRow(const int cr);
 		void setRow(FitDataBaseData* const data, const int row);
 		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
+		void set_v(const int row, const int v);
+		void setJ(const int row, const int J);
 		const QString& get_vs(const int row) const;
 		void set_vs(const int row, const QString& vs);
+		void setJs(const int row, const int J) override;
 		const QString& getSource(const int row) const;
 		void setSource(const int row, const QString& source);
+		void setSourceFile(const int row, const QString& filename);
 		int getProgression(const int row) const;
 		void setProgression(const int row, const int progression);
-		double getEnergy(const int row) const;
 		void setEnergy(const int row, const double energy);
+		void setUncertainty(const int row, const double uncertainty);
+		void setObsCalc(const int row, const double obsCalc);
 		float getDevRatio(const int row) const;
 		void setDevRatio(const int row, const float DevR);
 		const QString& getOtherState(const int row) const;
@@ -78,12 +79,12 @@ class FitDataCore : public TableViewWindowCore
 
 		inline void setRow(BaseData* const data, const int row) override
 		{
-			TableViewWindowCore::setRow(data, row);
+			mData[row] = data;
 		}
 
-		inline BaseData* getData(const int row) const
+		inline void setRow(const QStringList& L, const int row) override
 		{
-			return mData[row];
+			mData[row] = convertToFitDataCoreBaseData(L);
 		}
 
 		inline std::vector<BaseData*> getData()

@@ -36,7 +36,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		int getMaxJ();
 		int getMaxv();
-		int addRow(const int cr);
 		virtual void addRow(BaseData* const data);
 		virtual void addRow(const QStringList& L);
 		virtual void setRow(BaseData* const data, const int row);
@@ -44,25 +43,26 @@ class TableViewWindowCore : public QAbstractTableModel
 		virtual BaseData* getRow(const int row) const;
 		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
-		const std::string& get_vs(const int row) const;
-		void set_vs(const int row, const std::string& vs);
+		int get_v(const int row) const;
+		int getJ(const int row) const;
 		int getJs(const int row) const;
-		void setJs(const int row, const int Js);
+		virtual void setJs(const int, const int){};
 		int getIso(const int row) const;
-		void setIso(const int row, const int iso);
-		const std::string& getSourceFile(const int row) const;
-		void setSourceFile(const int row, const std::string& filename);
+		virtual void setIso(const int, const int){};
+		const QString& getSourceFile(const int row) const;
+		void setSourceFile(const int, const QString&){};
 		int getProgression(const int row) const;
 		void setProgression(const int row, const int progression);
+		double getEnergy(const int row) const;
 		double getUncertainty(const int row) const;
 		void setUncertainty(const int row, const double uncertainty);
 		double getObsCalc(const int row) const;
-		void setObsCalc(const int row, const double obsCalc);
+		void setObsCalc(const int, const double){};
 		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setMolecule(Molecule* const mol);
 		void shrinkAllSpectRefs();
 		virtual BaseData* convertToBaseData(const QStringList& L) const;
-        void EmitDataChanged(QModelIndex& index);
+        void EmitDataChanged(const int row, const int column);
 
 		inline BaseData* getData(const int row) const
 		{
