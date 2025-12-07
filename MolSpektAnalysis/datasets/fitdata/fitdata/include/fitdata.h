@@ -40,7 +40,7 @@ class FitData : public TableViewWindow
 	
 	public:
 		FitData(ElState *State = 0, MainWindow* MW = 0, Molecule* M = 0);
-		~FitData();
+		virtual ~FitData();
         void getData(TableLine *&Lines, int &NLines, int JD = -1, int F = -2, int v = -2, int mJ = 0, int Iso = -1, ElState* state = 0);
 		void getData(TableLine *&Lines, int &NLines, int *&RowN,
                      bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
@@ -101,9 +101,6 @@ class FitData : public TableViewWindow
         void sortByLTabAndProg();
         void setResidualFit(ResidualFit *i_residualFit);
         ResidualFit* getResidualFit(ElState* const i_state, const int Iso, const int v, const int comp);
-		void setTabDimensions(int NRows, int NCols) override;
-		void getTabDimensions(int &NRows, int &NCols) override;
-		void setRowData(int Row, QString *Data) override;
         bool checkAllConnections();
 		void copyRows(int &numRows, int &numColums, QString **&Data) override;
 		void cutRows(int &numRows, int &numColums, QString **&Data) override;
@@ -157,6 +154,11 @@ class FitData : public TableViewWindow
 		bool readData(QTextStream& S) override;
 		void writeData(QTextStream& S) override;
 
+		inline void BaseDataToQStringArray(const BaseData& data, QString *const array) const override
+		{
+			 FitDataBaseDataToQStringArray(*reinterpret_cast<const FitDataBaseData*>(&data), array);
+		}
+
 	signals:
 		void AssignmentsAccepted(FitData*);
 		
@@ -173,7 +175,7 @@ class FitData : public TableViewWindow
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
 			sortForExtractNewOrChangedOrder;
 	
-		static void BaseDataToQStringArray(const BaseData& data, QString *const array);
+		static void FitDataBaseDataToQStringArray(const FitDataBaseData& data, QString *const array);
 
         void getData(TableLine *Lines, int *SA, int i_SAL, int& NLines, int *RowN = 0, int mv = -1, int *Mv = 0,
                      int mJ = 0, int JD = -1, int F = -2, int Iso = -1, bool OnlyAssignedVss = false, ElState* state = 0);
@@ -185,7 +187,6 @@ class FitData : public TableViewWindow
 																	   const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
 		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
-		bool checkAllConnections(int FileColumn) override;
 		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
 		void writeCell(QTextStream& S, const int r, const int c) const;
 		void startSearch(int& N, int*& Rows) const;

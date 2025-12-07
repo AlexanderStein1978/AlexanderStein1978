@@ -32,7 +32,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-		std::vector<BaseData*> getData();
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		int getMaxJ();
 		int getMaxv();
@@ -67,6 +66,11 @@ class TableViewWindowCore : public QAbstractTableModel
 		inline BaseData* getData(const int row) const
 		{
 			return mData[row];
+		}
+
+		inline std::vector<BaseData*> getData()
+		{
+			return mData;
 		}
 
 		inline void setData(const int row, BaseData * const data)

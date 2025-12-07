@@ -72,34 +72,14 @@ class FitDataCore : public TableViewWindowCore
 			return convertToFitDataCoreBaseData(L);
 		}
 
-		inline void addRow(BaseData* const data) override
-		{
-			TableViewWindowCore::addRow(data);
-		}
-
-		inline void setRow(BaseData* const data, const int row) override
-		{
-			mData[row] = data;
-		}
-
 		inline void setRow(const QStringList& L, const int row) override
 		{
 			mData[row] = convertToFitDataCoreBaseData(L);
 		}
 
-		inline std::vector<BaseData*> getData()
-		{
-			return mData;
-		}
-
 		inline void setData(const int row, FitDataBaseData * const data)
 		{
 			mData[row] = data;
-		}
-
-		inline void setData(const int row, BaseData* const data)
-		{
-			mData[row] = reinterpret_cast<FitDataBaseData* const>(data);
 		}
 
 		inline QModelIndex getIndex(const int row, const int column) const
@@ -123,6 +103,22 @@ class FitDataCore : public TableViewWindowCore
 		}
 		
 	private:
+
+		inline void setRow(BaseData* const data, const int row) override
+		{
+			mData[row] = data;
+		}
+
+		inline void setData(const int row, BaseData* const data)
+		{
+			mData[row] = reinterpret_cast<FitDataBaseData* const>(data);
+		}
+
+		inline void addRow(BaseData* const data) override
+		{
+			TableViewWindowCore::addRow(data);
+		}
+
 		int NSources = 0;
 		QString RWError;
 };
