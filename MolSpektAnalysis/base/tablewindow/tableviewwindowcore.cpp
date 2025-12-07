@@ -9,6 +9,7 @@
 #include "tableviewwindowcore.h"
 #include "basedata.h"
 #include "isotab.h"
+#include "molecule.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -199,7 +200,7 @@ void TableViewWindowCore::setMolecule(Molecule* const mol)
 			for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = &Iso->IsoImage[(*it)->isotope];
 		}
 		else for (auto it = mData.begin(); it != mData.end(); ++it) (*it)->IsoIcon = nullptr;
-		QModelIndex first = createIndex(0, fdcIso), last = createIndex(mData.size() - 1, fdcIso);
+		QModelIndex first = createIndex(0, 0), last = createIndex(mData.size() - 1, 0);
 		QVector<int> roles;
 		roles.push_back(Qt::DecorationRole);
 		emit dataChanged(first, last, roles);

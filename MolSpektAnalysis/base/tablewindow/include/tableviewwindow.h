@@ -14,18 +14,30 @@
 
 class TableViewWindowCore;
 
+struct BaseData;
+
 
 class TableViewWindow : public TableWindow
 {
 public:
     TableViewWindow(TableViewWindowCore *const mCore, Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
-    ~TableViewWindow();
+    virtual ~TableViewWindow();
 
     int getMaxJ();
     int getMaxv();
     bool isDataAvailable();
+    void setTabDimensions(int NRows, int NCols) override;
+	void getTabDimensions(int &NRows, int &NCols) override;
+    void setRowData(int Row, QString *Data) override;
 
 protected:
+    void writeData(QTextStream& S) override;
+
+    virtual void BaseDataToQStringArray(const BaseData&, QString *const) const = 0;
+
+private:
+    bool checkAllConnections(int FileColumn) override;
+
     TableViewWindowCore *const mCore;
 };
 
