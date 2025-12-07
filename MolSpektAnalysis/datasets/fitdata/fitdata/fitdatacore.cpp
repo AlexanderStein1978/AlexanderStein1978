@@ -105,20 +105,6 @@ QString FitDataCore::readData(QTextStream& S)
 	return "";
 }
 
-void FitDataCore::writeData(QTextStream& S)
-{
-	QString Spacer = "\t";
-	for (auto it = mData.begin(); it != mData.end(); ++it)
-	{
-		FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(*it);
-		int numDigits = getNumDecimalPlaces(element->uncertainty);
-		S << static_cast<int>(element->isotope) << Spacer << element->v << Spacer << element->J << Spacer << element->vs << Spacer << element->Js << Spacer << element->source << Spacer
-		  << element->progressionNumber << Spacer << element->file << Spacer << QString::number(element->energy, 'f', numDigits) << Spacer << QString::number(element->uncertainty, 'f', numDigits)
-		  << Spacer << QString::number(element->obsMinusCalc, 'f', numDigits) << Spacer << QString::number(element->devR, 'f', 3) << Spacer << element->secondState << '\n';
-	}
-	NSources = mData.size();
-}
-
 int FitDataCore::columnCount(const QModelIndex &parent) const
 {
 	if (parent.isValid()) return 0;
@@ -951,4 +937,55 @@ void FitDataCore::search(const int* const Rows, const int NRows, const QString& 
 		if (completeCell ? field == Text : field.indexOf(Text) >= 0) Result << index; 
 	}
 	if (Result.empty()) QMessageBox::information(nullptr, "MolSpektAnalysis", "The text \'" + Text + "\' could not be found in the table.");
+}
+
+QString FitDataCore::cellToString(const int r, const int c) const
+{
+    QString R;
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[r]);
+    switch(c)
+    {
+        case fdcIso:
+            R = QString::number(element->isotope);
+            break;
+        case fdcv:
+            R =  QString::number(element->v);
+            break;
+        case fdcJ:
+            R =  QString::number(element->J);
+            break;
+        case fdcvs:
+            R =  element->vs;
+            break;
+        case fdcJs:
+            R =  QString::number(element->Js);
+            break;
+        case fdcSource:
+            R =  element->source;
+            break;
+        case fdcProg:
+            R =  QString::number(element->progressionNumber);
+            break;
+        case fdcFile:
+            R = element->file;
+            break;
+        case fdcEnergy:
+            R =  QString::number(element->energy, 'f', getNumDecimalPlaces(element->uncertainty));
+            break;
+        case fdcUncert:
+        {
+            double u = element->uncertainty;
+            R =  QString::number(u, 'f', getNumDecimalPlaces(u));
+            break;
+        }
+        case fdcObsCalc:
+            R =  QString::number(element->obsMinusCalc, 'f', getNumDecimalPlaces(element->uncertainty));
+            break;
+        case fdcDevR:
+            R =  QString::number(element->devR, 'f', 3);
+            break;
+        case fdcLineElState:
+            R =  element->secondState;
+    }
+    return R;
 }
