@@ -42,6 +42,7 @@ class FitDataCore : public TableViewWindowCore
 		void setRow(FitDataBaseData* const data, const int row);
 		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
+		void setIso(const int row, const int v);
 		void set_v(const int row, const int v);
 		void setJ(const int row, const int J);
 		const QString& get_vs(const int row) const;
@@ -66,6 +67,7 @@ class FitDataCore : public TableViewWindowCore
 		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
 					const bool completeCell = false) const;
 		FitDataBaseData* convertToFitDataCoreBaseData(const QStringList& L) const;
+		QString cellToString(const int r, const int c) const override;
 
 		inline BaseData* convertToBaseData(const QStringList& L) const override
 		{

@@ -62,6 +62,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		void shrinkAllSpectRefs();
 		virtual BaseData* convertToBaseData(const QStringList& L) const;
         void EmitDataChanged(const int row, const int column);
+		virtual QString cellToString(const int, const int) const {return "";};
 
 		inline BaseData* getData(const int row) const
 		{

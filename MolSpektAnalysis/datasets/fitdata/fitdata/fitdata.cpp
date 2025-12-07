@@ -2882,81 +2882,10 @@ void FitData::FitDataBaseDataToQStringArray(const FitDataBaseData& data, QString
     array[FitDataCore::fdcLineElState] = data.secondState;
 }
 
-void FitData::copyRows(int& numRows, int& numColums, int *& Rows, QString **& Data)
-{
-	if (Data != 0) Destroy(Data, numRows);
-	table->getSelectedRows(Rows, numRows);
-    numColums = mCore->columnCount();
-	Data = CreateQString(numRows, numColums);
-	for (int r=0; r <  numRows; ++r) BaseDataToQStringArray(*mCore->getRow(Rows[r]), Data[r]);
-}
-
-void FitData::copyRows(int& numRows, int& numColums, QString **& Data)
-{
-	int *Rows;
-	copyRows(numRows, numColums, Rows, Data);
-    delete[] Rows;
-    Changed();
-}
-
-void FitData::cutRows(int& numRows, int& numColums, QString **& Data)
-{
-    int *Rows;
-	copyRows(numRows, numColums, Rows, Data);
-    table->blockSignals(true);
-    mCore->blockSignals(true);
-    mCore->deleteRows(Rows, numRows);
-    mCore->blockSignals(false);
-    table->blockSignals(false);
-    delete[] Rows;
-    Changed();
-}
-
-void FitData::insertRows(int numRows, int numColumns, QString ** Data)
-{
-    table->blockSignals(true);
-    mCore->blockSignals(true);
-    for (int r=0; r < numRows; ++r)
-    {
-        QStringList L;
-        for (int c=0; c < numColumns; ++c) L << Data[r][c];
-        mCore->addRow(L);
-    }
-    mCore->blockSignals(false);
-    table->blockSignals(false);
-    Changed();
-}
-
-void FitData::MarkLines(int* rN, int N)
-{
-    int n=0, r1, MC = mCore->columnCount() - 1;
-	QItemSelectionModel* model = new QItemSelectionModel;
-    QModelIndex topIndex = mCore->getIndex(rN[0], 0);
-    table->blockSignals(true);
-	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
-	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
-	{
-		r1 = rN[n];
-		rN[n] = rN[n-1];
-		rN[n-1] = r1;
-	}
-	for (n=0; n<N; )
-	{
-		for (r1 = rN[n++]; n<N && rN[n] == rN[n-1] + 1; ++n) ;
-        QModelIndex topLeft = mCore->getIndex(r1, 0), bottomRight = mCore->getIndex(rN[n-1], MC);
-        QItemSelection newSelection(topLeft, bottomRight);
-        model->select(newSelection, QItemSelectionModel::Select);
-	}
-	table->setSelectionModel(model);
-    table->blockSignals(false);
-	if (!isVisible()) show();
-	activateWindow();
-	table->setFocus();
-}
-
 void FitData::shiftCellValue(int v)
 {
     QModelIndexList L = table->getSelectedIndexes();
+    FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     table->blockSignals(true);
     fitDataCore->blockSignals(true);
     for (auto it = L.begin(); it != L.end(); ++it)
@@ -2974,7 +2903,7 @@ void FitData::shiftCellValue(int v)
                 fitDataCore->setJ(row, fitDataCore->getJ(row) + v);
                 break;
             case FitDataCore::fdcvs:
-                fitDataCore->set_vs(row, std::to_string(stdStringToInt(fitDataCore->get_vs(row), -1) + v));
+                fitDataCore->set_vs(row, QString::number(fitDataCore->get_vs(row).toInt() + v));
                 break;
             case FitDataCore::fdcJs:
                 fitDataCore->setJs(row, fitDataCore->getJs(row) + v);
@@ -2995,7 +2924,7 @@ void FitData::shiftCellValue(int v)
                 fitDataCore->setDevRatio(row, fitDataCore->getDevRatio(row) + v);
                 break;
             case FitDataCore::fdcLineElState:
-                fitDataCore->setSecondState(row, std::to_string(stdStringToInt(fitDataCore->getOtherState(row), -1) + v));
+                if (!RWErr.isEmpty()) fitDataCore->setSecondState(row, QString::number(fitDataCore->getOtherState(row).toDouble() + v));
                 break;
             default:
                 // nothing to do
@@ -3009,168 +2938,21 @@ void FitData::shiftCellValue(int v)
 
 bool FitData::containsDataForMoreThanOneState() const
 {
-    int N = fitDataCore->rowCount();
+    int N = mCore->rowCount();
     for (int i=1; i<N; ++i) if (LineElStates[i] != LineElStates[0]) return true;
     return false;
 }
 
 void FitData::ContentChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>&)
 {
-    int startRow = topLeft.row(), endRow = bottomRight.row(), r, N = fitDataCore->columnCount();
+    int startRow = topLeft.row(), endRow = bottomRight.row(), r, N = mCore->columnCount();
 	QString *IT = new QString[N];
     for (r = startRow; r <= endRow; ++r)
     {
-        BaseDataToQStringArray(*fitDataCore->getRow(r), IT);
+        BaseDataToQStringArray(*mCore->getRow(r), IT);
         emit TabRowChanged(IT, N);
     }
 	delete[] IT;
-}
-
-void FitData::exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns)
-{
-	int n, r, c, NR = fitDataCore->rowCount(), NC = fitDataCore->columnCount();
-	QFile F(FileName);
-	F.open(QIODevice::WriteOnly);
-	QTextStream S(&F);
-	if (selectedCells)
-	{
-        QModelIndexList L = table->getSelectedIndexes();
-		bool *verticalCells = new bool[NR], *horizontalCells = new bool[NC], **cells = CreateBool(NR, NC);
-        int top, bottom, left, right;
-        for (n=0; n < NR; ++n) verticalCells[n] = false;
-        for (n=0; n < NC; ++n) horizontalCells[n] = false;
-        for (r=0; r < NR; ++r) for (c=0; c < NC; ++c) cells[r][c] = false; 
-        for (auto it = L.begin(); it != L.end(); ++it)
-        {
-            r = it->row();
-            c = it->column();
-            verticalCells[r] = true;
-            horizontalCells[c] = true;
-            cells[r][c] = true;
-        }
-        for (top=0; top < NR; ++top) if (verticalCells[top]) break;
-        for (bottom = NR - 1; bottom >= 0; --bottom) if (verticalCells[bottom]) break;
-        for (left=0; left < NC; ++left) if (horizontalCells[left]) break;
-        for (right = NC - 1; right >= 0; --right) if (horizontalCells[right]) break;
-		if (exchangeRowsColumns)
-		{
-			for (r = top; r <= bottom; ++r) if (verticalCells[r]) S << '\t' << fitDataCore->headerData(r, Qt::Vertical).toByteArray(); 
-			S << '\n';
-			for (c = left; c <= right; ++c)
-			{
-				S << fitDataCore->headerData(c, Qt::Horizontal).toByteArray() << '\t';
-				for (r = top; r <= bottom; ++r)
-                {
-					if (cells[r][c]) writeCell(S, r, c);
-                    else S << '\t';
-					S << (r < bottom ? '\t' : '\n');
-                }
-			}
-		}
-		else for (n=0; n < L.count(); ++n)
-		{
-			for (c = left; c <= right; ++c) S << '\t' << fitDataCore->headerData(c, Qt::Horizontal).toByteArray();
-			S << '\n';
-			for (r = top; r <= bottom; ++r)
-			{
-				S << fitDataCore->headerData(r, Qt::Vertical).toByteArray() << '\t';
-				for (c = left; c <= right; ++c) if (cells[r][c]) writeCell(S, r, c);     
-                S  << (c < right ? '\t' : '\n');
-			}
-		}
-		delete[] horizontalCells;
-        delete[] verticalCells;
-        Destroy(cells, NR);
-	}
-	else
-	{
-		if (exchangeRowsColumns) 
-		{
-			for (r=0; r < NR; ++r)	S << '\t' << fitDataCore->headerData(r, Qt::Vertical).toByteArray();
-			S << '\n';
-			for (c=0; c < NC; ++c)
-			{
-				S << fitDataCore->headerData(c, Qt::Horizontal).toByteArray() << '\t';
-				for (r=0; r < NR; ++r)
-                {
-					writeCell(S, r, c); 
-                    S  << (r < NR - 1 ? '\t' : '\n');
-                }
-			}
-		}
-		else 
-		{
-			for (c=0; c < NC; c++) S << '\t' << fitDataCore->headerData(c, Qt::Horizontal).toByteArray();
-			S << '\n';
-			for (r=0; r < NR; r++) 
-			{
-				S << fitDataCore->headerData(r, Qt::Vertical).toByteArray() << '\t';
-				for (c=0; c < NC; c++)
-                {
-					writeCell(S, r, c); 
-					S  << (c < NC - 1 ? '\t' : '\n');
-                }
-			}
-		}
-	}
-}
-
-void FitData::writeCell(QTextStream& S, const int r, const int c) const
-{
-    switch(c)
-    {
-        case FitDataCore::fdcIso:
-            S << '\t' << QString::number(static_cast<int>(fitDataCore->getIso(r)));
-            break;
-        case FitDataCore::fdcv:
-            S << '\t' << QString::number(static_cast<int>(fitDataCore->get_v(r)));
-            break;
-        case FitDataCore::fdcJ:
-            S << '\t' << QString::number(static_cast<int>(fitDataCore->getJ(r)));
-            break;
-        case FitDataCore::fdcvs:
-            S << '\t' << fitDataCore->get_vs(r).c_str();
-            break;
-        case FitDataCore::fdcJs:
-            S << '\t' << QString::number(static_cast<int>(fitDataCore->getJs(r)));
-            break;
-        case FitDataCore::fdcSource:
-            S << '\t' << fitDataCore->getSource(r).c_str();
-            break;
-        case FitDataCore::fdcProg:
-            S << '\t' << QString::number(fitDataCore->getProgression(r));
-            break;
-        case FitDataCore::fdcFile:
-            S << '\t' << fitDataCore->getSourceFile(r).c_str();
-            break;
-        case FitDataCore::fdcEnergy:
-            S << '\t' << QString::number(fitDataCore->getEnergy(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
-            break;
-        case FitDataCore::fdcUncert:
-        {
-            double u = fitDataCore->getUncertainty(r);
-            S << '\t' << QString::number(u, 'f', fitDataCore->getNumDecimalPlaces(u));
-            break;
-        }
-        case FitDataCore::fdcObsCalc:
-            S << '\t' << QString::number(fitDataCore->getObsCalc(r), 'f', fitDataCore->getNumDecimalPlaces(fitDataCore->getUncertainty(r)));
-            break;
-        case FitDataCore::fdcDevR:
-            S << '\t' << QString::number(static_cast<double>(fitDataCore->getDevRatio(r)), 'f', 3);
-            break;
-        case FitDataCore::fdcLineElState:
-            S << '\t' << fitDataCore->getOtherState(r).c_str();
-    }
-}
-
-QString ** FitData::getData(int& NRows, int& NCols)
-{
-    int r, NR = fitDataCore->rowCount(), NC = fitDataCore->columnCount();
-	if (NRows <= 0 || NRows > NR) NRows = NR;
-	if (NCols <= 0 || NCols > NC) NCols = NC;
-	QString **Data = CreateQString(NRows, NCols);
-	for (r=0; r < NRows; ++r) BaseDataToQStringArray(*fitDataCore->getRow(r), Data[r]);
-	return Data;
 }
 
 void FitData::setCellText(QString Text)

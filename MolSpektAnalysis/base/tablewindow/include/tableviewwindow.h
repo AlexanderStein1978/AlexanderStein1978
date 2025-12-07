@@ -29,10 +29,16 @@ public:
     void setTabDimensions(int NRows, int NCols) override;
 	void getTabDimensions(int &NRows, int &NCols) override;
     void setRowData(int Row, QString *Data) override;
+    void copyRows(int &numRows, int &numColums, QString **&Data) override;
+	void cutRows(int &numRows, int &numColums, QString **&Data) override;
+	void insertRows(int numRows, int numColumns, QString **Data) override;
+	void MarkLines(int *rN, int N) override;
+    void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
+    QString **getData(int &NRows, int &NCols) override;
 
 protected:
     void writeData(QTextStream& S) override;
-
+    void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
     virtual void BaseDataToQStringArray(const BaseData&, QString *const) const = 0;
 
 private:

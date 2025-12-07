@@ -30,6 +30,14 @@ TableViewWindowCore::~TableViewWindowCore()
 	delete NewPix;
 }
 
+void TableViewWindowCore::writeData(QTextStream& S)
+{
+	char Spacer = '\t';
+	NSources = mData.size();
+	int NC = columnCount();
+	for (int r=0; r < NSources; ++r) for (int c = 0; c < NC; ++c) S << cellToString(r, c) << (c < NC - 1 ? Spacer : '\n');
+}
+
 void TableViewWindowCore::EmitDataChanged(const int row, const int column)
 {
     QModelIndex index = createIndex(row, column);

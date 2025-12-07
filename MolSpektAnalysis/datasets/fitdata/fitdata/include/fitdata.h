@@ -102,14 +102,8 @@ class FitData : public TableViewWindow
         void setResidualFit(ResidualFit *i_residualFit);
         ResidualFit* getResidualFit(ElState* const i_state, const int Iso, const int v, const int comp);
         bool checkAllConnections();
-		void copyRows(int &numRows, int &numColums, QString **&Data) override;
-		void cutRows(int &numRows, int &numColums, QString **&Data) override;
-		void insertRows(int numRows, int numColumns, QString **Data) override;
-		void MarkLines(int *rN, int N) override;
 		void shiftCellValue(int v) override;
 		bool containsDataForMoreThanOneState() const;
-		void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
-		QString **getData(int &NRows, int &NCols) override;
 		void setCellText(QString Text) override;
 		void setData(QString **Data, int NRows, int NCols) override;
 		QStringList getHorizontalHeaderLabels() override;
@@ -147,6 +141,11 @@ class FitData : public TableViewWindow
         {
             sortTab(heapSort(sortByElState));
         }
+
+        inline QString **getData(int &NRows, int &NCols) override
+        {
+			return TableViewWindow::getData(NRows, NCols);
+		}
 
     protected:
 
@@ -187,8 +186,6 @@ class FitData : public TableViewWindow
 																	   const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
 		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
-		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
-		void writeCell(QTextStream& S, const int r, const int c) const;
 		void startSearch(int& N, int*& Rows) const;
 		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 		void updateSources();
