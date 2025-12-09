@@ -214,3 +214,29 @@ void TableViewWindowCore::setMolecule(Molecule* const mol)
 		emit dataChanged(first, last, roles);
 	}
 }
+
+void TableViewWindowCore::startSearch(int& N, int *& Rows) const
+{
+    table->getSelectedRows(Rows, N);
+    if (nullptr == Rows)
+    {
+        N = mCore->rowCount();
+        Rows = new int[N];
+        for (int n=0; n<N; ++n) Rows[n] = n;
+    }
+}
+
+void TableViewWindowCore::finishSearch(int *const Rows, const QModelIndexList& Result) const
+{
+    delete[] Rows;
+    if (Result.size() > 0)
+    {
+        QItemSelectionModel* model = new QItemSelectionModel;
+        for (auto it = Result.begin(); it != Result.end(); ++it) model->select(*it, QItemSelectionModel::Select);
+        table->blockSignals(true);
+        table->setSelectionModel(model);
+        table->scrollTo(Result[0]);
+        table->blockSignals(false);
+    }
+}
+

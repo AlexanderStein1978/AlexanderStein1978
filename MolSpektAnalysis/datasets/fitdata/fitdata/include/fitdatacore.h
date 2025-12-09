@@ -29,8 +29,7 @@ class FitDataCore : public TableViewWindowCore
 
 		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
-		QString readData(QTextStream& S);
-		void writeData(QTextStream& S);
+		QString readData(QTextStream& S) override;
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -42,7 +41,7 @@ class FitDataCore : public TableViewWindowCore
 		void setRow(FitDataBaseData* const data, const int row);
 		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
-		void setIso(const int row, const int v);
+		void setIso(const int row, const int v) override;
 		void set_v(const int row, const int v);
 		void setJ(const int row, const int J);
 		const QString& get_vs(const int row) const;
@@ -102,6 +101,11 @@ class FitDataCore : public TableViewWindowCore
 		inline static int getNumDecimalPlaces(const double uncertainty)
 		{
 			return 2 - static_cast<int>(log10(uncertainty));
+		}
+
+		inline bool isRWErr()
+		{
+			return !RWError.isEmpty();
 		}
 		
 	private:
