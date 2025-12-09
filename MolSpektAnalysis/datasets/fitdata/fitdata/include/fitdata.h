@@ -105,7 +105,6 @@ class FitData : public TableViewWindow
 		void shiftCellValue(int v) override;
 		bool containsDataForMoreThanOneState() const;
 		void setCellText(QString Text) override;
-		void setData(QString **Data, int NRows, int NCols) override;
 		QStringList getHorizontalHeaderLabels() override;
 		void search(int column, int value, int smeqla) override;
 		void search(int column, double value, int smeqla) override;
@@ -147,6 +146,11 @@ class FitData : public TableViewWindow
 			return TableViewWindow::getData(NRows, NCols);
 		}
 
+		inline void setData(QString **Data, int NRows, int NCols) override
+		{
+			TableViewWindow::setData(Data, NRows, NCols);
+		}
+
     protected:
 
         virtual bool ReadSpecialPart(QTextStream& i_stream, const QString& i_startString) override;
@@ -162,14 +166,8 @@ class FitData : public TableViewWindow
 		void AssignmentsAccepted(FitData*);
 		
 	private slots:
-		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 		void HeaderItemDoubleClicked(const int index);
 
-		void HeaderItemClicked(const int index)
-		{
-			lastClickedHeaderIndex = index;
-		}
-		
 	private:
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
 			sortForExtractNewOrChangedOrder;
@@ -186,13 +184,11 @@ class FitData : public TableViewWindow
 																	   const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
 		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
-		void startSearch(int& N, int*& Rows) const;
-		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 		void updateSources();
 
         ElState *State, **LineElStates;
 		LineTable **Sources;
-		int NMarkedLevels, *FC, lRow, NSourceOffset, lastClickedHeaderIndex = -1;
+		int NMarkedLevels, *FC, lRow, NSourceOffset;
 		QString *SourceOffsetNames;
 		double *SourceOffset;
         QList<ResidualFit*> residualFits;

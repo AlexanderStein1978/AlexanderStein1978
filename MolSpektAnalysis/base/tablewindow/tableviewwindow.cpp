@@ -267,3 +267,37 @@ QString ** TableViewWindow::getData(int& NRows, int& NCols)
 	for (r=0; r < NRows; ++r) BaseDataToQStringArray(*mCore->getRow(r), Data[r]);
 	return Data;
 }
+
+void TableViewWindow::ContentChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>&)
+{
+    int startRow = topLeft.row(), endRow = bottomRight.row(), r, N = mCore->columnCount();
+	QString *IT = new QString[N];
+    for (r = startRow; r <= endRow; ++r)
+    {
+        BaseDataToQStringArray(*mCore->getRow(r), IT);
+        emit TabRowChanged(IT, N);
+    }
+	delete[] IT;
+}
+
+void TableViewWindow::setData(QString ** Data, int NRows, int NCols)
+{
+    int r, c, NC = mCore->columnCount();
+    QStringList L;
+	table->blockSignals(true);
+    mCore->blockSignals(true);
+	mCore->setRowCount(NRows);
+	for (r=0; r < NRows; r++)
+    {
+        for (c=0; c < NC; c++)
+        {
+            if (c < NCols) L << Data[r][c];
+            else L << "";
+        }
+        mCore->setRow(mCore->convertToBaseData(L), r);
+        L.clear();
+	}
+	mCore->blockSignals(false);
+	table->blockSignals(false);
+	Changed();
+}
