@@ -46,7 +46,7 @@ public:
 	Transition *getTransition();
 	int getAnzahlLinien();
     void getLines(int **Zuordnung, double *Energien, double *Uncertainties);
-	void getLines(const QString &Filename, double **Lines, int *numLines);
+	// void getLines(const QString &Filename, double **Lines, int *numLines);
 	void getLines(TableLine *&L, int &N);
 	void getSortedLines(TableLine *&L, int &N, int SortOrder = 0);
     void getgoodLines(int &N, TableLine *&L, int *mv = 0, int mJ = 0, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
@@ -164,7 +164,6 @@ private:
 	double Error, OvError, *SelE;
 	QString InFile, mSpectrum;
 	TableWindow *termTable;
-	LineTableCore *lineTableCore;
 	IsoTab *Iso;
 	QList<QTableWidgetSelectionRange> SelR;
 };
