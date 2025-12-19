@@ -64,6 +64,11 @@ class TableViewWindowCore : public QAbstractTableModel
         void EmitDataChanged(const int row, const int column);
 		virtual QString cellToString(const int, const int) const {return "";};
 
+		inline int getNSources() const
+		{
+			return NSources;
+		}
+
 		inline BaseData* getData(const int row) const
 		{
 			return mData[row];
@@ -90,6 +95,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		}
 
 	protected:
+		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart;
 		QPixmap *NewPix;

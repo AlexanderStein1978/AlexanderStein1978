@@ -16,7 +16,7 @@
 struct LineTableBaseData : BaseData
 {
     int vs = -1, vss = -1, Jss = -1, F = -1;
-	double waveNumber = 0.0, FCF = 0.0, upperEnergy = 0.0, averageUpperEnergy = 0.0, diffToAverageEnergy = 0.0;
+	double waveNumber = 0.0, SNR = 0.0, FCF = 0.0, upperEnergy = 0.0, averageUpperEnergy = 0.0, diffToAverageEnergy = 0.0;
 	double energyDiffToNextJ = 0.0, calculatedEnergy = 0.0, diffToCalculatedEnergy = 0.0;
 	QString Comment;
 	const QPixmap* IsoIcon = nullptr;

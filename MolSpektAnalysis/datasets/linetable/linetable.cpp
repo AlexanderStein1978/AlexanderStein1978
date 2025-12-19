@@ -45,12 +45,11 @@
 #include <math.h>
 
 
-LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableWindow(LineTab, MW, M)
+LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableViewWindow(new LineTableCore, LineTab, MW, M)
 {
 	setFilter("Line table (*.lines)");
 	setFileExt(".lines");
-	lineTableCore = new LineTableCore();
-	table->setModel(lineTableCore);
+	table->setModel(mCore);
 	transition = T;
 	NR = 0;
 	lRow = -1;
@@ -92,7 +91,6 @@ LineTable::~LineTable()
 		delete[] SelJs;
 	}
 	if (SO != 0) delete[] SO;
-	delete lineTableCore;
 	//printf("Ende ~LineTable\n");
 }
 
@@ -113,6 +111,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 {
 	//printf("LineTable::UpdateMarker()\n");
 	Marker *marker; 
+	LineTableCore* lineTableCore = reinterpret_cast<LineTableCore*>(mCore);
 	int i, j, nr = lineTableCore->rowCount(), s, *n, N, iB = 0, **p, *lines, I, AM;
 	if (nr < 2) return;
 	bool L = false;
@@ -156,7 +155,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 	else lines = Lines;
 	for (i=0; i<nLines; i++) 
 	{
-		T = lineTableCore->getFile(lines[i]);
+		T = lineTableCore->getSourceFile(lines[i]);
 		//if (T == "" && L) n[s]++;
 		for (s=0; s<N; s++) if (T.indexOf(SpektFile[s]) > -1) n[s]++;
 	}
@@ -169,7 +168,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 	for (s=0; s<N; s++) n[s]=0;
 	for (i=0, L = false; i < nLines; i++)
 	{
-		T = lineTableCore->getFile(lines[i]);
+		T = lineTableCore->getSourceFile(lines[i]);
 		if (T != "" || !L) 
 		{
 			for (s=0, L = false; (s<N ? T.indexOf(SpektFile[s]) == -1 : false); s++) ;
@@ -220,7 +219,7 @@ void LineTable::UpdateMarker(Spektrum *Spectrum, int nLines, int *Lines, bool re
 					marker[j].Jss = lineTableCore->getJss(p[s][i]);
 					marker[j].Iso = (lineTableCore->getIso(p[s][i]) - 1)/10;
 					marker[j].DD = lineTableCore->getObsCalc(p[s][i]);
-					marker[j].FC = lineTableCore->getF(p[s][i]);
+					marker[j].FC = lineTableCore->getFineStructureQN(p[s][i]);
 					marker[j].Mol = molecule;
 					if (Iso != 0) 
 					{
@@ -266,37 +265,34 @@ Transition *LineTable::getTransition()
 
 int LineTable::getAnzahlLinien()
 {
-    int N;
-	//printf("LineTable::getAnzahlLinien: name = %s\n", getName().toAscii().data());
-    for (N=0; (N < lineTableCore->rowCount() ? Tab->item(N, 0)->icon().isNull() ||
-		 Tab->item(N, Cvs)->text().isEmpty() : false); N++) ;// printf("N=%d\n", N);
-    return N;
+    return mCore->getNSources();
 }
 
 void LineTable::getLines(int **Zuordnung, double *Energien, double *Unc)
 {
 	//printf("LineTable::getLines()\n");
 	int N;
-    for (N=0; (N < Tab->rowCount() ? Tab->item(N, 0)->icon().isNull() : false); N++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+    for (N=0; N < mCore->rowCount(); ++N)
     {
-		Zuordnung[N][0] = (Tab->item(N, CIso)->text().toInt() - 1) / 10;
-		Zuordnung[N][1] = Tab->item(N, Cvs)->text().toInt();
-		Zuordnung[N][2] = Tab->item(N, CJs)->text().toInt();
-		Zuordnung[N][3] = Tab->item(N, Cvss)->text().toInt();
-		Zuordnung[N][4] = Tab->item(N, CJss)->text().toInt();
-		Zuordnung[N][5] = Tab->item(N, CF)->text().toInt();
-		Energien[N] = Tab->item(N, CWN)->text().toDouble();
-		Unc[N] = Tab->item(N, Cerr)->text().toDouble();
+		Zuordnung[N][0] = (ltc->getIso(N) - 1) / 10;
+		Zuordnung[N][1] = ltc->get_vs(N);
+		Zuordnung[N][2] = ltc->getJs(N);
+		Zuordnung[N][3] = ltc->get_vss(N);
+		Zuordnung[N][4] = ltc->getJss(N);
+		Zuordnung[N][5] = ltc->getFineStructureQN(N);
+		Energien[N] = ltc->getWaveNumber(N);
+		Unc[N] = ltc->getUncertainty(N);
     }
 	//printf("Ende von getLines\n");
 }
 
-void LineTable::getLines(const QString &Filename, double **Lines, int *numLines)
+/*void LineTable::getLines(const QString &Filename, double **Lines, int *numLines)
 {
 	int i, nr = Tab->rowCount(), n=0, l=Filename.length();
 	bool L = false;
 	QString T;
-	for (i=0; i<nr; i++) 
+	for (i=0; i<nr; i++)
 	{
 		T = Tab->item(i, 7)->text();
 		if ((T.isEmpty() && L) || T.right(l) == Filename)
@@ -322,35 +318,37 @@ void LineTable::getLines(const QString &Filename, double **Lines, int *numLines)
 	//printf("n=%d\n", n);
 	*Lines = R;
 	*numLines = n;
-}
+}*/
 
 void LineTable::getLines(TableLine*& L, int& N)
 {
 	int r;
-	if ((N = Tab->rowCount()) > 0) L = new TableLine[N];
-	for (r=0; r<N; r++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	if ((N = ltc->rowCount()) > 0) L = new TableLine[N];
+	for (r=0; r<N; ++r)
 	{
-		L[r].dev = Tab->item(r, CDev)->text().toDouble();
-		L[r].err = Tab->item(r, Cerr)->text().toDouble();
+		L[r].dev = ltc->getObsCalc(r);
+		L[r].err = ltc->getUncertainty(r);
 		L[r].DevR = L[r].dev / L[r].err;
-		L[r].FC = Tab->item(r, CF)->text().toInt();
-		L[r].File = Tab->item(r, CFile)->text();
-		L[r].Iso = (Tab->item(r, CIso)->text().toInt() - 1) / 10;
+		L[r].FC = ltc->getFineStructureQN(r);
+		L[r].File = ltc->getSourceFile(r);
+		L[r].Iso = (ltc->getIso(r) - 1) / 10;
 		L[r].isTE = false;
-		L[r].Js = Tab->item(r, CJs)->text().toInt();
-		L[r].Jss = Tab->item(r, CJss)->text().toInt();
+		L[r].Js = ltc->getJs(r);
+		L[r].Jss = ltc->getJss(r);
 		L[r].LTab = this;
-		L[r].PN = Tab->item(r, CPN)->text().toInt();
+		L[r].PN = ltc->getProgression(r);
 		L[r].Row = r;
 		L[r].SourceN = 0;
-		L[r].vs = Tab->item(r, Cvs)->text().toInt();
-		L[r].vss = Tab->item(r, Cvss)->text().toInt();
-		L[r].WN = Tab->item(r, CWN)->text().toDouble();
+		L[r].vs = ltc->get_vs(r);
+		L[r].vss = ltc->get_vss(r);
+		L[r].WN = ltc->getWaveNumber(r);
 	}
 }
 
 void LineTable::getSortedLines(TableLine*& L, int& N, int SortOrder)
 {
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	if (SortOrder != 0 || (N = Tab->rowCount()) == 0)
 	{
 		N=0;
@@ -361,40 +359,40 @@ void LineTable::getSortedLines(TableLine*& L, int& N, int SortOrder)
 	L = new TableLine[N];
 	for (r=0; r<N; r++)
 	{
-		L[SO[r]].dev = Tab->item(r, CDev)->text().toDouble();
-		L[SO[r]].err = Tab->item(r, Cerr)->text().toDouble();
+		L[SO[r]].dev = ltc->getObsCalc(r);
+		L[SO[r]].err = ltc->getUncertainty(r);
 		L[SO[r]].DevR = L[r].dev / L[r].err;
-		L[SO[r]].FC = Tab->item(r, CF)->text().toInt();
-		L[SO[r]].File = Tab->item(r, CFile)->text();
-		L[SO[r]].Iso = (Tab->item(r, CIso)->text().toInt() - 1) / 10;
+		L[SO[r]].FC = ltc->getFineStructureQN(r);
+		L[SO[r]].File = ltc->getSourceFile(r);
+		L[SO[r]].Iso = (ltc->getIso(r) - 1) / 10;
 		L[SO[r]].isTE = false;
-		L[SO[r]].Js = Tab->item(r, CJs)->text().toInt();
-		L[SO[r]].Jss = Tab->item(r, CJss)->text().toInt();
+		L[SO[r]].Js = ltc->getJs(r);
+		L[SO[r]].Jss = ltc->getJss(r);
 		L[SO[r]].LTab = this;
-		L[SO[r]].PN = Tab->item(r, CPN)->text().toInt();
+		L[SO[r]].PN = ltc->getProgression(r);
 		L[SO[r]].Row = r;
 		L[SO[r]].SourceN = 0;
-		L[SO[r]].vs = Tab->item(r, Cvs)->text().toInt();
-		L[SO[r]].vss = Tab->item(r, Cvss)->text().toInt();
-		L[SO[r]].WN = Tab->item(r, CWN)->text().toDouble();
-		L[SO[r]].SNR = Tab->item(r, CSNR)->text().toDouble();
+		L[SO[r]].vs = ltc->get_vs(r);
+		L[SO[r]].vss = ltc->get_vss(r);
+		L[SO[r]].WN = ltc->getWaveNumber(r);
+		L[SO[r]].SNR = ltc->getSNR(r);
 	}
 	delete[] SO;
 }
 
 int LineTable::getNgTE(int *mv, int mJ)
 {
-	int n, I, N, P, p, NR = Tab->rowCount(), v, J;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, I, N, P, p, NR = ltc->rowCount(), v, J;
 	if (NSO != NR) ShowUpTerm();
-	for (n=N=0, P=-1; n < NR; n++) if ((p = Tab->item(SO[n], CPN)->text().toInt()) != P)
+	for (n=N=0, P=-1; n < NR; n++) if ((p = ltc->getProgression(SO[n])) != P)
 	{
-		if (Tab->item(SO[n], CEUp)->text().toDouble() == 0.0) continue;
-		v = Tab->item(SO[n], Cvs)->text().toInt();
-		J = Tab->item(SO[n], CJs)->text().toInt();
-		if (v >= 0 && J >= 0 ? (mv != 0 ? (J <= mJ ? v > mv[J] : true) : false) : true) 
-			continue;
-		I = Tab->item(SO[n], CIso)->text().toInt();
-		while (10 * (I / 10) != I && n < NR) I = Tab->item(SO[n++], CIso)->text().toInt();
+		if (ltc->getUpperEnergy(SO[n]) == 0.0) continue;
+		v = ltc->get_vs(SO[n]);
+		J = ltc->getJs(SO[n]);
+		if ((v >= 0 && J >= 0) || (mv != 0 && (J <= mJ || v > mv[J]))) continue;
+		I = ltc->getIso(SO[n]);
+		while (10 * (I / 10) != I && n < NR) I = ltc->getIso(SO[n++]);
 		if (n == NR) break;
 		P = p;
 		N++;
@@ -405,7 +403,8 @@ int LineTable::getNgTE(int *mv, int mJ)
 void LineTable::getgoodTE(int &N, TermEnergy *&E, int *mv, int mJ)
 {
 	//printf("LineTable::getgoodTE\n");
-	int n, I, P = -1, p, NR = Tab->rowCount(), J, v;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, I, P = -1, p, NR = ltc->rowCount(), J, v;
 	if (NSO != NR) ShowUpTerm();
 	int gli[NR][2];
 	//printf("Vor Schleife1\n");
@@ -416,49 +415,47 @@ void LineTable::getgoodTE(int &N, TermEnergy *&E, int *mv, int mJ)
 		E = 0;
 		return;
 	}
-	for (n=N=0; n < NR; n++) if ((p = Tab->item(SO[n], CPN)->text().toInt()) != P)
+	for (n=N=0; n < NR; ++n) if ((p = ltc->getProgression(SO[n])) != P)
 	{
 		//printf("N=%d, n=%d\n", N, n);
-		if (Tab->item(SO[n], CEUp)->text().toDouble() == 0.0) continue;
-		v = Tab->item(SO[n], Cvs)->text().toInt();
-		J = Tab->item(SO[n], CJs)->text().toInt();
-		if (mv != 0 ? (v >= 0 && J >= 0 ? (J <= mJ ? v > mv[J] : true) : true) : J < 0) 
-			continue;
-		I = Tab->item(SO[n], CIso)->text().toInt();
-		while (10 * (gli[N][0] = I / 10) != I && n < NR) 
-			I = Tab->item(SO[n++], CIso)->text().toInt();
+		if (ltc->getUpperEnergy(SO[n]) == 0.0) continue;
+		v = ltc->get_vs(SO[n]);
+		J = ltc->getJs(SO[n]);
+		if (mv != 0 ? ((v >= 0 && J >= 0) || (J <= mJ || v > mv[J])) : J < 0) continue;
+		I = ltc->getIso(SO[n]);
+		while (10 * (gli[N][0] = I / 10) != I && n < NR) I = ltc->getIso(SO[n++]);
 		if (n == NR) break;
 		P = p;
 		gli[N][1] = SO[n];
-		gli[N++][0]--;
+		--(gli[N++][0]);
 	}
 	//printf("Vor Schleife2\n");
 	E = new TermEnergy[N];
-	for (n=0; n<N; n++)
+	for (n=0; n<N; ++n)
 	{
-		E[n].v = Tab->item(gli[n][1], Cvs)->text().toInt();
-		E[n].J = Tab->item(gli[n][1], CJs)->text().toInt();
+		E[n].v = ltc->get_vs(gli[n][1]);
+		E[n].J = ltc->getJs(gli[n][1]);
 		E[n].Iso = gli[n][0];
 		E[n].err = 0.01;
-		E[n].E = Tab->item(gli[n][1], CEav)->text().toDouble();
-		E[n].PN = Tab->item(gli[n][1], CPN)->text().toInt();
-		E[n].File = Tab->item(gli[n][1], CFile)->text();
-		E[n].ef = Tab->item(gli[n][1], CJss)->text().toInt() != E[n].J;
+		E[n].E = ltc->getAverageUpperEnergy(gli[n][1]);
+		E[n].PN = ltc->getProgression(gli[n][1]);
+		E[n].File = ltc->getSourceFile(gli[n][1]);
+		E[n].ef = ltc->getJss(gli[n][1]) != E[n].J;
 		E[n].dev = E[n].DevR = 0.0;
-		E[n].FC = Tab->item(gli[n][1], CF)->text().toInt();
+		E[n].FC = ltc->getFineStructureQN(gli[n][1]);
 	}
 	//printf("Ende getgoodTE");
 }
 
 int LineTable::getNgL(int *mv, int mJ)
 {
-	int n, I, N, NR = Tab->rowCount(), J;
-	for (n=N=0; n < NR; n++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, I, N, NR = ltc->rowCount(), J;
+	for (n=N=0; n < NR; ++n)
 	{
-		if (mv != 0) if ((J = Tab->item(n, CJss)->text().toInt()) <= mJ) 
-				if (Tab->item(n, Cvss)->text().toInt() > mv[J]) continue;
-		I = Tab->item(n, CIso)->text().toInt();
-		if (10 * (I / 10) == I) N++;
+		if (mv != 0 && (J = ltc->getJss(n)) <= mJ && ltc->get_vss(n) > mv[J]) continue;
+		I = ltc->getIso(n);
+		if (10 * (I / 10) == I) ++N;
 	}
 	return N;
 }
@@ -466,37 +463,37 @@ int LineTable::getNgL(int *mv, int mJ)
 void LineTable::getgoodLines(int &N, TableLine *&L, int *mv, int mJ, bool SortFunction(const QTableWidget *const, const int, const int))
 {
 	//printf("Beginn LineTable::getgoodLines\n");
-	int n, i, NR = Tab->rowCount(), J;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, i, NR = ltc->rowCount(), J;
 	//printf("NR=%d\n", NR);
     int *SO = new int[NR], *S1 = heapSort(SortFunction);
 	int gli[NR][2];
 	for (n=0; n < NR; n++) SO[S1[n]] = n;
-	for (n = N = 0; n < NR; n++)
+	for (n = N = 0; n < NR; ++n)
 	{
-		if (mv != 0) if ((J = Tab->item(SO[n], CJss)->text().toInt()) <= mJ) 
-				if (Tab->item(SO[n], Cvss)->text().toInt() > mv[J]) continue;
+		if (mv != 0 && (J = ltc->getJss(SO[n])) <= mJ && ltc->get_vss(SO[n]) > mv[J]) continue;
 		//printf("n=%d, NR=%d\n", n, NR);
-		i = Tab->item(SO[n], CIso)->text().toInt();
+		i = ltc->getIso(SO[n]);
 		if (10 * (gli[N][0] = i / 10) == i) 
 		{
 			gli[N][1] = SO[n];
-			gli[N++][0]--;
+			--(gli[N++][0]);
 		}
 	}
 	L = new TableLine[N];
 	//printf("n=%d, N=%d\n", n, N);
-	for (n=0; n<N; n++)
+	for (n=0; n<N; ++n)
 	{
-		L[n].FC = Tab->item(gli[n][1], CF)->text().toInt();
-		L[n].PN = Tab->item(gli[n][1], CPN)->text().toInt();
-		L[n].vs = Tab->item(gli[n][1], Cvs)->text().toInt();
-		L[n].Js = Tab->item(gli[n][1], CJs)->text().toInt();
-		L[n].vss = Tab->item(gli[n][1], Cvss)->text().toInt();
-		L[n].Jss = Tab->item(gli[n][1], CJss)->text().toInt();
+		L[n].FC = ltc->getFineStructureQN(gli[n][1]);
+		L[n].PN = ltc->getProgression(gli[n][1]);
+		L[n].vs = ltc->get_vs(gli[n][1]);
+		L[n].Js = ltc->getJs(gli[n][1]);
+		L[n].vss = ltc->get_vss(gli[n][1]);
+		L[n].Jss = ltc->getJss(gli[n][1]);
 		L[n].Iso = gli[n][0];
-		L[n].WN = Tab->item(gli[n][1], CWN)->text().toDouble();
-		L[n].err = Tab->item(gli[n][1], Cerr)->text().toDouble();
-		L[n].File = Tab->item(gli[n][1], CFile)->text();
+		L[n].WN = ltc->getWaveNumber(gli[n][1]);
+		L[n].err = ltc->getUncertainty(gli[n][1]);
+		L[n].File = ltc->getSourceFile(gli[n][1]);
 		L[n].Row = gli[n][1];
 	}
 	delete[] SO;
@@ -505,38 +502,37 @@ void LineTable::getgoodLines(int &N, TableLine *&L, int *mv, int mJ, bool SortFu
 
 int LineTable::getMaxvs()
 {
-	int i, n=0, nr = Tab->rowCount();
-	for (i=0; i<nr; i++) if (Tab->item(i, Cvs)->text().toInt() > n) n = Tab->item(i, Cvs)->text().toInt();
+	int i, v, n=0, nr = mCore->rowCount();
+	for (i=0; i<nr; ++i) if ((v = reinterpret_cast<LineTableCore*>(mCore)->get_vs(i)) > n) n = v;
 	return n;
 }
 
 int LineTable::getMaxvss()
 {
-	int i, n=0, nr = Tab->rowCount();
-	for (i=0; i < nr; i++) if (Tab->item(i, Cvss)->text().toInt() > n) n = Tab->item(i, Cvss)->text().toInt();
+	int i, v, n=0, nr = mCore->rowCount();
+	for (i=0; i < nr; ++i) if ((v = reinterpret_cast<LineTableCore*>(mCore)->get_vss(i)) > n) n = v;
 	return n;
 }
 
 int LineTable::getMaxJs()
 {
-	int i, n=0, nr = Tab->rowCount();
-	for (i=0; i < nr; i++) if (Tab->item(i, CJs)->text().toInt() > n) n = Tab->item(i, CJs)->text().toInt();
+	int i, v, n=0, nr = mCore->rowCount();
+	for (i=0; i < nr; ++i) if ((v = reinterpret_cast<LineTableCore*>(mCore)->getJs(i)) > n) n = v;
 	return n;
 }
 
 int LineTable::getMaxJss()
 {
-	int i, n=0, nr = Tab->rowCount();
-	for (i=0; i < nr; i++) if (Tab->item(i, CJss)->text().toInt() > n) n = Tab->item(i, CJss)->text().toInt();
+	int i, v, n=0, nr = mCore->rowCount();
+	for (i=0; i < nr; ++i) if ((v = reinterpret_cast<LineTableCore*>(mCore)->getJss(i)) > n) n = v;
 	return n;
 }
 
 void LineTable::getObsIso(bool *O, int N)
 {
-	int I, r, nr = Tab->rowCount();
-	for (r=0; r<N; r++) O[r] = false;
-	for (r=0; r < nr; r++) if ((I = Tab->item(r, CIso)->text().toInt() / 10 - 1) < N) if (I >= 0) 
-				O[I] = true;
+	int I, r, nr = mCore->rowCount();
+	for (r=0; r<N; ++r) O[r] = false;
+	for (r=0; r < nr; ++r) if ((I = reinterpret_cast<LineTableCore*>(mCore)->getIso(r) / 10 - 1) < N && I >= 0) O[I] = true;
 }
 
 void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const QTableWidget *const, const int, const int))
@@ -547,9 +543,7 @@ void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const
 	int vs = -1, Js = -1, Iso = -1, n, m, NP=0, NR, PN = -1;
     getgoodLines(NR, L, 0, 0, SortFunction);
 	int lpb[NR];
-	for (n=0; n < NR; n++) 
-		if (L[n].vs != vs || L[n].Js != Js || L[n].Iso != Iso || L[n].File != S 
-			|| L[n].PN != PN) 
+	for (n=0; n < NR; ++n) if (L[n].vs != vs || L[n].Js != Js || L[n].Iso != Iso || L[n].File != S || L[n].PN != PN)
 	{
 		//printf("PN=%d, N=%d\n", PN, NP);
 		vs = L[n].vs;
@@ -561,7 +555,7 @@ void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const
 	}
 	lpb[NP] = NR;
 	P = new Progression[N = NP];
-	for (n=0; n<N; n++)
+	for (n=0; n<N; ++n)
 	{
 		P[n].N = lpb[n+1] - lpb[n];
 		P[n].vs = L[lpb[n]].vs;
@@ -570,7 +564,7 @@ void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const
 		P[n].L = new Line[P[n].N];
         P[n].PNum = L[lpb[n]].PN;
 		//printf("N=%d, P[%d].N=%d\n", N, n, P[n].N);
-		for (m=0; m < P[n].N; m++)
+		for (m=0; m < P[n].N; ++m)
 		{
 			P[n].L[m].vss = L[lpb[n] + m].vss;
 			P[n].L[m].Jss = L[lpb[n] + m].Jss;
@@ -585,9 +579,11 @@ void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const
 void LineTable::setUncertainty(int* RowNumbers, double* NewUncertainty, int NLines)
 {
 	int n;
-	Tab->blockSignals(true);
-	for (n=0; n < NLines; n++) Tab->item(RowNumbers[n], Cerr)->setText(QString::number(NewUncertainty[n], 'f', 4));
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (n=0; n < NLines; ++n) mCore->setUncertainty(RowNumbers[n], NewUncertainty[n]);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
