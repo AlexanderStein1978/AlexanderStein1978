@@ -19,7 +19,7 @@
 #include <QMessageBox>
 
 
-LineTableCore::LineTableCore(Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol)
+LineTableCore::LineTableCore(LineTable* lt, Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol), lTab(lt)
 {
 	mColumns.push_back(CPN);
 	mColumns.push_back(Cvs);
@@ -173,24 +173,132 @@ BaseData * LineTableCore::convertToBaseData(const QStringList& L) const
 	return data;
 }
 
-QString LineTableCore::readData(QTextStream& S)
+bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)
 {
-	QString Buffer;
-	QString Spacer = "\t";
-	while (S.readLine().left(15) != "Column titles: ") ;
-	beginInsertRows(QModelIndex(), -1, -1);
-	while(!S.atEnd())
-	{
-		Buffer = S.readLine();
-		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
-		const QStringList L = Buffer.split(Spacer);
-		if (L.size() < 10) continue;
-		mData.push_back(convertToBaseData(L));
-	}
-	endInsertRows();
-	beginInsertRows(QModelIndex(), 0, mData.size() - 2);
-	endInsertRows();
-	return "";
+	QTextStream S2(&Buffer, QIODevice::ReadOnly);
+	//printf("Ende: N=%d\n", N);
+	QString B, Comm;
+	QStringList L;
+	int s, i;
+	bool Success = true, COK;
+    for (int n=0; n < numLines; ++n)
+    {
+		B = S2.readLine();
+        L = B.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[n]);
+		if ((s = L.size()) < 8)
+		{
+			printf("Fehler beim Lesen, Zeile %d ist zu kurz!\n", n);
+			Success = false;
+			continue;
+		}
+		//printf("d=%d, n=%d, s=%d, NC=%d\n", d, n, s, TableNormCols);
+		if (FCA)
+		{
+			if (s < CC)
+			{
+				if (s==8)
+				{
+					data->vs = L[1].toInt();
+					data->Js = L[2].toInt();
+					data->vss = L[3].toInt();
+					data->Jss = L[4].toInt();
+					data->waveNumber = L[5].toDouble();
+					data->uncertainty = L[6].toDouble();
+					data->F = L[7].toInt() + 1;
+					data->isotope = 10;
+					continue;
+				}
+				else if (s==11)
+				{
+					data->progressionNumber = L[0].toInt();
+					data->vs = L[1].toInt();
+					data->Js = L[2].toInt();
+					data->vss = L[3].toInt();
+					data->Jss = L[4].toInt();
+					data->F = L[5].toInt();
+					data->waveNumber = L[6].toDouble();
+					data->uncertainty = L[7].toDouble();
+					data->isotope = L[8].toInt();
+					continue;
+				}
+				else
+				{
+					printf("Error, line %d is too short!", n);
+					Success = false;
+					continue;
+				}
+			}
+			if ((i = L[0].toInt()) > MaxPN) MaxPN = i;
+			data->progressionNumber = L[0].toInt();
+			data->vs = L[1].toInt();
+			data->Js = L[2].toInt();
+			data->vss = L[3].toInt();
+			data->Jss = L[4].toInt();
+			data->F = L[5].toInt();
+			data->waveNumber = L[6].toDouble();
+			data->uncertainty = L[7].toDouble();
+			data->isotope = L[8].toInt();
+			data->file = L[9];
+			for (L[i].toDouble(&COK); !COK && !L[i].isEmpty(); L[++i].toDouble(&COK))
+			{
+				L[CFile] += ' ' + L[i];
+				if (i==s-1)
+				{
+					++i;
+					break;
+				}
+			}
+			if (i > CSNR) data->file = L[CFile];
+			if (COK) data->SNR = L[i++].toDouble();
+			if (i<s && L[i].toDouble() != 0.0) data->obsMinusCalc = L[i++].toDouble();
+			if (s >= TableNormCols && i<s) data->Comment = L[i];
+		}
+		else
+		{
+			if (d==0 && (i = L[0].toInt()) > MaxPN)
+			{
+				MaxPN = i;
+				data->progressionNumber = i;
+			}
+			data->vs = L[1].toInt();
+			data->Js = L[2].toInt();
+			data->vss = L[3].toInt();
+			data->Jss = L[4].toInt();
+			data->waveNumber = L[5].toDouble();
+			data->uncertainty = L[6].toDouble();
+			data->isotope = L[7].toInt();
+			Comm = "";
+            for (i=8; (i < s ? L[i] == "laser" || L[i] == "?" || L[i] == "weak" || L[i] == "strong"
+						|| L[i] == "overlap" : false); i++)
+			{
+				if (i==8) Comm = L[i];
+				else Comm += " " + L[i];
+			}
+			data->Comment = Comm;
+			data->F = -1;
+			if ((i < s ? L[i] != "0" : false)) data->file = L[i];
+			if (i == 8 && 9 < s)
+			{
+				if (L[9] == "laser") data->Comment = Comm = L[9];
+				else if (L[9] != "0") data->SNR = L[9].toDouble();
+				if (s > 10)
+				{
+					if (L[10] == "laser") data->Comment = Comm = L[10];
+					else if (L[10] != "0") data->obsMinusCalc = L[10].toDouble();
+					if (s > 11) data->Comment = L[11];
+				}
+			}
+		}
+		lTab->setImported();
+		//printf("n=%d, N=%d\n", n, N);
+        if (molecule != 0)
+        {
+            QString CurPath = data->file, MolPath = molecule->getFileName();
+            data->file = lTab->getAbsolutePath(CurPath, MolPath));
+        }
+    }
+    return Success;
 }
 
 void LineTableCore::setRow(const QStringList& L, const int row)
@@ -200,15 +308,40 @@ void LineTableCore::setRow(const QStringList& L, const int row)
 
 void LineTableCore::writeData(QTextStream& S)
 {
-	QString Spacer = "\t";
+	int b;
 	for (auto it = mData.begin(); it != mData.end(); ++it)
-	{
-		int numDigits = getNumDecimalPlaces((*it)->uncert);
-		S << static_cast<int>((*it)->isotope) << Spacer << (*it)->v << Spacer << (*it)->J << Spacer << (*it)->vs.c_str() << Spacer << (*it)->Js << Spacer << (*it)->source.c_str() << Spacer << (*it)->prog
-		  << Spacer << (*it)->file.c_str() << Spacer << QString::number((*it)->energy, 'f', numDigits) << Spacer << QString::number((*it)->uncert, 'f', numDigits) << Spacer
-		  << QString::number((*it)->obs_calc, 'f', numDigits) << Spacer << QString::number((*it)->devR, 'f', 3) << Spacer << (*it)->secondState.c_str() << '\n';
+    {
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(*it);
+		S << ((b = data->progressionNumber) > 0 ? ("     " + QString::number(b)).right(5) : "    0");
+		S << ("    " + QString::number(data->vs)).right(4);
+		S << ("    " + QString::number(data->Js)).right(4);
+		S << ("    " + QString::number(data->vss)).right(4);
+		S << ("    " + QString::number(data->Jss)).right(4);
+
+		S << ' ' << ("   " + Tab->item(i, CF)->text()).right(3);
+		Buffer = "               " + Tab->item(i, CWN)->text();
+		if (Buffer.indexOf('.') == -1) Buffer += ".0000";
+		Buffer = Buffer.right(15);
+		if (Buffer[0] != ' ') S << " " << Buffer;
+		else S << Buffer;
+		if ((Buffer = "          " + Tab->item(i, Cerr)->text()).indexOf('.') == -1) Buffer += ".000";
+		S << ' ' << Buffer.right(9);
+		S << ("    " + Tab->item(i, CIso)->text()).right(4);
+		if ((Buffer = Tab->item(i, CFile)->text()).isEmpty()) Buffer = LFile;
+		else if (Buffer == "Aktuelle Markierungen")
+		{
+		    Buffer = InFile;
+			Tab->item(i, 7)->setText(Buffer);
+		}
+		else LFile = Buffer;
+        if (molecule != 0) Buffer = getRelativePath(Buffer, MolFile);
+		S << " " << Buffer;
+		if ((Buffer = Tab->item(i, CSNR)->text()).isEmpty()) Buffer = "0";
+		S << ("      " + Buffer).right(7);
+		if ((Buffer = Tab->item(i, CDev)->text()).isEmpty()) Buffer = "0";
+		S << ("          " + Buffer).right(11);
+		S << " " << Tab->item(i, CC)->text() << char(10);
 	}
-	NSources = mData.size();
 }
 
 int LineTableCore::columnCount(const QModelIndex &parent) const

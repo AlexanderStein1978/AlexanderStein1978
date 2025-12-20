@@ -33,9 +33,11 @@ class LineTableCore : public TableViewWindowCore
 
 		static std::vector<TableCols> convertHeaderStringsToColumnVector(const QStringList& headerStrings);
 		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
-		LineTableCore(Molecule* mol = nullptr, QObject *parent = 0);
+
+		LineTableCore(LineTable* lt, Molecule* mol = nullptr, QObject *parent = 0);
 		~LineTableCore();
-		QString readData(QTextStream& S);
+		QString readData(QTextStream& S) {};
+		bool readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d);
 		void writeData(QTextStream& S);
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -85,6 +87,7 @@ class LineTableCore : public TableViewWindowCore
 	private:
 		std::vector<TableCols> mColumns;
 		const QRegExp mStartSpecialPart = QRegExp("");
+		LineTable* const lTab;
 };
 
 #endif

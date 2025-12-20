@@ -49,8 +49,9 @@ public:
 	virtual bool askForQuit();
     QString getAbsolutePath(QString &CurrentPath, QString &MolPath);
     QString getRelativePath(const QString &CurrentPath, const QString &MolPath);
+	void setImported();
 
-    QString getRelativePath(const QString &MolPath)
+	QString getRelativePath(const QString &MolPath)
     {
         return getRelativePath(FileName, MolPath);
     }
@@ -84,7 +85,6 @@ public slots:
     void Saved();
 
 protected:
-	void setImported();
 	void setNewCreated();
 	void setFilter(QString filter);
 	void setFileExt(QString FileExt);
