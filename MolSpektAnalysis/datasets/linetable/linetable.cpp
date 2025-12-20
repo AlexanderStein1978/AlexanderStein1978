@@ -591,12 +591,11 @@ bool LineTable::readData(QString Filename)
 {
     //printf("LineTable::readData\n");
 	int n, s, i, N = 0, d=0;
-	bool FCA = false, Success = true, COK;
-    QPixmap P;
+	bool FCA = false, Success = true;
     QFile Datei(Filename);
     if (!read(&Datei)) return false;
     QTextStream S1(&Datei);
-    QString B, Comm, Buffer, B2 = S1.readLine();
+    QString B, Buffer, B2 = S1.readLine();
 	QStringList L;
 	MaxPN = 0;
 	if (B2.indexOf("Source", 0, Qt::CaseInsensitive) != -1)
@@ -626,123 +625,13 @@ bool LineTable::readData(QString Filename)
 		N++;
 		//printf("N=%d\n", N);
     }
-    Tab->blockSignals(true);
-    Tab->setRowCount(N);
-    QTextStream S2(&Buffer, QIODevice::ReadOnly);
-	//printf("Ende: N=%d\n", N);
-    for (n=0; n<N; n++)
-    {
-		for (i=0; i < TableNormCols; i++) if (Tab->item(n, i) == 0) 
-				Tab->setItem(n, i, new QTableWidgetItem(""));
-		B = S2.readLine();
-        L = B.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
-		if ((s = L.size()) < 8) 
-		{
-			for (i=0; i < TableNormCols; i++) Tab->item(n, i)->setText("");
-			printf("Fehler beim Lesen von %s, Zeile %d ist zu kurz!\n", Filename.toLatin1().data(), n);
-			Success = false;
-			continue;
-		}
-		//printf("d=%d, n=%d, s=%d, NC=%d\n", d, n, s, TableNormCols);
-		if (FCA) 
-		{
-			if (s < CC)
-			{
-				if (s==8)
-				{
-					Tab->item(n, Cvs)->setText(L[1]);
-					Tab->item(n, CJs)->setText(L[2]);
-					Tab->item(n, Cvss)->setText(L[3]);
-					Tab->item(n, CJss)->setText(L[4]);
-					Tab->item(n, CWN)->setText(L[5]);
-					Tab->item(n, Cerr)->setText(L[6]);
-					Tab->item(n, CF)->setText(QString::number(L[7].toInt() + 1));
-					Tab->item(n, CIso)->setText("10");
-					continue;
-				}
-				else if (s==11)
-				{
-					for (i=0; i<9; i++) Tab->item(n, i)->setText(L[i]);
-					continue;
-				}
-				else
-				{
-					printf("Error, line %d is too short!", n);
-					Success = false;
-					continue;
-				}
-			}
-			if ((i = L[0].toInt()) > MaxPN) MaxPN = i;
-			for (i=0; i < CSNR; i++) Tab->item(n, i)->setText(L[i]);
-			for (L[i].toDouble(&COK); !COK && !L[i].isEmpty(); L[++i].toDouble(&COK))
-			{
-				L[CFile] += ' ' + L[i];
-				if (i==s-1) 
-				{
-					i++;
-					break;
-				}
-			}
-			if (i > CSNR) Tab->item(n, CFile)->setText(L[CFile]);
-			if (COK) Tab->item(n, CSNR)->setText(L[i++]);
-			if (i<s ? L[i].toDouble() != 0.0 : false) Tab->item(n, CDev)->setText(L[i++]);
-			if (s >= TableNormCols && i<s) Tab->item(n, CC)->setText(L[i]);
-		}
-		else
-		{
-			if (d==0) if ((i = L[0].toInt()) > MaxPN) MaxPN = i;
-			for (i=d; i<=4; i++) Tab->item(n, i)->setText(L[i]);
-			for (i=5; i<=7; i++) Tab->item(n, i+1)->setText(L[i]);
-			Comm = "";
-            for (i=8; (i < s ? L[i] == "laser" || L[i] == "?" || L[i] == "weak" || L[i] == "strong"
-						|| L[i] == "overlap" : false); i++)
-			{
-				if (i==8) Comm = L[i];
-				else Comm += " " + L[i];
-			}
-			Tab->item(n, CC)->setText(Comm);
-			Tab->item(n, CF)->setText("-1");
-			if ((i < s ? L[i] != "0" : false)) Tab->item(n, CFile)->setText(L[i]);
-			else Tab->item(n, CFile)->setText("");
-			if (i == 8 && 9 < s) 
-			{
-				if (L[9] == "laser") 
-				{
-					Tab->item(n, CC)->setText(Comm = L[9]);
-					Tab->item(n, CSNR)->setText("");
-				}
-				else if (L[9] == "0") Tab->item(n, CSNR)->setText("");
-				else Tab->item(n, CSNR)->setText(L[9]);
-				if (s > 10) 
-				{
-					if (L[10] == "laser") Tab->item(n, CC)->setText(Comm = L[10]);
-					else if (L[10] == "0") Tab->item(n, CDev)->setText("");
-					else Tab->item(n, CDev)->setText(L[10]);
-					if (s > 11) Tab->item(n, CC)->setText(L[11]);
-					else if (Comm.isEmpty()) Tab->item(n, CC)->setText("");
-				}
-				else 
-				{
-					Tab->item(n, CDev)->setText("");
-					if (Comm.isEmpty()) Tab->item(n, CC)->setText("");
-				}
-			}
-			else 
-			{
-				Tab->item(n, CSNR)->setText("");
-				Tab->item(n, CDev)->setText("");
-				if (Comm.isEmpty()) Tab->item(n, CC)->setText("");
-			}
-		}
-		for (i=0; i < TableNormCols; i++) Tab->item(n, i)->setIcon(P);
-		//printf("n=%d, N=%d\n", n, N);
-        if (molecule != 0)
-        {
-            QString CurPath = Tab->item(n, CFile)->text(), MolPath = molecule->getFileName();
-            Tab->item(n, CFile)->setText(getAbsolutePath(CurPath, MolPath));
-        }
-    }
-    Tab->blockSignals(false);
+    table->blockSignals(true);
+	mCore->blockSignals(true);
+    LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	ltc->setRowCount(N);
+	ltc->readData(N, Buffer, FCA, MaxPN, d);
+	mCore->blockSignals(false);
+    table->blockSignals(false);
 	Saved();
 	emit DataChanged();
 	return Success;
@@ -756,45 +645,15 @@ bool LineTable::writeData(QString Filename)
 	QFile Datei(Filename);
 	write(&Datei);
     QTextStream S(&Datei);
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	S << "Source: " << getSource() << "\n";
 	S << "Name: " << getName() << "\n";
 	S << "   PN  vo  Jo  vu  Ju  FC           Eout       err  Iso  File  SNR  deviation  comment\n";
-    Tab->blockSignals(true);
-	for (i=0; i<Tab->rowCount(); i++)
-    {
-		S << ((B = Tab->item(i, CPN)->text()).toInt() > 0 ? ("     " + B).right(5) 
-														  : "    0");
-		for (j=Cvs; j<=CJss; j++) 
-		{
-			Buffer = "    " + Tab->item(i, j)->text();
-			S << Buffer.right(4);
-		}
-		S << ' ' << ("   " + Tab->item(i, CF)->text()).right(3);
-		Buffer = "               " + Tab->item(i, CWN)->text();
-		if (Buffer.indexOf('.') == -1) Buffer += ".0000";
-		Buffer = Buffer.right(15);
-		if (Buffer[0] != ' ') S << " " << Buffer;
-		else S << Buffer;
-		if ((Buffer = "          " + Tab->item(i, Cerr)->text()).indexOf('.') == -1) Buffer += ".000";
-		S << ' ' << Buffer.right(9);
-		S << ("    " + Tab->item(i, CIso)->text()).right(4); 
-		if ((Buffer = Tab->item(i, CFile)->text()).isEmpty()) Buffer = LFile;
-		else if (Buffer == "Aktuelle Markierungen") 
-		{
-		    Buffer = InFile;
-			Tab->item(i, 7)->setText(Buffer);
-		}
-		else LFile = Buffer;
-        if (molecule != 0) Buffer = getRelativePath(Buffer, MolFile);
-		S << " " << Buffer;
-		if ((Buffer = Tab->item(i, CSNR)->text()).isEmpty()) Buffer = "0";
-		S << ("      " + Buffer).right(7); 
-		if ((Buffer = Tab->item(i, CDev)->text()).isEmpty()) Buffer = "0";
-		S << ("          " + Buffer).right(11);
-		S << " " << Tab->item(i, CC)->text() << char(10);
-	}
-	for (i = Tab->rowCount() - NpL; i < Tab->rowCount(); i++)
-		for (j=0; j < TableNormCols; j++) Tab->item(i, j)->setIcon(P);
+    table->blockSignals(true);
+	ltc->blockSignals(true);
+
+
+
     Datei.close();
 	Tab->blockSignals(false);
 	MaxPN += NpProg;
