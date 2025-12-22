@@ -640,7 +640,7 @@ bool LineTable::readData(QString Filename)
 bool LineTable::writeData(QString Filename)
 {
     int i, j;
-    QString Buffer, LFile, B, MolFile = molecule->getFileName();
+    QString Buffer, B;
 	QPixmap P;
 	QFile Datei(Filename);
 	write(&Datei);
@@ -651,11 +651,10 @@ bool LineTable::writeData(QString Filename)
 	S << "   PN  vo  Jo  vu  Ju  FC           Eout       err  Iso  File  SNR  deviation  comment\n";
     table->blockSignals(true);
 	ltc->blockSignals(true);
-
-
-
+	ltc->writeData(S);
     Datei.close();
-	Tab->blockSignals(false);
+	ltc->blockSignals(false);
+	table->blockSignals(false);
 	MaxPN += NpProg;
 	NpProg = 0;
     Saved();
@@ -682,62 +681,60 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 	QString IsoSA[3], IsoSB[3], IsoSAF[3], IsoSBF[3];
 	bool Diff;
 	double W, WSum, DS, *OUnc = new double[ND];
-	if (A1 == A2)
-		for (n=i=0; n < nIsoA; n++) for (m=n; m < nIsoA; m++)
+	if (A1 == A2) for (n=i=0; n < nIsoA; ++n) for (m=n; m < nIsoA; ++m)
 	{
 		IsoTA[i] = n;
 		IsoTB[i++] = m;
 	}
-	else for (n=i=0; n < nIsoA; n++) for (m=0; m < nIsoB; m++)
+	else for (n=i=0; n < nIsoA; ++n) for (m=0; m < nIsoB; ++m)
 	{
 		IsoTA[i] = n;
 		IsoTB[i++] = m;
 	}
-	for (n=0; n < nIsoA; n++) IsoCA[n] = 0;
-	for (n=0; n < nIsoB; n++) IsoCB[n] = 0;
+	for (n=0; n < nIsoA; ++n) IsoCA[n] = 0;
+	for (n=0; n < nIsoB; ++n) IsoCB[n] = 0;
 	TermEnergy *D = new TermEnergy[ND], *FD = 0, TBuff;
-	for (n=m=0; n < ND; n++)
+	for (n=m=0; n < ND; ++n)
 	{
 		if (Data[n][4] == "nan") continue;
 		D[m].Iso = Data[n][0].toInt() / 10 - 1;
 		if ((D[m].v = Data[n][1].toInt()) > Maxv) Maxv = D[n].v;
 		if ((D[m].J = Data[n][2].toInt()) > MaxJ) MaxJ = D[n].J;
-		D[m].ef = (Data[n][3].indexOf('e') != -1 ? true : false);
+		D[m].ef = (Data[n][3].indexOf('e') != -1);
 		D[m].E = Data[n][4].toDouble();
 		if (D[m].E == 0.0) continue;
 		D[m].err = 0.01;
 		OUnc[m] = Data[n][5].toDouble();
-		IsoCA[IsoTA[D[m].Iso]]++;
-		IsoCB[IsoTB[D[m++].Iso]]++;
+		++(IsoCA[IsoTA[D[m].Iso]]);
+		++(IsoCB[IsoTB[D[m++].Iso]]);
 	}
 	ND = m;
-	for (n=0; n < ND; n++)
+	for (n=0; n < ND; ++n)
 	{
-		for (m=n+1; D[m].Iso == D[n].Iso && D[n].v == D[m].v && D[n].J == D[m].J
-			        && D[n].ef == D[m].ef; m++) ;
+		for (m=n+1; D[m].Iso == D[n].Iso && D[n].v == D[m].v && D[n].J == D[m].J && D[n].ef == D[m].ef; ++m) ;
 		if (m==n+1) continue;
-		for (i=n, WSum = DS = 0.0; i<m; i++)
+		for (i=n, WSum = DS = 0.0; i<m; ++i)
 		{
 			WSum += (W = ((W = OUnc[m]) != 0.0 ? 1.0 / W : 1.0));
 			DS += W * D[i].E;
 		}
 		D[n].E = DS / WSum;
-		for (i=n+1; i<m; i++) D[i].E = 0.0;
+		for (i=n+1; i<m; ++i) D[i].E = 0.0;
 	}
 	Destroy(Data, ND);
-	for (n=0; (n < ND ? D[n].E != 0.0 : false); n++) ;
-	for (m=n+1; m < ND; m++) if (D[m].E != 0.0) D[n++] = D[m];
+	for (n=0; (n < ND && D[n].E != 0.0); ++n) ;
+	for (m=n+1; m < ND; ++m) if (D[m].E != 0.0) D[n++] = D[m];
 	ND = n;
 	uIA[0] = IsoTA[Iso->refIso];
 	uIB[0] = IsoTB[Iso->refIso];
-	for (i=m=0; i < nIsoA; i++) if (IsoCA[i] > m && i != uIA[0])
+	for (i=m=0; i < nIsoA; ++i) if (IsoCA[i] > m && i != uIA[0])
 	{
 		m = IsoCA[i];
 		uIA[1] = i;
 	}
 	if (m>0) 
 	{
-		for (i=m=0; i < nIsoA; i++) if (IsoCA[i] > m && i != uIA[0] && i != uIA[1])
+		for (i=m=0; i < nIsoA; ++i) if (IsoCA[i] > m && i != uIA[0] && i != uIA[1])
 		{
 			m = IsoCA[i];
 			uIA[2] = i;
@@ -745,14 +742,14 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		nIA = (m>0 ? 3 : 2);
 	}
 	else nIA = 1;
-	for (i=m=0; i < nIsoB; i++) if (IsoCB[i] > m && i != uIB[0])
+	for (i=m=0; i < nIsoB; ++i) if (IsoCB[i] > m && i != uIB[0])
 	{
 		m = IsoCB[i];
 		uIB[1] = i;
 	}
 	if (m>0)
 	{
-		for (i=m=0; i < nIsoB; i++) if (IsoCB[i] > m && i != uIB[0] && i != uIB[1])
+		for (i=m=0; i < nIsoB; ++i) if (IsoCB[i] > m && i != uIB[0] && i != uIB[1])
 		{
 			m = IsoCB[i];
 			uIB[2] = i;
@@ -760,12 +757,12 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		nIB = (m>0 ? 3 : 2);
 	}
 	else nIB = 1;
-	for (n=0; n < nIA; n++) 
+	for (n=0; n < nIA; ++n)
 		IsoSA[n] = ("    " + QString::number(A1->getnNuc(uIA[n]))).right(5)
 				 + ("          " 
 				   + QString::number(A1->getIsoMass(uIA[n]), 'f', 7)).right(13)
 				 + "           0.0";
-	for (n=0; n < nIB; n++) 
+	for (n=0; n < nIB; ++n)
 		IsoSB[n] = ("    " + QString::number(A2->getnNuc(uIB[n]))).right(5)
 				 + ("          " 
 				   + QString::number(A2->getIsoMass(uIB[n]), 'f', 7)).right(13)
@@ -773,10 +770,10 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 	QFile File(Filename);
 	QString Buffer, L1, LP1, LP2, IsoStr[nIso];
 	QuestionBox *QB;
-	for (n=0; n < nIso; n++)
+	for (n=0; n < nIso; ++n)
 	{
-		for (m=0; m < nIA; m++) if (Iso->mNumIso1[n] == IsoSA[m].left(5).toInt()) IsoStr[n] += IsoSA[m].left(5);
-		for (m=0; m < nIB; m++) if (Iso->mNumIso2[n] == IsoSB[m].left(5).toInt()) IsoStr[n] += IsoSB[m].left(5);
+		for (m=0; m < nIA; ++m) if (Iso->mNumIso1[n] == IsoSA[m].left(5).toInt()) IsoStr[n] += IsoSA[m].left(5);
+		for (m=0; m < nIB; ++m) if (Iso->mNumIso2[n] == IsoSB[m].left(5).toInt()) IsoStr[n] += IsoSB[m].left(5);
 	}
 	if (File.exists())
 	{
@@ -861,7 +858,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 			LP1 = RS.readLine();
 			LP2 = RS.readLine();
 			FD = new TermEnergy[NFD];
-			for (n=m=0; n < NFD; n++)
+			for (n=m=0; n < NFD; ++n)
 			{
 				Buffer = RS.readLine();
 				iA = Buffer.left(5).toInt();
@@ -909,7 +906,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		LP2 = " 0.0000            0               energy shift of levels to minimum, shift of quantum number position";
 	}
 	QString *LL = new QString[ND + NFD];
-	for (n=m=0; n < ND || (NFD > 0 ? FD[0].Iso != -1 : false); m++)
+	for (n=m=0; n < ND || (NFD > 0 && FD[0].Iso != -1); ++m)
 	{
 		if (n < ND && NFD > 0 ? D[n].Iso == FD[0].Iso && D[n].v == FD[0].v && D[n].J == FD[0].J && D[n].ef == FD[0].ef
 			  : false)
@@ -918,7 +915,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 			TBuff.err = FD[0].err;
 			FD[0].Iso = -2;
 		}
-		else if (n < ND ? (NFD > 0 && FD[0].Iso != -1 ? isnSPG(D[n], FD[0]) : true) : false) TBuff = D[n++];
+		else if (n < ND && ((NFD > 0 && FD[0].Iso != -1) || isnSPG(D[n], FD[0]))) TBuff = D[n++];
 		else
 		{
 			switch (use)
@@ -968,16 +965,16 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 			}
 			FD[0].Iso = -2;
 		}
-		if (NFD > 0 ? FD[0].Iso == -2 : false) 
+		if (NFD > 0 && FD[0].Iso == -2)
 		{
 			for (p1 = 0, p2 = 2; p2 <= NFD && FD[p1].Iso != -1; p2 = 2 * ((p1 = p2) + 1))
 			{
-				if (p2 < NFD ? isnSPG(FD[p2-1], FD[p2]) : true) p2--;
+				if (p2 < NFD && isnSPG(FD[p2-1], FD[p2])) p2--;
 				FD[p1] = FD[p2];
 			}
 			FD[p1].Iso = -1;
 		}
-		if (TBuff.Iso == -1 ? true : IsoStr[TBuff.Iso].length() < 10) m--;
+		if (TBuff.Iso == -1 || IsoStr[TBuff.Iso].length() < 10) --m;
 		else 
 		{
 			LL[m] = IsoStr[TBuff.Iso] + ("     " + QString::number(TBuff.v)).right(5) 
@@ -995,7 +992,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 	for (n=0; n < nIA; n++) WS << IsoSA[n] << "\n";
 	for (n=0; n < nIB; n++) WS << IsoSB[n] << "\n";
 	WS << LP1 << "\n" << LP2 << "\n";
-	for (n=0; n<m; n++) WS << LL[n];
+	for (n=0; n<m; ++n) WS << LL[n];
 	File.close();
 	delete[] LL;
 	delete[] FD;
@@ -1014,90 +1011,25 @@ void LineTable::WriteTFGS(QString FileName, int vsO, vsOListElement *vsOList)
 	}
 	int i, j, N, n, vs, lvs = 0, P, lP = -1, Js, lJs = -1, Jss;
 	int ivsO = vsO, PN, lPN = -1, aIso, lIso = -1;
-	N = Tab->rowCount();
+	N = mCore->rowCount();
 	if (FileName.isEmpty()) 
 		FileName = QFileDialog::getSaveFileName(this, "Write TF input file", 
-			(MW != 0 ? MW->getDir(getType()) : ""), "All files (*.*)");
+			(MW != nullptr ? MW->getDir(getType()) : ""), "All files (*.*)");
 	if (FileName.isEmpty()) return;
 	QFile Datei(FileName);
 	Datei.open(QIODevice::WriteOnly | QIODevice::Append);
 	QTextStream S(&Datei);
 	QString Buffer, IBuff, F, lF;
-	int *SO = new int[N], *S1 = heapSort(sortIJvP);
 	vsOListElement *CvsOElement = vsOList;
-	if (CvsOElement == 0)
+	if (CvsOElement == nullptr)
 	{
 		CvsOElement = vsOList = new vsOListElement;
 		CvsOElement->Iso = CvsOElement->Js = CvsOElement->vs = -1;
-		CvsOElement->next = 0;
+		CvsOElement->next = nullptr;
 	}
-	for (n=0; n<N; n++) SO[S1[n]] = n;
-	//printf("Nach Sortprog\n");
-	for (i=0; i<N; i++) 
-	{
-		n = Tab->item(SO[i], CIso)->text().toInt();
-		if (10 * (j = n / 10) != n) continue;
-		if (--j < 0) continue;
-		S << (IBuff = ("    " + QString::number(Iso->mNumIso1[j])).right(5) 
-				+ ("    " + QString::number(Iso->mNumIso2[j])).right(5));
-		//printf("Nach1\n");
-		vs = Tab->item(SO[i], Cvs)->text().toInt();
-		Js = Tab->item(SO[i], CJs)->text().toInt();
-		Jss = Tab->item(SO[i], CJss)->text().toInt();
-		P = fabs(Js - Jss);
-		F = Tab->item(SO[i], CFile)->text();
-		PN = Tab->item(SO[i], CPN)->text().toInt();
-		aIso = Tab->item(SO[i], CIso)->text().toInt();
-		if (F.left(5) == "laser") F = F.right(F.length() - 6);
-		if (lvs != vs || lJs != Js || lIso != aIso) 
-		{
-			while (CvsOElement->next != 0 ? CvsOElement->next->Iso <= aIso && CvsOElement->next->Js <= Js 
-					&& CvsOElement->vs <= vs : false) CvsOElement = CvsOElement->next;
-			if (CvsOElement->Iso == aIso && CvsOElement->Js == Js && CvsOElement->vs == vs)
-				CvsOElement->curMaxOffset = ivsO = (CvsOElement->curMaxOffset >= vsO ? CvsOElement->curMaxOffset + 100 : vsO + vs);
-			else ivsO = vsO + vs;
-			lvs = vs;
-			lJs = Js;
-			lF = F;
-			lP = P;
-			lPN = PN;
-			lIso = aIso;
-		}
-		else if (F != lF || P != lP || PN != lPN) 
-		{
-			if (CvsOElement->Iso == aIso && CvsOElement->Js == Js && CvsOElement->vs == vs)
-				CvsOElement->curMaxOffset = ivsO = CvsOElement->curMaxOffset + 100;
-			else if ((ivsO += 100) >= vsO + 1000)
-			{
-				vsOListElement *vsOBuff = new vsOListElement;
-				vsOBuff->Iso = aIso;
-				vsOBuff->vs = vs;
-				vsOBuff->Js = Js;
-				vsOBuff->curMaxOffset = ivsO;
-				vsOBuff->next = CvsOElement->next;
-				CvsOElement = CvsOElement->next = vsOBuff;
-			}
-			lF = F;
-			lP = P;
-			lPN = PN;
-			lIso = aIso;
-		}
-		Buffer = "    " + QString::number(ivsO);
-		S << Buffer.right(5);
-		Buffer = "    " + QString::number(Js);
-		S << Buffer.right(5);
-		S << ("     " + Tab->item(SO[i], Cvss)->text()).right(5);
-		S << ("     " + Tab->item(SO[i], CJss)->text()).right(5);
-		S << IBuff << "    0    0    0    0\n";
-		Buffer = "               ";
-		Buffer += Tab->item(SO[i], CWN)->text();
-		if (Buffer.indexOf(".") == -1) Buffer += ".00";
-		S << Buffer.right(15);
-		S << ("               " + Tab->item(SO[i], Cerr)->text()).right(15) << "    2\n";
-	}
+
+
 	Datei.close();
-	delete[] S1;
-	delete[] SO;
 	if (transition != 0 && molecule != 0 && vsO == 1000)
 	{
 		ElState *S = transition->getLowerState();
