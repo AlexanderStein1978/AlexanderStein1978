@@ -77,17 +77,6 @@ public:
     void MarkSelected();
 	void MarkLines(int *Iso, int *vs, int *Js, double *WN, int N);
 	void findErrors();
-	
-	inline void MarkLines(int *R, int N)
-	{
-		TableWindow::MarkLines(R, N);
-	}
-	
-	inline ElState *getElState()
-	{
-		return (transition != 0 ? transition->getUpperState() : 0); 
-	}
-	
 	void TakeOnChanges();
     void TestProgressions(int NumWFPoints);
     void DeleteRows();
@@ -130,6 +119,16 @@ public:
 	void getSelData(int *&Js, double *&E, int &N);
 	void getViewnE(int *&Js, double *&E, int &N);
 
+	inline void MarkLines(int *R, int N)
+	{
+		TableWindow::MarkLines(R, N);
+	}
+
+	inline ElState *getElState()
+	{
+		return (transition != 0 ? transition->getUpperState() : 0);
+	}
+
     inline bool checkAllConnections()
     {
         return TableWindow::checkAllConnections(CFile);
@@ -144,6 +143,11 @@ public:
     {
         sortTab(heapSort(sortByProgression));
     }
+
+    inline QString getInfile() const
+	{
+		return InFile;
+	}
 	
 public slots:
 	void updateMarker(Spektrum *Spectrum);

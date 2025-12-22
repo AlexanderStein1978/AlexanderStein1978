@@ -12,6 +12,8 @@
 #include "Spektrum.h"
 #include "elstate.h"
 #include "molecule.h"
+#include "vsolistelement.h"
+#include "linetablesortfunctions.h"
 
 #include <QTextStream>
 #include <QPixmap>
@@ -309,6 +311,7 @@ void LineTableCore::setRow(const QStringList& L, const int row)
 void LineTableCore::writeData(QTextStream& S)
 {
 	int b;
+	QString Buffer, LFile;
 	for (auto it = mData.begin(); it != mData.end(); ++it)
     {
 		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(*it);
@@ -317,31 +320,105 @@ void LineTableCore::writeData(QTextStream& S)
 		S << ("    " + QString::number(data->Js)).right(4);
 		S << ("    " + QString::number(data->vss)).right(4);
 		S << ("    " + QString::number(data->Jss)).right(4);
-
-		S << ' ' << ("   " + Tab->item(i, CF)->text()).right(3);
-		Buffer = "               " + Tab->item(i, CWN)->text();
+		S << ' ' << ("   " + QString::number(data->F)).right(3);
+		Buffer = "               " + QString::number(data->waveNumber);
 		if (Buffer.indexOf('.') == -1) Buffer += ".0000";
 		Buffer = Buffer.right(15);
 		if (Buffer[0] != ' ') S << " " << Buffer;
 		else S << Buffer;
-		if ((Buffer = "          " + Tab->item(i, Cerr)->text()).indexOf('.') == -1) Buffer += ".000";
+		if ((Buffer = "          " + QString::number(data->uncertainty, 'f', 8)).indexOf('.') == -1) Buffer += ".000";
 		S << ' ' << Buffer.right(9);
-		S << ("    " + Tab->item(i, CIso)->text()).right(4);
-		if ((Buffer = Tab->item(i, CFile)->text()).isEmpty()) Buffer = LFile;
+		S << ("    " + QString::number(data->isotope)).right(4);
+		if ((Buffer = data->file).isEmpty()) Buffer = LFile;
 		else if (Buffer == "Aktuelle Markierungen")
 		{
-		    Buffer = InFile;
-			Tab->item(i, 7)->setText(Buffer);
+		    Buffer = lTab->getInfile();
+			data->file = Buffer;
 		}
 		else LFile = Buffer;
-        if (molecule != 0) Buffer = getRelativePath(Buffer, MolFile);
+        if (molecule != 0) Buffer = lTab->getRelativePath(Buffer, molecule->getFileName());
 		S << " " << Buffer;
-		if ((Buffer = Tab->item(i, CSNR)->text()).isEmpty()) Buffer = "0";
+		if ((Buffer = QString::number(data->SNR, 'f', 6)).isEmpty()) Buffer = "0";
 		S << ("      " + Buffer).right(7);
-		if ((Buffer = Tab->item(i, CDev)->text()).isEmpty()) Buffer = "0";
+		if ((Buffer = QString::number(data->obsMinusCalc, 'f', 10)).isEmpty()) Buffer = "0";
 		S << ("          " + Buffer).right(11);
-		S << " " << Tab->item(i, CC)->text() << char(10);
+		S << " " << data->Comment << char(10);
 	}
+}
+
+void LineTableCore::WriteTFGS(QTextStream& S, const int *const sortOrder, vsOListElement *vsOList, const int vsO)
+{
+	int i, j, n, N = mData.size(), lvs, vs, lJs, Js, Jss, P, lP, PN, lPN, aIso, lIso, ivsO = vsO;
+	IsoTab* Iso = molecule->getIso();
+	QString Buffer, IBuff, F, lF;
+	vsOListElement* CvsOElement = vsOList;
+	int *SO = new int[N], *S1 = heapSort(sortIJvP);
+	for (n=0; n<N; n++) SO[S1[n]] = n;
+	for (i=0; i<N; ++i)
+	{
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[SO[i]]);
+		n = data->isotope;
+		if (10 * (j = n / 10) != n) continue;
+		if (--j < 0) continue;
+		S << (IBuff = ("    " + QString::number(Iso->mNumIso1[j])).right(5)
+				+ ("    " + QString::number(Iso->mNumIso2[j])).right(5));
+		//printf("Nach1\n");
+		vs = data->vs;
+		Js = data->Js;
+		Jss = data->Jss;
+		P = abs(Js - Jss);
+		F = data->file;
+		PN = data->progressionNumber;
+		aIso = n;
+		if (F.left(5) == "laser") F = F.right(F.length() - 6);
+		if (lvs != vs || lJs != Js || lIso != aIso)
+		{
+			while (CvsOElement->next != 0 ? CvsOElement->next->Iso <= aIso && CvsOElement->next->Js <= Js
+					&& CvsOElement->vs <= vs : false) CvsOElement = CvsOElement->next;
+			if (CvsOElement->Iso == aIso && CvsOElement->Js == Js && CvsOElement->vs == vs)
+				CvsOElement->curMaxOffset = ivsO = (CvsOElement->curMaxOffset >= vsO ? CvsOElement->curMaxOffset + 100 : vsO + vs);
+			else ivsO = vsO + vs;
+			lvs = vs;
+			lJs = Js;
+			lF = F;
+			lP = P;
+			lPN = PN;
+			lIso = aIso;
+		}
+		else if (F != lF || P != lP || PN != lPN)
+		{
+			if (CvsOElement->Iso == aIso && CvsOElement->Js == Js && CvsOElement->vs == vs)
+				CvsOElement->curMaxOffset = ivsO = CvsOElement->curMaxOffset + 100;
+			else if ((ivsO += 100) >= vsO + 1000)
+			{
+				vsOListElement *vsOBuff = new vsOListElement;
+				vsOBuff->Iso = aIso;
+				vsOBuff->vs = vs;
+				vsOBuff->Js = Js;
+				vsOBuff->curMaxOffset = ivsO;
+				vsOBuff->next = CvsOElement->next;
+				CvsOElement = CvsOElement->next = vsOBuff;
+			}
+			lF = F;
+			lP = P;
+			lPN = PN;
+			lIso = aIso;
+		}
+		Buffer = "    " + QString::number(ivsO);
+		S << Buffer.right(5);
+		Buffer = "    " + QString::number(Js);
+		S << Buffer.right(5);
+		S << ("     " + QString::number(data->vss)).right(5);
+		S << ("     " + Tab->item(SO[i], CJss)->text()).right(5);
+		S << IBuff << "    0    0    0    0\n";
+		Buffer = "               ";
+		Buffer += Tab->item(SO[i], CWN)->text();
+		if (Buffer.indexOf(".") == -1) Buffer += ".00";
+		S << Buffer.right(15);
+		S << ("               " + Tab->item(SO[i], Cerr)->text()).right(15) << "    2\n";
+	}
+	delete[] S1;
+	delete[] SO;
 }
 
 int LineTableCore::columnCount(const QModelIndex &parent) const

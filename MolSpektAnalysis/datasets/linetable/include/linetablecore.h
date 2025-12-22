@@ -43,6 +43,7 @@ class LineTableCore : public TableViewWindowCore
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		BaseData* convertToBaseData(const QStringList& L) const override;
+		void WriteTFGS(QTextStream& S, const int* const sortOrder, vsOListElement *vsOList, const int vs0);
 
 		inline double getWaveNumber(const int row) const
 		{
