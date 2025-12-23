@@ -462,34 +462,38 @@ void LineTableCore::Assign_vs(double ****const UD, const double AT, const int Nu
 	}
 }
 
-void LineTableCore::AssignFC(const int *const LO)
+int LineTableCore::columnCount(const QModelIndex &parent) const
 {
-	int n, m, PN, NR = mData.size(), nPN;
+	if (parent.isValid()) return 0;
+	return mColumns.size();
+}
+
+void LineTableCore::AssignFC(const int *const LO, const int *const XIT, const int* const EIT, const int ENv, const int ENJ, double ****EData, const int XNv,
+							 const int XNJ, double ****XData, const int XNC, const int cTX[], const int cTE[], const int cTL[])
+{
+	int n, m, i, j, c, PN, RS, NR = mData.size(), nPN, I, vs, Js, NCol = columnCount(), vss[1000], Jss[1000], LI[1000], NI = molecule->getNumIso(), bc;
+	double F[1000], BS = 0;
 	for (n=0, m=1, PN = mData[LO[0]]->progressionNumber; m <= NR; ++m) if (m < NR && (nPN = mData[LO[m]]->progressionNumber) != PN)
 	{
-		I = (Tab->item(LO[n], CIso)->text().toInt() - 1) / 10;
-		vs = Tab->item(LO[n], Cvs)->text().toInt();
-		Js = Tab->item(LO[n], CJs)->text().toInt();
-		if (NCol > COmC) for (i=n; i<m; i++) for (c = CEUp; c <= COmC; c++)
-					Tab->item(LO[i], c)->setText("");
-		if ((I >= 0 && I < NI ? XIT[I] >= 0 && EIT[I] >= 0 : false)
-			&& vs >= 0 && vs < ENv && Js >= 0 && Js < ENJ
-			&& EData[0][EIT[I]][vs][Js] != 0.0)
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[LO[n]]);
+		I = (data->isotope - 1) / 10;
+		vs = data->vs;
+		Js = data->Js;
+		if (I >= 0 && I < NI && XIT[I] >= 0 && EIT[I] >= 0 && vs >= 0 && vs < ENv && Js >= 0 && Js < ENJ && EData[0][EIT[I]][vs][Js] != 0.0)
 		{
-			for (i=n, j=0; i<m; i++)
+			for (i=n, j=0; i<m; ++i)
 			{
-				vss[j] = Tab->item(LO[i], Cvss)->text().toInt();
-				Jss[j] = Tab->item(LO[i], CJss)->text().toInt();
+				LineTableBaseData* data_i = reinterpret_cast<LineTableBaseData*>(mData[LO[i]]);
+				vss[j] = data_i->vss;
+				Jss[j] = data_i->Jss;
 				LI[j] = LO[i];
-				if (vss[j] >= 0 && vss[j] < XNv && Jss[j] >= 0 && Jss[j] < XNJ
-						&& XData[0][XIT[I]][vss[j]][Jss[j]] != 0.0)
-					F[j++] = Tab->item(LO[i], CWN)->text().toDouble();
+				if (vss[j] >= 0 && vss[j] < XNv && Jss[j] >= 0 && Jss[j] < XNJ && XData[0][XIT[I]][vss[j]][Jss[j]] != 0.0) F[j++] = data_i->waveNumber;
 			}
 			if (j>0)
 			{
-				for (c=0; c < XNC; c++)
+				for (c=0; c < XNC; ++c)
 				{
-					for (i=0, RS = 0.0; i<j; i++)
+					for (i=0, RS = 0.0; i<j; ++i)
 						RS += fabs(XData[cTX[c]][XIT[I]][vss[i]][Jss[i]] + F[i]
 								   - EData[cTE[c]][EIT[I]][vs][Js]);
 					if (RS < BS || c==0)
@@ -498,34 +502,30 @@ void LineTableCore::AssignFC(const int *const LO)
 						BS = RS;
 					}
 				}
-				for (i=n; i<m; i++)
-					Tab->item(LO[i], CF)->setText(' ' + QString::number(cTL[bc]));
+				for (i=n; i<m; ++i) reinterpret_cast<LineTableBaseData*>(mData[LO[i]])->F = cTL[bc];
 				if (NCol > COmC)
 				{
-					for (i=0, RS = 0.0; i<j; i++)
-						RS += (F[i] += XData[cTX[c]][XIT[I]][vss[i]][Jss[i]]);
+					for (i=0, RS = 0.0; i<j; ++i) RS += (F[i] += XData[cTX[c]][XIT[I]][vss[i]][Jss[i]]);
 					RS /= j;
-					for (i=0; i<j; i++)
+					for (i=0; i<j; ++i)
 					{
-						Tab->item(LI[i], CEUp)->setText(QString::number(F[i], 'f', 4));
-						Tab->item(LI[i], CEUma)->setText(
-										QString::number(F[i] - RS, 'g', 8));
-						Tab->item(LI[i], COmC)->setText(QString::number(F[i]
-								- EData[cTE[c]][EIT[I]][vs][Js], 'g', 8));
+						LineTableBaseData* data_i = reinterpret_cast<LineTableBaseData*>(mData[LO[i]]);
+						data_i->upperEnergy = F[i];
+						data_i->diffToAverageEnergy = F[i] - RS;
+						data_i->diffToCalculatedEnergy = F[i] - EData[cTE[c]][EIT[I]][vs][Js];
 					}
-					for (i=n; i<m; i++)
+					for (i=n; i<m; ++i)
 					{
-						Tab->item(LO[i], CEav)->setText(QString::number(RS, 'f', 4));
-						Tab->item(LO[i], CEdJ)->setText(
-							QString::number(RS / (Js * (Js + 1)), 'f', 6));
-						Tab->item(LO[i], CCalc)->setText(QString::number(
-							EData[cTE[c]][EIT[I]][vs][Js], 'f', 4));
+						LineTableBaseData* data_i = reinterpret_cast<LineTableBaseData*>(mData[LO[i]]);
+						data_i->averageUpperEnergy = RS;
+						data_i->energyDiffToNextJ = RS / (Js * (Js + 1));
+						data_i->calculatedEnergy = EData[cTE[c]][EIT[I]][vs][Js];
 					}
 				}
 			}
-			else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
+			else for (i=n; i<m; ++i) reinterpret_cast<LineTableBaseData*>(mData[i])->F = -1;
 		}
-		else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
+		else for (i=n; i<m; i++) reinterpret_cast<LineTableBaseData*>(mData[i])->F = -1;
 		n=m;
 		PN = nPN;
 	}
