@@ -1009,8 +1009,7 @@ void LineTable::WriteTFGS(QString FileName, int vsO, vsOListElement *vsOList)
 			"Error: The line table has to be assigned to a molecule first!", QMessageBox::Ok);
 		return;
 	}
-	int i, j, N, n, vs, lvs = 0, P, lP = -1, Js, lJs = -1, Jss;
-	int ivsO = vsO, PN, lPN = -1, aIso, lIso = -1;
+	int i, j, N;
 	N = mCore->rowCount();
 	if (FileName.isEmpty()) 
 		FileName = QFileDialog::getSaveFileName(this, "Write TF input file", 
@@ -1027,8 +1026,7 @@ void LineTable::WriteTFGS(QString FileName, int vsO, vsOListElement *vsOList)
 		CvsOElement->Iso = CvsOElement->Js = CvsOElement->vs = -1;
 		CvsOElement->next = nullptr;
 	}
-
-
+	reinterpret_cast<LineTableCore*>(mCore)->WriteTFGS(S, vsOList, vsO);
 	Datei.close();
 	if (transition != 0 && molecule != 0 && vsO == 1000)
 	{
@@ -1128,7 +1126,7 @@ void LineTable::W2AI(QString sldc)
 		QStringList SL;
 		for (i=0; i<N; i++) if ((j = Data[i][1].toInt()) > mvsldc) mvsldc = j; 
 		sLD = Create(mvsldc + 1, 2);
-		for (i=0; i <= mvsldc; i++) sLD[i][0] = sLD[i][1] = 0.0;
+		for (i=0; i <= mvsldc; ++i) sLD[i][0] = sLD[i][1] = 0.0;
 		while (!SR.atEnd())
 		{
 			SL = SR.readLine().split("	");
@@ -1141,13 +1139,10 @@ void LineTable::W2AI(QString sldc)
 	}
 	//printf("Nach Einlesen von sldc\n");
     j = N;
-	for (n=0, N=0; (N<j ? Data[N][0] != "" : false); N++)
-		if ((Data[N][6].toInt() >= MinQL && Data[N][3] == "f")
-			|| (Data[N][7].toInt() >= MinDPR 
-				   && Data[N][3] == "e"))
+	for (n=0, N=0; (N<j && Data[N][0] != ""); ++N) if ((Data[N][6].toInt() >= MinQL && Data[N][3] == "f") || (Data[N][7].toInt() >= MinDPR && Data[N][3] == "e"))
 	{
 		l = (k = Data[N][0].toInt()) / 10;
-		if (l > 0 && k == 10 * l) n++;
+		if (l > 0 && k == 10 * l) ++n;
 		i = Data[N][1].toInt();
 		if (i < mv) mv = i;
 		if (i > Mv) Mv = i;
@@ -1165,7 +1160,7 @@ void LineTable::W2AI(QString sldc)
 		printf("RI1=%d, RI2=%d\n", RI1, RI2);
 		ZINI1 = atom->getnIso();
 		ZII1 = new QString[ZINI1];
-		for (i=0; i < ZINI1; i++)
+		for (i=0; i < ZINI1; ++i)
 			ZII1[i] = ("    " + QString::number(atom->getnNuc(i))).right(5) 
 					+ "   " + QString::number(atom->getIsoMass(i), 'f', 8);
 		for (i = RI1, Buffer = ZII1[RI1]; i>0; i--) ZII1[i] = ZII1[i-1];
@@ -1173,7 +1168,7 @@ void LineTable::W2AI(QString sldc)
 		atom = molecule->getAtom2();
 		ZINI2 = atom->getnIso();
 		ZII2 = new QString[ZINI2];
-		for (i=0; i < ZINI2; i++)
+		for (i=0; i < ZINI2; ++i)
 			ZII2[i] = ("    " + QString::number(atom->getnNuc(i))).right(5)
 					+ "   " + QString::number(atom->getIsoMass(i), 'f', 8);
 		for (i = RI2, Buffer = ZII2[RI2]; i>0; i--) ZII2[i] = ZII2[i-1];
@@ -1188,20 +1183,20 @@ void LineTable::W2AI(QString sldc)
 			int KMax, *LMax;
 			double **Par, **Kor, **SpinR, **adCorr;
 			DT->getData(KMax, LMax, Par, Kor, SpinR, adCorr);
-			for (i = ZINC = 0; i <= KMax; i++) 
+			for (i = ZINC = 0; i <= KMax; ++i)
 			{
 				ZINC += LMax[i] + 1;
-				if (Kor != 0) for (j=0; j <= LMax[i]; j++) if (Kor[i][j] != 0.0) ZINC++;
+				if (Kor != 0) for (j=0; j <= LMax[i]; j++) if (Kor[i][j] != 0.0) ++ZINC;
 			}
 			ZIC = new QString[ZINC];
-			for (i=j=0; j <= KMax; j++) for (k=0; k <= LMax[j]; k++)
+			for (i=j=0; j <= KMax; j++) for (k=0; k <= LMax[j]; ++k)
 			{
-				ZIC[i++] = ("    " + QString::number(k)).right(5) 
+				ZIC[++i] = ("    " + QString::number(k)).right(5)
 						 + ("    " + QString::number(j)).right(5)
 						 + (Par[j][k] != 0.0 ? "    1    10.0000000000000000E+00    0    2"
 										     : "    1    10.0000000000000000E+00    1    2");
 				if (Kor != 0 ? Kor[j][k] != 0.0 : false) 
-					ZIC[i++] = ("    " + QString::number(k)).right(5) 
+					ZIC[++i] = ("    " + QString::number(k)).right(5)
 							 + ("    " + QString::number(j)).right(5)
 							 + "    6    10.0000000000000000E+00    0    2";
 			}
@@ -1242,18 +1237,18 @@ void LineTable::W2AI(QString sldc)
 	}
 	//printf("Vor IsoT\n");
 	Iso = new QString[IsoT->numIso];
-	for (i=0; i < IsoT->numIso; i++) 
+	for (i=0; i < IsoT->numIso; ++i)
 		Iso[i] = ("    " + QString::number(IsoT->mNumIso1[i])).right(5) 
 			   + ("    " + QString::number(IsoT->mNumIso2[i])).right(5);
 	QTextStream S(&Datei);
 	//printf("Vor write\n");
 	ZIL[3] = ("     " + QString::number(n)).right(5) + ZIL[3].right(ZIL[3].length() - 5);
-	for (i=0; i<4; i++) S << ZIL[i] << "\n";
-	for (i=0; i < ZINC; i++) S << ZIC[i] << "\n";
-	for (i=0; i < ZINI1; i++) S << ZII1[i] << "\n";
-	for (i=0; i < ZINI2; i++) S << ZII2[i] << "\n";
+	for (i=0; i<4; ++i) S << ZIL[i] << "\n";
+	for (i=0; i < ZINC; ++i) S << ZIC[i] << "\n";
+	for (i=0; i < ZINI1; ++i) S << ZII1[i] << "\n";
+	for (i=0; i < ZINI2; ++i) S << ZII2[i] << "\n";
 	//printf("Vor Schleife\n");
-	for (i=0; i<N; i++) 
+	for (i=0; i<N; ++i)
 		if ((Data[i][6].toInt() >= MinQL && Data[i][3] == "f")
 		   || (Data[i][7].toInt() >= MinDPR && Data[i][3] == "e"))
     {
@@ -1301,22 +1296,18 @@ void LineTable::W2AI(QString sldc)
 void LineTable::Assignvs()
 {
 	//printf("LineTable::Assignvs()\n");
-	int i, nr = Tab->rowCount();
+	int i, nr = mCore->rowCount();
 	ShowUpTerm();
 	//printf("Nach ShowUpTerm\n");
-	double TE = 0.0, dB;
-	int vs = 0, I=0, J=0;
 	if (molecule == 0 || transition == 0)
 	{
-		QMessageBox::information(this, tr("QT4MolSpektAn"), 
-						tr("The line table has to be assigned to a molecule and a transition first!"));
+		QMessageBox::information(this, tr("QT4MolSpektAn"), tr("The line table has to be assigned to a molecule and a transition first!"));
 		return;
 	}
 	ElState *US = transition->getUpperState();
 	if (US == 0)
 	{
-		QMessageBox::information(this, tr("QT4MolSpektAn"), 
-						tr("The transition has to be assigned to an upper electronic state first!"));
+		QMessageBox::information(this, tr("QT4MolSpektAn"), tr("The transition has to be assigned to an upper electronic state first!"));
 		return;
 	}
 	TermTable *TT = US->getTermTable();
@@ -1347,55 +1338,14 @@ void LineTable::Assignvs()
 	connect(BOK, SIGNAL(clicked()), D, SLOT(accept()));
 	connect(BCancel, SIGNAL(clicked()), D, SLOT(reject()));
 	if (D->exec() == QDialog::Rejected) return;
-	double ***UE = 0, ****UD = TT->getData(), AT = Tol->text().toDouble();
+	double ****UD = TT->getData(), AT = Tol->text().toDouble();
 	int NumC = TT->getNumComp(), mvs = TT->getMaxv();
 	//printf("mvs=%d, NumC=%d\n", mvs, NumC);
-	Tab->blockSignals(true);
-	for (i=0; i<nr; i++)
-	{
-		//printf("i=%d, nr=%d, CEav=%d, CCalc=%d, N=%d\n", i, nr, CEav, CCalc, Tab->columnCount());
-		dB = Tab->item(SO[i], CEUp)->text().toDouble();
-		//printf("Z-\n");
-		if (TE != dB)
-		{
-			//printf("Z0\n");
-			TE = dB;
-			//printf("Z1\n");
-			if ((J = Tab->item(SO[i], CJs)->text().toInt()) 
-				!= Tab->item(SO[i], CJss)->text().toInt() 
-						  || NumC == 1) 
-				UE = UD[0];
-			else UE = UD[1];
-			//printf("Z2\n");
-			I = (Tab->item(SO[i], CIso)->text().toInt() - 1) / 10;
-			//printf("vs=%d, mvs=%d, I=%d, J=%d\n", vs, mvs, I, J);
-			for (vs=0; (vs <= mvs ? UE[I][vs][J] < TE : false); vs++) ;
-			//printf("Z4\n");
-			if ((vs > 0 ? (vs <= mvs ? UE[I][vs][J] - TE > TE - UE[I][vs-1][J] : true)
-				: false)) vs--;
-			//printf("Z5\n");
-			if (fabs(UE[I][vs][J] - TE) > AT) vs = -1;
-		}
-		//printf("Z6\n");
-		Tab->item(SO[i], Cvs)->setText(QString::number(vs));
-		//printf("Z7\n");
-		if (vs >= 0) 
-		{
-			//printf("Z8, I=%d, vs=%d, J=%d\n", I, vs, J);
-			Tab->setItem(SO[i], CCalc, new QTableWidgetItem(QString::number(UE[I][vs][J], 'g', 9)));
-			//printf("Z9\n");
-			Tab->setItem(SO[i], COmC, new QTableWidgetItem(
-				QString::number(TE - UE[I][vs][J], 'g', 6)));
-		}
-		else 
-		{
-			//printf("ZA\n");
-			Tab->setItem(SO[i], CCalc, new QTableWidgetItem(""));
-			//printf("ZB\n");
-			Tab->setItem(SO[i], COmC, new QTableWidgetItem(""));
-		}
-	}
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	reinterpret_cast<LineTableCore*>(mCore)->Assign_vs(UD, AT, NumC, mvs, SO);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 	//printf("Ende Assign v'\n");
 }
@@ -1453,71 +1403,9 @@ void LineTable::AssignFC()
 	for (n=0; n < NR; n++) LO[LSO[n]] = n;
 	delete[] LSO;
 	Tab->blockSignals(true);
-	for (n=0, m=1, PN = Tab->item(LO[0], CPN)->text().toInt(); m <= NR; m++)
-		if (m < NR ? (nPN = Tab->item(LO[m], CPN)->text().toInt()) != PN : true)
-	{
-		I = (Tab->item(LO[n], CIso)->text().toInt() - 1) / 10;
-		vs = Tab->item(LO[n], Cvs)->text().toInt();
-		Js = Tab->item(LO[n], CJs)->text().toInt();
-		if (NCol > COmC) for (i=n; i<m; i++) for (c = CEUp; c <= COmC; c++) 
-					Tab->item(LO[i], c)->setText("");
-		if ((I >= 0 && I < NI ? XIT[I] >= 0 && EIT[I] >= 0 : false)
-			&& vs >= 0 && vs < ENv && Js >= 0 && Js < ENJ 
-			&& EData[0][EIT[I]][vs][Js] != 0.0)
-		{
-			for (i=n, j=0; i<m; i++)
-			{
-				vss[j] = Tab->item(LO[i], Cvss)->text().toInt();
-				Jss[j] = Tab->item(LO[i], CJss)->text().toInt();
-				LI[j] = LO[i];
-				if (vss[j] >= 0 && vss[j] < XNv && Jss[j] >= 0 && Jss[j] < XNJ
-						&& XData[0][XIT[I]][vss[j]][Jss[j]] != 0.0) 
-					F[j++] = Tab->item(LO[i], CWN)->text().toDouble();
-			}
-			if (j>0)
-			{
-				for (c=0; c < XNC; c++)
-				{
-					for (i=0, RS = 0.0; i<j; i++) 
-						RS += fabs(XData[cTX[c]][XIT[I]][vss[i]][Jss[i]] + F[i]
-								   - EData[cTE[c]][EIT[I]][vs][Js]);
-					if (RS < BS || c==0)
-					{
-						bc = c;
-						BS = RS;
-					}
-				}
-				for (i=n; i<m; i++) 
-					Tab->item(LO[i], CF)->setText(' ' + QString::number(cTL[bc]));
-				if (NCol > COmC)
-				{
-					for (i=0, RS = 0.0; i<j; i++)
-						RS += (F[i] += XData[cTX[c]][XIT[I]][vss[i]][Jss[i]]);
-					RS /= j;
-					for (i=0; i<j; i++)
-					{
-						Tab->item(LI[i], CEUp)->setText(QString::number(F[i], 'f', 4));
-						Tab->item(LI[i], CEUma)->setText(
-										QString::number(F[i] - RS, 'g', 8));
-						Tab->item(LI[i], COmC)->setText(QString::number(F[i]
-								- EData[cTE[c]][EIT[I]][vs][Js], 'g', 8));
-					}
-					for (i=n; i<m; i++)
-					{
-						Tab->item(LO[i], CEav)->setText(QString::number(RS, 'f', 4));
-						Tab->item(LO[i], CEdJ)->setText(
-							QString::number(RS / (Js * (Js + 1)), 'f', 6));
-						Tab->item(LO[i], CCalc)->setText(QString::number(
-							EData[cTE[c]][EIT[I]][vs][Js], 'f', 4));
-					}
-				}
-			}
-			else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
-		}
-		else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
-		n=m;
-		PN = nPN;
-	}
+
+
+
 	Tab->blockSignals(false);
 	delete[] LO;
 	delete[] XCT;
