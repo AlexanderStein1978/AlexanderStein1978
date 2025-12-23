@@ -346,7 +346,7 @@ void LineTableCore::writeData(QTextStream& S)
 	}
 }
 
-void LineTableCore::WriteTFGS(QTextStream& S, const int *const sortOrder, vsOListElement *vsOList, const int vsO)
+void LineTableCore::WriteTFGS(QTextStream& S, vsOListElement *vsOList, const int vsO)
 {
 	int i, j, n, N = mData.size(), lvs, vs, lJs, Js, Jss, P, lP, PN, lPN, aIso, lIso, ivsO = vsO;
 	IsoTab* Iso = molecule->getIso();
@@ -409,16 +409,126 @@ void LineTableCore::WriteTFGS(QTextStream& S, const int *const sortOrder, vsOLis
 		Buffer = "    " + QString::number(Js);
 		S << Buffer.right(5);
 		S << ("     " + QString::number(data->vss)).right(5);
-		S << ("     " + Tab->item(SO[i], CJss)->text()).right(5);
+		S << ("     " + QString::number(data->Jss)).right(5);
 		S << IBuff << "    0    0    0    0\n";
 		Buffer = "               ";
-		Buffer += Tab->item(SO[i], CWN)->text();
+		Buffer += QString::number(data->waveNumber, 'f', 14);
 		if (Buffer.indexOf(".") == -1) Buffer += ".00";
 		S << Buffer.right(15);
-		S << ("               " + Tab->item(SO[i], Cerr)->text()).right(15) << "    2\n";
+		S << ("               " + QString::number(data->uncertainty, 'f', 14)).right(15) << "    2\n";
 	}
 	delete[] S1;
 	delete[] SO;
+}
+
+void LineTableCore::Assign_vs(double ****const UD, const double AT, const int NumC, const int mvs, const int* const SO)
+{
+	double ***UE = 0;
+	double dB, TE = 0.0;
+	int i, nr = mData.size(), vs = 0, I=0, J=0;
+	for (i=0; i<nr; ++i)
+	{
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[SO[i]]);
+		//printf("i=%d, nr=%d, CEav=%d, CCalc=%d, N=%d\n", i, nr, CEav, CCalc, Tab->columnCount());
+		dB = data->upperEnergy;
+		//printf("Z-\n");
+		if (TE != dB)
+		{
+			//printf("Z0\n");
+			TE = dB;
+			//printf("Z1\n");
+			if ((J = data->Js) != data->Jss || NumC == 1) UE = UD[0];
+			else UE = UD[1];
+			//printf("Z2\n");
+			I = (data->isotope - 1) / 10;
+			//printf("vs=%d, mvs=%d, I=%d, J=%d\n", vs, mvs, I, J);
+			for (vs=0; (vs <= mvs ? UE[I][vs][J] < TE : false); vs++) ;
+			//printf("Z4\n");
+			if ((vs > 0 ? (vs <= mvs ? UE[I][vs][J] - TE > TE - UE[I][vs-1][J] : true)
+				: false)) vs--;
+			//printf("Z5\n");
+			if (fabs(UE[I][vs][J] - TE) > AT) vs = -1;
+		}
+		//printf("Z6\n");
+		data->vs = vs;
+		//printf("Z7\n");
+		if (vs >= 0)
+		{
+			//printf("Z8, I=%d, vs=%d, J=%d\n", I, vs, J);
+			data->calculatedEnergy = UE[I][vs][J];
+			//printf("Z9\n");
+			data->diffToCalculatedEnergy = TE - UE[I][vs][J];
+		}
+	}
+}
+
+void LineTableCore::AssignFC(const int *const LO)
+{
+	int n, m, PN, NR = mData.size(), nPN;
+	for (n=0, m=1, PN = mData[LO[0]]->progressionNumber; m <= NR; ++m) if (m < NR && (nPN = mData[LO[m]]->progressionNumber) != PN)
+	{
+		I = (Tab->item(LO[n], CIso)->text().toInt() - 1) / 10;
+		vs = Tab->item(LO[n], Cvs)->text().toInt();
+		Js = Tab->item(LO[n], CJs)->text().toInt();
+		if (NCol > COmC) for (i=n; i<m; i++) for (c = CEUp; c <= COmC; c++)
+					Tab->item(LO[i], c)->setText("");
+		if ((I >= 0 && I < NI ? XIT[I] >= 0 && EIT[I] >= 0 : false)
+			&& vs >= 0 && vs < ENv && Js >= 0 && Js < ENJ
+			&& EData[0][EIT[I]][vs][Js] != 0.0)
+		{
+			for (i=n, j=0; i<m; i++)
+			{
+				vss[j] = Tab->item(LO[i], Cvss)->text().toInt();
+				Jss[j] = Tab->item(LO[i], CJss)->text().toInt();
+				LI[j] = LO[i];
+				if (vss[j] >= 0 && vss[j] < XNv && Jss[j] >= 0 && Jss[j] < XNJ
+						&& XData[0][XIT[I]][vss[j]][Jss[j]] != 0.0)
+					F[j++] = Tab->item(LO[i], CWN)->text().toDouble();
+			}
+			if (j>0)
+			{
+				for (c=0; c < XNC; c++)
+				{
+					for (i=0, RS = 0.0; i<j; i++)
+						RS += fabs(XData[cTX[c]][XIT[I]][vss[i]][Jss[i]] + F[i]
+								   - EData[cTE[c]][EIT[I]][vs][Js]);
+					if (RS < BS || c==0)
+					{
+						bc = c;
+						BS = RS;
+					}
+				}
+				for (i=n; i<m; i++)
+					Tab->item(LO[i], CF)->setText(' ' + QString::number(cTL[bc]));
+				if (NCol > COmC)
+				{
+					for (i=0, RS = 0.0; i<j; i++)
+						RS += (F[i] += XData[cTX[c]][XIT[I]][vss[i]][Jss[i]]);
+					RS /= j;
+					for (i=0; i<j; i++)
+					{
+						Tab->item(LI[i], CEUp)->setText(QString::number(F[i], 'f', 4));
+						Tab->item(LI[i], CEUma)->setText(
+										QString::number(F[i] - RS, 'g', 8));
+						Tab->item(LI[i], COmC)->setText(QString::number(F[i]
+								- EData[cTE[c]][EIT[I]][vs][Js], 'g', 8));
+					}
+					for (i=n; i<m; i++)
+					{
+						Tab->item(LO[i], CEav)->setText(QString::number(RS, 'f', 4));
+						Tab->item(LO[i], CEdJ)->setText(
+							QString::number(RS / (Js * (Js + 1)), 'f', 6));
+						Tab->item(LO[i], CCalc)->setText(QString::number(
+							EData[cTE[c]][EIT[I]][vs][Js], 'f', 4));
+					}
+				}
+			}
+			else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
+		}
+		else for (i=n; i<m; i++) Tab->item(LO[i], CF)->setText("-1");
+		n=m;
+		PN = nPN;
+	}
 }
 
 int LineTableCore::columnCount(const QModelIndex &parent) const

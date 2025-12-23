@@ -19,6 +19,7 @@
 class TermEnergy;
 class Spektrum;
 class Molecule;
+struct vsOListElement;
 
 class QTextStream;
 
@@ -43,7 +44,9 @@ class LineTableCore : public TableViewWindowCore
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		BaseData* convertToBaseData(const QStringList& L) const override;
-		void WriteTFGS(QTextStream& S, const int* const sortOrder, vsOListElement *vsOList, const int vs0);
+		void WriteTFGS(QTextStream& S, vsOListElement *vsOList, const int vs0);
+		void Assign_vs(double ****const UD, const double AT, const int NumC, const int mvs, const int* const SO);
+		void AssignFC(const int *const LO);
 
 		inline double getWaveNumber(const int row) const
 		{
