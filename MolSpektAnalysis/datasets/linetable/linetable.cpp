@@ -1381,7 +1381,7 @@ void LineTable::AssignFC()
 	}
 	XTT->getCompT(XNC, XCT);
 	ETT->getCompT(ENC, ECT);
-	int cTX[XNC], cTE[XNC], cTL[XNC], NI = molecule->getNumIso();
+	int cTX[XNC], cTE[XNC], cTL[XNC];
 	for (n=m=0; n <= XNC && n <= ENC; n++) if (XCT[n] >= 0 && ECT[n] >= 0)
 	{
 		cTX[m] = XCT[n];
@@ -1395,18 +1395,18 @@ void LineTable::AssignFC()
 		return;
 	}
 	int XNv = XTT->getMaxv() + 1, ENv = ETT->getMaxv() + 1;
-	int XNJ = XTT->getMaxJ() + 1, ENJ = ETT->getMaxJ() + 1, NCol = Tab->columnCount();
-	double ****XData = XTT->getData(), ****EData = ETT->getData(), RS, BS = 0, F[1000];
-	int *LSO = heapSort(sortIJvP), NR = Tab->rowCount(), PN, nPN = 0, i, j, vs, Js, I, c, bc = 0;
-	int *XIT = XTT->getIsoT(), *EIT = ETT->getIsoT(), vss[1000], Jss[1000], LI[1000];
+	int XNJ = XTT->getMaxJ() + 1, ENJ = ETT->getMaxJ() + 1;
+	double ****XData = XTT->getData(), ****EData = ETT->getData();
+	int *LSO = heapSort(sortIJvP), NR = Tab->rowCount();
+	int *XIT = XTT->getIsoT(), *EIT = ETT->getIsoT();
 	int *LO = new int[NR];
 	for (n=0; n < NR; n++) LO[LSO[n]] = n;
 	delete[] LSO;
-	Tab->blockSignals(true);
-
-
-
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	reinterpret_cast<LineTableCore*>(mCore)->AssignFC(LO, XIT, EIT, ENv, ENJ, EData, XNv, XNJ, XData, XNC, cTX, cTE, cTL);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	delete[] LO;
 	delete[] XCT;
 	delete[] XIT;

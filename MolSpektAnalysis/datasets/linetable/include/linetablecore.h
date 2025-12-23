@@ -46,7 +46,9 @@ class LineTableCore : public TableViewWindowCore
 		BaseData* convertToBaseData(const QStringList& L) const override;
 		void WriteTFGS(QTextStream& S, vsOListElement *vsOList, const int vs0);
 		void Assign_vs(double ****const UD, const double AT, const int NumC, const int mvs, const int* const SO);
-		void AssignFC(const int *const LO);
+		void AssignFC(const int *const LO, const int *const XIT, const int* const EIT, const int ENv, const int ENJ, double ****EData, const int XNv, const int XNJ,
+					  double ****XData, const int XNC, const int cTX[], const int cTE[], const int cTL[]);
+		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
 		inline double getWaveNumber(const int row) const
 		{
