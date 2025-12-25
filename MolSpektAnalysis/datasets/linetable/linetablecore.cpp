@@ -688,6 +688,8 @@ QVariant LineTableCore::headerData(int section, Qt::Orientation orientation, int
 			return "Deviation";
 		case CC:
 			return "Comment";
+		case CFCF:
+			return "calc. rel. int.";
 		default:
 			return QVariant();
 			break;

@@ -72,7 +72,6 @@ int TableViewWindowCore::rowCount(const QModelIndex& parent) const
 	return mData.size();
 }
 
-
 void TableViewWindowCore::setRowCount(const int count)
 {
 	int currentSize = mData.size();

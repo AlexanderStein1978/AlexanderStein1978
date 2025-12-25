@@ -1417,11 +1417,12 @@ void LineTable::AssignFC()
 
 void LineTable::MarkLines(int* Iso, int* vs, int* Js, double* WN, int N)
 {
-	int n, lJs, lIso = -1, lvs = -2, r, r1, R = Tab->rowCount(), MC = Tab->columnCount() - 1;
+	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
+	int n, m, lJs, lIso = -1, lvs = -2, r, r1, R = ltb->rowCount(), MC = ltb->columnCount() - 1, *rows = new int[N];
 	double lWN = 0.0;
-	for (r=0; r<R; r++)
+	for (r=0; r<R; ++r)
 	{
-		lJs = Tab->item(r, CJs)->text().toInt();
+		lJs = ltb->getJs(r);
 		if (lvs != -2)
 		{
 			lvs = -2;
@@ -1431,19 +1432,17 @@ void LineTable::MarkLines(int* Iso, int* vs, int* Js, double* WN, int N)
 				lWN = 0.0;
 			}
 		}
-		for (n=0; n<N; n++) if (lJs == Js[n]) 
-			if ((lvs == -2 ? (lvs = Tab->item(r, Cvs)->text().toInt()) : lvs) == vs[n])
-				if ((lIso == -1 ? (lIso = (Tab->item(r, CIso)->text().toInt() - 1) / 10) : lIso) == Iso[n])
-					if (fabs((lWN == 0.0 ? (lWN = Tab->item(r, CWN)->text().toDouble()) : lWN) - WN[n]) < 1e-4) break;
+		for (n=0; n<N; ++n) if (lJs == Js[n] && ((lvs == -2 ? (lvs = ltb->get_vs(r)) : lvs) == vs[n]) && ((lIso == -1 ? (lIso = (ltb->getIso(r) - 1) / 10) : lIso) == Iso[n])
+			&& (fabs((lWN == 0.0 ? (lWN = ltb->getWaveNumber(r)) : lWN) - WN[n]) < 1e-4)) break;
 		if (n<N) break;
 	}
 	if (r==R) return;
-	QList<QTableWidgetSelectionRange> SL = Tab->selectedRanges();
-	for (n=0; n < SL.count(); n++) Tab->setRangeSelected(SL[n], false);
-	Tab->scrollToItem(Tab->item(r, 0), QAbstractItemView::PositionAtTop);
-	for (r1 = r++; r<R; r++)
+	DeselectEverything();
+	QModelIndex topIndex = mCore->getIndex(r, 0);
+	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
+	for (r1 = ++r, m=-1; r<R; ++r)
 	{
-		lJs = Tab->item(r, CJs)->text().toInt();
+		lJs = ltb->getJs(r);
 		if (lvs != -2)
 		{
 			lvs = -2;
@@ -1453,27 +1452,27 @@ void LineTable::MarkLines(int* Iso, int* vs, int* Js, double* WN, int N)
 				lWN = 0.0;
 			}
 		}
-		for (n=0; n<N; n++) if (lJs == Js[n]) 
-			if ((lvs == -2 ? (lvs = Tab->item(r, Cvs)->text().toInt()) : lvs) == vs[n])
-				if ((lIso == -1 ? (lIso = (Tab->item(r, CIso)->text().toInt() - 1) / 10) : lIso) == Iso[n])
-					if (fabs((lWN == 0.0 ? (lWN = Tab->item(r, CWN)->text().toDouble()) : lWN) - WN[n]) < 1e-4) break;
+		for (n=0; n<N; ++n) if (lJs == Js[n] && ((lvs == -2 ? (lvs = ltb->get_vs(r)) : lvs) == vs[n]) && ((lIso == -1 ? (lIso = (ltb->getIso(r) - 1) / 10) : lIso) == Iso[n])
+			&& fabs((lWN == 0.0 ? (lWN = ltb->getWaveNumber(r)) : lWN) - WN[n]) < 1e-4) break;
 		if (n<N && r1 == -1) r1 = r;
 		else if (n==N && r1 != -1) 
 		{
-			Tab->setRangeSelected(QTableWidgetSelectionRange(r1, 0, r-1, MC), true);
+			rows[++m] = r1;
 			r1 = -1;
 		}
 	}
+	TableViewWindow::MarkLines(rows, ++m);
+	delete[] rows;
 	if (!isVisible()) show();
 	activateWindow();
-	Tab->setFocus();
+	table->setFocus();
 }
 
 void LineTable::MarkSelected()
 {
     //printf("LineTable::MarkSelected\n");
     if (MW == 0) return;
-	int k=0, SR, r, AnzahlMarker, s, n;
+	int k=0, SR, r, s, AnzahlMarker, n, N, *rows;
     double WN;
 	ElState *lState, *uState;
 	if (transition != 0)
@@ -1485,29 +1484,28 @@ void LineTable::MarkSelected()
 	QString lSN = (lState != 0 ? lState->getName() : ""), uSN = (uState != 0 ? uState->getName() : ""), Comment;
     QStringList SL;
 	QList<int> iL;
-	NR = Tab->rowCount();
-	SelR = Tab->selectedRanges();
-	for (s=0; s < SelR.count(); s++) for (r = SelR[s].topRow(); r <= SelR[s].bottomRow(); r++)
+	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
+	NR = ltb->rowCount();
+	table->getSelectedRows(rows, N);
+	for (r = 0; r<=N; ++r)
 	{
-		for (mSpectrum = Tab->item(r, CFile)->text(), n = r - 1; mSpectrum.isEmpty() 
-				&& n>=0; n--) 
-			mSpectrum = Tab->item(n, CFile)->text();
+		for (mSpectrum = ltb->getSourceFile(rows[r]), n = rows[r] - 1; mSpectrum.isEmpty() && n>=0; --n) mSpectrum = ltb->getSourceFile(n);
 		if (!mSpectrum.isEmpty())
 		{
-			for (n=0; (n < SL.count() ? SL[n] != mSpectrum : false); n++) ;
+			for (n=0; (n < SL.count() ? SL[n] != mSpectrum : false); ++n) ;
 			if (n == SL.count())
 			{
 				SL << mSpectrum;
 				iL << 1;
 			}
-			else iL[n]++;
+			else ++(iL[n]);
 		}
 	}
-	for (n=r=0; n < iL.count(); n++) if (iL[n] > r) r = iL[s=n];
+	for (n=r=0; n < iL.count(); ++n) if (iL[n] > r) r = iL[s=n];
 	mSpectrum = SL[s];
-	mIso = Tab->item(SR = Tab->currentRow(), CIso)->text().toInt();
-	mJs = Tab->item(SR, CJs)->text().toInt();
-	mvs = Tab->item(SR, Cvs)->text().toInt();
+	mIso = ltb->getIso(SR = ltb->currentRow());
+	mJs = ltb->getJs(SR);
+	mvs = ltb->get_vs(SR);
 	if (mSpectrum.isEmpty()) return;
 	Spektrum *spektrum = MW->getSpectrum(mSpectrum);
 	if (spektrum == 0) return;
@@ -1522,23 +1520,23 @@ void LineTable::MarkSelected()
 	}
     for (s=0; s < SelR.count(); s++) for (r = SelR[s].topRow(); r <= SelR[s].bottomRow(); r++)
 	{
-		if (Tab->item(r, CFile)->text() != mSpectrum) continue;
-		WN = Tab->item(r, CWN)->text().toDouble();
-		while ((k >= 0 ? marker[k].Line[0] > WN : false)) k--;
-		k++;
-		while ((k < AnzahlMarker ? marker[k].Line[0] < WN || k==0 : false)) k++;
-		if ((k < AnzahlMarker ? marker[k].Line[0] - WN > WN - marker[k-1].Line[0] : true)) k--;
+		if (ltb->getSourceFile(r) != mSpectrum) continue;
+		WN = ltb->getWaveNumber(r);
+		while ((k >= 0 ? marker[k].Line[0] > WN : false)) --k;
+		++k;
+		while ((k < AnzahlMarker ? marker[k].Line[0] < WN || k==0 : false)) ++k;
+		if ((k < AnzahlMarker ? marker[k].Line[0] - WN > WN - marker[k-1].Line[0] : true)) --k;
 		//printf("marker[%d].Line[0]=%f, WN=%f\n", k, marker[k].Line[0], WN);
 		if (fabs(marker[k].Line[0] - WN) < 0.001)
 		{
 		    //printf("Markiere marker[%d]\n", k);
-		    marker[k].vs = Tab->item(r, Cvs)->text().toInt();
-		    marker[k].Js = Tab->item(r, CJs)->text().toInt();
-		    marker[k].vss = Tab->item(r, Cvss)->text().toInt();
-		    marker[k].Jss = Tab->item(r, CJss)->text().toInt();
-			marker[k].Iso = (Tab->item(r, CIso)->text().toInt() - 1) / 10;
-			marker[k].FC = Tab->item(r, CF)->text().toInt();
-		    marker[k].DD = Tab->item(r, CDev)->text().toDouble();
+		    marker[k].vs = ltb->get_vs(r);
+		    marker[k].Js = ltb->getJs(r);
+		    marker[k].vss = ltb->get_vss(r);
+		    marker[k].Jss = ltb->getJss(r);
+			marker[k].Iso = (ltb->getIso(r) - 1) / 10;
+			marker[k].FC = ltb->getFineStructureQN(r);
+		    marker[k].DD = ltb->getObsCalc(r);
 			marker[k].Mol = molecule;
 		    marker[k].IsoName = (Iso != 0 ? Iso->texName[marker[k].Iso] : "");
 			marker[k].lState = lSN;
@@ -1547,8 +1545,8 @@ void LineTable::MarkSelected()
 			marker[k].UState = uState;
 			marker[k].DisplayData = true;
 		    marker[k].Marked = true;
-			marker[k].uncertainty = Tab->item(r, Cerr)->text().toDouble();
-			Comment = Tab->item(r, CC)->text();
+			marker[k].uncertainty = ltb->getUncertainty(r);
+			Comment = ltb->getComment(r);
 			marker[k].satellite = Comment.indexOf("satellite", 0, Qt::CaseInsensitive) >= 0;
 			marker[k].overlap = Comment.indexOf("overlap", 0, Qt::CaseInsensitive) >= 0;
 		}
@@ -1579,9 +1577,9 @@ void LineTable::ShowCalcRelInt(int NumWFPoints)
 	SortProg();
 	RemoveDoubled();
 	SetPN();
-	if (Tab->columnCount() <= CFCF) Tab->setColumnCount(CFCF + 1);
-	Tab->setHorizontalHeaderItem(CFCF, new QTableWidgetItem("calc. rel. int."));
-	int NR = Tab->rowCount(), r, n, s, PN, I, Js, vs, MJ, Mv, v; 
+	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
+	if (ltb->columnCount() <= LineTableCore::CFCF) ltb->setColumnCount(LineTableCore::CFCF + 1);
+	int NR = ltb->rowCount(), r, n, s, PN, I, Js, vs, MJ, Mv, v;
 	TermTable *lTerm = lS->getTermTable(), *uTerm = uS->getTermTable();
 	int uNv = uTerm->getMaxv() + 1, uNJ = uTerm->getMaxJ() + 1, uNIso = uTerm->getNumIso();
 	int lNv = lTerm->getMaxv() + 1, lNJ = lTerm->getMaxJ() + 1, lNIso = lTerm->getNumIso();
@@ -1591,33 +1589,28 @@ void LineTable::ShowCalcRelInt(int NumWFPoints)
 	if (uNIso < lNIso) lNIso = uNIso;
 	for (r=0; r < NR; r=s)
 	{
-		I = Tab->item(r, CIso)->text().toInt() / 10 - 1;
+		I = ltb->getIso(r) / 10 - 1;
 		//printf("r=%d, s=%d, I=%d\n", r, s, I);
-		for (IS = 0.0, n = Mv = MJ = 0, PN = Tab->item(r, CPN)->text().toInt(), s=r; 
-				   (s < NR ? Tab->item(s, CPN)->text().toInt() == PN : false); s++, n++)
+		for (IS = 0.0, n = Mv = MJ = 0, PN = ltb->getProgression(r), s=r; (s < NR ? ltb->getProgression(s) == PN : false); ++s, ++n)
 		{
-			IS += Tab->item(s, CSNR)->text().toDouble();
-			if ((lJ[n] = Tab->item(s, CJss)->text().toInt()) > MJ) MJ = lJ[n];
-			if ((v = Tab->item(s, Cvss)->text().toInt()) > Mv) Mv = v;
+			IS += ltb->getSNR(s);
+			if ((lJ[n] = ltb->getJss(s)) > MJ) MJ = lJ[n];
+			if ((v = ltb->get_vss(s)) > Mv) Mv = v;
 			if (MJ < uNJ && Mv < uNv && I < lNIso) lE[n] = lData[0][I][v][lJ[n]];
 		}
-	//printf("PN=%d, MJ=%d, lNJ=%d, Js=%d, uNJ=%d, I=%d, lNIso=%d\n", PN, MJ, lNJ, Js, uNJ, I, lNIso);
-		if (MJ >= lNJ || Mv >= lNv  || (Js = Tab->item(r, CJs)->text().toInt()) >= uNJ 
-				  || (vs = Tab->item(r, Cvs)->text().toInt()) >= uNv || I >= lNIso)
-			continue;
+		//printf("PN=%d, MJ=%d, lNJ=%d, Js=%d, uNJ=%d, I=%d, lNIso=%d\n", PN, MJ, lNJ, Js, uNJ, I, lNIso);
+		if (MJ >= lNJ || Mv >= lNv  || ltb->getJs(r) >= uNJ || (vs = ltb->get_vs(r)) >= uNv || I >= lNIso) continue;
 		//printf("r=%d, s=%d, Js=%d, n=%d\n", r, s, Js, n);
         lPot->getFastFCF(I, uPot, Js, 0, uData[0][I][vs][Js], n, lE, lJ, FCF, NumWFPoints);
 		//printf("Nach getFastFCF, n=%d\n", n);
-		for (FS = 0.0, v=0; v<n; v++) 
+		for (FS = 0.0, v=0; v<n; ++v)
 		{
 			//printf("v=%d, n=%d\n", v, n);
 			//printf("FS=%g, FCF[%d]=%g\n", FS, v, FCF[v]);
 			FS += FCF[v];
 		}
 		//printf("FS=%g\n", FS);
-		for (IS /= FS, v=0, n=r; n<s; v++, n++) 
-			Tab->setItem(n, CFCF, 
-					new QTableWidgetItem(("     " + QString::number(FCF[v] * IS, 'g', 5)).right(6)));
+		for (IS /= FS, v=0, n=r; n<s; ++v, ++n) ltb->setFCF(n, FCF[v] * IS);
 	}
 }
 
@@ -1644,22 +1637,23 @@ void LineTable::ShowGSDeviations()
 		return;
 	}
 	SetPN();
-	int n, m, pn = 0, apn = -1, N = Tab->rowCount(), nv = TT->getMaxv() + 1, nI = TT->getNumIso();
+	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
+	int n, m, pn = 0, apn = -1, N = ltb->rowCount(), nv = TT->getMaxv() + 1, nI = TT->getNumIso();
 	int nJ = TT->getMaxJ(), v, J, I, ldr = 0;
 	double Dev, US = 0.0, SS = 0.0, Sig, *E = new double[N], *UT = new double[N], ****Data = TT->getData();
 	double MD = 0.0, AD;
 	bool l = false;
 	int *S1 = heapSort(isnSPG), *SA = new int[N];
-	for (n=0; n<N; n++) SA[S1[n]] = n;
-	for (n=m=0; n<N; m++)
+	for (n=0; n<N; ++n) SA[S1[n]] = n;
+	for (n=m=0; n<N; ++m)
 	{
-		if (m<N ? (pn = Tab->item(SA[m], CPN)->text().toInt()) != apn : true)
+		if (m<N || (pn = ltb->getProgression(SA[m]) != apn))
 		{
-			for (US /= SS; n<m; n++)
+			for (US /= SS; n<m; ++n)
 			{
 				if (UT[n] == 0.0) continue;
 				Dev = UT[n] - US;
-				Tab->item(SA[n], CDev)->setText(QString::number(Dev, 'f', 4));
+				ltb->setObsCalc(SA[n], Dev);
 				if (fabs(Dev) > 4.0 * E[n]) 
 				{
 					l = true;
@@ -1671,13 +1665,11 @@ void LineTable::ShowGSDeviations()
 				}
 			}
 			//printf("n=%d, m=%d, SS=%g, US=%g\n", n, m, SS, US);
-			if (n==N || (l && Tab->item(SA[ldr], CC)->text().indexOf("pd") == -1)) break;
+			if (n==N || (l && ltb->getComment(SA[ldr]).indexOf("pd") == -1)) break;
 			apn = pn;
 			SS = US = 0.0;
 		}
-		if ((I = Tab->item(SA[m], CIso)->text().toInt() / 10 - 1) >= nI 
-				   || (J = Tab->item(SA[m], CJss)->text().toInt()) >= nJ 
-				   || (v = Tab->item(SA[m], Cvss)->text().toInt()) >= nv)
+		if ((I = ltb->getIso(SA[m]) / 10 - 1) >= nI || (J = ltb->getJss(SA[m])) >= nJ || (v = ltb->get_vss(SA[m])) >= nv)
 		{
 			//printf("I=%d, nI=%d, J=%d, nJ=%d, v=%d, nv=%d\n", I, nI, J, nJ, v, nv);
 			UT[m] = 0.0;
@@ -1689,13 +1681,13 @@ void LineTable::ShowGSDeviations()
 			UT[m] = 0.0;
 			continue;
 		}
-		E[m] = Tab->item(SA[m], Cerr)->text().toDouble();
-		UT[m] = Data[0][I][v][J] + Tab->item(SA[m], CWN)->text().toDouble();
+		E[m] = ltb->getUncertainty(SA[m]);
+		UT[m] = Data[0][I][v][J] + ltb->getWaveNumber(SA[m]);
 		Sig = 1.0 / (E[m] * E[m]);
 		SS += Sig;
 		US += Sig * UT[m];
 	}
-	if (l) Tab->selectRow(ldr);
+	if (l) TableViewWindow::MarkLines(&ldr, 1);
 	delete[] E;
 	delete[] UT;
 	delete[] S1;
@@ -1710,7 +1702,7 @@ void LineTable::TestProgressions(int NumWFPoints)
 	SetPN();
 	int k=0, l=0, n, m=0, r, AnzahlMarker, PN = 1, s, RC, i, j;
     double WN, MDev, D;
-	int NR = Tab->rowCount(), NC = Tab->columnCount();
+	int NR = mCore->rowCount(), NC = mCore->columnCount();
 	bool Success, *R = new bool[NR], sat;
 	int *P = new int[NR];
 	QString Spekt, Buffer;
@@ -1723,44 +1715,44 @@ void LineTable::TestProgressions(int NumWFPoints)
 		uState = transition->getUpperState();
 	}
 	else lState = uState = 0;
-	Tab->blockSignals(true);
-	for (r=0; r < NR; PN++)
+	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(false);
+	for (r=0; r < ltb->rowCount(); ++PN)
 	{
-		for (s=r; (s < NR ? Tab->item(s, CPN)->text().toInt() == PN : false); s++) R[s-r] = true;
+		for (s=r; s < NR && mCore->getProgression(s) == PN; ++s) R[s-r] = true;
 		printf("PN=%d, r=%d, s=%d, l=%d, NR=%d\n", PN, r, s, l, NR);
-		for (Spekt = "", n=r; mSpectrum.isEmpty() && n<s; n++) Spekt = Tab->item(r, CFile)->text();
+		for (Spekt = "", n=r; mSpectrum.isEmpty() && n<s; ++n) Spekt = ltb->getSourceFile(r);
 		if (!spektrum->readData(Spekt))
 		{
-			if (l>r) for (n=r; n<s; n++, l++) for (m=0; m < NC; m++) 
-						Tab->item(l, m)->setText(Tab->item(n, m)->text());
-			r=s;
+			if (l>r) for (n=r; n<s; n++, l++) ltb->deleteRow(n);
 			continue;
 		}
 		spektrum->editFind();
 		spektrum->GetMarker(AnzahlMarker, marker);
 		laser = spektrum->GetLaserLine();
-		sat = (Tab->item(r, CC)->text().indexOf("satellite") > -1 ? true : false);
+		sat = ltb->getComment(r).indexOf("satellite") > -1;
 		printf("AnzahlMarker=%d\n", AnzahlMarker);
 		for (Success = false, k=0; !Success; )
 		{
 			spektrum->ClearMarked();
 			printf("r=%d, s=%d\n", r, s);
-			for (n = r; n < s; n++) if (R[n-r])
+			for (n = r; n < s; ++n) if (R[n-r])
 			{
-				WN = Tab->item(n, CWN)->text().toDouble();
-				while ((k >= 0 ? marker[k].Line[0] > WN : false)) k--;
-				k++;
-				while ((k < AnzahlMarker ? marker[k].Line[0] < WN || k==0 : false)) k++;
-				if ((k < AnzahlMarker ? marker[k].Line[0] - WN > WN - marker[k-1].Line[0] : true)) k--;
+				WN = ltb->getWaveNumber(n);
+				while (k >= 0 && marker[k].Line[0] > WN) --k;
+				++k;
+				while (k < AnzahlMarker && (marker[k].Line[0] < WN || k==0)) ++k;
+				if (k < AnzahlMarker || marker[k].Line[0] - WN > WN - marker[k-1].Line[0]) --k;
 				//printf("marker[%d].Line[0]=%f, WN=%f\n", k, marker[k].Line[0], WN);
 				if (fabs(marker[k].Line[0] - WN) < 0.001)
 				{
 		    		//printf("Markiere marker[%d]\n", k);
-		    		marker[k].vs = Tab->item(n, Cvs)->text().toInt();
-		    		marker[k].Js = Tab->item(n, CJs)->text().toInt();
-		    		marker[k].vss = Tab->item(n, Cvss)->text().toInt();
-		    		marker[k].Jss = Tab->item(n, CJss)->text().toInt();
-					marker[k].Iso = Tab->item(n, CIso)->text().toInt() / 10 - 1;
+		    		marker[k].vs = ltb->get_vs(n);
+		    		marker[k].Js = ltb->getJs(n);
+		    		marker[k].vss = ltb->get_vss(n);
+		    		marker[k].Jss = ltb->getJss(n);
+					marker[k].Iso = ltb->getIso(n) / 10 - 1;
 					marker[k].LState = lState;
 					marker[k].UState = uState;
 					marker[k].DisplayData = true;
@@ -1772,8 +1764,7 @@ void LineTable::TestProgressions(int NumWFPoints)
 			}
 			printf("Nach Schleife\n");
             spektrum->TTransition(NumWFPoints);
-			for (n=0, MDev = 0.0; n < AnzahlMarker; n++) if (marker[n].Marked) 
-					if ((D = fabs(marker[n].DD)) > MDev)
+			for (n=0, MDev = 0.0; n < AnzahlMarker; ++n) if (marker[n].Marked && (D = fabs(marker[n].DD) > MDev))
 			{
 				MDev = D;
 				m=n;
@@ -1781,88 +1772,48 @@ void LineTable::TestProgressions(int NumWFPoints)
 			printf("m=%d, MDev=%e, MaxDev=%e\n", m, MDev, CMaxSearchDev);
 			if (MDev > CMaxSearchDev) 
 			{
-				for (n=r; P[n] != m; n++) ;
+				for (n=r; P[n] != m; ++n) ;
 				printf("n=%d, m=%d\n", n, m);
 				R[n-r] = false;
 			}
 			else Success = true;
 		}
 		r=s;
-		for (n=m=0; n < AnzahlMarker; n++) if (marker[n].Marked) 
+		for (n=m=0; n < AnzahlMarker; ++n) if (marker[n].Marked)
 		{
-			m++;
+			++m;
 			k=n;
 		}
 		printf("m=%d, l=%d, s=%d\n", m, l, s);
 		if (m<4 || (uState != 0 && marker[k].vs == -1)) continue;
 		if (l+m < s) 
 		{
-			for (k=0; k < AnzahlMarker; k++) if (marker[k].Marked)
+			for (k=0; k < AnzahlMarker; ++k) if (marker[k].Marked)
 			{
-				Tab->item(l, CPN)->setText(QString::number(PN));
-				Tab->item(l, Cvs)->setText(("    " + QString::number(marker[k].vs)).right(4));
-				Tab->item(l, CJs)->setText(("    " + QString::number(marker[k].Js)).right(4));
-				Tab->item(l, Cvss)->setText(("    " + QString::number(marker[k].vss)).right(4));
-				Tab->item(l, CJss)->setText(("    " + QString::number(marker[k].Jss)).right(4));
-				Tab->item(l, CIso)->setText(("    " 
-						+ QString::number(10 * (marker[k].Iso + 1))).right(4));
-				i = (marker[k].Line[0] < 10000 ? 1 : 0);
-				if ((j = (Buffer = "      " 
-								 + QString::number(marker[k].Line[0], 'g', 9 - i)).length() + i) < 16)
-					Buffer += QString(".0000").right(16 - j);
-				Tab->item(l, CWN)->setText(Buffer.right(15));
-				Tab->item(l, Cerr)->setText(marker[k].overlap ? "     0.020" : "     0.005");
-    			Tab->item(l, CFile)->setText(Spekt);
-				Tab->item(l, CSNR)->setText(("    " 
-						+ QString::number(marker[k].SNR, 'g', 5)).right(6));
-				Tab->item(l, CDev)->setText(("    " 
-						+ QString::number(marker[k].DD, 'g', 5)).right(10));
+				LineTableBaseData* data = new LineTableBaseData;
+				data->progressionNumber = PN;
+				data->vs = marker[k].vs;
+				data->Js = marker[k].Js;
+				data->vss = marker[k].vss;
+				data->Jss = marker[k].Jss;
+				data->isotope = 10 * (marker[k].Iso + 1);
+				data->waveNumber = marker[k].Line[0];
+				data->uncertainty = (marker[k].overlap ? 0.020 : 0.005);
+    			data->file = Spekt;
+				data->SNR = marker[k].SNR;
+				data->obsMinusCalc = marker[k].DD;
 				if (sat) Buffer = "satellite";
 				else if (marker + k == laser) Buffer = "laser";
 				else Buffer = ""; 
 				if (marker[k].overlap) Buffer += "overlap";
-				Tab->setItem(l++, CC, new QTableWidgetItem(Buffer));
+				data->Comment = Buffer;
+				ltb->addRow(data);
 			}
 			continue;
 		}
-		RC = Tab->rowCount();
-		Tab->setRowCount(RC + m);
-		for (n = RC, k=0; k < AnzahlMarker; k++) if (marker[k].Marked)
-		{
-			Tab->setItem(n, CPN, new QTableWidgetItem(QString::number(PN)));
-			Tab->setItem(n, Cvs, new QTableWidgetItem(("    " 
-					+ QString::number(marker[k].vs)).right(4)));
-			Tab->setItem(n, CJs, new QTableWidgetItem(("    " 
-					+ QString::number(marker[k].Js)).right(4)));
-			Tab->setItem(n, Cvss, new QTableWidgetItem(("    " 
-					+ QString::number(marker[k].vss)).right(4)));
-			Tab->setItem(n, CJss, new QTableWidgetItem(("    " 
-					+ QString::number(marker[k].Jss)).right(4)));
-			Tab->setItem(n, CIso, 
-				new QTableWidgetItem(("    " + QString::number(10 * (marker[k].Iso + 1))).right(4)));
-			i = (marker[k].Line[0] < 10000 ? 1 : 0);
-			if ((j = (Buffer = "      " 
-						  + QString::number(marker[k].Line[0], 'g', 9 - i)).length() + i) < 16)
-				Buffer += QString(".0000").right(16 - j);
-			Tab->setItem(n, CWN, new QTableWidgetItem(Buffer.right(15)));
-			Tab->setItem(n, Cerr, new QTableWidgetItem(
-						 marker[k].overlap ? "     0.020" : "     0.005"));
-    		Tab->setItem(n, CFile, new QTableWidgetItem(Spekt));
-			Tab->setItem(n, CSNR, new QTableWidgetItem(
-						 ("    " + QString::number(marker[k].SNR, 'g', 5)).right(6)));
-			Tab->setItem(n, CDev, new QTableWidgetItem(
-							 ("    " + QString::number(marker[k].DD, 'g', 5)).right(10)));
-			if (sat) Buffer = "satellite";
-			else if (marker + k == laser) Buffer = "laser";
-			else Buffer = ""; 
-			if (marker[k].overlap) Buffer += "overlap";
-			Tab->setItem(n++, CC, new QTableWidgetItem(Buffer));
-		}
 	}
-	RC = Tab->rowCount();
-	for (n = NR; n < RC; n++, l++) for (k=0; k < NC; k++) Tab->setItem(l, k, Tab->takeItem(n, k));
-	Tab->setRowCount(l);
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	delete[] R;
 	delete[] P;
 	Changed();
