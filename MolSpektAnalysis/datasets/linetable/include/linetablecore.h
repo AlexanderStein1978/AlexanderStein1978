@@ -90,6 +90,16 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->averageUpperEnergy;
 		}
 
+		inline QString getComment(const int row) const
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
+		}
+
+		inline void setFCF(const int row, const double FCF)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
+		}
+
 	private:
 		std::vector<TableCols> mColumns;
 		const QRegExp mStartSpecialPart = QRegExp("");

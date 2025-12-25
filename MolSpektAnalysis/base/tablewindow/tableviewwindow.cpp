@@ -153,7 +153,7 @@ void TableViewWindow::MarkLines(int* rN, int N)
     QModelIndex topIndex = mCore->getIndex(rN[0], 0);
     table->blockSignals(true);
 	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
-	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; n++) if (rN[n] < rN[n-1])
+	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; ++n) if (rN[n] < rN[n-1])
 	{
 		r1 = rN[n];
 		rN[n] = rN[n-1];
@@ -161,7 +161,7 @@ void TableViewWindow::MarkLines(int* rN, int N)
 	}
 	for (n=0; n<N; )
 	{
-		for (r1 = rN[n++]; n<N && rN[n] == rN[n-1] + 1; ++n) ;
+		for (r1 = rN[n++]; n<N && (rN[n] == rN[n-1] || rN[n] == rN[n-1] + 1); ++n) ;
         QModelIndex topLeft = mCore->getIndex(r1, 0), bottomRight = mCore->getIndex(rN[n-1], MC);
         QItemSelection newSelection(topLeft, bottomRight);
         model->select(newSelection, QItemSelectionModel::Select);
@@ -171,6 +171,17 @@ void TableViewWindow::MarkLines(int* rN, int N)
 	if (!isVisible()) show();
 	activateWindow();
 	table->setFocus();
+}
+
+void TableViewWindow::DeselectEverything()
+{
+	QItemSelectionModel* model = new QItemSelectionModel;
+    QModelIndexList selected = table->getSelectedIndexes();
+    QItemSelection  rangeList;
+    for (auto it = selected.begin(); it != selected.end(); ++it) rangeList.push_back(QItemSelectionRange(*it));
+    table->blockSignals(true);
+    model->select(QItemSelection(rangeList), QItemSelectionModel::Deselect);
+    table->blockSignals(false);
 }
 
 void TableViewWindow::exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns)

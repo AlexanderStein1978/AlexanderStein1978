@@ -41,6 +41,7 @@ public:
 
 protected slots:
     void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+    void DeselectEverything();
 
 	void HeaderItemClicked(const int index)
 	{
