@@ -119,53 +119,71 @@ std::vector<LineTableCore::TableCols> LineTableCore::convertHeaderStringsToColum
 
 BaseData * LineTableCore::convertToBaseData(const QStringList& L) const
 {
-	BaseData *data = new BaseData;
+	LineTableBaseData *data = new LineTableBaseData;
 	int lc = L.count();
 	IsoTab * Iso = nullptr;
 	if (nullptr != molecule) Iso = molecule->getIso();
-	for (int n=0; n < lc && n <= fdcLineElState; n++)
+	for (int n=0; n < lc && n < lc; ++n)
 	{
 		switch(n)
 		{
-			case fdcIso:
-				data->isotope = static_cast<char>(L[n].toInt());
+			case Cvs:
+				data->vs = L[n].toInt();
+				break;
+			case CJs:
+				data->Js = L[n].toInt();
+				break;
+			case Cvss:
+				data->vss = L[n].toInt();
+				break;
+			case CJss:
+				data->Jss = L[n].toInt();
+				break;
+			case CF:
+				data->F = L[n].toInt();
+				break;
+			case CWN:
+				data->waveNumber = L[n].toDouble();
+				break;
+			case Cerr:
+				data->uncertainty = L[n].toDouble();
+				break;
+			case CIso:
+				data->isotope = L[n].toInt();
 				if (nullptr != Iso) data->IsoIcon = &Iso->IsoImage[data->isotope];
 				break;
-			case fdcv:
-				data->v = static_cast<ushort>(L[n].toInt());
+			case CFile:
+				data->file = L[n];
 				break;
-			case fdcJ:
-				data->J = static_cast<ushort>(L[n].toInt());
+			case CSNR:
+				data->SNR = L[n].toDouble();
 				break;
-			case fdcvs:
-				data->vs = L[n].toStdString();
+			case CDev:
+				data->obsMinusCalc = L[n].toDouble();
 				break;
-			case fdcJs:
-				data->Js = static_cast<ushort>(L[n].toInt());
+			case CC:
+				data->Comment = L[n];
 				break;
-			case fdcSource:
-				data->source = L[n].toStdString();
+			case CFCF:
+				data->FCF = L[n].toDouble();
 				break;
-			case fdcProg:
-				data->prog = L[n].toInt();
+			case CEUp:
+				data->upperEnergy = L[n].toDouble();
 				break;
-			case fdcFile:
-				data->file = L[n].toStdString();
+			case CEav:
+				data->averageUpperEnergy = L[n].toDouble();
 				break;
-			case fdcEnergy:
-				data->energy = L[n].toDouble();
+			case CEUma:
+				data->diffToAverageEnergy = L[n].toDouble();
 				break;
-			case fdcUncert:
-				data->uncert = L[n].toDouble();
+			case CEdJ:
+				data->energyDiffToNextJ = L[n].toDouble();
 				break;
-			case fdcObsCalc:
-				data->obs_calc = L[n].toDouble();
+			case CCalc:
+				data->calculatedEnergy = L[n].toDouble();
 				break;
-			case fdcDevR:
-				data->devR = L[n].toFloat();
-				break;
-			case fdcLineElState:
-				data->secondState = L[n].toStdString();
+			case COmC:
+				data->diffToCalculatedEnergy = L[n].toDouble();
 				break;
 			default:
 				// not possible
@@ -173,6 +191,19 @@ BaseData * LineTableCore::convertToBaseData(const QStringList& L) const
 		}
 	}
 	return data;
+}
+
+LineTableBaseData * LineTableCore::convertStringArrayToLineTableBaseData(const QString *const array, const int length) const
+{
+	QStringList L;
+	for (int l=0; l < length; ++l) L << array[l];
+	return reinterpret_cast<LineTableBaseData*>(convertToBaseData(L));
+}
+
+void LineTableCore::setColumnCount(const int count)
+{
+	beginInsertColumns(QModelIndex(), columnCount(), count);
+	endInsertColumns();
 }
 
 bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)

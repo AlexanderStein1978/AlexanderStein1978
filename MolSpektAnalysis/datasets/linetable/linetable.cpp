@@ -1487,6 +1487,7 @@ void LineTable::MarkSelected()
 	LineTableCore* ltb = reinterpret_cast<LineTableCore*>(mCore);
 	NR = ltb->rowCount();
 	table->getSelectedRows(rows, N);
+	if (nullptr == rows) return;
 	for (r = 0; r<=N; ++r)
 	{
 		for (mSpectrum = ltb->getSourceFile(rows[r]), n = rows[r] - 1; mSpectrum.isEmpty() && n>=0; --n) mSpectrum = ltb->getSourceFile(n);
@@ -1503,7 +1504,7 @@ void LineTable::MarkSelected()
 	}
 	for (n=r=0; n < iL.count(); ++n) if (iL[n] > r) r = iL[s=n];
 	mSpectrum = SL[s];
-	mIso = ltb->getIso(SR = ltb->currentRow());
+	mIso = ltb->getIso(SR = rows[0]);
 	mJs = ltb->getJs(SR);
 	mvs = ltb->get_vs(SR);
 	if (mSpectrum.isEmpty()) return;
@@ -1518,10 +1519,10 @@ void LineTable::MarkSelected()
 		spektrum->GetMarker(AnzahlMarker, marker);
 		if (AnzahlMarker == 0) return;
 	}
-    for (s=0; s < SelR.count(); s++) for (r = SelR[s].topRow(); r <= SelR[s].bottomRow(); r++)
+    for (r=0; r<N; ++r)
 	{
-		if (ltb->getSourceFile(r) != mSpectrum) continue;
-		WN = ltb->getWaveNumber(r);
+		if (ltb->getSourceFile(rows[r]) != mSpectrum) continue;
+		WN = ltb->getWaveNumber(rows[r]);
 		while ((k >= 0 ? marker[k].Line[0] > WN : false)) --k;
 		++k;
 		while ((k < AnzahlMarker ? marker[k].Line[0] < WN || k==0 : false)) ++k;
@@ -1530,13 +1531,13 @@ void LineTable::MarkSelected()
 		if (fabs(marker[k].Line[0] - WN) < 0.001)
 		{
 		    //printf("Markiere marker[%d]\n", k);
-		    marker[k].vs = ltb->get_vs(r);
-		    marker[k].Js = ltb->getJs(r);
-		    marker[k].vss = ltb->get_vss(r);
-		    marker[k].Jss = ltb->getJss(r);
-			marker[k].Iso = (ltb->getIso(r) - 1) / 10;
-			marker[k].FC = ltb->getFineStructureQN(r);
-		    marker[k].DD = ltb->getObsCalc(r);
+		    marker[k].vs = ltb->get_vs(rows[r]);
+		    marker[k].Js = ltb->getJs(rows[r]);
+		    marker[k].vss = ltb->get_vss(rows[r]);
+		    marker[k].Jss = ltb->getJss(rows[r]);
+			marker[k].Iso = (ltb->getIso(rows[r]) - 1) / 10;
+			marker[k].FC = ltb->getFineStructureQN(rows[r]);
+		    marker[k].DD = ltb->getObsCalc(rows[r]);
 			marker[k].Mol = molecule;
 		    marker[k].IsoName = (Iso != 0 ? Iso->texName[marker[k].Iso] : "");
 			marker[k].lState = lSN;
@@ -1545,8 +1546,8 @@ void LineTable::MarkSelected()
 			marker[k].UState = uState;
 			marker[k].DisplayData = true;
 		    marker[k].Marked = true;
-			marker[k].uncertainty = ltb->getUncertainty(r);
-			Comment = ltb->getComment(r);
+			marker[k].uncertainty = ltb->getUncertainty(rows[r]);
+			Comment = ltb->getComment(rows[r]);
 			marker[k].satellite = Comment.indexOf("satellite", 0, Qt::CaseInsensitive) >= 0;
 			marker[k].overlap = Comment.indexOf("overlap", 0, Qt::CaseInsensitive) >= 0;
 		}
@@ -1556,6 +1557,7 @@ void LineTable::MarkSelected()
     setFocus();
   	spektrum->activateWindow();
 	spektrum->setFocus();
+	delete[] rows;
 	//printf("Ende MarkSelected, mSpectrum=%s\n", mSpectrum.ascii());
 }
 
@@ -1619,21 +1621,18 @@ void LineTable::ShowGSDeviations()
 	ElState *S;
 	if (transition == 0)
 	{
-		QMessageBox::information(this, tr("MolSpektAnalysis"), 
-			tr("To use this function the linetable as to be assigned to a transition first!"));
+		QMessageBox::information(this, "MolSpektAnalysis", tr("To use this function the linetable as to be assigned to a transition first!"));
 		return;
 	}
 	if ((S = transition->getLowerState()) == 0)
 	{
-		QMessageBox::information(this, tr("MolSpektAnalysis"), 
-	tr("To use this function the linetable as to be assigned to an electronic ground state first!"));
+		QMessageBox::information(this, "MolSpektAnalysis", tr("To use this function the linetable as to be assigned to an electronic ground state first!"));
 		return;
 	}
 	TermTable *TT;
 	if ((TT = S->getTermTable()) == 0)
 	{
-		QMessageBox::information(this, tr("MolSpektAnalysis"), 
-			tr("To use this function for the ground state term energies have to be available first!"));
+		QMessageBox::information(this, "MolSpektAnalysis", tr("To use this function for the ground state term energies have to be available first!"));
 		return;
 	}
 	SetPN();
@@ -1824,40 +1823,32 @@ void LineTable::TakeOnChanges()
 	//printf("mSpectrum=%s\n", mSpectrum.ascii());
 	Spektrum *Spekt = (MW != 0 ? MW->getSpectrum(mSpectrum) : 0);
 	if (Spekt == 0) return;
-	int j, k, n = Tab->rowCount(), c, nc = Tab->columnCount();
+	int j, k, n = mCore->rowCount(), c, nc = mCore->columnCount(), *rows, N;
 	QString B, Buffer;
-	Tab->blockSignals(true);
-	for (j=0; j < SelR.size(); j++) for (k=SelR[j].topRow(); k <= SelR[j].bottomRow(); k++)
-		if (Tab->item(k, CFile)->text() == mSpectrum) for (c=0; c < nc; c++) Tab->setItem(k, c, 0);
-	for (j=k=0; j <= lRow; j++) if (Tab->item(j, 0) == 0) k++;
-	lRow -= k;
-	for (j=0; (j < n ? Tab->item(j, 0) != 0 : false); j++) ;
-    for (k=j; k < n; k++) if (Tab->item(k, 0) != 0)
-	{
-		for (c=0; c < nc; c++) Tab->setItem(j, c, Tab->takeItem(k, c));
-		j++;
-	}	
-    Tab->setRowCount(j);
-	Tab->blockSignals(false);
+	table->getSelectedRows(rows, N);
+	if (nullptr == rows) return;
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (k=0; k<N; ++k)	if (mCore->getSourceFile(rows[k]) == mSpectrum) mCore->deleteRow(k);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
+	delete[] rows;
 	writeData();
 }
 
 void LineTable::addData(QString **Data, int NR, int NC)
 {
-	int r, n, c, C = Tab->columnCount(), N = Tab->rowCount();
-	Tab->blockSignals(true);
-	if (NC < C) Tab->setColumnCount(NC);
-	else if (C < NC) NC = C;
-	Tab->setRowCount(N + NR);
-	for (r=N-1; r >= N - NpL; r--) for (c=0; c < NC; c++) 
-			Tab->setItem(r + NR, c, Tab->takeItem(r, c));
-	for (n=0, r = N - NpL; n < NR; n++, r++) 
-	{
-		for (c=0; c < NC; c++) Tab->setItem(r, c, new QTableWidgetItem(Data[n][c]));
-		delete[] Data[n];
-	}
-	delete[] Data;
-	Tab->blockSignals(false);
+	int r, n, C = mCore->columnCount(), N = mCore->rowCount();
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	if (C < NC) ltc->setColumnCount(NC);
+	std::vector<BaseData*> data;
+	for (n=0; n < NR; ++n) data.push_back(ltc->convertStringArrayToLineTableBaseData(Data[n], NC));
+	ltc->insertRows(N - NpL, data);
+	Destroy(Data, NR);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
