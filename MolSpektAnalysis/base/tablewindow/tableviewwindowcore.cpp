@@ -112,6 +112,12 @@ BaseData * TableViewWindowCore::getRow(const int row) const
 	return mData[row];
 }
 
+void TableViewWindowCore::insertRows(const int startRow, const std::vector<BaseData *>& newRows)
+{
+    auto it = mData.begin()
+    for (int r=0; it != mData.end() && r < startRow; ++it) ++r;
+    mData.insert(it, newRows.begin(), newRows.end());
+}
 
 void TableViewWindowCore::deleteRows(const int *indices, const int numRows)
 {

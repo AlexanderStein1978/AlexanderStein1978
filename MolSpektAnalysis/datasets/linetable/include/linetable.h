@@ -169,7 +169,6 @@ private:
 	QString InFile, mSpectrum;
 	TableWindow *termTable;
 	IsoTab *Iso;
-	QList<QTableWidgetSelectionRange> SelR;
 };
 
 

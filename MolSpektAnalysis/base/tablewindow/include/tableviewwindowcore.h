@@ -37,6 +37,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		virtual void setRow(BaseData* const data, const int row);
 		virtual void setRow(const QStringList& L, const int row);
 		virtual BaseData* getRow(const int row) const;
+		void insertRows(const int startRow, const std::vector<BaseData*>& newRows);
 		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
 		int get_v(const int row) const;
