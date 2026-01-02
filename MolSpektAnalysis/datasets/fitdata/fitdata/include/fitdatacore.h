@@ -13,7 +13,6 @@
 #include "fitdatabasedata.h"
 
 #include <vector>
-#include <cmath>
 
 class TermEnergy;
 class Spektrum;
@@ -96,11 +95,6 @@ class FitDataCore : public TableViewWindowCore
 		inline void setNSources(const int N)
 		{
 			NSources = N;
-		}
-
-		inline static int getNumDecimalPlaces(const double uncertainty)
-		{
-			return 2 - static_cast<int>(log10(uncertainty));
 		}
 
 		inline bool isRWErr()

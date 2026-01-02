@@ -38,6 +38,7 @@ public:
     void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
     QString **getData(int &NRows, int &NCols) override;
     void setData(QString **Data, int NRows, int NCols) override;
+    void scrollTo(const int row);
 
 protected slots:
     void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());

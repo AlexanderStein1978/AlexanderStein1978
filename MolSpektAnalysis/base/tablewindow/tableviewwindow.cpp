@@ -150,9 +150,8 @@ void TableViewWindow::MarkLines(int* rN, int N)
 {
     int n=0, r1, MC = mCore->columnCount() - 1;
 	QItemSelectionModel* model = new QItemSelectionModel;
-    QModelIndex topIndex = mCore->getIndex(rN[0], 0);
     table->blockSignals(true);
-	table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
+    scrollTo(rN[0]);
 	for (r1 = 1; r1 != 0; ) for (r1 = 0, n=1; n<N; ++n) if (rN[n] < rN[n-1])
 	{
 		r1 = rN[n];
@@ -161,7 +160,8 @@ void TableViewWindow::MarkLines(int* rN, int N)
 	}
 	for (n=0; n<N; )
 	{
-		for (r1 = rN[n++]; n<N && (rN[n] == rN[n-1] || rN[n] == rN[n-1] + 1); ++n) ;
+		if (N>1) for (r1 = rN[n++]; n<N && (rN[n] == rN[n-1] || rN[n] == rN[n-1] + 1); ++n) ;
+        else n=1;
         QModelIndex topLeft = mCore->getIndex(r1, 0), bottomRight = mCore->getIndex(rN[n-1], MC);
         QItemSelection newSelection(topLeft, bottomRight);
         model->select(newSelection, QItemSelectionModel::Select);
@@ -171,6 +171,12 @@ void TableViewWindow::MarkLines(int* rN, int N)
 	if (!isVisible()) show();
 	activateWindow();
 	table->setFocus();
+}
+
+void TableViewWindow::scrollTo(const int row)
+{
+    QModelIndex topIndex = mCore->getIndex(row, 0);
+    table->scrollTo(topIndex, QAbstractItemView::PositionAtTop);
 }
 
 void TableViewWindow::DeselectEverything()

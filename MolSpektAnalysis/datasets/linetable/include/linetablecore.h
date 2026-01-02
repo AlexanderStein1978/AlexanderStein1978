@@ -20,6 +20,7 @@ class TermEnergy;
 class Spektrum;
 class Molecule;
 struct vsOListElement;
+struct Marker;
 
 class QTextStream;
 
@@ -28,12 +29,12 @@ class LineTableCore : public TableViewWindowCore
 {
 	public:
 
-		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC,
-				CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
+		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC, CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
 		const int TableNormCols = 12;
 
 		static std::vector<TableCols> convertHeaderStringsToColumnVector(const QStringList& headerStrings);
 		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
+		static QString convertHeaderEnumToHeaderString(const TableCols enumValue);
 
 		LineTableCore(LineTable* lt, Molecule* mol = nullptr, QObject *parent = 0);
 		~LineTableCore();
@@ -51,6 +52,10 @@ class LineTableCore : public TableViewWindowCore
 		void AssignFC(const int *const LO, const int *const XIT, const int* const EIT, const int ENv, const int ENJ, double ****EData, const int XNv, const int XNJ,
 					  double ****XData, const int XNC, const int cTX[], const int cTE[], const int cTL[]);
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+		int getMarkedLine(const Marker& marker, const QString SFN) const;
+		void AddMarked(Marker** Lines, const Marker* const LaserLine, const int AnzahlMarker, int& Offset, int &NpProg, const int MaxPN, const QString& SpektFile);
+		void ShowUpTerm(const int* const SO, const int MCT, const int* const CT, const int* const IsoT, double ****ELU, const int Mv, const int MJ, double ****UT, const int mvs,
+							   const int Jeo, const int* const UIsoT, const float S, const int UNC, const int UMCT, const int* const UCT);
 
 		inline double getWaveNumber(const int row) const
 		{

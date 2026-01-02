@@ -10,6 +10,7 @@
 
 
 #include <QAbstractTableModel>
+#include <cmath>
 
 
 struct BaseData;
@@ -90,6 +91,11 @@ class TableViewWindowCore : public QAbstractTableModel
 		inline Molecule* getMolecule() const
 		{
 			return molecule;
+		}
+
+		inline static int getNumDecimalPlaces(const double uncertainty)
+		{
+			return 2 - static_cast<int>(log10(uncertainty));
 		}
 
 	protected:
