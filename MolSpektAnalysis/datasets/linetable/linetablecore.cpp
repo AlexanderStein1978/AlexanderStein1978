@@ -23,18 +23,7 @@
 
 LineTableCore::LineTableCore(LineTable* lt, Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol), lTab(lt)
 {
-	mColumns.push_back(CPN);
-	mColumns.push_back(Cvs);
-	mColumns.push_back(CJs);
-	mColumns.push_back(Cvss);
-	mColumns.push_back(CJss);
-	mColumns.push_back(CWN);
-	mColumns.push_back(Cerr);
-	mColumns.push_back(CIso);
-	mColumns.push_back(CFile);
-	mColumns.push_back(CSNR);
-	mColumns.push_back(CDev);
-	mColumns.push_back(CC);
+	setColumnCount(TableNormCols);
 }
 
 LineTableCore::~LineTableCore()
@@ -44,55 +33,78 @@ LineTableCore::~LineTableCore()
 QStringList LineTableCore::convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector)
 {
 	QStringList Result;
-	for (auto it = headerVector.begin(); it != headerVector.end(); ++it)
-	{
-		switch(*it)
-		{
-			case CPN:
-				Result.push_back("PN");
-				break;
-			case Cvs:
-				Result.push_back("v'");
-				break;
-			case CJs:
-				Result.push_back("J'");
-				break;
-			case Cvss:
-				Result.push_back("v''");
-				break;
-			case CJss:
-				Result.push_back("J''");
-				break;
-			case CF:
-				Result.push_back("FC");
-				break;
-			case CWN:
-				Result.push_back("wave number");
-				break;
-			case Cerr:
-				Result.push_back("error");
-				break;
-			case CIso:
-				Result.push_back("isotope");
-				break;
-			case CFile:
-				Result.push_back("file name");
-				break;
-			case CSNR:
-				Result.push_back("SNR");
-				break;
-			case CDev:
-				Result.push_back("Deviation");
-				break;
-			case CC:
-				Result.push_back("Comment");
-				break;
-			default:
-				// do nothing for now
-				break;
-		}
-	}
+	for (auto it = headerVector.begin(); it != headerVector.end(); ++it) Result << convertHeaderEnumToHeaderString(*it);
 	return Result;
+}
+
+QString LineTableCore::convertHeaderEnumToHeaderString(const TableCols enumValue)
+{
+	switch (enumValue)
+	{
+		case CPN:
+			return "PN";
+			break;
+		case Cvs:
+			return "v'";
+			break;
+		case CJs:
+			return "J'";
+			break;
+		case Cvss:
+			return "v''";
+			break;
+		case CJss:
+			return "J''";
+			break;
+		case CF:
+			return "FC";
+			break;
+		case CWN:
+			return "wave number";
+			break;
+		case Cerr:
+			return "error";
+			break;
+		case CIso:
+			return "isotope";
+			break;
+		case CFile:
+			return "file name";
+			break;
+		case CSNR:
+			return "SNR";
+			break;
+		case CDev:
+			return "Deviation";
+			break;
+		case CC:
+			return "Comment";
+			break;
+		case CFCF:
+			return "calc. rel. int.";
+			break;
+		case CEUp:
+			return "E_UpTerm";
+			break;
+		case CEav:
+			return "E_avarage";
+			break;
+		case CEUma:
+			return "E_Up - E_av";
+			break;
+		case CEdJ:
+			return "E/(J*(J+1))";
+			break;
+		case CCalc:
+			return "Calc";
+			break;
+		case COmC:
+			return "obs-calc";
+			break;
+		default:
+			return "";
+			break;
+	}
 }
 
 std::vector<LineTableCore::TableCols> LineTableCore::convertHeaderStringsToColumnVector(const QStringList& headerStrings)
@@ -202,8 +214,46 @@ LineTableBaseData * LineTableCore::convertStringArrayToLineTableBaseData(const Q
 
 void LineTableCore::setColumnCount(const int count)
 {
-	beginInsertColumns(QModelIndex(), columnCount(), count);
-	endInsertColumns();
+	if (count < mColumns.size())
+	{
+		beginRemoveColumns(QModelIndex(), count, columnCount());
+		mColumns.resize(count);
+		endRemoveColumns();
+	}
+	else if (count > mColumns.size())
+	{
+		beginInsertColumns(QModelIndex(), columnCount(), count);
+		if (mColumns.size() == CPN) mColumns.push_back(CPN);
+		if (mColumns.size() == Cvs) mColumns.push_back(Cvs);
+		if (mColumns.size() == CJs) mColumns.push_back(CJs);
+		if (mColumns.size() == Cvss) mColumns.push_back(Cvss);
+		if (mColumns.size() == CJss) mColumns.push_back(CJss);
+		int F=0;
+		if (mColumns.size() == CF)
+		{
+			for (auto it = mData.begin(); it != mData.end(); ++it) if (reinterpret_cast<LineTableBaseData*>(*it)->F >= 0)
+			{
+				F=1;
+				break;
+			}
+			if (0 == F) mColumns.push_back(CF);
+		}
+		if (mColumns.size() + F == CWN) mColumns.push_back(CWN);
+		if (mColumns.size() + F == Cerr) mColumns.push_back(Cerr);
+		if (mColumns.size() + F == CIso) mColumns.push_back(CIso);
+		if (mColumns.size() + F == CFile) mColumns.push_back(CFile);
+		if (mColumns.size() + F == CSNR) mColumns.push_back(CSNR);
+		if (mColumns.size() + F == CDev) mColumns.push_back(CDev);
+		if (mColumns.size() + F == CC) mColumns.push_back(CC);
+		if (mColumns.size() + F == CFCF) mColumns.push_back(CFCF);
+		if (mColumns.size() + F == CEUp) mColumns.push_back(CEUp);
+		if (mColumns.size() + F == CEav) mColumns.push_back(CEav);
+		if (mColumns.size() + F == CEUma) mColumns.push_back(CEUma);
+		if (mColumns.size() + F == CEdJ) mColumns.push_back(CEdJ);
+		if (mColumns.size() + F == CCalc) mColumns.push_back(CCalc);
+		if (mColumns.size() + F == COmC) mColumns.push_back(COmC);
+		endInsertColumns();
+	}
 }
 
 bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)
@@ -571,9 +621,10 @@ int LineTableCore::columnCount(const QModelIndex &parent) const
 QVariant LineTableCore::data(const QModelIndex &index, int role) const
 {
 	int row = index.row(), column = index.column(), numDigits;
+	if (0 > row || row >= mData.size() || 0 > column || mColumns.size() <= column) return QVariant();
 	if (role == Qt::DecorationRole)
 	{
-		if (column == fdcIso && nullptr != molecule)
+		if ((column == 0 || mColumns[column] == CIso) && nullptr != molecule)
 		{
 			if (nullptr == mData[row]->IsoIcon)
 			{
@@ -583,48 +634,58 @@ QVariant LineTableCore::data(const QModelIndex &index, int role) const
 			}
 			return *mData[row]->IsoIcon;
 		}
-		if (row >= NSources) return *NewPix;
+		if (row > mData.size() - lTab->getNumNewLines()) return *NewPix;
 	}
 	if (role == Qt::TextAlignmentRole)
 	{
-		if (column == fdcSource || column == fdcFile || column == fdcLineElState) return Qt::AlignLeft;
+		if (mColumns[column] == CFile || mColumns[column] == CC) return Qt::AlignLeft;
 		return Qt::AlignRight;
 	}
 	if (role != Qt::DisplayRole && role != Qt::EditRole) return QVariant();
-	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(mData[row]->uncert);
-	switch (column)
+	if (mColumns[column] == CWN || mColumns[column] == Cerr || mColumns[column] == CDev || mColumns[column] == CEUp || mColumns[column] == CEav || mColumns[column] == CEUma
+		 || mColumns[column] == CEdJ || mColumns[column] == CCalc || mColumns[column] == COmC) numDigits = getNumDecimalPlaces(mData[row]->uncertainty);
+	switch (mColumns[column])
 	{
-		case fdcIso:
-			return mData[row]->isotope;
-		case fdcv:
-			return mData[row]->v;
-		case fdcJ:
-			return mData[row]->J;
-		case fdcvs:
-			return mData[row]->vs.c_str();
-		case fdcJs:
+		case CPN:
+			return mData[row]->progressionNumber;
+		case Cvs:
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->vs;
+		case CJs:
 			return mData[row]->Js;
-		case fdcSource:
-			return mData[row]->source.c_str();
-		case fdcProg:
-			return mData[row]->prog;
-		case fdcFile:
-			return mData[row]->file.c_str();
-		case fdcEnergy:
-			if (!RWError.isEmpty())
-			{
-				numDigits = -int(floor(log10(mData[row]->uncert)));
-				if (numDigits < 4) numDigits = 4;
-			}
-			return QString::number(mData[row]->energy, 'f', numDigits);
-		case fdcUncert:
-			return QString::number(mData[row]->uncert, 'f', numDigits);
-		case fdcObsCalc:
-			return QString::number(mData[row]->obs_calc, 'f', numDigits);
-		case fdcDevR:
-			return QString::number(mData[row]->devR, 'f', 3);
-		case fdcLineElState:
-			return mData[row]->secondState.c_str();
+		case Cvss:
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->vss;
+		case CJss:
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->Jss;
+		case CF:
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->F;
+		case CWN:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->waveNumber, 'f', numDigits);
+		case Cerr:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->uncertainty, 'f', numDigits);
+		case CIso:
+			return mData[row]->isotope;
+		case CFile:
+			return mData[row]->file;
+		case CSNR:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->SNR, 'f', 3);
+		case CDev:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->obsMinusCalc, 'f', numDigits);
+		case CC:
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
+		case CFCF:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->FCF, 'f', 2);
+		case CEUp:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->upperEnergy, 'f', numDigits);
+		case CEav:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->averageUpperEnergy, 'f', numDigits);
+		case CEUma:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->diffToAverageEnergy, 'f', numDigits);
+		case CEdJ:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->energyDiffToNextJ, 'f', numDigits);
+		case CCalc:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->calculatedEnergy, 'f', numDigits);
+		case COmC:
+			return QString::number(reinterpret_cast<LineTableBaseData*>(mData[row])->diffToCalculatedEnergy, 'f', numDigits);
 		default:
 			return QVariant();
 			break;
@@ -635,46 +696,68 @@ QVariant LineTableCore::data(const QModelIndex &index, int role) const
 bool LineTableCore::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (role != Qt::EditRole) return false;
-	switch (index.column())
+	if (index.column() < 0 || index.column() >= mColumns.size() || index.row() < 0 || index.row() > mData.size()) return false;
+	switch (mColumns[index.column()])
 	{
-		case fdcIso:
-			mData[index.row()]->isotope = static_cast<ushort>(value.toUInt());
+		case CPN:
+			mData[index.row()]->isotope = value.toInt();
 			break;
-		case fdcv:
-			mData[index.row()]->v = static_cast<ushort>(value.toUInt());
+		case Cvs:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->vs = value.toInt();
 			break;
-		case fdcJ:
-			mData[index.row()]->J = static_cast<ushort>(value.toUInt());
+		case CJs:
+			mData[index.row()]->Js = value.toInt();
 			break;
-		case fdcvs:
-			mData[index.row()]->vs = value.toString().toStdString();
+		case Cvss:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->vss = value.toInt();
 			break;
-		case fdcJs:
-			mData[index.row()]->Js = static_cast<ushort>(value.toUInt());
+		case CJss:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->Jss = value.toInt();
 			break;
-		case fdcSource:
-			mData[index.row()]->source = value.toString().toStdString();
+		case CF:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->F = value.toInt();
 			break;
-		case fdcProg:
-			mData[index.row()]->prog = value.toInt();
+		case CWN:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->waveNumber = value.toDouble();
 			break;
-		case fdcFile:
-			mData[index.row()]->file = value.toString().toStdString();
+		case Cerr:
+			mData[index.row()]->uncertainty = value.toDouble();
 			break;
-		case fdcEnergy:
-			mData[index.row()]->energy = value.toDouble();
+		case CIso:
+			mData[index.row()]->isotope = value.toInt();
 			break;
-		case fdcUncert:
-			mData[index.row()]->uncert = value.toDouble();
+		case CFile:
+			mData[index.row()]->file = value.toString();
 			break;
-		case fdcObsCalc:
-			mData[index.row()]->obs_calc = value.toDouble();
+		case CSNR:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->SNR = value.toDouble();
 			break;
-		case fdcDevR:
-			mData[index.row()]->devR = value.toFloat();
+		case CDev:
+			mData[index.row()]->obsMinusCalc = value.toDouble();
 			break;
-		case fdcLineElState:
-			mData[index.row()]->secondState = value.toString().toStdString();
+		case CC:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->Comment = value.toString();
+			break;
+		case CFCF:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->FCF = value.toDouble();
+			break;
+		case CEUp:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->upperEnergy = value.toDouble();
+			break;
+		case CEav:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->averageUpperEnergy = value.toDouble();
+			break;
+		case CEUma:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->diffToAverageEnergy = value.toDouble();
+			break;
+		case CEdJ:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->energyDiffToNextJ = value.toDouble();
+			break;
+		case CCalc:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->calculatedEnergy = value.toDouble();
+			break;
+		case COmC:
+			reinterpret_cast<LineTableBaseData*>(mData[index.row()])->diffToCalculatedEnergy = value.toDouble();
 			break;
 		default:
 			return false;
@@ -690,41 +773,156 @@ QVariant LineTableCore::headerData(int section, Qt::Orientation orientation, int
 {
 	if (role != Qt::DisplayRole) return QVariant();
 	if (orientation == Qt::Vertical) return section;
-	TableCols column = mColumns[section];
-	switch (column)
-	{
-		case CPN:
-			return "PN";
-		case Cvs:
-			return "v'";
-		case CJs:
-			return "J'";
-		case Cvss:
-			return "v''";
-		case CJss:
-			return "J''";
-		case CF:
-			return "FC";
-		case CWN:
-			return "wave number";
-		case Cerr:
-			return "error";
-		case CIso:
-			return "isotope";
-		case CFile:
-			return "file name";
-		case CSNR:
-			return "SNR";
-		case CDev:
-			return "Deviation";
-		case CC:
-			return "Comment";
-		case CFCF:
-			return "calc. rel. int.";
-		default:
-			return QVariant();
-			break;
-	}
+	if (0 <= section && mColumns.size() > section) return convertHeaderEnumToHeaderString(mColumns[section]);
 	return QVariant();
 }
 
+int LineTableCore::getMarkedLine(const Marker& marker, const QString SFN) const
+{
+	int n, RC = mData.size();
+	for (n=0; n < RC; ++n)
+	{
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[n]);
+		if (data->file.indexOf(SFN) != -1 && marker.Iso == (data->isotope - 1) / 10 && marker.FC == data->F && marker.vs == data->vs && marker.Js == data->Js
+			&& marker.vss == data->vss && marker.Jss == data->Jss && fabs(marker.Line[0] - data->waveNumber) <= 1e-3) return n;
+	}
+}
+
+void LineTableCore::AddMarked(Marker ** Lines, const Marker* const LaserLine, const int AnzahlMarker, int& Offset, int &NpProg, const int MaxPN, const QString& SpektFile)
+{
+	for (int n=0; n < AnzahlMarker; ++n)
+	{
+		//printf("i=%d, n=%d, N=%d\n", Offset, n, N);
+		if (n>0 && (Lines[n]->vs != Lines[n-1]->vs || Lines[n]->Iso != Lines[n-1]->Iso
+				  || Lines[n]->Js != Lines[n-1]->Js)) ++NpProg;
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[Offset + n]);
+	    data->progressionNumber = MaxPN + NpProg;
+		if (Lines[n]->DisplayData)
+		{
+			data->vs = Lines[n]->vs;
+			data->Js = Lines[n]->Js;
+			data->vss = Lines[n]->vss;
+			data->Jss = Lines[n]->Jss;
+			data->isotope = 10 * (Lines[n]->Iso + 1);
+			data->F = Lines[n]->FC;
+		}
+		else
+		{
+			data->vs = -1;
+			data->Js = -1;
+			data->vss = -1;
+			data->Jss = -1;
+			data->F = -1;
+			data->isotope = 10;
+		}
+		data->waveNumber = Lines[n]->Line[0];
+		data->uncertainty = (Lines[n]->DisplayData && Lines[n]->uncertainty > 0.0 ? Lines[n]->uncertainty : 0.005);
+    	data->file = SpektFile;
+		data->SNR = Lines[n]->SNR;
+		data->obsMinusCalc = Lines[n]->DD;
+		QString Buffer;
+		if (Lines[n]->satellite) Buffer = "satellite";
+		else if (Lines[n] == LaserLine) Buffer = "laser";
+		else Buffer = "";
+		if (Lines[n]->overlap) Buffer += (Buffer.isEmpty() ? "overlap" : ",overlap");
+		data->Comment = Buffer;
+    }
+}
+
+void LineTableCore::ShowUpTerm(const int* const SO, const int MCT, const int* const CT, const int* const IsoT, double ****ELU, const int Mv, const int MJ, double ****UT,
+							   const int mvs, const int Jeo, const int* const UIsoT, const float S, const int UNC, const int UMCT, const int* const UCT)
+{
+	int i, j, v, c, I, n, N = mData.size(), NI = molecule->getNumIso();
+	int **Z = CreateInt(N, 6), li[2] = {-1, -1};
+	double E, ES, dE, *T = new double[N];
+	QString Buffer, SpektFile;
+	for (i=0; i<N; ++i)
+    {
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[SO[i]]);
+		if ((Buffer = mData[SO[i]]->file).isEmpty()) mData[SO[i]]->file = SpektFile;
+		else if (Buffer.left(6) == " laser")
+		{
+		    for (j=6; Buffer[j] == ' '; ++j) ;
+	    	SpektFile = Buffer.right(Buffer.length() - j + 1);
+		}
+		else SpektFile = Buffer;
+		j = data->Jss;
+		v = data->vss;
+		Z[i][0] = data->isotope;
+		I = (Z[i][0] - 1) / 10;
+		Z[i][1] = data->vs;
+		Z[i][2] = data->Js;
+		Z[i][3] = abs(Z[i][2] - j);
+		Z[i][4] = j;
+		Z[i][5] = data->progressionNumber;
+		c = data->F;
+		c = (c >= 0 && c <= MCT ? (CT[c] >= 0 ? CT[c] : 0) : 0);
+		//printf("i=%d, I=%d, v=%d, J=%d\n", i, I, v, j);
+		E = ((I >= 0 && I < NI && IsoT[I] >= 0 && v >= 0 && v <= Mv && j >= 0
+				&& j <= MJ && ELU[c][IsoT[I]][v][j] != 0.0) ?
+					data->waveNumber + ELU[c][IsoT[I]][v][j] : 0.0);
+		data->upperEnergy = E;
+		T[i] = E;
+    }
+	//printf("Vor Schleife2\n");
+    for (E=ES=0.0, i=n=0; n<=N; n++)
+    {
+		//printf("E=%f, n=%d, N=%d, i=%d\n", E, n, N, i);
+		if (n<N && n>i && (Z[i][0] != Z[n][0] || Z[i][1] != Z[n][1] || Z[i][2] != Z[n][2]
+				  || Z[i][3] != Z[n][3] || Z[i][5] != Z[n][5]))
+		{
+	    	E /= ES;
+	    	j = li[Z[n-1][3]];
+	    	if (j>0 && Z[j][0] == Z[n-1][0] && Z[j][1] == Z[n-1][1] && Z[j][2] == Z[n-1][2] - 1) dE = (E - T[j]) / (2 * Z[n-1][2]);
+	    	else dE = 0.0;
+	    	for (j=i; j<n; ++j)
+	    	{
+				LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[SO[j]]);
+				/*if (n==1482)
+					printf("Z[%d][0]=%d, Z[%d][1]=%d, Z[%d][2]=%d, Z[%d][4]=%d\n",
+						   j, Z[j][0], j, Z[j][1], j, Z[j][2], j, Z[j][4]);*/
+				data->averageUpperEnergy = E;
+				data->diffToAverageEnergy = T[j] - E;
+				if (dE > 0.0) data->energyDiffToNextJ = dE;
+				I = (Z[j][0] - 1) / 10;
+				if (T[j] != 0.0 && UT != 0 && Z[j][1] >= 0 && Z[j][1] <= mvs
+					&& Z[j][2] <= Jeo && UIsoT[I] >= 0)
+				{
+					//printf("Beginn Neu, j=%d\n", j);
+					v = data->vss;
+
+					//printf("I=%d, Z[j][0]=%d, Z[j][1]=%d, Z[j][2]=%d, Z[j][4]=%d, v=%d\n",
+						//   I, Z[j][0], Z[j][1], Z[j][2], Z[j][4], v);
+					//printf("ELU=%f, eT=%f\n", ELU[I][v][Z[j][4]], eT[I][Z[j][1]][Z[j][2]]);
+					if (S==0.0) c = (Z[j][2] != Z[j][4] || UNC == 1 ? 0 : 1);
+					else
+					{
+						c = reinterpret_cast<LineTableBaseData*>(mData[SO[i]])->F;
+						c = (c >= 0 && c <= UMCT ? (UCT[c] >= 0 ? UCT[c] : 0) : 0);
+					}
+					double Calc = UT[c][UIsoT[I]][Z[j][1]][Z[j][2]];
+					//printf("E=%f, Calc=%f\n", E, Calc);
+					data->calculatedEnergy = Calc;
+					data->diffToCalculatedEnergy = E - Calc;
+					//printf("Ende Neu\n");
+				}
+	    	}
+	    	//if (n==1482) printf("n=%d, i=%d\n", n, i);
+	    	if (n < N)
+	    	{
+				li[Z[n-1][3]] = n - 1;
+				i = n;
+				T[n-1] = E;
+				E = ES = 0.0;
+	    	}
+		}
+		if (n<N)
+		{
+			double EF = mData[SO[n]]->uncertainty;
+			EF = 1.0 / (EF * EF);
+			E += T[n] * EF;
+			ES += EF;
+		}
+    }
+    delete[] T;
+}

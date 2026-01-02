@@ -12,6 +12,7 @@
 #include "Transition.h"
 #include "tableviewwindow.h"
 #include "linetablesortfunctions.h"
+#include "linetablecore.h"
 
 #include <qmessagebox.h>
 
@@ -23,7 +24,6 @@ struct IsoTab;
 class Spektrum;
 class TableLine;
 class TermEnergy;
-class LineTableCore;
 
 struct vsOListElement;
 
@@ -131,12 +131,12 @@ public:
 
     inline bool checkAllConnections()
     {
-        return TableWindow::checkAllConnections(CFile);
+        return TableWindow::checkAllConnections(LineTableCore::CFile);
     }
 
     inline void shrinkAllSpectRefs()
     {
-        TableWindow::shrinkAllSpectRefs(CFile);
+        TableWindow::shrinkAllSpectRefs(LineTableCore::CFile);
     }
 
     inline void sortByProgNumber()
@@ -147,6 +147,11 @@ public:
     inline QString getInfile() const
 	{
 		return InFile;
+	}
+
+	inline int getNumNewLines() const
+	{
+		return NpL;
 	}
 	
 public slots:

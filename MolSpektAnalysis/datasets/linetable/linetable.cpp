@@ -1857,7 +1857,7 @@ void LineTable::AddMarked(int AnzahlMarker, Marker *marker, Marker *LaserLine, Q
 	//printf("LineTable::AddMarked Anzahl Zeilen=%d\n", Tab->rowCount());
 	AcceptAssignments(SpektFile, false);
     if (marker == NULL) return;
-	int i, j, n, N, k=0, l, c, ColC = Tab->columnCount(), RC = Tab->rowCount();
+	int i, j, n, N, k=0, l, c, RC = mCore->rowCount(), ColC = mCore->columnCount();
 	ElState *LState, *UState;
 	if (transition == 0) 
 	{
@@ -1875,34 +1875,26 @@ void LineTable::AddMarked(int AnzahlMarker, Marker *marker, Marker *LaserLine, Q
 	j = (j > 0 ? j : SpektFile.length()) - i;
 	QString Buffer, SFN = SpektFile.mid(i, j);
 	printf("%s\n", SFN.toLatin1().data());
-    QPixmap Pix(10, 10);
-    QPainter P(&Pix);
-    P.setPen(QColor(255, 0, 0));
-    P.setFont(QFont("Arial", 10));
-    P.drawText(0, 10, "N");
 	//printf("Vor Schleife\n");
-	for (N=0, i=0; i < AnzahlMarker; i++) 
-		if (marker[i].Marked && marker[i].LState == LState && marker[i].UState == UState) N++;
+	for (N=0, i=0; i < AnzahlMarker; ++i)
+		if (marker[i].Marked && marker[i].LState == LState && marker[i].UState == UState) ++N;
 		//if (i == 19765 || i == 19766) printf("new lines found %d!\n", i);
 	//}
 	//printf("N=%d, LState=%d, UState=%d\n", N, LState, UState);
 	Marker *Lines[N], *LBuff = marker;
-	Tab->clearSelection();
-	for (i=j=0; i < AnzahlMarker; i++) 
+	DeselectEverything();
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	for (i=j=0; i < AnzahlMarker; ++i)
 		if (marker[i].Marked && marker[i].LState == LState && marker[i].UState == UState)
 	{ 
-		for (n=0; (n < RC ? Tab->item(n, CFile)->text().indexOf(SFN) == -1 || marker[i].Iso != (Tab->item(n, CIso)->text().toInt() - 1) / 10 
-				|| marker[i].FC != Tab->item(n, CF)->text().toInt() || marker[i].vs != Tab->item(n, Cvs)->text().toInt()
-				|| marker[i].Js != Tab->item(n, CJs)->text().toInt() || marker[i].vss != Tab->item(n, Cvss)->text().toInt() 
-				|| marker[i].Jss != Tab->item(n, CJss)->text().toInt() 
-				|| fabs(marker[i].Line[0] - Tab->item(n, CWN)->text().toDouble()) > 1e-3 : false); n++) ;
-		if (n < RC) Tab->setRangeSelected(QTableWidgetSelectionRange(k=n, 0, n, ColC - 1), true);
+		ltc->getMarkedLine(marker[i], SFN);
+		if (n < RC) MarkLines(&(k=n), 1);
 		else Lines[j++] = marker + i;
 		marker[i].added = true;
 	}
 	if (j==0)
 	{
-		Tab->scrollToItem(Tab->item(k, 0));
+		scrollTo(k);
 		return;
 	}
 	NpL += (N=j);
@@ -1915,62 +1907,13 @@ void LineTable::AddMarked(int AnzahlMarker, Marker *marker, Marker *LaserLine, Q
 		Lines[i-1] = Lines[i];
 		Lines[i] = LBuff;
 	}
-	Tab->blockSignals(true);
- 	Tab->setRowCount((i = Tab->rowCount()) + N);
-	for (n=0; n<N; n++)
-	{
-	    //printf("i=%d, n=%d, N=%d\n", i, n, N);
-		if (n>0 ? Lines[n]->vs != Lines[n-1]->vs || Lines[n]->Iso != Lines[n-1]->Iso 
-				  || Lines[n]->Js != Lines[n-1]->Js : true) NpProg++;
-	    Tab->setItem(i, CPN, new QTableWidgetItem(Pix, QString::number(MaxPN + NpProg)));
-
-		if (Lines[n]->DisplayData)
-		{
-			Tab->setItem(i, Cvs, new QTableWidgetItem(Pix, 
-						 ("    " + QString::number(Lines[n]->vs)).right(4)));
-			Tab->setItem(i, CJs, new QTableWidgetItem(Pix,
-						 ("    " + QString::number(Lines[n]->Js)).right(4)));
-			Tab->setItem(i, Cvss, new QTableWidgetItem(Pix,
-						 ("    " + QString::number(Lines[n]->vss)).right(4)));
-			Tab->setItem(i, CJss, new QTableWidgetItem(Pix,
-						 ("    " + QString::number(Lines[n]->Jss)).right(4)));
-			Tab->setItem(i, CIso, new QTableWidgetItem(Pix, 
-						 ("    " + QString::number(10 * (Lines[n]->Iso + 1))).right(4)));
-			Tab->setItem(i, CF, new QTableWidgetItem(Pix, 
-						 ("    " + QString::number(Lines[n]->FC)).right(4)));
-		}
-		else 
-		{
-			Tab->setItem(i, Cvs, new QTableWidgetItem(Pix, "  -1"));
-			Tab->setItem(i, CJs, new QTableWidgetItem(Pix, "  -1"));
-			Tab->setItem(i, Cvss, new QTableWidgetItem(Pix, "  -1"));
-			Tab->setItem(i, CJss, new QTableWidgetItem(Pix, "  -1"));
-			Tab->setItem(i, CF, new QTableWidgetItem(Pix, "  -1"));
-			Tab->setItem(i, CIso, new QTableWidgetItem(Pix, "  10"));
-		}
-		k = (Lines[n]->Line[0] < 10000 ? 1 : 0);
-		if ((l = (Buffer = "      " + QString::number(Lines[n]->Line[0], 'g', 9 - k)).length() + k) 
-				   < 16)
-			Buffer += QString(".0000").right(16 - l);
-		Tab->setItem(i, CWN, new QTableWidgetItem(Pix, Buffer.right(15)));
-		Tab->setItem(i, Cerr, new QTableWidgetItem(Pix, 
-					 (Lines[n]->DisplayData && Lines[n]->uncertainty > 0.0 ? 
-						("          " + QString::number(Lines[n]->uncertainty, 'g', 6)).right(10) 
-						: "     0.005")));
-    	Tab->setItem(i, CFile, new QTableWidgetItem(Pix, SpektFile));
-		Tab->setItem(i, CSNR, new QTableWidgetItem(Pix, 
-							 ("    " + QString::number(Lines[n]->SNR, 'g', 5)).right(6)));
-		Tab->setItem(i, CDev, new QTableWidgetItem(Pix, 
-							 ("    " + QString::number(Lines[n]->DD, 'g', 5)).right(10)));
-		if (Lines[n]->satellite) Buffer = "satellite";
-		else if (Lines[n] == LaserLine) Buffer = "laser";
-		else Buffer = ""; 
-		if (Lines[n]->overlap) Buffer += (Buffer.isEmpty() ? "overlap" : ",overlap");
-		for (c = CC + 1; c < ColC; c++) Tab->setItem(i, c, new QTableWidgetItem());
-		Tab->setItem(i++, CC, new QTableWidgetItem(Pix, Buffer));
-    }
-	Tab->scrollToItem(Tab->item(i-1, 0));
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+ 	mCore->setRowCount((i = RC) + N);
+	ltc->AddMarked(Lines, LaserLine, AnzahlMarker, i, NpProg, MaxPN, SpektFile);
+	scrollTo(i-1);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 	//printf("Ende Addmarked, Anzahl Zeilen=%d\n", Tab->rowCount());
 }
@@ -1978,8 +1921,8 @@ void LineTable::AddMarked(int AnzahlMarker, Marker *marker, Marker *LaserLine, Q
 void LineTable::AcceptAssignments(QString SpektFile, bool accept)
 {
 	//printf("LineTable::AcceptAssignments\n");
-	QPixmap P;
-	int NR = Tab->rowCount(), NC = Tab->columnCount(), r1, r2, r3, rd, c, n, m, PN, lPN;
+	int NR = mCore->rowCount(), NC = mCore->columnCount(), r1, r2, r3, rd, c, n, m, PN, lPN;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	/*if (mSpectrum == SpektFile)
 	{
 		if (accept)
@@ -2003,29 +1946,25 @@ void LineTable::AcceptAssignments(QString SpektFile, bool accept)
 	}*/
 	if (accept)
 	{
-		for (r1 = r2 = NR - NpL; (r2 < NR ? Tab->item(r2, CFile)->text() != SpektFile : false); r2++) ;
-		for (r3 = r2; (r3 < NR ? Tab->item(r3, CFile)->text() == SpektFile : false); r3++) ;
+		for (r1 = r2 = NR - NpL; r2 < NR && ltc->getSourceFile(r2) != SpektFile; ++r2) ;
+		for (r3 = r2; r3 < NR && ltc->getSourceFile(r3) == SpektFile; ++r3) ;
 		if (r2 > r1 && r3 > r2)
 		{
-			Matrix<QTableWidgetItem*> B(rd = r3 - r2, NC);
-			for (n=0, m = r2; n < rd; n++, m++) for (c=0; c < NC; c++) 
-					B.R[n][c] = Tab->takeItem(m, c);
-			for (n = r3 - 1, m = r2 - 1; m >= r1; n--, m--) for (c=0; c < NC; c++)
-					Tab->setItem(n, c, Tab->takeItem(m, c));
-			for (n = r1, m=0; m < rd; n++, m++) for (c=0; c < NC; c++)
-					Tab->setItem(n, c, B.R[m][c]);
+			BaseData** B = new BaseData*[rd = r3 - r2];
+			for (n=0, m = r2; n < rd; n++, m++) B[n] = ltc->getData(m);
+			for (n = r3 - 1, m = r2 - 1; m >= r1; n--, m--) ltc->setRow(ltc->getData(m), n);
+			for (n = r1, m=0; m < rd; n++, m++) ltc->setRow(B[m], n);
 			r3 = (r2 = r1) + rd;
+			delete[] B;
 		}
-		if (r2 < r3) for (n=r2, PN = Tab->item(n, CPN)->text().toInt(), MaxPN++, NpProg--; n < r3; n++) 
+		if (r2 < r3) for (n=r2, PN = ltc->getProgression(n), ++MaxPN, --NpProg; n < r3; ++n)
 		{
-			if ((lPN = Tab->item(n, CPN)->text().toInt()) != PN) 
+			if ((lPN = ltc->getProgression(n)) != PN)
 			{
-				MaxPN++;
-				NpProg--;
+				++MaxPN;
+				--NpProg;
 			}
-			Tab->item(n, CPN)->setText(QString::number(MaxPN));
-			for (c=0; c < NC; c++) Tab->item(n, c)->setIcon(P);
-			//if ((r1 = Tab->item(n, 0)->text().toInt()) > MaxPN) MaxPN = r1;
+			ltc->setProgression(n, MaxPN);
 		}
 		NpL += r2 - r3;
 		emit DataChanged();
@@ -2033,11 +1972,9 @@ void LineTable::AcceptAssignments(QString SpektFile, bool accept)
 	else
 	{
 		//printf("NR = %d, NpL = %d\n", NR, NpL);
-		for (r1 = NR - NpL; (r1 < NR ? Tab->item(r1, CFile)->text() != SpektFile : false); r1++) ;
-		for (r2 = r1; (r2 < NR ? Tab->item(r2, CFile)->text() == SpektFile : false); r2++) ;
-		for (n = r1, m = r2; m < NR; n++, m++) for (c=0; c < NC; c++)
-				Tab->setItem(n, c, Tab->takeItem(m, c));
-		Tab->setRowCount(n);
+		for (r1 = NR - NpL; r1 < NR && ltc->getSourceFile(r1) != SpektFile; ++r1) ;
+		for (r2 = r1; r2 < NR && ltc->getSourceFile(r2) == SpektFile; ++r2) ;
+		for (n = r1, m = r2; m < NR; ++n, ++m) ltc->removeRow(n);
 		NpL += r1 - r2;
 	}
 	//printf("Ende AcceptAssignments\n");
@@ -2045,16 +1982,17 @@ void LineTable::AcceptAssignments(QString SpektFile, bool accept)
 
 void LineTable::TabSelChanged()
 {
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	int r, n, N, *Js, MJ, Mv, NIso, Jss, I, vss;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int r, n, N, *Js, MJ, Mv, NIso, Jss, I, vss, *Rows, NR;
 	bool UTA = true;
 	double *E, ****ELU = 0, uE;
 	ElState *LS;
 	TermTable *T;
-	if (Tab->columnCount() <= CEUp) UTA = false;
-	else for (r=N=0; r < SR.count(); r++) for (n = SR[r].topRow(); n <= SR[r].bottomRow(); n++)
+	table->getSelectedRows(Rows, NR);
+	if (ltc->columnCount() <= LineTableCore::CEUp) UTA = false;
+	else for (r=N=0; r < NR; ++r)
 	{
-		if (Tab->item(n, CEUp)->text().toDouble() > 0.0) N++;
+		if (ltc->getUpperEnergy(Rows[r]) > 0.0) ++N;
 		else UTA = false;
 	}
 	if (!UTA) if (transition != 0) if ((LS = transition->getLowerState()) != 0) if ((T = LS->getTermTable()) != 0)
@@ -2065,11 +2003,11 @@ void LineTable::TabSelChanged()
 		MJ = T->getMaxJ();
 		if (ELU != 0)
 		{
-			for (r=N=0; r < SR.count(); r++) for (n = SR[r].topRow(); n <= SR[r].bottomRow(); n++)
-				if ((I = (Tab->item(n, CIso)->text().toInt() - 1) / 10) < NIso 
-						&& (vss = Tab->item(n, Cvss)->text().toInt()) <= Mv
-						&& (Jss = Tab->item(n, CJss)->text().toInt()) < MJ) 
-					if (vss >= 0 && Jss >= 0 && I >= 0 ? ELU[0][I][vss][Jss] != 0.0 : false) N++;
+			for (r=N=0; r < NR; ++r)
+				if ((I = (ltc->getIso(Rows[r]) - 1) / 10) < NIso
+						&& (vss = ltc->get_vss(Rows[r])) <= Mv
+						&& (Jss = ltc->getJss(Rows[r])) < MJ)
+					if (vss >= 0 && Jss >= 0 && I >= 0 && ELU[0][I][vss][Jss] != 0.0) ++N;
 		}
 		else if (N>0) UTA = true;
 	}
@@ -2079,20 +2017,20 @@ void LineTable::TabSelChanged()
 		E = new double[N];
 		if (UTA)
 		{
-			for (r=N=0; r < SR.count(); r++) for (n = SR[r].topRow(); n <= SR[r].bottomRow(); n++)
-				if ((uE = Tab->item(n, CEUp)->text().toDouble()) > 0.0)
+			for (r=N=0; r < NR; ++r)
+				if ((uE = ltc->getUpperEnergy(Rows[r])) > 0.0)
 			{
-				Js[N] = Tab->item(n, CJs)->text().toInt();
-				E[N++] = Tab->item(n, CEUp)->text().toDouble();
+				Js[N] = ltc->getJs(Rows[r]);
+				E[N++] = ltc->getUpperEnergy(Rows[r]);
 			}
 		}
-		else for (r=N=0; r < SR.count(); r++) for (n = SR[r].topRow(); n <= SR[r].bottomRow(); n++)
-			if ((I = (Tab->item(n, CIso)->text().toInt() - 1) / 10) < NIso && (vss = Tab->item(n, Cvss)->text().toInt()) <= Mv
-					&& (Jss = Tab->item(n, CJss)->text().toInt()) < MJ)
+		else for (r=N=0; r < NR; ++r)
+			if ((I = (ltc->getIso(Rows[r]) - 1) / 10) < NIso && (vss = ltc->get_vss(Rows[r])) <= Mv
+					&& (Jss = ltc->getJss(Rows[r])) < MJ)
 				if (vss >= 0 && Jss >= 0 && I >= 0 ? ELU[0][I][vss][Jss] != 0.0 : false)
 		{
-			Js[N] = Tab->item(n, CJs)->text().toInt();
-			E[N++] = Tab->item(n, CWN)->text().toDouble() + ELU[0][I][vss][Jss];
+			Js[N] = ltc->getJs(Rows[r]);
+			E[N++] = ltc->getWaveNumber(Rows[r]) + ELU[0][I][vss][Jss];
 		}
 	}
 	else
@@ -2113,6 +2051,7 @@ void LineTable::TabSelChanged()
 		NSel = N;
 		emit SelChanged();
 	}
+	delete[] Rows;
 }
 
 void LineTable::getSelData(int *&Js, double *&E, int &N)
@@ -2124,7 +2063,8 @@ void LineTable::getSelData(int *&Js, double *&E, int &N)
 
 void LineTable::getViewnE(int*& Js, double*& E, int& N)
 {
-	int NR = Tab->rowCount();
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int NR = ltc->rowCount();
 	TermTable *TT = (transition != 0 ? (transition->getLowerState() != 0 ? transition->getLowerState()->getTermTable() : 0) : 0);
 	if (TT == 0)
 	{
@@ -2137,18 +2077,18 @@ void LineTable::getViewnE(int*& Js, double*& E, int& N)
 	int n, i, J, v, NIso = TT->getNumIso(), Mv = TT->getMaxv(), MJ = TT->getMaxJ();
 	bool *VR = new bool[NR];
 	getViewnRows(VR);
-	for (n=N=0; n < NR; n++) if (VR[n]) N++;
+	for (n=N=0; n < NR; ++n) if (VR[n]) ++N;
 	Js = new int[N];
 	E = new double[N];
-	for (n=N=0; n < NR; n++) if (VR[n])
+	for (n=N=0; n < NR; ++n) if (VR[n])
 	{
-		i = Tab->item(CIso, n)->text().toInt();
-		J = Tab->item(CJss, n)->text().toInt();
-		v = Tab->item(Cvss, n)->text().toInt();
+		i = ltc->getIso(n);
+		J = ltc->getJss(n);
+		v = ltc->get_vss(n);
 		if (i>=0 && i < NIso && J>=0 && J <= MJ && v >= 0 && v <= Mv)
 		{
-			Js[N] = Tab->item(CJs, n)->text().toInt();
-			E[N++] = Tab->item(CWN, n)->text().toDouble() + ELU[0][i][v][J];
+			Js[N] = ltc->getJs(n);
+			E[N++] = ltc->getWaveNumber(n) + ELU[0][i][v][J];
 		}
 	}
 	delete[] VR;
@@ -2157,35 +2097,32 @@ void LineTable::getViewnE(int*& Js, double*& E, int& N)
 bool LineTable::ShowUpTerm()
 {
 	//printf("LineTable::ShowUpTerm\n");
-	if (molecule == 0 || transition == 0)
+	if (molecule == nullptr || transition == nullptr)
 	{
-		QMessageBox::information(this, tr("QT4MolSpektAn"), 
-						tr("The line table has to be assigned to a molecule and a transition first!"));
+		QMessageBox::information(this, "QT4MolSpektAn", tr("The line table has to be assigned to a molecule and a transition first!"));
 		return false;
 	}
 	ElState *LS = transition->getLowerState();
-	if (LS == 0)
+	if (LS == nullptr)
 	{
-		QMessageBox::information(this, tr("QT4MolSpektAn"), 
-						 tr("The transition has to be assigned to a lower electronic state first!"));
+		QMessageBox::information(this, "QT4MolSpektAn", tr("The transition has to be assigned to a lower electronic state first!"));
 		return false;
 	}
 	TermTable *TT = LS->getTermTable();
 	DunTable *DT;
-	if (TT == 0) 
+	if (TT == nullptr)
 	{
 		DT = LS->getDunTable();
-		if (DT != 0) DT->calcTermEnergies(TT);
+		if (DT != nullptr) DT->calcTermEnergies(TT);
 	}
-	if (TT == 0)
+	if (TT == nullptr)
 	{
-		QMessageBox::information(this, tr("QT4MolSpektAn"), 
-	tr("A term energy table or a Dunham coefficient set for the lower state has to be loaded first!"));
+		QMessageBox::information(this, "QT4MolSpektAn", tr("A term energy table or a Dunham coefficient set for the lower state has to be loaded first!"));
 		return false;
 	}
-	double ****UT = 0, ****ELU = TT->getData(), mvs = 0, Jeo = 0;
+	double ****UT = nullptr, ****ELU = TT->getData(), mvs = 0, Jeo = 0;
 	int MJ = TT->getMaxJ(), Mv = TT->getMaxv(), *CT, MCT, *IsoT = TT->getIsoT();
-	int *UIsoT = 0, *UCT = 0, UMCT = 0, UNC = 0;
+	int *UIsoT = nullptr, *UCT = nullptr, UMCT = 0, UNC = 0;
 	float S = 0.0;
 	TT->getCompT(MCT, CT);
 	ElState *US = transition->getUpperState();
@@ -2204,120 +2141,25 @@ bool LineTable::ShowUpTerm()
 			UNC = TT->getNumComp();
 		}
 	}
-	int n, i, c, I, j, v, N = Tab->rowCount(), NI = (Iso != 0 ? Iso->numIso : 0);
-    int **Z = CreateInt(N, 6), li[2] = {-1, -1};
+	int n, j, N = mCore->rowCount(), NI = (Iso != 0 ? Iso->numIso : 0);
+    int **Z = CreateInt(N, 6);
 	QString SpektFile, Buffer;
-//    bool swaped = true;
-    double E, T[N], dE, Calc, ES, EF;
 	if (SO != 0) delete[] SO;
 	int *LSO = heapSort(isnSPG);
 	SO = new int[N];
 	for (n=0; n<N; n++) SO[LSO[n]] = n;
 	delete[] LSO;
 	NSO = N;
-	Tab->blockSignals(true);
-	if (UT != 0) Tab->setColumnCount(COmC+1);
-	else Tab->setColumnCount(CEdJ+1);
-	HeaderLabels << "calc. rel. int." << "E_UpTerm" << "E_avarage" << "E_Up - E_av" << "E/(J*(J+1))";
-	if (UT != 0) HeaderLabels << "Calc" << "obs-calc";
-	Tab->setHorizontalHeaderLabels(HeaderLabels);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	if (UT != 0) ltc->setColumnCount(LineTableCore::COmC+1);
+	else ltc->setColumnCount(LineTableCore::CEdJ+1);
 	//printf("Vor Schleife1\n");
-    for (i=0; i<N; i++)
-    {
-		if ((Buffer = Tab->item(SO[i], CFile)->text()).isEmpty()) 
-			Tab->item(SO[i], CFile)->setText(SpektFile);
-		else if (Buffer.left(6) == " laser")
-		{
-		    for (j=6; Buffer[j] == ' '; j++) ;
-	    	SpektFile = Buffer.right(Buffer.length() - j + 1);
-		}
-		else SpektFile = Buffer;
-		j = Tab->item(SO[i], CJss)->text().toInt();
-		v = Tab->item(SO[i], Cvss)->text().toInt();
-		Z[i][0] = Tab->item(SO[i], CIso)->text().toInt();
-		I = (Z[i][0] - 1) / 10;
-		Z[i][1] = Tab->item(SO[i], Cvs)->text().toInt();
-		Z[i][2] = Tab->item(SO[i], CJs)->text().toInt();
-		Z[i][3] = (int)fabs(Z[i][2] - j);
-		Z[i][4] = j;
-		Z[i][5] = Tab->item(SO[i], CPN)->text().toInt();
-		c = Tab->item(SO[i], CF)->text().toInt();
-		c = (c >= 0 && c <= MCT ? (CT[c] >= 0 ? CT[c] : 0) : 0);
-		//printf("i=%d, I=%d, v=%d, J=%d\n", i, I, v, j);
-		E = (((I >= 0 && I < NI ? IsoT[I] >= 0 : false) && v >= 0 && v <= Mv && j >= 0 
-				&& j <= MJ ? ELU[c][IsoT[I]][v][j] != 0.0 : false)? 
-					Tab->item(SO[i], CWN)->text().toDouble() + ELU[c][IsoT[I]][v][j] : 0.0);
-		Tab->setItem(SO[i], CEUp, new QTableWidgetItem(QString::number(E, 'g', 9)));
-		T[i] = E;
-    }
-	//printf("Vor Schleife2\n");
-    for (E=ES=0.0, i=n=0; n<=N; n++)
-    {
-		//printf("E=%f, n=%d, N=%d, i=%d\n", E, n, N, i);
-		if (n < N ? (n > i && (Z[i][0] != Z[n][0] || Z[i][1] != Z[n][1] || Z[i][2] != Z[n][2] 
-				  || Z[i][3] != Z[n][3] || Z[i][5] != Z[n][5])) : true)
-		{
-	    	E /= ES;
-	    	j = li[Z[n-1][3]];
-	    	if ((j>0 ? Z[j][0] == Z[n-1][0] && Z[j][1] == Z[n-1][1] && 
-					   Z[j][2] == Z[n-1][2] - 1 : false)) dE = (E - T[j]) / (2 * Z[n-1][2]);
-	    	else dE = 0.0;
-	    	for (j=i; j<n; j++) 
-	    	{
-				/*if (n==1482) 
-					printf("Z[%d][0]=%d, Z[%d][1]=%d, Z[%d][2]=%d, Z[%d][4]=%d\n", 
-						   j, Z[j][0], j, Z[j][1], j, Z[j][2], j, Z[j][4]);*/
-				Tab->setItem(SO[j], CEav, 
-							 new QTableWidgetItem(QString::number(E, 'g', 9)));
-				Tab->setItem(SO[j], CEUma, 
-							 new QTableWidgetItem(QString::number(T[j] - E, 'g', 6)));
-				if (dE > 0.0) 
-					Tab->setItem(SO[j], CEdJ, 
-								 new QTableWidgetItem(QString::number(dE, 'g', 6)));
-				I = (Z[j][0] - 1) / 10;
-				if (T[j] != 0.0 && UT != 0 && Z[j][1] >= 0 && Z[j][1] <= mvs 
-					&& Z[j][2] <= Jeo && UIsoT[I] >= 0)
-				{
-					//printf("Beginn Neu, j=%d\n", j);
-					v = Tab->item(SO[j], Cvss)->text().toInt();
-					
-					//printf("I=%d, Z[j][0]=%d, Z[j][1]=%d, Z[j][2]=%d, Z[j][4]=%d, v=%d\n", 
-						//   I, Z[j][0], Z[j][1], Z[j][2], Z[j][4], v);
-					//printf("ELU=%f, eT=%f\n", ELU[I][v][Z[j][4]], eT[I][Z[j][1]][Z[j][2]]);
-					if (S==0.0) c = (Z[j][2] != Z[j][4] || UNC == 1 ? 0 : 1); 
-					else
-					{
-						c = Tab->item(SO[i], CF)->text().toInt();
-						c = (c >= 0 && c <= UMCT ? (UCT[c] >= 0 ? UCT[c] : 0) : 0);
-					}
-					Calc = UT[c][UIsoT[I]][Z[j][1]][Z[j][2]];
-					//printf("E=%f, Calc=%f\n", E, Calc);
-					Tab->setItem(SO[j], CCalc, 
-								 new QTableWidgetItem(QString::number(Calc, 'g', 9)));
-					Tab->setItem(SO[j], COmC, 
-								 new QTableWidgetItem(QString::number(E - Calc, 'g', 6)));
-					//printf("Ende Neu\n");
-				}
-	    	}
-	    	//if (n==1482) printf("n=%d, i=%d\n", n, i);
-	    	if (n < N)
-	    	{
-				li[Z[n-1][3]] = n - 1;
-				i = n;
-				T[n-1] = E;
-				E = ES = 0.0;
-	    	}
-		}
-		if (n<N) 
-		{
-			EF = Tab->item(SO[n], Cerr)->text().toDouble();
-			EF = 1.0 / (EF * EF);
-			E += T[n] * EF;
-			ES += EF;
-		}
-    }
+	ltc->ShowUpTerm(SO, MCT, CT, IsoT, ELU, Mv, MJ, UT, mvs, Jeo, UIsoT, S, UNC, UMCT, UCT);
 	//printf("Vor Destroy\n");
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
     Destroy(Z, N);
 	//printf("Ende ShowUpTerm\n");
 	Changed();
