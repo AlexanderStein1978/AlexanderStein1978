@@ -926,3 +926,72 @@ void LineTableCore::ShowUpTerm(const int* const SO, const int MCT, const int* co
     }
     delete[] T;
 }
+
+void LineTableCore::ShowUpTermtable(const int *const SO, int &n, QString ** Data)
+{
+	int i, j=0, k, N=0, NSO = mData.size(), Iso = 0, vs = 0, iJs, Js = 0, Jss = 0, iJss, AD, vss;
+	double EAV, SqSum = 0.0, Diff, MinE, MaxE, TE;
+	QString File;
+	for (i=0; i < NSO; ++i) if (reinterpret_cast<LineTableBaseData*>(SO[i])->averageUpperEnergy != EAV)
+    {
+		EAV = reinterpret_cast<LineTableBaseData*>(SO[i])->averageUpperEnergy;
+		++N;
+    }
+    Data = CreateQString(NSO, 10);
+    for (n=i=0; i <= NSO; ++i)
+    {
+		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(SO[i]);
+		if (i < NSO || data->averageUpperEnergy != EAV)
+		{
+	    	if (i > 0)
+	    	{
+				Data[n][0] = QString::number(Iso);
+				Data[n][1] = QString::number(vs);
+				Data[n][2] = QString::number(Js);
+				if (Jss == Js) Data[n][3] = "f";
+				else Data[n][3] = "e";
+				Data[n][4] = QString::number(EAV, 'f', 7);
+				if (j > 1)
+					Data[n][5] = QString::number(sqrt(SqSum / (j * (j - 1))), 'g', 6);
+				Data[n][6] = QString::number(j);
+				if (Jss != Js) Data[n][7] = QString::number(AD);
+				Data[n][8] = QString::number(MinE, 'g', 9);
+				Data[n++][9] = QString::number(MaxE, 'g', 9);
+	    	}
+	    	if (i < NSO)
+	    	{
+				EAV = data->averageUpperEnergy;
+				iJs = Js = data->Js;
+				Jss = data->Jss;
+				Iso = data->isotope;
+				vs = data->vs;
+				j = 0;
+				SqSum = 0.0;
+				MinE = MaxE = EAV;
+				AD = 0;
+	    	}
+		}
+		if (i < NSO)
+		{
+			Diff = EAV - (TE = data->upperEnergy);
+			if (TE < MinE) MinE = TE;
+			else if (TE > MaxE) MaxE = TE;
+			SqSum += Diff * Diff;
+	    	++j;
+			if (Jss != Js)
+			{
+				iJss = 2 * iJs - Jss;
+				vss = data->vss;
+				File = data->file;
+				//printf("Jss=%s, vss=%s, vs=%s, Js=%s, File=%s\n",
+					 //  Jss.ascii(), vss.ascii(), vs.ascii(), Js.ascii(), File.ascii());
+				for (k=i-1; k>=0 && mData[SO[k]]->Js == Js && reinterpret_cast<LineTableBaseData*>(mData[SO[k]])->vs == vs && mData[SO[k]]->isotope == Iso; --k)
+				{
+					LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(SO[k]);
+					if (data->vss == vss && data->Jss == 2 * Js - iJss && data->file == File) ++AD;
+				}
+			}
+			//printf("k=%d, i=%d, AD=%d\n", k, i, AD);
+		}
+    }
+}

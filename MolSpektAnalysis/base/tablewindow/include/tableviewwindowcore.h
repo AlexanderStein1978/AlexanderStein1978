@@ -99,6 +99,8 @@ class TableViewWindowCore : public QAbstractTableModel
 		}
 
 	protected:
+		void RemoveEmptyRows();
+
 		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart;

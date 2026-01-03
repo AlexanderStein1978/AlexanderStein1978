@@ -30,7 +30,7 @@ class LineTableCore : public TableViewWindowCore
 	public:
 
 		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC, CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
-		const int TableNormCols = 12;
+		static const int TableNormCols = 12;
 
 		static std::vector<TableCols> convertHeaderStringsToColumnVector(const QStringList& headerStrings);
 		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
@@ -56,6 +56,8 @@ class LineTableCore : public TableViewWindowCore
 		void AddMarked(Marker** Lines, const Marker* const LaserLine, const int AnzahlMarker, int& Offset, int &NpProg, const int MaxPN, const QString& SpektFile);
 		void ShowUpTerm(const int* const SO, const int MCT, const int* const CT, const int* const IsoT, double ****ELU, const int Mv, const int MJ, double ****UT, const int mvs,
 							   const int Jeo, const int* const UIsoT, const float S, const int UNC, const int UMCT, const int* const UCT);
+		void ShowUpTermtable(const int * const SO, int &n, QString** Data);
+		void RemoveDoubled(const int *const sortArray);
 
 		inline double getWaveNumber(const int row) const
 		{
@@ -70,6 +72,11 @@ class LineTableCore : public TableViewWindowCore
 		inline int get_vs(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->vs;
+		}
+
+		inline void set_vs(const int row, const int vs)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->vs = vs;
 		}
 
 		inline int get_vss(const int row) const
@@ -97,6 +104,11 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->averageUpperEnergy;
 		}
 
+		inline double getDiffToAverageUpperEnergy(const int row) const
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->diffToAverageEnergy;
+		}
+
 		inline QString getComment(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
@@ -105,6 +117,11 @@ class LineTableCore : public TableViewWindowCore
 		inline void setFCF(const int row, const double FCF)
 		{
 			reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
+		}
+
+		inline double getDeviationToCalculatedUpperEnergy(const int row)
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->diffToCalculatedEnergy;
 		}
 
 	private:

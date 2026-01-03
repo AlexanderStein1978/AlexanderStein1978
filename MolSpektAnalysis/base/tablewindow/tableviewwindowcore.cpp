@@ -220,6 +220,16 @@ void TableViewWindowCore::setMolecule(Molecule* const mol)
 	}
 }
 
+void TableViewWindowCore::RemoveEmptyRows()
+{
+    int i1, i2, nr = mData.size();
+    for (i1 = 0; i1 < nr; ++i1) if (mData[i1] == nullptr) break;
+    beginRemoveRows(QModelIndex(), i1, i1);
+    for (i2 = i1 + 1; i2 < nr; ++i2) if (mData[i2] != nullptr) mData[i1++] = mData[i2];
+    mData.resize(i1);
+    endRemoveRows();
+}
+
 void TableViewWindowCore::startSearch(int& N, int *& Rows) const
 {
     table->getSelectedRows(Rows, N);
