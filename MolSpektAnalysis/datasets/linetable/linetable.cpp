@@ -2169,28 +2169,26 @@ bool LineTable::ShowUpTerm()
 void LineTable::FindBigDiff()
 {
 	bool ChDD = false;
-	QList<QTableWidgetSelectionRange> Sel = Tab->selectedRanges();
-	int i, n = Sel.size(), N = Tab->rowCount(), nc = Tab->columnCount();
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int i, n, N = ltc->rowCount(), nc = ltc->columnCount(), NR, *Rows;
+	table->getSelectedRows(Rows, NR);
 	//printf("nc=%d, COmC=%d\n", nc, COmC);
 	if (NSO != N) ShowUpTerm();
-	QString Buffer, File, FBuffer;
+	QString File, FBuffer;
+	double EAV;
 	//printf("nc=%d, COmC=%d\n", nc, COmC);
     if (++lRow >= N - 1) lRow = 0;
-    for (i=0; i<n; i++) if (lRow >= Sel[i].topRow() && lRow <= Sel[i].bottomRow())
+    for (i=0; i < NR; ++i) if (lRow == Rows[i])
     {
-		Buffer = Tab->item(lRow, CEav)->text();
-		File = Tab->item(lRow, CFile)->text();
+		EAV = ltc->getAverageUpperEnergy(lRow);
+		File = ltc->getSourceFile(lRow);
     }
-	//printf("Buffer=%s, File=%s\n", Buffer.ascii(), File.ascii());
-    while ((lRow<N ? (fabs(Tab->item(lRow, CEUma)->text().toDouble()) < 0.03 
-			&& (nc >= 14 && ChDD ? fabs(Tab->item(lRow, COmC)->text().toDouble()) < 0.1 : true)) 
-			|| (Tab->item(lRow, CEav)->text() == Buffer && Tab->item(lRow, CFile)->text() == File)
-			: false))
-		lRow++;
+    while ((lRow<N && (fabs(ltc->getDiffToAverageUpperEnergy(lRow))) < 0.03 && (nc >= 14 && ChDD && fabs(ltc->getDeviationToCalculatedUpperEnergy(lRow)) < 0.1))
+			|| (ltc->getAverageUpperEnergy(lRow) == EAV && ltc->getSourceFile(lRow) == File)) ++lRow;
     if (lRow < N) 
     {
-		for (i=0; i<n; i++) Tab->setRangeSelected(Sel[i], false);
-		File = Tab->item(lRow, CFile)->text();
+		MarkLines(Rows, NR);
+		File = ltc->getSourceFile(lRow);
 		if (File.left(6) == " laser") 
 		{	
 	    	for (i=6; File[i] == ' '; i++) ;
@@ -2206,43 +2204,44 @@ void LineTable::FindBigDiff()
 	    	setFocus();
 	    	printf("InFile=%s\n", InFile.ascii());
 		}*/
-		for (n=lRow, Buffer=Tab->item(lRow, CEav)->text(); Buffer == Tab->item(n, CEav)->text(); n--) ;
-		n++;
-		//printf("Buffer=%s, Tab->text(n, 9)=%s\n", Buffer.ascii(), Tab->text(n, CEav).ascii());
+		for (n=lRow, EAV = ltc->getAverageUpperEnergy(lRow); EAV == ltc->getAverageUpperEnergy(n); --n) ;
+		++n;
 		//Tab->ensureCellVisible(lRow, CEUma);
-		while (Tab->item(n, CEav)->text() == Buffer)
+		while (ltc->getAverageUpperEnergy(n) == EAV)
 		{
-		    if ((FBuffer = Tab->item(n, CFile)->text()).left(6) == " laser") 
-				for (i=6; FBuffer[i] == ' '; i++) ;
+		    if ((FBuffer = ltc->getSourceFile(n)).left(6) == " laser")
+				for (i=6; FBuffer[i] == ' '; ++i) ;
 	    	else i = 1;
 		    FBuffer = FBuffer.right(FBuffer.length() - i);
 		    if (FBuffer == File) Tab->selectRow(n);
 		    //printf("FBuffer=%s, File=%s\n", FBuffer.ascii(), File.ascii());
-	    	n++;
+	    	++n;
 		}
 		//MarkSelected();
     }
     //printf("lRow = %d\n", lRow);
+    delete[] Rows;
 }
 
 void LineTable::ShowWeakProgressions()
 {
-	int NRow = Tab->rowCount(), fRow = 0, aRow, av = -1, aJ = -1, lv = 0, lJ = 0;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int NRow = ltc->rowCount(), fRow = 0, aRow, av = -1, aJ = -1, lv = 0, lJ = 0;
 	QString aFile, lFile;
 	bool Weak = false;
 	if (lRow >= NRow) aRow = 0;
 	else aRow = lRow + 1;
-	for (;aRow != lRow; aRow++)
+	for (;aRow != lRow; ++aRow)
 	{
-		if (aRow==NRow) aRow = 0;
-		aFile = Tab->item(aRow, CFile)->text();
-		aJ = Tab->item(aRow, CJs)->text().toInt();
-		av = Tab->item(aRow, Cvs)->text().toInt();
+		if (aRow == NRow) aRow = 0;
+		aFile = ltc->getSourceFile(aRow);
+		aJ = ltc->getJs(aRow);
+		av = ltc->get_vs(aRow);
 		if (av != lv || aJ != lJ || aFile != lFile)
 		{
 			if (Weak)
 			{
-				for (lRow = fRow; lRow < aRow; lRow++) Tab->selectRow(lRow);
+				for (lRow = fRow; lRow < aRow; ++lRow) Tab->selectRow(lRow);
 				//Tab->ensureCellVisible(lRow, CSNR);
 				return;
 			}
@@ -2252,22 +2251,19 @@ void LineTable::ShowWeakProgressions()
 			lFile = aFile;
 			fRow = aRow;
 		}
-		else if ((Tab->item(aRow, CSNR)->text().toDouble() > 4 && Tab->item(aRow, CC)->text().isEmpty())
-				|| Tab->item(aRow, CC)->text() == "satellite") Weak = false;
+		else if ((ltc->getSNR(aRow) > 4 && ltc->getComment(aRow).isEmpty())
+				|| ltc->getComment(aRow) == "satellite") Weak = false;
 	}
-	QMessageBox::information( this, "MolSpektAnalysis", 
-			"There are no really weak progressions found inside the list.", QMessageBox::Ok);
+	QMessageBox::information( this, "MolSpektAnalysis", "There are no really weak progressions found inside the list.", QMessageBox::Ok);
 }
 
 TableWindow* LineTable::ShowUpTermTable()
 {
     if (MW == 0) return 0;
-	int i, j=0, k=0, n, iJs = 0, AD = 0, N = 0, iJss;
-    double Diff, SqSum = 0.0, TV = 0.0, TE, MinE = 0.0, MaxE = 0.0;
-    QString Buffer, Js, Jss, vs, vss, Iso, File, J, **Data;
-    if (Tab->columnCount() == TableNormCols || NSO != Tab->rowCount()) 
-		if (!ShowUpTerm()) return 0;
-    if (termTable == NULL) 
+	int n;
+    QString **Data;
+    if ((mCore->columnCount() == LineTableCore::TableNormCols || NSO != mCore->rowCount()) && !ShowUpTerm()) return nullptr;
+    if (termTable == nullptr)
     {
 		termTable = new TableWindow(TextTable1, MW, molecule);
 		termTable->setWindowTitle("UpTermTable to " + getName());
@@ -2275,69 +2271,7 @@ TableWindow* LineTable::ShowUpTermTable()
 				<< "Termenergie" << "Standardabweichung" << "Anzahl Uebergaenge" 
 				<< "Anz. vollst. Doubl." << "Min E" << "Max E");
     }
-    for (i=0; i < NSO; i++) if (Tab->item(SO[i], CEav)->text() != Buffer)
-    {
-		Buffer = Tab->item(SO[i], CEav)->text();
-		N++;
-    }
-    Data = CreateQString(NSO, 10);
-    for (n=i=0; i <= NSO; i++) 
-    {
-		if ((i < NSO ? Tab->item(SO[i], CEav)->text() != Buffer : true))
-		{
-	    	if (i > 0)
-	    	{
-				Data[n][0] = Iso;
-				Data[n][1] = vs;
-				Data[n][2] = Js;
-				if (Jss == Js) Data[n][3] = "f";
-				else Data[n][3] = "e";
-				Data[n][4] = Buffer;
-				if (j > 1) 
-					Data[n][5] = QString::number(sqrt(SqSum / (j * (j - 1))), 'g', 6);
-				Data[n][6] = QString::number(j);
-				if (Jss != Js) Data[n][7] = QString::number(AD);
-				Data[n][8] = QString::number(MinE, 'g', 9);
-				Data[n++][9] = QString::number(MaxE, 'g', 9);
-	    	}
-	    	if (i < NSO)
-	    	{
-				TV = (Buffer = Tab->item(SO[i], CEav)->text()).toDouble();
-				iJs = (Js = Tab->item(SO[i], CJs)->text()).toInt();
-				Jss = Tab->item(SO[i], CJss)->text();
-				Iso = Tab->item(SO[i], CIso)->text();
-				vs = Tab->item(SO[i], Cvs)->text();
-				j = 0;
-				SqSum = 0.0;
-				MinE = MaxE = TV;
-				AD = 0;
-	    	}
-		}
-		if (i < NSO)
-		{
-			Diff = TV - (TE = Tab->item(SO[i], CEUp)->text().toDouble());
-			if (TE < MinE) MinE = TE;
-			else if (TE > MaxE) MaxE = TE;
-			SqSum += Diff * Diff;
-	    	j++;
-			if (Jss != Js)
-			{
-				iJss = 2 * iJs - Jss.toInt();
-				vss = Tab->item(SO[i], Cvss)->text();
-				File = Tab->item(SO[i], CFile)->text();
-				//printf("Jss=%s, vss=%s, vs=%s, Js=%s, File=%s\n", 
-					 //  Jss.ascii(), vss.ascii(), vs.ascii(), Js.ascii(), File.ascii());
-				for (k=i-1; (k>=0 ? Tab->item(SO[k], CJs)->text() == Js 
-								 && Tab->item(SO[k], Cvs)->text() == vs 
-								 && Tab->item(SO[k], CIso)->text() == Iso : false); k--) 
-					if (Tab->item(SO[k], Cvss)->text().toInt() == vss.toInt() 
-						&& Tab->item(SO[k], CJss)->text().toInt() 
-								== 2 * Js.toInt() - iJss 
-						&& Tab->item(SO[k], CFile)->text() == File) AD++;
-			}
-			//printf("k=%d, i=%d, AD=%d\n", k, i, AD);
-		}
-    }
+	reinterpret_cast<LineTableCore*>(mCore)->ShowUpTermtable(SO, n, Data);
     termTable->setData(Data, n, 10);
 	Destroy(Data, NSO);
     return termTable;
@@ -2345,64 +2279,26 @@ TableWindow* LineTable::ShowUpTermTable()
 
 void LineTable::Updatevs(int *nvs)
 {
-	int i, nr = Tab->rowCount();
+	int i, nr = mCore->rowCount();
 	QString Buffer;
-	Tab->blockSignals(true);
-	for (i=0; i<nr; i++) 
-	{
-		Buffer = "   " + QString::number(nvs[i]);
-		Tab->item(i, Cvs)->setText(Buffer.right(4));
-	}
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (i=0; i < nr; ++i) reinterpret_cast<LineTableCore*>(mCore)->set_vs(i, nvs[i]);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
 void LineTable::RemoveDoubled()
 {
-	int i, j, nr = Tab->rowCount(), c, C = Tab->columnCount(), *S1 = heapSort(sortfRemDoubl);
+	int i, j, nr = mCore->rowCount(), *S1 = heapSort(sortfRemDoubl);
 	int n1, n2, m1, m2, S[nr];
 	QString F1, F2, Comment;
-	for (i=0; i < nr; i++) S[S1[i]] = i;
-	Tab->blockSignals(true);
-	for (i=1, F2 = Tab->item(S[0], CFile)->text(); i < nr; i++)
-	{
-		F1 = F2;
-		F2 = Tab->item(S[i], CFile)->text();
-		//printf("I=%d, vs=%d, Js=%d, vss=%d, Jss=%d, WN=%f\n", Tab->item(S[i], CIso)->text().toInt(), Tab->item(S[i], Cvs)->text().toInt(),
-			//   Tab->item(S[i], CJs)->text().toInt(), Tab->item(S[i], Cvss)->text().toInt(), Tab->item(S[i], CJss)->text().toInt(),
-			  // Tab->item(S[i], CWN)->text().toDouble());
-		if (Tab->item(S[i], Cvss)->text().toInt() == Tab->item(S[i-1], Cvss)->text().toInt()) 
-			if (Tab->item(S[i], CJss)->text().toInt() == Tab->item(S[i-1], CJss)->text().toInt())
-			if (Tab->item(S[i], CJs)->text().toInt() == Tab->item(S[i-1], CJs)->text().toInt())
-		{
-			n1 = F1.lastIndexOf(QRegExp("[\\/]"));
-			n2 = F2.lastIndexOf(QRegExp("[\\/]"));
-			m1 = ((m1 = F1.lastIndexOf('.')) != -1 ? m1 : F1.length());
-			m2 = ((m2 = F2.lastIndexOf('.')) != -1 ? m2 : F2.length());
-			if (F1.mid(n1 + 1, m1 - n1 - 1) == F2.mid(n2 + 1, m2 - n2 - 1)
-				&& Tab->item(S[i], CIso)->text().toInt() == Tab->item(S[i-1], CIso)->text().toInt()
-				&& fabs(Tab->item(S[i], CWN)->text().toDouble() - Tab->item(S[i-1], CWN)->text().toDouble()) < 1e-4)
-			{
-				Tab->setItem(S[i], 0, 0);
-				if (F1 != F2)
-				{
-					QFile File1(F1), File2(F2);
-					if (!File1.exists() && File2.exists()) Tab->item(S[i-1], CFile)->setText(F2);
-				}
-				Comment = Tab->item(S[i], CC)->text();
-				if (Tab->item(S[i-1], CC)->text().length() < Comment.length()) Tab->item(S[i-1], CC)->setText(Comment);
-				if (Tab->item(S[i-1], Cerr)->text().toDouble() < Tab->item(S[i], Cerr)->text().toDouble())
-					Tab->item(S[i-1], Cerr)->setText(Tab->item(S[i], Cerr)->text());
-			}
-		}
-	}
-	for (j=0; (j < nr ? Tab->item(j, 0) != 0 : false); j++) ;
-	for (i=j+1; i < nr; i++) if (Tab->item(i, 0) != 0) 
-	{
-		for (c=0; c<C; c++) Tab->setItem(j, c, Tab->takeItem(i, c));
-		j++;
-	}
-	Tab->setRowCount(j);
+	for (i=0; i < nr; ++i) S[S1[i]] = i;
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+
+
 	Tab->blockSignals(false);
 	Changed();
 	delete[] S1;

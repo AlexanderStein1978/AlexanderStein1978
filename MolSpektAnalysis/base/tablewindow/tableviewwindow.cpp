@@ -304,9 +304,9 @@ void TableViewWindow::setData(QString ** Data, int NRows, int NCols)
 	table->blockSignals(true);
     mCore->blockSignals(true);
 	mCore->setRowCount(NRows);
-	for (r=0; r < NRows; r++)
+	for (r=0; r < NRows; ++r)
     {
-        for (c=0; c < NC; c++)
+        for (c=0; c < NC; ++c)
         {
             if (c < NCols) L << Data[r][c];
             else L << "";
