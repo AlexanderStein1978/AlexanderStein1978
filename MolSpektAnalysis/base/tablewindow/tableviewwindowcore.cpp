@@ -46,6 +46,15 @@ void TableViewWindowCore::EmitDataChanged(const int row, const int column)
 	emit dataChanged(index, index, roles);
 }
 
+void TableViewWindowCore::EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn)
+{
+    QModelIndex index1 = createIndex(upperRow, leftColumn);
+	QModelIndex index2 = createIndex(lowerRow, rightColumn);
+    QVector<int> roles;
+	roles.push_back(Qt::EditRole);
+	emit dataChanged(index1, index2, roles);
+}
+
 void TableViewWindowCore::setRow(const QStringList& L, const int row)
 {
 	setRow(convertToBaseData(L), row);
@@ -99,7 +108,7 @@ void TableViewWindowCore::addRow(BaseData* const data)
 
 void TableViewWindowCore::setRow(BaseData *const data, const int row)
 {
-	delete mData[row];
+ 	if (nullptr != mData[row]) delete mData[row];
 	mData[row] = data;
 	QModelIndex index1 = createIndex(row, 0), index2 = createIndex(row, columnCount() - 1);
 	QVector<int> roles;

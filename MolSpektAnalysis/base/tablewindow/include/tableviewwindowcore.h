@@ -61,7 +61,9 @@ class TableViewWindowCore : public QAbstractTableModel
 		void shrinkAllSpectRefs();
 		virtual BaseData* convertToBaseData(const QStringList& L) const;
         void EmitDataChanged(const int row, const int column);
+		void EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn);
 		virtual QString cellToString(const int, const int) const {return "";};
+		void RemoveEmptyRows();
 
 		inline int getNSources() const
 		{
@@ -99,8 +101,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		}
 
 	protected:
-		void RemoveEmptyRows();
-
 		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart;

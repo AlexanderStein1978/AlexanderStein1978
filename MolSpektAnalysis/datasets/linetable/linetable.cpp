@@ -2292,27 +2292,26 @@ void LineTable::Updatevs(int *nvs)
 void LineTable::RemoveDoubled()
 {
 	int i, j, nr = mCore->rowCount(), *S1 = heapSort(sortfRemDoubl);
-	int n1, n2, m1, m2, S[nr];
+	int *S = new int[nr];
 	QString F1, F2, Comment;
 	for (i=0; i < nr; ++i) S[S1[i]] = i;
 	table->blockSignals(true);
 	mCore->blockSignals(true);
-
-
-	Tab->blockSignals(false);
+	reinterpret_cast<LineTableCore*>(mCore)->RemoveDoubled(S);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 	delete[] S1;
+	delete[] S;
 } 
 
-void LineTable::setData(int nR, int nC, QStringList &H, QTableWidgetItem ***D)
+void LineTable::setData(const std::vector<LineTableCore::TableCols>& mColumns, const std::vector<BaseData*> data)
 {
-	int r, c;
-	Tab->blockSignals(true);
-	Tab->setRowCount(nR);
-	Tab->setColumnCount(nC);
-	Tab->setHorizontalHeaderLabels(H);
-	for (r=0; r < nR; r++) for (c=0; c < nC; c++) Tab->setItem(r, c, D[r][c]);
-	Tab->blockSignals(false);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	reinterpret_cast<LineTableCore*>(mCore)->setData(mColumns, data);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
@@ -2321,9 +2320,9 @@ void LineTable::splitTable()
 	if (MW == 0) return;
 	LineTable *NT = MW->CreateLineTable();
 	if (NT == 0) return;
-	int i, j, k, c, R = Tab->rowCount(), C = Tab->columnCount();
-	QTableWidgetItem ***IS = new QTableWidgetItem**[R];
-	QStringList L;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int i, j, k, c, R = ltc->rowCount(), C = ltc->columnCount();
+	std::vector<BaseData*> data;
 	ElState *lS, *uS;
 	if (transition != 0) 
 	{
@@ -2331,75 +2330,36 @@ void LineTable::splitTable()
 		uS = transition->getUpperState();
 	}
 	else lS = uS = 0;
-	Tab->blockSignals(true);
-	for (k=0; (k<R ? Tab->item(k, Cvs)->text().toInt() != -1 : false); k++) ;
-	for (j=k, i=0; k<R; k++)
+	table->blockSignals(true);
+	ltc->blockSignals(true);
+	for (k=0; k<R && ltc->get_vs(k) != -1; ++k) ;
+	for ( ; k<R; ++k)
 	{
-		if (Tab->item(k, Cvs)->text().toInt() == -1)
+		if (ltc->get_vs(k) == -1)
 		{
-			IS[i] = new QTableWidgetItem*[C];
-			for (c=0; c<C; c++) IS[i][c] = Tab->takeItem(k, c);
-			i++;
-		}
-		else 
-		{
-			for (c=0; c<C; c++) Tab->setItem(j, c, Tab->takeItem(k, c));
-			j++;
+			data.push_back(ltc->getRow(k));
+			mCore->setData(k, nullptr);
 		}
 	}
-	Tab->setRowCount(j);
-	Tab->blockSignals(false);
-	for (c=0; c<C; c++) L << Tab->horizontalHeaderItem(c)->text();
-	NT->setData(i, C, L, IS);
+	ltc->RemoveEmptyRows();
+	ltc->blockSignals(false);
+	table->blockSignals(false);
+	NT->setData(ltc->getColumnVector(), data);
 	NT->setSource(getSource());
 	NT->setName(getName());
 	if (molecule != 0) molecule->addLineTable(NT, lS);
 	NT->show();
-	for (j=0; j<i; j++) delete[] IS[j];
-	delete[] IS;
 	Changed();
 }
 
 void LineTable::sortUpTermIvJ()
 {
-	if (Tab->columnCount() < CEav)
+	if (mCore->columnCount() <  LineTableCore::CEav)
 	{
 		QMessageBox::information( this, "MolSpektAnalysis", 
 			"There is no upper term energy table calculated for this line table!", QMessageBox::Ok);
 		return;
 	}
-	/*bool S = true;
-	int n, I, Iv, v, vv, J, Jv, N = termTable->rowCount(), c, C = termTable->columnCount();
-	QTableWidgetItem *Item;
-	while (S)
-	{
-		S = false;
-		Iv = termTable->item(0, 0)->text().toInt();
-		vv = termTable->item(0, 1)->text().toInt();
-		Jv = termTable->item(0, 2)->text().toInt();
-		for (n = 1; n  < N; n++) 
-		{
-			I = termTable->item(n, 0)->text().toInt();
-			v = termTable->item(n, 1)->text().toInt();
-			J = termTable->item(n, 2)->text().toInt();
-			if (Iv > I || (Iv == I && (vv > v || (vv == v && Jv > J))))
-			{
-				for (c=0; c<C; c++)
-				{
-					Item = termTable->takeItem(n-1, c);
-					termTable->setItem(n-1, c, termTable->takeItem(n, c));
-					termTable->setItem(n, c, Item);
-				}
-				S = true;
-			}
-			else 
-			{
-				Iv = I;
-				vv = v;
-				Jv = J;
-			}
-		}
-	}*/
 	int *SArray = heapSort(sortUtIvJ);
 	sortTab(SArray);
 }
@@ -2440,30 +2400,33 @@ void LineTable::SortSpectrum()
 
 void LineTable::sortTab(int *S2)
 {
-	Tab->blockSignals(true);
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	ltc->blockSignals(true);
 	QString F1, F2, FN;
-	int l, i, n, N = Tab->rowCount();
-	for (n=0; n<N; n++)
+	int l, i, n, N = ltc->rowCount();
+	for (n=0; n<N; ++n)
 	{
-		l = (F2 = Tab->item(n, CFile)->text()).length();
+		l = (F2 = ltc->getSourceFile(n)).length();
 		if (l==0) F2 = F1;
 		else
 		{
-			for (i=0; (i < l ? F2[i] == QChar(' ') : false); i++) ;
+			for (i=0; i<l && F2[i] == QChar(' '); ++i) ;
 			F2 = F2.right(l-=i);
 			if (F2.left(5) == "laser")
 			{
 				F2 = F2.right(l-=5);
-				for (i=0; (i < l ? F2[i] == QChar(' ') : false); i++) ;
+				for (i=0; i<l && F2[i] == QChar(' '); ++i) ;
 				F2 = F2.right(l-i);
 				if (F2.isEmpty()) F2 = F1;
-				Tab->item(n, CC)->setText("laser");
+				ltc->setComment(n, "laser");
 			}
 			F1 = F2;
 		}
-		Tab->item(n, CFile)->setText(F2);
+		ltc->setSourceFile(n, F2);
 	}
-	Tab->blockSignals(false);
+	ltc->blockSignals(false);
+	table->blockSignals(false);
 	TableWindow::sortTab(S2);
 }
 
@@ -2495,149 +2458,112 @@ void LineTable::SetError()
 	if (SDialog.exec() == QDialog::Rejected) return;
 	Error = NE.text().toDouble();
 	OvError = OE.text().toDouble();
-	QString SErr = ("          " + QString::number(Error, 'g', 5)).right(10), Buffer;
-	QString OErr = ("          " + QString::number(OvError, 'g', 5)).right(10);
-	int i, n = Tab->rowCount(), r, rc, m=0;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
+	int i, n = mCore->rowCount(), r, m=0, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->getSelectedRows(rows, NR);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
 	if (MaxMin->isChecked())
 	{
-		if ((rc = SR.size()) > 0) for (r=0; r < rc; r++) for (i = SR[r].topRow(), n = SR[r].bottomRow(); i<=n; i++)
-		{
-			Buffer = Tab->item(i, CC)->text();
-			if (Buffer.indexOf("overlap") > -1 || Buffer.indexOf("laser") > -1 || Buffer.indexOf("weak") > -1)
-			{
-				if (Tab->item(i, Cerr)->text().toDouble() < OvError) Tab->item(i, Cerr)->setText(OErr); 
-			}
-			else if (Tab->item(i, Cerr)->text().toDouble() > Error) Tab->item(i, Cerr)->setText(SErr);
-		}
-		else for (i=0, n = Tab->rowCount(); i<n; i++)
-		{
-			Buffer = Tab->item(i, CC)->text();
-			if (Buffer.indexOf("overlap") > -1 || Buffer.indexOf("laser") > -1 || Buffer.indexOf("weak") > -1)
-			{
-				if (Tab->item(i, Cerr)->text().toDouble() < OvError) Tab->item(i, Cerr)->setText(OErr); 
-			}
-			else if (Tab->item(i, Cerr)->text().toDouble() > Error) Tab->item(i, Cerr)->setText(SErr);
-		}
+		if (NR > 0) for (r=0; r < NR; ++r) ltc->setUncertainty(rows[r], Error, OvError);
+		else for (i=0; i<n; ++i) ltc->setUncertainty(i, Error, OvError);
 	}
-	else for (r=0, rc = SR.size(); r < rc; r++)
+	else for (r=0; r < NR; ++r)
 	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++)
-		{
-			Buffer = Tab->item(i, CC)->text();
-			if (Buffer.indexOf("overlap") > -1 || Buffer.indexOf("laser") > -1 
-						 || Tab->item(i, CSNR)->text().toDouble() < 5.0) 
-				Tab->item(i, Cerr)->setText(OErr) ;
-			else Tab->item(i, Cerr)->setText(SErr);
-		}
+		QString Buffer = ltc->getComment(rows[r]);
+		if (Buffer.indexOf("overlap") > -1 || Buffer.indexOf("laser") > -1 || ltc->getSNR(rows[r]) < 5.0) ltc->setUncertainty(rows[r], OvError);
+		else ltc->setUncertainty(rows[r], Error);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::Shiftvup()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
-	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-			Tab->item(i, Cvss)->setText(QString::number(Tab->item(i, Cvss)->text().toInt() + 1));
-	}
-	Tab->blockSignals(false);
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r) ltc->set_vss(rows[r], ltc->get_vss(rows[r]) + 1);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::Shiftvdown()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
-	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-			Tab->item(i, Cvss)->setText(QString::number(Tab->item(i, Cvss)->text().toInt() - 1));
-	}
-	Tab->blockSignals(false);
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r) ltc->set_vss(rows[r], ltc->get_vss(rows[r]) - 1);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::ShiftJup()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r)
 	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-		{
-			Tab->item(i, CJs)->setText(QString::number(Tab->item(i, CJs)->text().toInt() + 1));
-			Tab->item(i, CJss)->setText(QString::number(Tab->item(i, CJss)->text().toInt() + 1));
-		}
+		ltc->setJs(rows[r], ltc->getJs(rows[r]) + 1);
+		ltc->setJss(rows[r], ltc->getJss(rows[r]) + 1);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::ShiftJdown()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r)
 	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-		{
-			Tab->item(i, CJs)->setText(QString::number(Tab->item(i, CJs)->text().toInt() - 1));
-			Tab->item(i, CJss)->setText(QString::number(Tab->item(i, CJss)->text().toInt() - 1));
-		}
+		ltc->setJs(rows[r], ltc->getJs(rows[r]) - 1);
+		ltc->setJss(rows[r], ltc->getJss(rows[r]) - 1);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::Shiftvsdown()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
-	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-			Tab->item(i, Cvs)->setText(QString::number(Tab->item(i, Cvs)->text().toInt() - 1));
-	}
-	Tab->blockSignals(false);
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r) ltc->set_vs(rows[r], ltc->get_vs(rows[r]) - 1);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::Shiftvsup()
 {
-	int i, m, n, r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
-	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-			Tab->item(i, Cvs)->setText(QString::number(Tab->item(i, Cvs)->text().toInt() + 1));
-	}
-	Tab->blockSignals(false);
+	int r, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r) ltc->set_vs(rows[r], ltc->get_vs(rows[r]) + 1);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::ShiftIso()
@@ -2650,55 +2576,53 @@ void LineTable::ShiftIso()
 								 QMessageBox::Ok);
 		return;
 	}
-	int i, n, m, r, rc, v;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, m=0, rc = SR.size(); r < rc; r++)
+	int r, v, *rows, NR;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r)
 	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) 
-		{
-			if ((v = Tab->item(i, CIso)->text().toInt()) <= M) 
-				Tab->item(i, CIso)->setText(QString::number(v + 10));
-			else Tab->item(i, CIso)->setText(QString::number(v - M));
-		}
+		if ((v = ltc->getIso(rows[r])) <= M) ltc->setIso(rows[r], v + 10);
+		else ltc->setIso(rows[r], v - M);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::SetvssAscending()
 {
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	int i, r = SR.size(), l=-1, n, m;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int i, l=-1, *rows, N;
+	table->getSelectedRows(rows, N);
 	if (r==0)
 	{
 		QMessageBox::information(this, "MolSpektAnalysis", "You have to select some rows first!",
 								 QMessageBox::Ok);
 		return;
 	}
-	Tab->blockSignals(true);
-	for (i=0; i<r; i++)
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (i=0; i<N; ++i)
 	{
-		n = SR[i].bottomRow();
-		for (m = SR[i].topRow(); m<=n; m++)
-		{
-			if (l==-1) l = Tab->item(i, Cvss)->text().toInt() + 1;
-			else Tab->item(i, Cvss)->setText(QString::number(l++));
-		}
+		if (l==-1) l = ltc->get_vss(rows[i]) + 1;
+		else ltc->set_vss(rows[i], l++);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::Delete()
 {
-	QList<QTableWidgetItem*> SI = Tab->selectedItems();
-	int i, n = SI.size();
-	Tab->blockSignals(true);
-	for (i=0; i<n; i++) SI[i]->setText("");
-	Tab->blockSignals(false);
+	QModelIndexList list = table->getSelectedIndexes();
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (auto it = list.begin(); it != list.end(); ++it) mCore->setData(*it, "");
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
@@ -2706,159 +2630,109 @@ void LineTable::cutRows(int& numRows, int& numColumns, QString**& Data)
 {
     if (NpL > 0)
 	{
-		int NR = Tab->rowCount();
-		int SR = NR - NpL, n, r;
-		QList<QTableWidgetSelectionRange> SelR = Tab->selectedRanges();
+		int NR = mCore->rowCount();
+		int SR = NR - NpL, n, r, *rows, N;
+		table->getSelectedRows(rows, N);
 		bool Rem[NpL];
-		for (n=0; n < NpL; n++) Rem[n] = false;
-		for (n=0; n < SelR.size(); n++) for (r = SelR[n].topRow(); r <= SelR[n].bottomRow(); r++) if (r >= SR) Rem[r - SR] = true;
-		for (n=r=0; n < NpL; n++) if (Rem[n]) r++;
+		for (n=0; n < NpL; ++n) Rem[n] = false;
+		for (n=0; n < N; ++n) if (rows[n] >= SR) Rem[rows[n] - SR] = true;
+		for (n=r=0; n < NpL; ++n) if (Rem[n]) ++r;
 		NpL -= r;
+		delete[] rows;
 	}
-	TableWindow::cutRows(numRows, numColumns, Data);
+	TableViewWindow::cutRows(numRows, numColumns, Data);
 }
 
 void LineTable::DeleteRows()
 {
-    if (Tab == 0) return;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	int j, k, n = Tab->rowCount(), c, nc = Tab->columnCount();
-	int pr = n - NpL;
-	QString B, Buffer;
-	Tab->blockSignals(true);
-	for (j=0; j < SR.size(); j++) 
-	{
-		for (k=SR[j].topRow(); k <= SR[j].bottomRow(); k++)
-		{
-			if (Tab->item(k, CFile) != 0 ? 
-				!(B = Tab->item(k, CFile)->text()).isEmpty() : false) Buffer = B;
-			for (c=0; c < nc; c++) Tab->setItem(k, c, 0);
-			if (k >= pr) NpL--;
-		}
-		if (k < n ? (Tab->item(k, CFile) != 0 ? Tab->item(k, CFile)->text().isEmpty() 
-				: false) : false) 
-			Tab->item(k, CFile)->setText(Buffer);
-	}
-	for (j=k=0; j <= lRow; j++) if (Tab->item(j, 0) == 0) k++;
-	lRow -= k;
-	for (j=0; (j < n ? Tab->item(j, 0) != 0 : false); j++) ;
-    for (k=j; k < n; k++) if (Tab->item(k, 0) != 0)
-	{
-		for (c=0; c < nc; c++) Tab->setItem(j, c, Tab->takeItem(k, c));
-		j++;
-	}	
-    Tab->setRowCount(j);
-	Tab->blockSignals(false);
-	Changed();
+	int *rows, N;
+	table->getSelectedRows(rows, N);
+	deleteRows(rows, N);
+	delete[] rows;
 }
 
 void LineTable::deleteRows(int* rows, int N)
 {
-	if (Tab == 0) return;
-	int j, k, n = Tab->rowCount(), c, nc = Tab->columnCount();
+	int j, k, n = mCore->rowCount(), c, nc = mCore->columnCount();
 	int pr = n - NpL;
 	QString B, Buffer;
-	Tab->blockSignals(true);
-	for (j=0; j<N; j++)
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (j=0; j<N; ++j)
 	{
-		if (Tab->item(rows[j], CFile) != 0 ? !(B = Tab->item(rows[j], CFile)->text()).isEmpty() : false) Buffer = B;
-		for (c=0; c < nc; c++) Tab->setItem(rows[j], c, 0);
-		if (rows[j] > pr) NpL--;
-		if ((k = rows[j] + 1) < n ? (Tab->item(k, CFile) != 0 ? Tab->item(k, CFile)->text().isEmpty() 
-				: false) : false)
-			Tab->item(k, CFile)->setText(Buffer);
+		if (!(B = mCore->getSourceFile(rows[j])).isEmpty()) Buffer = B;
+		mCore->setRow(nullptr, rows[j]);
+		if (rows[j] >= pr) NpL--;
+		k = rows[j] + 1;
+		if (k<n && mCore->getSourceFile(k).isEmpty()) mCore->setSourceFile(k, Buffer);
 	}
 	for (j=k=0; j <= lRow; j++) if (Tab->item(j, 0) == 0) k++;
 	lRow -= k;
-	for (j=0; (j<n ? Tab->item(j, 0) != 0 : false); j++) ;
-	for (k=j; k<n; k++) if (Tab->item(k, 0) != 0)
-	{
-		for (c=0; c < nc; c++) Tab->setItem(j, c, Tab->takeItem(k, c));
-		j++;
-	}
-	Tab->setRowCount(j);
-	Tab->blockSignals(false);
+	mCore->RemoveEmptyRows();
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
 void LineTable::DeleteRows(int NL, int* PN, int* vss, int* Jss)
 {
-	int R = Tab->rowCount(), r, C = Tab->columnCount(), c, n, sr = R - NpL;
-	Tab->blockSignals(true);
-	for (r=0; r<R; r++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int R = mCore->rowCount(), r, C = mCore->columnCount(), c, n, sr = R - NpL;
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r<R; ++r)
 	{
-		for (n=0; (n < NL ? Tab->item(r, CPN)->text().toInt() != PN[n] 
-					|| (vss != 0 && Jss != 0 ? Tab->item(r, Cvss)->text().toInt() != vss[n] 
-							|| Tab->item(r, CJss)->text().toInt() != Jss[n] : false) : false); n++) ;
+		for (n=0; n < NL && (mCore->getProgression(r) != PN[n] || (vss != 0 && Jss != 0 && (ltc->get_vss(r) != vss[n] || ltc->getJss(r) != Jss[n]))); ++n) ;
 		if (n < NL)
 		{
-			Tab->setItem(r, 0, 0);
-			if (r >= sr) NpL--;
+			ltc->setRow(nullptr, r);
+			if (r >= sr) --NpL;
 		}
 	}
-	for (r=0; (r<R ? Tab->item(r, 0) != 0 : false); r++) ;
-	for (n=r+1; n<R; n++) if (Tab->item(n, 0) != 0)
-	{
-		for (c=0; c<C; c++) Tab->setItem(r, c, Tab->takeItem(n, c));
-		r++;
-	}
-	Tab->blockSignals(false);
+	ltc->RemoveEmptyRows();
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
 void LineTable::SetError(int NL, int* PN, int* vss, int* Jss, double* Err)
 {
-	int R = Tab->rowCount(), r, n;
-	Tab->blockSignals(true);
-	for (r=0; r<R; r++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int R = ltc->rowCount(), r, n;
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r<R; ++r)
 	{
-		for (n=0; (n < NL ? Tab->item(r, CPN)->text().toInt() != PN[n] || Tab->item(r, Cvss)->text().toInt() != vss[n]
-							|| Tab->item(r, CJss)->text().toInt() != Jss[n] : false); n++) ;
-		if (n < NL) Tab->item(r, Cerr)->setText(QString::number(Err[n], 'f', 3));
+		for (n=0; n < NL && (ltc->getProgression(r) != PN[n] || ltc->get_vss(r) != vss[n] || ltc->getJss(r) != Jss[n]); ++n) ;
+		if (n < NL) ltc->setUncertainty(r, Err[n]);
 	}
-	Tab->blockSignals(false);
-	Changed();
-}
-
-void LineTable::SetError(int NL, int* PN, int* vss, int* Jss, QString* Err)
-{
-	int R = Tab->rowCount(), r, n;
-	Tab->blockSignals(true);
-	for (r=0; r<R; r++)
-	{
-		for (n=0; (n < NL ? Tab->item(r, CPN)->text().toInt() != PN[n] || Tab->item(r, Cvss)->text().toInt() != vss[n]
-							|| Tab->item(r, CJss)->text().toInt() != Jss[n] : false); n++) ;
-		if (n < NL) Tab->item(r, Cerr)->setText(Err[n]);
-	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
 }
 
 Progression LineTable::getSelectedProgression()
 {
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	Progression P;
-	int L[1000], r = Tab->currentRow(), R = Tab->rowCount(), n;
+	int L[1000], r = table->currentIndex().row(), R = ltc->rowCount(), n;
 	if (r == -1)
 	{
 		P.N = 0;
 		return P;
 	}
-	int I = P.Iso = Tab->item(r, CIso)->text().toInt();
-	int J = P.Js = Tab->item(r, CJs)->text().toInt();
-	int v = P.vs = Tab->item(r, Cvs)->text().toInt(), PN = Tab->item(r, CPN)->text().toInt();
-	QString F = Tab->item(r, CFile)->text();
-	for (r=n=0; r<R; r++) if (Tab->item(r, CPN)->text().toInt() == PN)
-		if (Tab->item(r, CFile)->text() == F) 
-			if (Tab->item(r, CIso)->text().toInt() == I 
-					&& Tab->item(r, Cvs)->text().toInt() == v
-					&& Tab->item(r, CJs)->text().toInt() == J) L[n++] = r;
+	int I = P.Iso = ltc->getIso(r);
+	int J = P.Js = ltc->getJs(r);
+	int v = P.vs = ltc->get_vs(r), PN = ltc->getProgression(r);
+	QString F = ltc->getSourceFile(r);
+	for (r=n=0; r<R; ++r) if (ltc->getProgression(r) == PN && ltc->getSourceFile(r) == F && ltc->getIso(r) == I && ltc->get_vs(r) == v && ltc->getJs(r) == J) L[n++] = r;
 	P.L = new Line[P.N = n];
-	for (n=0; n < P.N; n++)
+	for (n=0; n < P.N; ++n)
 	{
-		P.L[n].E = Tab->item(L[n], CWN)->text().toDouble();
-		P.L[n].Jss = Tab->item(L[n], CJss)->text().toInt();
-		P.L[n].err = Tab->item(L[n], Cerr)->text().toDouble();
-		P.L[n].vss = Tab->item(L[n], Cvss)->text().toInt();
+		P.L[n].E = ltc->getWaveNumber(L[n]);
+		P.L[n].Jss = ltc->getJss(L[n]);
+		P.L[n].err = ltc->getUncertainty(L[n]);
+		P.L[n].vss = ltc->get_vss(L[n]);
 	}
 	return P;
 }
@@ -2870,6 +2744,7 @@ void LineTable::findSimilarProgression(Progression P)
 		printf("LineTable::findSimilarProgression error: no Progression selected\n");
 		return;
 	}
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	int n, mv, Mv = P.L[0].vss + 1, N, LM, M = (P.Js == P.L[0].Jss ? P.N - 1 : P.N / 2 - 1);
 	int v[1000], vs, Js, I, PN, RC = Tab->rowCount(), cr, m, nwL;
 	double S[1000], B;
@@ -2879,35 +2754,23 @@ void LineTable::findSimilarProgression(Progression P)
 		if (P.L[n].vss <= mv) mv = P.L[n].vss - 1;
 		else if (P.L[n].vss >= Mv) Mv = P.L[n].vss + 1;
 	}
-	n = cr = Tab->currentRow();
-	F = Tab->item(n, CFile)->text();
-	vs = Tab->item(n, Cvs)->text().toInt();
-	Js = Tab->item(n, CJs)->text().toInt();
-	I = Tab->item(n, CIso)->text().toInt();
-	PN = Tab->item(n, CPN)->text().toInt();
-	for (n++; (n < RC ? Tab->item(n, CFile)->text() == F 
-			&& Tab->item(n, Cvs)->text().toInt() == vs
-			&& Tab->item(n, CJs)->text().toInt() == Js
-			&& Tab->item(n, CIso)->text().toInt() == I
-			&& Tab->item(n, CPN)->text().toInt() == PN : false); n++) ;
-	for (F = Tab->item(n, CFile)->text(), 
-		 vs = Tab->item(n, Cvs)->text().toInt(),
-		 Js = Tab->item(n, CJs)->text().toInt(),
-		 I = Tab->item(n, CIso)->text().toInt(),
-		 PN = Tab->item(n, CPN)->text().toInt(), N=0; n != cr; n++)
+	n = cr = table->currentIndex().row();
+	F = ltc->getSourceFile(n);
+	vs = ltc->get_vs(n);
+	Js = ltc->getJs(n);
+	I = ltc->getIso(n);
+	PN = ltc->getProgression(n);
+	for (++n; n < RC && ltc->getSourceFile(n) == F && ltc->get_vs(n) == vs && ltc->getJs(n) == Js && ltc->getIso(n) == I && ltc->getProgression(n) == PN; ++n) ;
+	for (F = ltc->getSourceFile(n), vs = ltc->get_vs(n), Js = ltc->getJs(n), I = ltc->getIso(n), PN = ltc->getProgression(n), N=0; n != cr; ++n)
 	{
 		if (n == RC) 
 		{
 			n=0;
 			if (cr == 0) break;
 		}
-		if (Tab->item(n, CFile)->text() != F 
-			|| Tab->item(n, Cvs)->text().toInt() != vs
-			|| Tab->item(n, CJs)->text().toInt() != Js
-			|| Tab->item(n, CIso)->text().toInt() != I
-			|| Tab->item(n, CPN)->text().toInt() != PN)
+		if (ltc->getSourceFile(n) != F || ltc->get_vs(n) != vs || ltc->getJs(n) != Js || ltc->getIso(n) != I || ltc->getProgression(n) != PN)
 		{
-			LM = (Tab->item((n!=0 ? n : RC) - 1, CJss)->text().toInt() == Js ? M : 2 * M); 
+			LM = ((ltc->getJss(n!=0 ? n : RC) - 1) == Js ? M : 2 * M);
 			for (vs = 0; vs != -1; ) for (vs = -1, m = 1; m < N; m++) if (S[m-1] < S[m])
 			{
 				B = S[m-1];
@@ -2919,25 +2782,24 @@ void LineTable::findSimilarProgression(Progression P)
 			}
 			for (m = nwL = 0; m < LM && m < N; m++)
 			{
-				vs = Tab->item(v[m], Cvss)->text().toInt();
-				F = Tab->item(v[m], CC)->text();
-				if ((vs < mv || vs > Mv) && F.indexOf("overlap") == -1
-											&& F.indexOf("laser") == -1) nwL++;
+				vs = ltc->get_vss(v[m]);
+				F = ltc->getComment(v[m]);
+				if ((vs < mv || vs > Mv) && F.indexOf("overlap") == -1 && F.indexOf("laser") == -1) ++nwL;
 			}
 			if (nwL <= 1)
 			{
 				vs = (n!=0 ? n : RC);
-				for (m = vs - N; m < vs; m++) Tab->selectRow(m);
+				for (m = vs - N; m < vs; ++m) MarkLines(&m, 1);
 				return;
 			}
-			vs = Tab->item(n, Cvs)->text().toInt();
-			Js = Tab->item(n, CJs)->text().toInt();
-			F = Tab->item(n, CFile)->text();
-			I = Tab->item(n, CIso)->text().toInt();
-			PN = Tab->item(n, CPN)->text().toInt();
+			vs = ltc->get_vs(n);
+			Js = ltc->getJs(n);
+			F = ltc->getSourceFile(n);
+			I = ltc->getIso(n);
+			PN = ltc->getProgression(n);
 			N=0;
 		}
-		S[N] = Tab->item(n, CSNR)->text().toDouble();
+		S[N] = ltc->getSNR(n);
 		v[N++] = n;
 	}
 	QMessageBox::information(this, "MolSpektAnalysis", 
@@ -2963,29 +2825,31 @@ void LineTable::setvs()
 	connect(&OK, SIGNAL(clicked()), &SDialog, SLOT(accept()));
 	connect(&Cancel, SIGNAL(clicked()), &SDialog, SLOT(reject()));
 	if (SDialog.exec() == QDialog::Rejected) return;
-	QString vs = NE.text();
-	int i, m=0, n = Tab->rowCount(), r, rc;
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	Tab->blockSignals(true);
-	for (r=0, rc = SR.size(); r < rc; r++)
-	{
-		m = SR[r].topRow();
-		n = SR[r].bottomRow();
-		for (i=m; i<=n; i++) Tab->item(i, Cvs)->setText(vs);
-	}
-	Tab->blockSignals(false);
+	int vs = NE.text().toInt();
+	int r, *rows, N;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->getSelectedRows(rows, N);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r < NR; ++r) ltc->set_vs(rows[r], vs);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
-void LineTable::setFC(QString FC)
+void LineTable::setFC(const int FC)
 {
-	Tab->blockSignals(true);
-	QList<QTableWidgetSelectionRange> SR = Tab->selectedRanges();
-	int r, n;
-	for (n=0; n < SR.count(); n++) for (r = SR[n].topRow(); r <= SR[n].bottomRow(); r++)
-		Tab->item(r, CF)->setText(FC);
-	Tab->blockSignals(false);
+	int r,*rows, N;
+	table->getSelectedRows(rows, N);
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (r=0; r<N; ++r) ltc->setFineStructureQN(r, FC);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	Changed();
+	delete[] rows;
 }
 
 void LineTable::sortbyvs()
@@ -2996,7 +2860,8 @@ void LineTable::sortbyvs()
 
 void LineTable::SetPN()
 {
-	int n, aJ = -1, nJ, ndJ, adJ = -1, aI=-1, nI, av=-1, nv, aF = -1, nF, N = Tab->rowCount(), i, j;
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, aJ = -1, nJ, ndJ, adJ = -1, aI=-1, nI, av=-1, nv, aF = -1, nF, N = ltc->rowCount(), i, j;
 	int *SA = new int[N];
 	double nWn, aWn = 0.0;
 	QString aFi, nFi;
@@ -3005,22 +2870,22 @@ void LineTable::SetPN()
 	for (n=0; n<N; n++) SA[tSO[n]] = n;
 	delete[] tSO;
 	MaxPN = 0;
-	Tab->blockSignals(true);
-	for (n=0; n < N; n++)
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	for (n=0; n < N; ++n)
 	{
-		nJ = Tab->item(SA[n], CJs)->text().toInt();
-		ndJ = nJ - Tab->item(SA[n], CJss)->text().toInt();
+		nJ = ltc->getJs(SA[n]);
+		ndJ = nJ - ltc->getJss(SA[n]);
 		ndJ *= ndJ;
-		nI = Tab->item(SA[n], CIso)->text().toInt();
-		nv = Tab->item(SA[n], Cvs)->text().toInt();
-		nWn = (UTA ? Tab->item(SA[n], CEUp)->text().toDouble() : 0.0);
-		i = (nFi = Tab->item(SA[n], CFile)->text()).lastIndexOf(QRegExp("[\\/]")) + 1;
+		nI = ltc->getIso(SA[n]);
+		nv = ltc->get_vs(SA[n]);
+		nWn = (UTA ? ltc->getUpperEnergy(SA[n]) : 0.0);
+		i = (nFi = ltc->getSourceFile(SA[n])).lastIndexOf(QRegExp("[\\/]")) + 1;
 		j = nFi.indexOf('.', i);
 		nFi = nFi.mid(i, (j>=0 ? j : nFi.length()) - i);
-		nF = Tab->item(SA[n], CF)->text().toInt();
-		if (nFi.isEmpty()) Tab->item(SA[n], CFile)->setText(nFi = aFi);
-		if (nJ != aJ || ndJ != adJ || nv != av || fabs(nI - aI) > 9.0 || nF != aF || nFi != aFi 
-			|| fabs(nWn - aWn) > 1e2 * Tab->item(SA[n], Cerr)->text().toDouble())
+		nF = ltc->getFineStructureQN(SA[n]);
+		if (nFi.isEmpty()) ltc->setSourceFile(SA[n], nFi = aFi);
+		if (nJ != aJ || ndJ != adJ || nv != av || fabs(nI - aI) > 9.0 || nF != aF || nFi != aFi || fabs(nWn - aWn) > 1e2 * ltc->getUncertainty(SA[n]))
 		{
 			aJ = nJ;
 			av = nv;
@@ -3029,46 +2894,43 @@ void LineTable::SetPN()
 			aFi = nFi;
 			aWn = nWn;
 			adJ = ndJ;
-			MaxPN++;
+			++MaxPN;
 		}
-		Tab->item(SA[n], CPN)->setText(QString::number(MaxPN));
+		ltc->setProgression(SA[n], MaxPN);
 	}
-	Tab->blockSignals(false);
+	mCore->blockSignals(false);
+	table->blockSignals(false);
 	delete[] SA;
 	Changed();
 }
 
-void LineTable::getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss, bool ***&uL, 
-							   bool ***&lL)
+void LineTable::getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss, bool ***&uL, bool ***&lL)
 {
 	//printf("LineTab::getKnownLevels\n");
-	int n, m, i, o, I, NR = Tab->rowCount();
-	for (n=0, mvs = 0, mvss = 0, mJs = 0, mJss = 0; n < NR; n++)
+	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	int n, m, i, o, I, NR = ltc->rowCount();
+	for (n=0, mvs = 0, mvss = 0, mJs = 0, mJss = 0; n < NR; ++n)
 	{
-		if ((m = Tab->item(n, Cvs)->text().toInt()) > mvs) mvs = m;
-		if ((m = Tab->item(n, Cvss)->text().toInt()) > mvss) mvss = m;
-		if ((m = Tab->item(n, CJs)->text().toInt()) > mJs) mJs = m;
-		if ((m = Tab->item(n, CJss)->text().toInt()) > mJss) mJss = m;
+		if ((m = ltc->get_vs(n)) > mvs) mvs = m;
+		if ((m = ltc->get_vss(n)) > mvss) mvss = m;
+		if ((m = ltc->getJs(n)) > mJs) mJs = m;
+		if ((m = ltc->getJss(n)) > mJss) mJss = m;
 	}
 	uL = CreateBool(NI, mvs + 1, mJs + 1);
 	lL = CreateBool(NI, mvss + 1, mJss + 1);
-	for (i=0; i < NI; i++) 
+	for (i=0; i < NI; ++i)
 	{
-		for (n=0; n <= mvs; n++) for (m=0; m <= mJs; m++) uL[i][n][m] = false;
-		for (n=0; n <= mvss; n++) for (m=0; m <= mJss; m++) lL[i][n][m] = false;
+		for (n=0; n <= mvs; ++n) for (m=0; m <= mJs; ++m) uL[i][n][m] = false;
+		for (n=0; n <= mvss; ++n) for (m=0; m <= mJss; ++m) lL[i][n][m] = false;
 	}
-	for (i=0; i < NR; i++)
+	for (i=0; i < NR; ++i)
 	{
-		I = (o = Tab->item(i, CIso)->text().toInt()) / 10;
+		I = (o = ltc->getIso(i)) / 10;
 		if (o == 10 * I && I > 0 && I <= NI)
 		{
-			I--; 
-			if ((m = Tab->item(i, Cvs)->text().toInt()) >= 0 
-						  && (n = Tab->item(i, CJs)->text().toInt()) >= 0)
-				uL[I][m][n] = true;
-			if ((m = Tab->item(i, Cvss)->text().toInt()) >= 0 
-						  && (n = Tab->item(i, CJss)->text().toInt()) >= 0)
-				lL[I][m][n] = true;
+			--I;
+			if ((m = ltc->get_vs(i)) >= 0 && (n = ltc->getJs(i)) >= 0) uL[I][m][n] = true;
+			if ((m = ltc->get_vss(i)) >= 0 && (n = ltc->getJss(i)) >= 0) lL[I][m][n] = true;
 		}
 	}
 	//printf("NR=%d, mJs=%d, mJss=%d\n", NR, mJs, mJss);
@@ -3076,7 +2938,7 @@ void LineTable::getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss,
 
 void LineTable::findErrors()
 {
-	int n, N = Tab->columnCount();
-	for (n=0; (n<N ? Tab->item(n, Cerr)->text().toDouble() != 0.0 : false); n++) ;
-	if (n<N) Tab->selectRow(n);
+	int n, N = mCore->columnCount();
+	for (n=0; n<N && mCore->getUncertainty(n) != 0.0; ++n) ;
+	if (n<N) MarkLines(&n, 1);
 }
