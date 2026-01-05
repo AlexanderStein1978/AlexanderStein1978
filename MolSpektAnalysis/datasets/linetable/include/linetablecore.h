@@ -44,6 +44,7 @@ class LineTableCore : public TableViewWindowCore
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+		void setData(const std::vector<LineTableCore::TableCols>& columns, const std::vector<BaseData*> data);
 		void setColumnCount(const int count);
 		BaseData* convertToBaseData(const QStringList& L) const override;
 		LineTableBaseData* convertStringArrayToLineTableBaseData(const QString* const array, const int length) const;
@@ -58,10 +59,16 @@ class LineTableCore : public TableViewWindowCore
 							   const int Jeo, const int* const UIsoT, const float S, const int UNC, const int UMCT, const int* const UCT);
 		void ShowUpTermtable(const int * const SO, int &n, QString** Data);
 		void RemoveDoubled(const int *const sortArray);
+		void setUncertainty(const int row, const double Error, const double OvError);
 
 		inline double getWaveNumber(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->waveNumber;
+		}
+
+		inline void setUncertainty(const int row, const double uncertainty)
+		{
+			mData[row]->uncertainty = uncertainty;
 		}
 
 		inline double getSNR(const int row) const
@@ -84,14 +91,29 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->vss;
 		}
 
+		inline int set_vss(const int row, const int vss)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->vss = vss;
+		}
+
 		inline int getJss(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Jss;
 		}
 
+		inline int setJss(const int row, const int Jss)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->Jss = Jss;
+		}
+
 		inline int getFineStructureQN(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->F;
+		}
+
+		inline void setFineStructureQN(const int row, const int FQN)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->F = FQN;
 		}
 
 		inline double getUpperEnergy(const int row) const
@@ -114,14 +136,24 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
 		}
 
+		inline void setComment(const int row, const QString& comment)
+		{
+			reinterpret_cast<LineTableBaseData*>(mData[row])->Comment = comment;
+		}
+
 		inline void setFCF(const int row, const double FCF)
 		{
 			reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
 		}
 
-		inline double getDeviationToCalculatedUpperEnergy(const int row)
+		inline double getDeviationToCalculatedUpperEnergy(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->diffToCalculatedEnergy;
+		}
+
+		inline const std::vector<TableCols>& getColumnVector() const
+		{
+			return mColumns;
 		}
 
 	private:

@@ -65,7 +65,7 @@ public:
 	bool writeData(QString Filename = "");
 	bool readData(QString Filename = "");
 	void addData(QString **Data, int NR, int NC);
-	void setData(int NRows, int nCols, QStringList &HHeader, QTableWidgetItem ***Data);
+	void setData(const std::vector<LineTableCore::TableCols>& mColumns, const std::vector<BaseData*> data);
 	void splitTable();
 	void WriteTFGS(QString FileName = "", int vso = 1000, vsOListElement *vsOList = 0);
 	void W2AI(QString sldc = "");
@@ -99,7 +99,6 @@ public:
 	void SortfRemDoubled();
 	void SetError();
 	void SetError(int NL, int *PN, int *vss, int *Jss, double *Err);
-	void SetError(int NL, int *PN, int *vss, int *Jss, QString *Err);
 	void DeleteRows(int NL, int *PN, int *vss = 0, int *Jss = 0);
 	void SetPN();
 	void Shiftvup();
@@ -112,12 +111,17 @@ public:
 	void SetvssAscending();
 	void Delete();
 	void setvs();
-	void setFC(QString nF);
+	void setFC(const int nF);
 	void sortbyvs();
 	void getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss, bool ***&uL, bool ***&lL);
 	void setMolecule(Molecule *mol);
 	void getSelData(int *&Js, double *&E, int &N);
 	void getViewnE(int *&Js, double *&E, int &N);
+
+	inline void setData(const int row, const BaseData* const data) override
+	{
+		TableViewWindow::setData(row, data);
+	}
 
 	inline void MarkLines(int *R, int N)
 	{

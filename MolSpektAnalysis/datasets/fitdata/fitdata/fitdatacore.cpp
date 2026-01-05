@@ -444,6 +444,7 @@ void FitDataCore::shrinkAllSpectRefs()
         FileName = (*it)->file;
         if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
     }
+    EmitDataChanged(0, mData.size(), fdcFile, fdcFile);
 }
 
 void FitDataCore::search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const

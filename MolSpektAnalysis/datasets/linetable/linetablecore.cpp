@@ -995,3 +995,80 @@ void LineTableCore::ShowUpTermtable(const int *const SO, int &n, QString ** Data
 		}
     }
 }
+
+void LineTableCore::RemoveDoubled(const int *const sortArray)
+{
+	int i, n1, n2, m1, m2, nr = mData.size();
+	QString F1, F2, Comment;
+	for (i=1, F2 = mData[sortArray[0]]->file; i < nr; ++i)
+	{
+		LineTableBaseData* data0 = reinterpret_cast<LineTableBaseData*>(mData[sortArray[i-1]]);
+		LineTableBaseData* data1 = reinterpret_cast<LineTableBaseData*>(mData[sortArray[i]]);
+		F1 = F2;
+		F2 = data1->file;
+		//printf("I=%d, vs=%d, Js=%d, vss=%d, Jss=%d, WN=%f\n", Tab->item(S[i], CIso)->text().toInt(), Tab->item(S[i], Cvs)->text().toInt(),
+			//   Tab->item(S[i], CJs)->text().toInt(), Tab->item(S[i], Cvss)->text().toInt(), Tab->item(S[i], CJss)->text().toInt(),
+			  // Tab->item(S[i], CWN)->text().toDouble());
+		if (data1->vss == data0->vss && data1->Jss == data0->Jss && data1->Js == data0->Js)
+		{
+			n1 = F1.lastIndexOf(QRegExp("[\\/]"));
+			n2 = F2.lastIndexOf(QRegExp("[\\/]"));
+			m1 = ((m1 = F1.lastIndexOf('.')) != -1 ? m1 : F1.length());
+			m2 = ((m2 = F2.lastIndexOf('.')) != -1 ? m2 : F2.length());
+			if (F1.mid(n1 + 1, m1 - n1 - 1) == F2.mid(n2 + 1, m2 - n2 - 1) && data1->isotope == data0->isotope && fabs(data1->waveNumber - data0->waveNumber) < 1e-4)
+			{
+				mData[sortArray[i]] = nullptr;
+				if (F1 != F2)
+				{
+					QFile File1(F1), File2(F2);
+					if (!File1.exists() && File2.exists()) data0->file = F2;
+				}
+				Comment = data1->Comment;
+				if (data0->Comment.length() < Comment.length()) data0->Comment = Comment;
+				if (data0->uncertainty < data1->uncertainty) data0->uncertainty = data1->uncertainty;
+			}
+		}
+	}
+}
+
+void LineTableCore::setData(const std::vector<LineTableCore::TableCols>& columns, const std::vector<BaseData *> data)
+{
+	if (columns.size() > mColumns.size())
+	{
+		beginInsertColumns(QModelIndex(), 0, columns.size());
+		mColumns = columns;
+		endInsertColumns();
+	}
+	else if (columns.size() < mColumns.size())
+	{
+		beginRemoveColumns(QModelIndex(), 0, mColumns.size());
+		mColumns = columns;
+		endRemoveColumns();
+	}
+	else mColumns = columns;
+	emit headerDataChanged(Qt::Horizontal, 0, mColumns.size());
+	if (data.size() > mData.size())
+	{
+		beginInsertRows(QModelIndex(), 0, data.size());
+		mData = data;
+		endInsertRows();
+	}
+	else if (data.size() < mData.size())
+	{
+		beginRemoveRows(QModelIndex(), 0, mData.size());
+		mData = data;
+		endRemoveRows();
+	}
+	else mData = data;
+	EmitDataChanged(0, mData.size(), 0, mColumns.size());
+}
+
+void LineTableCore::setUncertainty(const int row, const double Error, const double OvError)
+{
+	QString Buffer = reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
+	if (Buffer.indexOf("overlap") > -1 || Buffer.indexOf("laser") > -1 || Buffer.indexOf("weak") > -1)
+	{
+		if (mData[row]->uncertainty < OvError) mData[row]->uncertainty = OvError;
+	}
+	else if (mData[row]->uncertainty > Error) mData[row]->uncertainty = Error;
+}
