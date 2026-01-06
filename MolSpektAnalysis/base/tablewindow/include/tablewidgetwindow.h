@@ -18,6 +18,14 @@ public:
     TableWidgetWindow(Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
     virtual ~TableWidgetWindow();
 
+    void setTabDimensions(int NRows, int NCols) override;
+    void getTabDimensions(int &NRows, int &NCols) override;
+    void setRowData(int Row, QString *Data) override;
+    void AddRow() override;
+    void DeleteRows() override;
+    void cutRows(int &numRows, int &numColumns, QString **&Data) override;
+	void copyRows(int &numRows, int &numColums, QString **&Data) override;
+	void insertRows(int numRows, int numColumns, QString **Data) override;
     void MarkLines(int *rN, int N) override;
     void setIsoIcon(int Col, int c = 0) override;
     void tabItemChanged(QTableWidgetItem *Item) override;
@@ -33,11 +41,25 @@ public:
 	void search(int column, double value, int smeqla) override;
 	void search(QString Text, int column=-1, bool completeCell = false) override;
 
+    inline int getNumLines() const override
+	{
+		if (Tab != 0) return Tab->rowCount();
+		return 0;
+	}
+
+	inline int getNumColumns() const override
+	{
+		if (Tab != 0) return Tab->columnCount();
+		return 0;
+	}
+
 protected:
+    void resizeHelper() override;
     void shiftCellValue(int n) override;
     int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const override;
     void shrinkAllSpectRefs(int FileColumn) override;
     void sortTab(int *SortArray) override;
+    bool checkAllConnections(int FileColumn) override;
 };
 
 #endif

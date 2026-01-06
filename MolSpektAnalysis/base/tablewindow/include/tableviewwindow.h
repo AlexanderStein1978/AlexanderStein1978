@@ -50,6 +50,7 @@ protected slots:
 	}
 
 protected:
+    void resizeHelper() override;
     void writeData(QTextStream& S) override;
     void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
     virtual void BaseDataToQStringArray(const BaseData&, QString *const) const = 0;
