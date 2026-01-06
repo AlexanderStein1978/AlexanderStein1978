@@ -49,8 +49,8 @@ public:
 	virtual QString **getData(int &NRows, int &NCols);
 	virtual QStringList getHorizontalHeaderLabels();
 	virtual void setData(QString **Data, int NRows, int NCols);
-	void setHorizontalHeader(QStringList &Labels);
-	void setVerticalHeader(QStringList &Labels);
+	virtual void setHorizontalHeader(QStringList &Labels);
+	virtual void setVerticalHeader(QStringList &Labels);
 	virtual void cutRows(int &numRows, int &numColumns, QString **&Data);
 	virtual void copyRows(int &numRows, int &numColums, QString **&Data);
 	virtual void insertRows(int numRows, int numColumns, QString **Data);
@@ -61,7 +61,7 @@ public:
 	virtual void search(int column, int value, int smeqla);
 	virtual void search(int column, double value, int smeqla);
 	virtual void search(QString Text, int column=-1, bool completeCell = false);
-	void setEditable(bool Editable);
+	virtual void setEditable(bool Editable);
 	virtual void getViewnE(int *&Js, double *&E, int &N);
 	virtual void DeleteRows();
 	virtual void AddRow();
@@ -90,12 +90,12 @@ public slots:
 	void setName();
 	bool writeData(QString Filename = "");
 	bool readData(QString Filename = "");
-	void tabItemChanged(QTableWidgetItem *Item);
+	virtual void tabItemChanged(QTableWidgetItem *Item);
 	
 protected:
 	void resizeEvent(QResizeEvent *e);
 	virtual void setIsoIcon(int Col, int c = 0);
-    int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const;
+    virtual int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const;
 	virtual void sortTab(int *SortArray);
 	void getViewnRows(bool *RV);
 	void setNumIterations(int Finished, int Max = -1);
@@ -128,6 +128,7 @@ protected:
 	QString Filename;
 	QList<ViewList> ViewLists;
 	QProgressBar *Progress;
+	Type Typ;
 
 signals:
 	void SourceChanged();
@@ -143,7 +144,6 @@ private slots:
 private:
 	QLineEdit *Source, *Name;
 	QString tSource, tvMax, tJMax, terror;
-	Type Typ;
 };
 
 #endif
