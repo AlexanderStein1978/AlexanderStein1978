@@ -10,22 +10,22 @@
 #define LINETABLE_SORTFUNCTIONS_H
 
 
-class LineTableCore;
+class TableViewWindowCore;
 class TermEnergy;
 
 
-bool sortUtIvJ(const LineTableCore *const core, const int n, const int m);
-bool sortIJvP(const LineTableCore *const core, const int n, const int m);
-bool sortIvPJ(const LineTableCore *const core, const int n, const int m);
-bool sortFPInt(const LineTableCore *const core, const int n, const int m);
-bool sortIJvFreq(const LineTableCore *const core, const int n, const int m);
-bool sortByvs(const LineTableCore *const core, const int n, const int m);
-bool sortForSPN(const LineTableCore *const core, const int n, const int m);
-bool sortBySpectrum(const LineTableCore *const core, const int n, const int m);
-bool sortfRemDoubl(const LineTableCore *const core, const int n, const int m);
-bool sortByFrequency(const LineTableCore *const core, const int n, const int m);
-bool sortByProgression(const LineTableCore *const core, const int n, const int m);
-bool isnSPG(const LineTableCore *const core, const int n, const int m);
+bool sortUtIvJ(const TableViewWindowCore *const core, const int n, const int m);
+bool sortIJvP(const TableViewWindowCore *const core, const int n, const int m);
+bool sortIvPJ(const TableViewWindowCore *const core, const int n, const int m);
+bool sortFPInt(const TableViewWindowCore *const core, const int n, const int m);
+bool sortIJvFreq(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByvs(const TableViewWindowCore *const core, const int n, const int m);
+bool sortForSPN(const TableViewWindowCore *const core, const int n, const int m);
+bool sortBySpectrum(const TableViewWindowCore *const core, const int n, const int m);
+bool sortfRemDoubl(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByFrequency(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByProgression(const TableViewWindowCore *const core, const int n, const int m);
+bool isnSPG(const TableViewWindowCore *const core, const int n, const int m);
 
 bool isnSPG(TermEnergy& T1, TermEnergy &T2);
 
