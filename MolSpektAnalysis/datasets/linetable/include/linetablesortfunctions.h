@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,22 +10,22 @@
 #define LINETABLE_SORTFUNCTIONS_H
 
 
-class QTableWidget;
+class LineTableCore;
 class TermEnergy;
 
 
-bool sortUtIvJ(const QTableWidget *const Tab, const int n, const int m);
-bool sortIJvP(const QTableWidget *const Tab, const int n, const int m);
-bool sortIvPJ(const QTableWidget *const Tab, const int n, const int m);
-bool sortFPInt(const QTableWidget *const Tab, const int n, const int m);
-bool sortIJvFreq(const QTableWidget *const Tab, const int n, const int m);
-bool sortByvs(const QTableWidget *const Tab, const int n, const int m);
-bool sortForSPN(const QTableWidget *const Tab, const int n, const int m);
-bool sortBySpectrum(const QTableWidget *const Tab, const int n, const int m);
-bool sortfRemDoubl(const QTableWidget *const Tab, const int n, const int m);
-bool sortByFrequency(const QTableWidget *const Tab, const int n, const int m);
-bool sortByProgression(const QTableWidget *const Tab, const int n, const int m);
-bool isnSPG(const QTableWidget *const Tab, const int n, const int m);
+bool sortUtIvJ(const LineTableCore *const core, const int n, const int m);
+bool sortIJvP(const LineTableCore *const core, const int n, const int m);
+bool sortIvPJ(const LineTableCore *const core, const int n, const int m);
+bool sortFPInt(const LineTableCore *const core, const int n, const int m);
+bool sortIJvFreq(const LineTableCore *const core, const int n, const int m);
+bool sortByvs(const LineTableCore *const core, const int n, const int m);
+bool sortForSPN(const LineTableCore *const core, const int n, const int m);
+bool sortBySpectrum(const LineTableCore *const core, const int n, const int m);
+bool sortfRemDoubl(const LineTableCore *const core, const int n, const int m);
+bool sortByFrequency(const LineTableCore *const core, const int n, const int m);
+bool sortByProgression(const LineTableCore *const core, const int n, const int m);
+bool isnSPG(const LineTableCore *const core, const int n, const int m);
 
 bool isnSPG(TermEnergy& T1, TermEnergy &T2);
 
