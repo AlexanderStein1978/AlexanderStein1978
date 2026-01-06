@@ -62,8 +62,8 @@ public:
 	void findSimilarProgression(Progression P);
 	void getObsIso(bool *ObsIso, int NIso);
     void getProgressions(int &N, Progression *&P, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
-	bool writeData(QString Filename = "");
-	bool readData(QString Filename = "");
+	bool writeData(QString Filename = "") override;
+	bool readData(QString Filename = "") override;
 	void addData(QString **Data, int NR, int NC);
 	void setData(const std::vector<LineTableCore::TableCols>& mColumns, const std::vector<BaseData*> data);
 	void splitTable();
@@ -123,22 +123,22 @@ public:
 		TableViewWindow::setData(row, data);
 	}
 
-	inline void MarkLines(int *R, int N)
+	inline void MarkLines(int *R, int N) override
 	{
 		TableWindow::MarkLines(R, N);
 	}
 
-	inline ElState *getElState()
+	inline ElState *getElState() override
 	{
 		return (transition != 0 ? transition->getUpperState() : 0);
 	}
 
-    inline bool checkAllConnections()
+    inline bool checkAllConnections() override
     {
         return TableWindow::checkAllConnections(LineTableCore::CFile);
     }
 
-    inline void shrinkAllSpectRefs()
+    inline void shrinkAllSpectRefs() override
     {
         TableWindow::shrinkAllSpectRefs(LineTableCore::CFile);
     }
@@ -169,7 +169,7 @@ signals:
 	void DataChanged();
 	
 private:
-	void sortTab(int *SortArray);
+	void sortTab(int *SortArray) override;
 	void UpdateMarker(Spektrum *Spectrum = 0, int numLines = -1, int *Lines = 0, bool remove = false);
 	
 	Transition *transition;
