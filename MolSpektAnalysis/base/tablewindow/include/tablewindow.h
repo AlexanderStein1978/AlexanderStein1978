@@ -31,12 +31,12 @@ class TableWindow : public MDIChild
 	Q_OBJECT
 	
 public:
-	TableWindow(Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
+	TableWindow(Type typ = TermEnergyTable, MainWindow *MW = nullptr, Molecule *M = nullptr);
     virtual ~TableWindow();
 	virtual void setTabDimensions(int NRows, int NCols) = 0;
 	virtual void getTabDimensions(int &NRows, int &NCols) = 0;
 	virtual void setRowData(int Row, QString *Data) = 0;
-	virtual void setMolecule(Molecule *Mol) = 0;
+	void setMolecule(Molecule *Mol);
 	Molecule *getMolecule();
 	void setSource(QString nSource);
 	QString getSource() const;
@@ -80,13 +80,11 @@ public slots:
 	void setName();
 	bool writeData(QString Filename = "");
 	bool readData(QString Filename = "");
-	virtual void tabItemChanged(QTableWidgetItem *Item) = 0;
 	
 protected:
 	void resizeEvent(QResizeEvent *e);
-	virtual void resizeHelper() = 0;
+	virtual void resizeHelper(QRect& G) = 0;
 	virtual void setIsoIcon(int Col, int c = 0) = 0;
-    virtual int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const = 0;
 	virtual void sortTab(int *SortArray) = 0;
 	void getViewnRows(bool *RV);
 	void setNumIterations(int Finished, int Max = -1);
@@ -96,7 +94,7 @@ protected:
     virtual bool checkAllConnections(int FileColumn) = 0;
     virtual void shrinkAllSpectRefs(int FileColumn) = 0;
 	virtual bool readData(QTextStream& S) = 0;
-	virtual inline void writeData(QTextStream&) {}
+	virtual void writeData(QTextStream&) {}
 
     virtual inline QRegExp GetStartSpecialPartRegExp() const
     {
@@ -109,17 +107,17 @@ protected:
     }
 	
 	Molecule *molecule;	
-	QTableWidget *Tab;
-	MTable *table;
 	QLabel *vMLabel, *JMLabel, *errLabel, *IsoLabel, *CompLabel, *ViewLabel;
 	QLabel *MolLabel, *USLabel, *LSLabel, *JsLabel, *JssLabel, *TLabel;
 	QComboBox *Iso, *Comp, *View, *MolBox, *USBox, *LSBox, *TUnit, *JsB, *JssB;
 	QLineEdit *vMax, *JMax, *error, *Js, *Jss, *Temp, *Date, *Pot1, *Pot2, *NumParFits;
 	QPushButton *Calc;
+	QLineEdit *Source, *Name;
 	QString Filename;
 	QList<ViewList> ViewLists;
 	QProgressBar *Progress;
 	Type Typ;
+	const QString Spacer;
 
 signals:
 	void SourceChanged();
@@ -133,7 +131,6 @@ private slots:
 	void errorChanged();
 	
 private:
-	QLineEdit *Source, *Name;
 	QString tSource, tvMax, tJMax, terror;
 };
 

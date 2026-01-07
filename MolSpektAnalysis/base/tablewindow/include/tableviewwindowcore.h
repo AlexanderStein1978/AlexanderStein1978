@@ -101,6 +101,9 @@ class TableViewWindowCore : public QAbstractTableModel
 		}
 
 	protected:
+		void startSearch(int& N, int *& Rows) const;
+		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
+
 		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart;

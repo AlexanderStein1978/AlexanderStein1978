@@ -54,12 +54,16 @@ public:
 	}
 
 protected:
-    void resizeHelper() override;
+    void resizeHelper(QRect& G) override;
+    bool readData(QTextStream& S) override;
+    void writeData(QTextStream& S) override;
     void shiftCellValue(int n) override;
     int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const override;
     void shrinkAllSpectRefs(int FileColumn) override;
     void sortTab(int *SortArray) override;
     bool checkAllConnections(int FileColumn) override;
+
+    QTableWidget *Tab;
 };
 
 #endif

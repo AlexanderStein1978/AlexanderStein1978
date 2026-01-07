@@ -15,14 +15,317 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QProgressBar>
 
 
 TableWidgetWindow::TableWidgetWindow(Type typ, MainWindow *MW, Molecule *M) : TableWindow(typ, MW, M)
 {
+	int w = width(), h = height();
+	int w3 = w / 3, w2 = w / 2, w4 = w / 4;
+	QGridLayout *L, *L2;
+	QBoxLayout *Layout;
+	switch (Typ)
+	{
+		case TextTable1:
+		case TextTable2:
+			setFilter("Text tables (*.dat)");
+			setFileExt(".dat");
+			Tab = new QTableWidget(this);
+			Layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
+			Layout->addWidget(Tab);
+			break;
+		case DunhamTable:
+			Tab = new QTableWidget(MaxDunCoefficients, 5, this);
+			Tab->setGeometry(0, 70, w, h - 70);
+
+			vMLabel = new QLabel("Max v:", this);
+			vMLabel->setGeometry(10, 40, 40, 20);
+			vMax = new QLineEdit("", this);
+			vMax->setGeometry(50, 40, w3 - 60, 20);
+			connect(vMax, SIGNAL(textEdited(QString)), this, SLOT(vMaxChanged()));
+
+			JMLabel = new QLabel("Max J:", this);
+			JMLabel->setGeometry(w3 + 10, 40, 40, 20);
+			JMax = new QLineEdit("", this);
+			JMax->setGeometry(w3 + 50, 40, w3 - 60, 20);
+			connect(JMax, SIGNAL(textEdited(QString)), this, SLOT(JMaxChanged()));
+
+			errLabel = new QLabel("Error:", this);
+			errLabel->setGeometry(2 * w3 + 10, 40, 40, 20);
+			error = new QLineEdit("", this);
+			error->setGeometry(2 * w3 + 50, 40, w3 - 60, 20);
+			connect(error, SIGNAL(textEdited(QString)), this, SLOT(errorChanged()));
+
+			setFilter("Dunhame coefficents (*.dun)");
+			setFileExt(".dun");
+			break;
+		case TermEnergyView:
+			Tab = new QTableWidget(this);
+			Tab->setGeometry(0, 70, w, h - 70);
+
+			ViewLabel = new QLabel("View:", this);
+			ViewLabel->setGeometry(10, 40, 40, 20);
+			View = new QComboBox(this);
+			View->setGeometry(50, 40, w3 - 60, 20);
+			View->setEditable(false);
+
+			IsoLabel = new QLabel("Isotopologue:", this);
+			IsoLabel->setGeometry(w3 + 10, 40, 80, 20);
+			Iso = new QComboBox(this);
+			Iso->setGeometry(w3 + 90, 40, w3 - 100, 20);
+			Iso->setEditable(false);
+
+			CompLabel = new QLabel("Component:", this);
+			CompLabel->setGeometry(2 * w3 + 10, 70, 40, 20);
+			Comp = new QComboBox(this);
+			Comp->setGeometry(2 * w3 + 80, 40, w3 - 90, 20);
+			Comp->setEditable(false);
+
+			Source->setGeometry(220, 10, w - 380, 20);
+
+			TLabel = new QLabel("T:", this);
+			TLabel->setGeometry(w - 140, 10, 20, 20);
+			Temp = new QLineEdit("20", this);
+			Temp->setGeometry(w - 120, 10, 60, 20);
+			Temp->setEnabled(false);
+			TUnit = new QComboBox(this);
+			TUnit->setGeometry(w - 60, 10, 50, 20);
+			TUnit->setEditable(false);
+			TUnit->setEnabled(false);
+
+			Name->setReadOnly(true);
+			Source->setReadOnly(true);
+			break;
+		case FranckCondonView:
+			Tab = new QTableWidget(this);
+			Tab->setGeometry(0, 70, w, h - 70);
+
+			MolLabel = new QLabel("Molecule:", this);
+			MolLabel->setGeometry(10, 10, 70, 20);
+			MolBox = new QComboBox(this);
+			MolBox->setGeometry(80, 10, w4 - 100, 20);
+			MolBox->setEditable(false);
+
+			ViewLabel = new QLabel("View:", this);
+			ViewLabel->setGeometry(10, 40, 40, 20);
+			View = new QComboBox(this);
+			View->setGeometry(50, 40, w4 - 60, 20);
+			View->setEditable(false);
+
+			IsoLabel = new QLabel("Isotopologue:", this);
+			IsoLabel->setGeometry(w4 + 10, 10, 70, 20);
+			Iso = new QComboBox(this);
+			Iso->setGeometry(w4 + 80, 10, w4 - 100, 20);
+			Iso->setEditable(false);
+
+			TLabel = new QLabel("T:", this);
+			TLabel->setGeometry(w4 + 10, 40, 20, 20);
+			Temp = new QLineEdit("20", this);
+			Temp->setGeometry(w4 + 30, 40, 60, 20);
+			Temp->setEnabled(false);
+			TUnit = new QComboBox(this);
+			TUnit->setGeometry(w4 + 90, 40, 50, 20);
+			TUnit->setEditable(false);
+			TUnit->setEnabled(false);
+
+			USLabel = new QLabel("Upper state:", this);
+			USLabel->setGeometry(w2 + 10, 10, 70, 20);
+			USBox = new QComboBox(this);
+			USBox->setGeometry(w2 + 80, 10, w4 - 100, 20);
+			USBox->setEditable(false);
+
+			LSLabel = new QLabel("Lower state:", this);
+			LSLabel->setGeometry(3 * w4 + 10, 10, 70, 20);
+			LSBox = new QComboBox(this);
+			LSBox->setGeometry(3 * w4 + 80, 10, w4 - 100, 20);
+			LSBox->setEditable(false);
+
+			JsLabel = new QLabel("J':", this);
+			JsLabel->setGeometry(w2 + 10, 40, 30, 20);
+			Js = new QLineEdit("0", this);
+			Js->setGeometry(w2 + 40, 40, 50, 20);
+
+			JssLabel = new QLabel("J'':", this);
+			JssLabel->setGeometry(w2 + 110, 40, 30, 20);
+			Jss = new QLineEdit("0", this);
+			Jss->setGeometry(w2 + 140, 40, 50, 20);
+
+			Calc = new QPushButton("Calculate", this);
+			Calc->setGeometry(3.25 * w4, 40, 0.75 * w4 - 10, 20);
+			break;
+		case PotData:
+			Tab = new QTableWidget(this);
+			Tab->setGeometry(0, 40, w, h - 40);
+			setFilter("Measured term energies (*.mterm)");
+			setFileExt(".mterm");
+			break;
+		case FranckCondonTable:
+			setFilter("FCF tables (*.fcf)");
+			setFileExt(".fcf");
+			L = new QGridLayout(this);
+			L->addWidget(new QLabel("Name:", this), 0, 0);
+			L->addWidget(Name = new QLineEdit("", this), 0, 1);
+			connect(Name, SIGNAL(editingFinished()), this, SLOT(setName()));
+			L->setColumnStretch(1, 1);
+			L->addWidget(new QLabel("Upper potential:", this), 0, 2);
+			L->addWidget(Pot1 = new QLineEdit("", this), 0, 3);
+			Pot1->setReadOnly(true);
+			L->setColumnStretch(3, 1);
+			L->addWidget(new QLabel("Lower potential:", this), 0, 4);
+			L->addWidget(Pot2 = new QLineEdit("", this), 0, 5);
+			Pot2->setReadOnly(true);
+			L->setColumnStretch(5, 1);
+			L->addWidget(new QLabel("Date calculated:", this), 1, 0);
+			L->addWidget(Date = new QLineEdit("", this), 1, 1);
+			L->addWidget(new QLabel("View isotopologue:", this), 1, 2);
+			L->addWidget(Iso = new QComboBox(this), 1, 3);
+			Iso->setEditable(false);
+			L2 = new QGridLayout;
+			L2->addWidget(new QLabel("v':", this), 0, 0);
+			L2->addWidget(JsB = new QComboBox(this), 0, 1);
+			JsB->setEditable(false);
+			L2->addWidget(new QLabel("v'':", this), 0, 2);
+			L2->addWidget(JssB = new QComboBox(this), 0, 3);
+			JssB->setEditable(false);
+			L->addLayout(L2, 1, 4, 1, 2);
+			L->addWidget(Tab = new QTableWidget(this), 2, 0, 1, 6);
+			break;
+		case FitSeriesResultTable:
+			L = new QGridLayout(this);
+			L->addWidget(new QLabel("Number of parallel fits:", this), 0, 0);
+			L->addWidget(NumParFits = new QLineEdit(this), 0, 1);
+			L->addWidget(Progress = new QProgressBar(this), 0, 2);
+			Progress->setFormat("%v iterations of %m finished");
+			Progress->setMinimum(0);
+			L->addWidget(Tab = new QTableWidget(this), 1, 0, 1, 3);
+			break;
+        case External:
+            break;
+		default:
+			printf("TableWindow::TableWindow: Error: The type %d is not a valid type for a tablewindow!", Typ);
+			break;
+	}
+	if (Typ != TermEnergyTable && Typ != FitDataSet)
+	{
+		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(Changed()));
+		connect(Tab, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(tabItemChanged(QTableWidgetItem*)));
+	}
 }
 
 TableWidgetWindow::~TableWidgetWindow()
 {
+}
+
+void TableWidgetWindow::resizeHelper(QRect& G)
+{
+	int w = width();
+	int w3 = w / 3, w2 = w / 2, w4 = w / 4;
+	switch(Typ)
+	{
+		case DunhamTable:
+			vMax->setGeometry(50, 40, w3 - 60, 20);
+			JMLabel->setGeometry(w3 + 10, 40, 40, 20);
+			JMax->setGeometry(w3 + 50, 40, w3 - 60, 20);
+			errLabel->setGeometry(2 * w3 + 10, 40, 40, 20);
+			error->setGeometry(2 * w3 + 50, 40, w3 - 60, 20);
+			G = Tab->geometry();
+			G.setWidth(width());
+			G.setHeight(height() - 70);
+			Tab->setGeometry(G);
+			break;
+		case TermEnergyView:
+			View->setGeometry(50, 40, w3 - 60, 20);
+			IsoLabel->setGeometry(w3 + 10, 40, 80, 20);
+			Iso->setGeometry(w3 + 90, 40, w3 - 100, 20);
+			CompLabel->setGeometry(2 * w3 + 10, 40, 70, 20);
+			Comp->setGeometry(2 * w3 + 80, 40, w3 - 90, 20);
+			G = Tab->geometry();
+			G.setWidth(width());
+			G.setHeight(height() - 70);
+			Tab->setGeometry(G);
+			Source->setGeometry(220, 10, w - 380, 20);
+			TLabel->setGeometry(w - 140, 10, 20, 20);
+			Temp->setGeometry(w - 120, 10, 60, 20);
+			TUnit->setGeometry(w - 60, 10, 50, 20);
+			break;
+		case FranckCondonView:
+			Tab->setGeometry(0, 70, w, height() - 70);
+			MolLabel->setGeometry(10, 10, 70, 20);
+			MolBox->setGeometry(80, 10, w4 - 100, 20);
+			ViewLabel->setGeometry(10, 40, 40, 20);
+			View->setGeometry(50, 40, w4 - 60, 20);
+			IsoLabel->setGeometry(w4 + 10, 10, 70, 20);
+			Iso->setGeometry(w4 + 80, 10, w4 - 100, 20);
+			TLabel->setGeometry(w4 + 10, 40, 20, 20);
+			Temp->setGeometry(w4 + 30, 40, 60, 20);
+			TUnit->setGeometry(w4 + 90, 40, 50, 20);
+			USLabel->setGeometry(w2 + 10, 10, 70, 20);
+			USBox->setGeometry(w2 + 80, 10, w4 - 100, 20);
+			LSLabel->setGeometry(3 * w4 + 10, 10, 70, 20);
+			LSBox->setGeometry(3 * w4 + 80, 10, w4 - 100, 20);
+			JsLabel->setGeometry(w2 + 10, 40, 30, 20);
+			Js->setGeometry(w2 + 40, 40, 50, 20);
+			JssLabel->setGeometry(w2 + 110, 40, 30, 20);
+			Jss->setGeometry(w2 + 140, 40, 50, 20);
+			Calc->setGeometry(3.25 * w4, 40, 0.75 * w4 - 10, 20);
+			break;
+		case PotData:
+			G = Tab->geometry();
+			G.setWidth(width());
+			G.setHeight(height() - 40);
+			Tab->setGeometry(G);
+			break;
+		default:
+			break;
+	}
+}
+
+bool TableWidgetWindow::readData(QTextStream& S)
+{
+	int r, cc, lc, n;
+	QString Buffer;
+	QStringList L;
+	bool Success;
+	QRegExp specialSectionStart = GetStartSpecialPartRegExp();
+	Tab->blockSignals(true);
+	for (r=0, cc = Tab->columnCount(); !S.atEnd(); ++r)
+	{
+		if (Tab->rowCount() == r) Tab->setRowCount(r + 100);
+		if ((Buffer = S.readLine()).left(15) == "Column titles: ")
+		{
+			if (Typ == -1)
+			{
+				L = Buffer.right(Buffer.length() - 15).split(Spacer);
+				Tab->setColumnCount(cc = L.count());
+				Tab->setHorizontalHeaderLabels(L);
+			}
+			Buffer = S.readLine();
+		}
+		else if (!specialSectionStart.isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
+		L = Buffer.split(Spacer);
+		if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
+		for (n=0; n < lc; ++n) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
+		while (n < cc) Tab->setItem(r, ++n, new QTableWidgetItem(""));
+	}
+	if (Typ != 4 && lc < cc) --r;
+	Tab->setRowCount(r);
+	Tab->blockSignals(false);
+	return true;
+}
+
+void TableWidgetWindow::writeData(QTextStream& S)
+{
+	int c, r, R = Tab->rowCount(), C = Tab->columnCount();
+	QTableWidgetItem *I;
+	QStringList L;
+	for (c=0; c<C; ++c) L << ((I = Tab->horizontalHeaderItem(c)) != 0 ? I->text() : "?");
+	S << "Column titles: " << L.join(Spacer) << "\n";
+	for (r=0; r < R; ++r)
+	{
+		L.clear();
+		for (c=0; c<C; ++c) L << ((I = Tab->item(r, c)) != 0 ? I->text() : "");
+		S << L.join(Spacer).remove('\n') << "\n";
+	}
 }
 
 void TableWidgetWindow::setTabDimensions(int NRows, int NCols)

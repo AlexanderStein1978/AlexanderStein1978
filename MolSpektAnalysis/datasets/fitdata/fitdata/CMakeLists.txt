@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(FitData STATIC
-	include/basedata.h
+	include/fitdatabasedata.h
 	include/fitdata.h
 	include/fitdatacore.h
     fitdata.cpp

@@ -16,6 +16,49 @@
 
 TableViewWindow::TableViewWindow(TableViewWindowCore *const core, Type typ, MainWindow *MW, Molecule *M) : TableWindow(typ, MW, M), mCore(core)
 {
+    int w = width(), h = height();
+	QGridLayout *L, *L1;
+    QLabel *NL = new QLabel(this), *SL = 0;
+	switch (Typ)
+	{
+		case FitDataSet:
+			L = new QGridLayout(this);
+			L1 = new QGridLayout;
+			L1->addWidget(NL, 0, 0);
+			L1->addWidget(Name, 0, 1);
+			L1->addWidget(SL, 0, 2);
+			L1->addWidget(Source, 0, 3);
+			L1->setColumnStretch(3, 3);
+			L1->setColumnStretch(1, 1);
+			L->addLayout(L1, 0, 0, 1, 4);
+			vMLabel = new QLabel("Max v:", this);
+			L->addWidget(vMLabel, 1, 0);
+			vMax = new QLineEdit(this);
+			L->addWidget(vMax, 1, 1);
+			JMLabel = new QLabel("Max J:", this);
+			L->addWidget(JMLabel, 1, 2);
+			JMax = new QLineEdit(this);
+			L->addWidget(JMax, 1, 3);
+			table = new MTable(this);
+			L->addWidget(table, 2, 0, 1, 4);
+			setFilter("Fit datasets (*.fdat)");
+			setFileExt(".fdat");
+			connect(vMax, SIGNAL(editingFinished()), this, SLOT(Changed()));
+			connect(JMax, SIGNAL(editingFinished()), this, SLOT(Changed()));
+            break;
+		case LineTab:
+        case TermEnergyTable:
+			table = new MTable(this);
+			table->setGeometry(0, 40, w, h - 40);
+			setFilter("Term energy tables (*.term)");
+			setFileExt(".term");
+			break;
+		default:
+			printf("TableWindow::TableWindow: Error: The type %d is not a valid type for a tablewindow!", Typ);
+			break;
+	}
+	if (Typ != TermEnergyTable && Typ != FitDataSet)
+        connect(mCore, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)), this, SLOT(ContentChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
 }
 
 TableViewWindow::~TableViewWindow()
@@ -23,6 +66,21 @@ TableViewWindow::~TableViewWindow()
     delete mCore;
 }
 
+void TableViewWindow::resizeHelper(QRect& G)
+{
+    switch(Typ)
+	{
+		case TermEnergyTable:
+			G = table->geometry();
+			G.setWidth(width());
+			G.setHeight(height() - 40);
+			table->setGeometry(G);
+			break;
+		default:
+            // nothing to do
+			break;
+	}
+}
 
 int TableViewWindow::getMaxJ()
 {

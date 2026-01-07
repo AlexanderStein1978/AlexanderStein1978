@@ -59,8 +59,6 @@ FitData::FitData(ElState* nState, MainWindow* MW, Molecule* M): TableViewWindow(
 	table->horizontalHeader()->setVisible(true);
 	table->verticalHeader()->setVisible(true);
 	connect(table, SIGNAL(SelChanged()), this, SIGNAL(SelChanged()));
-    connect(mCore, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)),
-            this, SLOT(ContentChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
     connect(table->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(HeaderItemDoubleClicked(int)));
     connect(table->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(HeaderItemClicked(int)));
     Sources = 0;
