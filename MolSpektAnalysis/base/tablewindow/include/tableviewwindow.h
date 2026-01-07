@@ -50,7 +50,7 @@ protected slots:
 	}
 
 protected:
-    void resizeHelper() override;
+    void resizeHelper(QRect& G) override;
     void writeData(QTextStream& S) override;
     void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
     virtual void BaseDataToQStringArray(const BaseData&, QString *const) const = 0;
@@ -58,6 +58,7 @@ protected:
     void startSearch(int& N, int*& Rows) const;
     void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 
+    MTable *table;
     TableViewWindowCore *const mCore;
     int lastClickedHeaderIndex = -1;
 };
