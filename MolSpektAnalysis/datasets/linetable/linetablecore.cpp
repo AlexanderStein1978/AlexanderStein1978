@@ -1072,3 +1072,13 @@ void LineTableCore::setUncertainty(const int row, const double Error, const doub
 	}
 	else if (mData[row]->uncertainty > Error) mData[row]->uncertainty = Error;
 }
+
+void set_vs(const int row, const int vs)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->vs = vs;
+}
+
+void set_vss(const int row, const int vss)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->vss = vss;
+}

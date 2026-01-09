@@ -27,6 +27,24 @@ bool sortByFrequency(const TableViewWindowCore *const core, const int n, const i
 bool sortByProgression(const TableViewWindowCore *const core, const int n, const int m);
 bool isnSPG(const TableViewWindowCore *const core, const int n, const int m);
 
+bool sortByJs(const TableViewWindowCore *const core, const int n, const int m);
+bool sortBy_vss(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByJss(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByF(const TableViewWindowCore *const core, const int n, const int m);
+bool sortBy_err(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByIso(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByFile(const TableViewWindowCore *const core, const int n, const int m);
+bool sortBySNR(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByDev(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByComment(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByFCF(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByEUp(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByEav(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByEUma(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByEdJ(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByCalc(const TableViewWindowCore *const core, const int n, const int m);
+bool sortByOmC(const TableViewWindowCore *const core, const int n, const int m);
+
 bool isnSPG(TermEnergy& T1, TermEnergy &T2);
 
 #endif

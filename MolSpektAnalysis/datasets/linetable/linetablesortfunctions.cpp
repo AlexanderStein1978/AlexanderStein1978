@@ -288,3 +288,152 @@ bool sortByProgression(const TableViewWindowCore *const core, const int n, const
     if (core->getProgression(n) < core->getProgression(m)) return true;
     return false;
 }
+
+bool sortByJs(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->get_vs(n) < ltc->get_vs(m)) return true;
+    return false;
+}
+
+bool sortBy_vss(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->get_vss(n) < ltc->get_vss(m)) return true;
+    return false;
+}
+
+bool sortByJss(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getJss(n) < ltc->getJss(m)) return true;
+    return false;
+}
+
+bool sortByF(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (core->getFineStructureQN(n) < core->getFineStructureQN(m)) return true;
+    return false;
+}
+
+bool sortBy_err(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getUncertainty(n) < core->getUncertainty(m)) return true;
+    return false;
+}
+
+bool sortByIso(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getIso(n) < core->getIso(m)) return true;
+    return false;
+}
+
+bool sortByFile(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getSourceFile(n) < core->getSourceFile(m)) return true;
+    return false;
+}
+
+bool sortBySNR(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getSNR(n) < ltc->getSNR(m)) return true;
+    return false;
+}
+
+bool sortByDev(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getObsCalc(n) < core->getObsCalc(m)) return true;
+    return false;
+}
+
+bool sortByComment(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getComment(n) < ltc->getComment(m)) return true;
+    return false;
+}
+
+bool sortByFCF(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getFCF(n) < ltc->getFCF(m)) return true;
+    return false;
+}
+
+bool sortByEUp(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getUpperEnergy(n) < ltc->getUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEav(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getAverageUpperEnergy(n) < ltc->getAverageUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEUma(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getDiffToAverageUpperEnergy(n) < ltc->getDiffToAverageUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEdJ(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if (ltc->getDiffToNextJ(n) < ltc->getDiffToNextJ(m)) return true;
+    return false;
+}
+
+bool sortByCalc(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getCalculatedUpperEnergy(n) < ltc->getCalculatedUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByOmC(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getDeviationToCalculatedUpperEnergy(n) < ltc->getDeviationToCalculatedUpperEnergy(m)) return true;
+    return false;
+}
