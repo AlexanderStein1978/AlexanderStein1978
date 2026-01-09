@@ -60,15 +60,19 @@ class LineTableCore : public TableViewWindowCore
 		void ShowUpTermtable(const int * const SO, int &n, QString** Data);
 		void RemoveDoubled(const int *const sortArray);
 		void setUncertainty(const int row, const double Error, const double OvError);
+		void set_vs(const int row, const int vs);
+		void set_vss(const int row, const int vss);
+		void setJss(const int row, const int Jss);
+		void setFineStructureQN(const int row, const int FQN);
+
+		void setUncertainty(const int row, const double uncertainty)
+		{
+			TableViewWindowCore::setUncertainty(row, uncertainty);
+		}
 
 		inline double getWaveNumber(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->waveNumber;
-		}
-
-		inline void setUncertainty(const int row, const double uncertainty)
-		{
-			mData[row]->uncertainty = uncertainty;
 		}
 
 		inline double getSNR(const int row) const
@@ -81,19 +85,9 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->vs;
 		}
 
-		inline void set_vs(const int row, const int vs)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->vs = vs;
-		}
-
 		inline int get_vss(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->vss;
-		}
-
-		inline int set_vss(const int row, const int vss)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->vss = vss;
 		}
 
 		inline int getJss(const int row) const
@@ -101,7 +95,7 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Jss;
 		}
 
-		inline int setJss(const int row, const int Jss)
+		inline void setJss(const int row, const int Jss)
 		{
 			reinterpret_cast<LineTableBaseData*>(mData[row])->Jss = Jss;
 		}
@@ -141,14 +135,29 @@ class LineTableCore : public TableViewWindowCore
 			reinterpret_cast<LineTableBaseData*>(mData[row])->Comment = comment;
 		}
 
+		inline double getFCF(const int row) const
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->FCF;
+		}
+
 		inline void setFCF(const int row, const double FCF)
 		{
 			reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
 		}
 
+		inline double getCalculatedUpperEnergy(const int row) const
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->calculatedEnergy;
+		}
+
 		inline double getDeviationToCalculatedUpperEnergy(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->diffToCalculatedEnergy;
+		}
+
+		inline double getDiffToNextJ(const int row) const
+		{
+			return reinterpret_cast<LineTableBaseData*>(mData[row])->energyDiffToNextJ;
 		}
 
 		inline const std::vector<TableCols>& getColumnVector() const
