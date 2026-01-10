@@ -2942,3 +2942,75 @@ void LineTable::findErrors()
 	for (n=0; n<N && mCore->getUncertainty(n) != 0.0; ++n) ;
 	if (n<N) MarkLines(&n, 1);
 }
+
+void LineTable::HeaderItemDoubleClicked(const int index)
+{
+    if (lastClickedHeaderIndex != index) return;
+	std::vector<TableCols>& columns = reinterpret_cast<LineTableCore*>(mCore)->getColumnVector();
+    switch(columns[index])
+    {
+		case LineTableCore::CPN:
+            sortTab(heapSort(sortByProgression));
+            break;
+		case LineTableCore::Cvs:
+            sortTab(heapSort(sortByvs));
+            break;
+		case LineTableCore:: CJs:
+            sortTab(heapSort(sortByJs));
+            break;
+		case LineTableCore::Cvss:
+            sortTab(heapSort(sortBy_vss));
+            break;
+		case LineTableCore::CJss:
+            sortTab(heapSort(sortByJss));
+            break;
+		case LineTableCore:: CF:
+            sortTab(heapSort(sortByF));
+            break;
+		case LineTableCore::CWN:
+            sortTab(heapSort(sortByFrequency));
+            break;
+        case LineTableCore::Cerr:
+            sortTab(heapSort(sortBy_err));
+            break;
+        case LineTableCore::CIso:
+            sortTab(heapSort(sortByIso));
+            break;
+        case LineTableCore::CFile:
+            sortTab(heapSort(sortByFile));
+            break;
+        case LineTableCore::CSNR:
+            sortTab(heapSort(sortBySNR));
+            break;
+        case LineTableCore::CDev:
+            sortTab(heapSort(sortByDev));
+            break;
+        case LineTableCore::CC:
+            sortTab(heapSort(sortByComment));
+            break;
+		case LineTableCore::CFCF:
+			sortTab(heapSort(sortByFCF));
+            break;
+		case LineTableCore::CEUp:
+			sortTab(heapSort(sortByEUp));
+            break;
+		case LineTableCore::CEav:
+			sortTab(heapSort(sortByEav));
+            break;
+		case LineTableCore::CEUma:
+			sortTab(heapSort(sortByEUma));
+            break;
+		case LineTableCore::CEdJ:
+			sortTab(heapSort(sortByEdJ));
+            break;
+		case LineTableCore::CCalc:
+			sortTab(heapSort(sortByCalc));
+            break;
+		case LineTableCore::COmC:
+			sortTab(heapSort(sortByOmC));
+            break;
+        default:
+            // should not happen
+            break;
+    }
+}

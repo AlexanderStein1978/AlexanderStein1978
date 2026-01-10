@@ -9,7 +9,6 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_library(FitDataSortFuncs STATIC
 	include/sortbyltabandprogfunctor.h
 	include/sortforextractneworchangedwithoutsourcefunctor.h
-	include/fitdatacoresortfunctor.h
 	include/fitdatasortfunctions.h
 	include/tablelinesortfunctor.h
     sortbyltabandprogfunctor.cpp

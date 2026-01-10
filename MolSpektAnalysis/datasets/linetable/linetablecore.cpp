@@ -1074,13 +1074,13 @@ void LineTableCore::setUncertainty(const int row, const double Error, const doub
 	EmitDataChanged(row, (mColumns[Cerr] == Cerr ? Cerr : Cerr - 1);
 }
 
-void set_vs(const int row, const int vs)
+void LineTableCore::set_vs(const int row, const int vs)
 {
 	reinterpret_cast<LineTableBaseData*>(mData[row])->vs = vs;
 	EmitDataChanged(row, Cvs);
 }
 
-void set_vss(const int row, const int vss)
+void LineTableCore::set_vss(const int row, const int vss)
 {
 	reinterpret_cast<LineTableBaseData*>(mData[row])->vss = vss;
 	EmitDataChanged(row, Cvss);
