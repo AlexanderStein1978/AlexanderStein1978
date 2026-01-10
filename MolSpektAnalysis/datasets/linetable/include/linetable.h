@@ -164,6 +164,7 @@ public slots:
 	
 private slots:
 	void TabSelChanged();
+	void HeaderItemDoubleClicked(const int index);
 	
 signals:
 	void DataChanged();

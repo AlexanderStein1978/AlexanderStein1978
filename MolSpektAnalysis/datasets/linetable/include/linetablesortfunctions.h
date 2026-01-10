@@ -26,7 +26,6 @@ bool sortfRemDoubl(const TableViewWindowCore *const core, const int n, const int
 bool sortByFrequency(const TableViewWindowCore *const core, const int n, const int m);
 bool sortByProgression(const TableViewWindowCore *const core, const int n, const int m);
 bool isnSPG(const TableViewWindowCore *const core, const int n, const int m);
-
 bool sortByJs(const TableViewWindowCore *const core, const int n, const int m);
 bool sortBy_vss(const TableViewWindowCore *const core, const int n, const int m);
 bool sortByJss(const TableViewWindowCore *const core, const int n, const int m);
