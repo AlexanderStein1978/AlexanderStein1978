@@ -47,6 +47,7 @@
 
 LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableViewWindow(new LineTableCore, LineTab, MW, M)
 {
+	reinterpret_cast<LineTableCore*>(mCore)->setLineTable(this);
 	setFilter("Line table (*.lines)");
 	setFileExt(".lines");
 	table->setModel(mCore);
@@ -349,13 +350,13 @@ void LineTable::getLines(TableLine*& L, int& N)
 void LineTable::getSortedLines(TableLine*& L, int& N, int SortOrder)
 {
 	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
-	if (SortOrder != 0 || (N = Tab->rowCount()) == 0)
+	if (SortOrder != 0 || (N = mCore->rowCount()) == 0)
 	{
 		N=0;
 		L=0;
 		return;
 	}
-	int r, *SO = heapSort(sortByFrequency);
+	int r, *SO = mCore->heapSort(sortByFrequency);
 	L = new TableLine[N];
 	for (r=0; r<N; r++)
 	{
@@ -460,13 +461,13 @@ int LineTable::getNgL(int *mv, int mJ)
 	return N;
 }
 
-void LineTable::getgoodLines(int &N, TableLine *&L, int *mv, int mJ, bool SortFunction(const QTableWidget *const, const int, const int))
+void LineTable::getgoodLines(int &N, TableLine *&L, int *mv, int mJ, bool SortFunction(const TableViewWindowCore *const, const int, const int))
 {
 	//printf("Beginn LineTable::getgoodLines\n");
 	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	int n, i, NR = ltc->rowCount(), J;
 	//printf("NR=%d\n", NR);
-    int *SO = new int[NR], *S1 = heapSort(SortFunction);
+    int *SO = new int[NR], *S1 = ltc->heapSort(SortFunction);
 	int gli[NR][2];
 	for (n=0; n < NR; n++) SO[S1[n]] = n;
 	for (n = N = 0; n < NR; ++n)
@@ -535,7 +536,7 @@ void LineTable::getObsIso(bool *O, int N)
 	for (r=0; r < nr; ++r) if ((I = reinterpret_cast<LineTableCore*>(mCore)->getIso(r) / 10 - 1) < N && I >= 0) O[I] = true;
 }
 
-void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const QTableWidget *const, const int, const int))
+void LineTable::getProgressions(int &N, Progression *&P, bool SortFunction(const TableViewWindowCore *const, const int, const int))
 {
 	//printf("LineTable::getProgressions\n");
 	TableLine *L;
@@ -1397,7 +1398,7 @@ void LineTable::AssignFC()
 	int XNv = XTT->getMaxv() + 1, ENv = ETT->getMaxv() + 1;
 	int XNJ = XTT->getMaxJ() + 1, ENJ = ETT->getMaxJ() + 1;
 	double ****XData = XTT->getData(), ****EData = ETT->getData();
-	int *LSO = heapSort(sortIJvP), NR = Tab->rowCount();
+	int *LSO = mCore->heapSort(sortIJvP), NR = mCore->rowCount();
 	int *XIT = XTT->getIsoT(), *EIT = ETT->getIsoT();
 	int *LO = new int[NR];
 	for (n=0; n < NR; n++) LO[LSO[n]] = n;
@@ -1642,7 +1643,7 @@ void LineTable::ShowGSDeviations()
 	double Dev, US = 0.0, SS = 0.0, Sig, *E = new double[N], *UT = new double[N], ****Data = TT->getData();
 	double MD = 0.0, AD;
 	bool l = false;
-	int *S1 = heapSort(isnSPG), *SA = new int[N];
+	int *S1 = ltb->heapSort(isnSPG), *SA = new int[N];
 	for (n=0; n<N; ++n) SA[S1[n]] = n;
 	for (n=m=0; n<N; ++m)
 	{
@@ -2145,7 +2146,7 @@ bool LineTable::ShowUpTerm()
     int **Z = CreateInt(N, 6);
 	QString SpektFile, Buffer;
 	if (SO != 0) delete[] SO;
-	int *LSO = heapSort(isnSPG);
+	int *LSO = mCore->heapSort(isnSPG);
 	SO = new int[N];
 	for (n=0; n<N; n++) SO[LSO[n]] = n;
 	delete[] LSO;
@@ -2213,7 +2214,7 @@ void LineTable::FindBigDiff()
 				for (i=6; FBuffer[i] == ' '; ++i) ;
 	    	else i = 1;
 		    FBuffer = FBuffer.right(FBuffer.length() - i);
-		    if (FBuffer == File) Tab->selectRow(n);
+		    if (FBuffer == File) MarkLines(&n, 1);
 		    //printf("FBuffer=%s, File=%s\n", FBuffer.ascii(), File.ascii());
 	    	++n;
 		}
@@ -2241,7 +2242,7 @@ void LineTable::ShowWeakProgressions()
 		{
 			if (Weak)
 			{
-				for (lRow = fRow; lRow < aRow; ++lRow) Tab->selectRow(lRow);
+				for (lRow = fRow; lRow < aRow; ++lRow) MarkLines(&lRow, 1);
 				//Tab->ensureCellVisible(lRow, CSNR);
 				return;
 			}
@@ -2265,7 +2266,7 @@ TableWindow* LineTable::ShowUpTermTable()
     if ((mCore->columnCount() == LineTableCore::TableNormCols || NSO != mCore->rowCount()) && !ShowUpTerm()) return nullptr;
     if (termTable == nullptr)
     {
-		termTable = new TableWindow(TextTable1, MW, molecule);
+		termTable = new TableWidgetWindow(TextTable1, MW, molecule);
 		termTable->setWindowTitle("UpTermTable to " + getName());
 		termTable->setHorizontalHeader(QStringList() << "Isotop" << "v" << "J" << "Par" 
 				<< "Termenergie" << "Standardabweichung" << "Anzahl Uebergaenge" 
@@ -2291,7 +2292,7 @@ void LineTable::Updatevs(int *nvs)
 
 void LineTable::RemoveDoubled()
 {
-	int i, j, nr = mCore->rowCount(), *S1 = heapSort(sortfRemDoubl);
+	int i, j, nr = mCore->rowCount(), *S1 = mCore->heapSort(sortfRemDoubl);
 	int *S = new int[nr];
 	QString F1, F2, Comment;
 	for (i=0; i < nr; ++i) S[S1[i]] = i;
@@ -2360,13 +2361,13 @@ void LineTable::sortUpTermIvJ()
 			"There is no upper term energy table calculated for this line table!", QMessageBox::Ok);
 		return;
 	}
-	int *SArray = heapSort(sortUtIvJ);
+	int *SArray = mCore->heapSort(sortUtIvJ);
 	sortTab(SArray);
 }
 
 void LineTable::SortfRemDoubled()
 {
-	sortTab(heapSort(sortfRemDoubl));
+	sortTab(mCore->heapSort(sortfRemDoubl));
 }
 
 void LineTable::SortProg()
@@ -2376,25 +2377,25 @@ void LineTable::SortProg()
 
 void LineTable::SortIJvP()
 {
-	int *SArray = heapSort(sortIJvP);
+	int *SArray = mCore->heapSort(sortIJvP);
 	sortTab(SArray);
 }
 
 void LineTable::SortIvPJ()
 {
-	int *SArray = heapSort(sortIvPJ);
+	int *SArray = mCore->heapSort(sortIvPJ);
 	sortTab(SArray);
 }
 
 void LineTable::SortFPInt()
 {
-	int *SArray = heapSort(sortFPInt);
+	int *SArray = mCore->heapSort(sortFPInt);
 	sortTab(SArray);
 }
 
 void LineTable::SortSpectrum()
 {
-	int *SArray = heapSort(sortBySpectrum);
+	int *SArray = mCore->heapSort(sortBySpectrum);
 	sortTab(SArray);
 }
 
@@ -2596,7 +2597,7 @@ void LineTable::SetvssAscending()
 	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	int i, l=-1, *rows, N;
 	table->getSelectedRows(rows, N);
-	if (r==0)
+	if (N==0)
 	{
 		QMessageBox::information(this, "MolSpektAnalysis", "You have to select some rows first!",
 								 QMessageBox::Ok);
@@ -2620,7 +2621,8 @@ void LineTable::Delete()
 	QModelIndexList list = table->getSelectedIndexes();
 	table->blockSignals(true);
 	mCore->blockSignals(true);
-	for (auto it = list.begin(); it != list.end(); ++it) mCore->setData(*it, "");
+	for (auto it = list.begin(); it != list.end(); ++it) mCore->setRow(nullptr, it->row());
+	mCore->RemoveEmptyRows();
 	mCore->blockSignals(false);
 	table->blockSignals(false);
 	Changed();
@@ -2666,7 +2668,7 @@ void LineTable::deleteRows(int* rows, int N)
 		k = rows[j] + 1;
 		if (k<n && mCore->getSourceFile(k).isEmpty()) mCore->setSourceFile(k, Buffer);
 	}
-	for (j=k=0; j <= lRow; j++) if (Tab->item(j, 0) == 0) k++;
+	for (j=k=0; j <= lRow; ++j) if (nullptr == mCore->getRow(j)) ++k;
 	lRow -= k;
 	mCore->RemoveEmptyRows();
 	mCore->blockSignals(false);
@@ -2746,7 +2748,7 @@ void LineTable::findSimilarProgression(Progression P)
 	}
 	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	int n, mv, Mv = P.L[0].vss + 1, N, LM, M = (P.Js == P.L[0].Jss ? P.N - 1 : P.N / 2 - 1);
-	int v[1000], vs, Js, I, PN, RC = Tab->rowCount(), cr, m, nwL;
+	int v[1000], vs, Js, I, PN, RC = mCore->rowCount(), cr, m, nwL;
 	double S[1000], B;
 	QString F;
 	for (n=0, mv = Mv - 2; n < P.N; n++)
@@ -2854,7 +2856,7 @@ void LineTable::setFC(const int FC)
 
 void LineTable::sortbyvs()
 {
-	int *SArray = heapSort(sortByvs);
+	int *SArray = mCore->heapSort(sortByvs);
 	sortTab(SArray);
 }
 
@@ -2866,7 +2868,7 @@ void LineTable::SetPN()
 	double nWn, aWn = 0.0;
 	QString aFi, nFi;
 	bool UTA = ShowUpTerm();
-	int *tSO = heapSort(sortForSPN);
+	int *tSO = ltc->heapSort(sortForSPN);
 	for (n=0; n<N; n++) SA[tSO[n]] = n;
 	delete[] tSO;
 	MaxPN = 0;
@@ -2946,68 +2948,68 @@ void LineTable::findErrors()
 void LineTable::HeaderItemDoubleClicked(const int index)
 {
     if (lastClickedHeaderIndex != index) return;
-	std::vector<TableCols>& columns = reinterpret_cast<LineTableCore*>(mCore)->getColumnVector();
+	const std::vector<LineTableCore::TableCols>& columns = reinterpret_cast<LineTableCore*>(mCore)->getColumnVector();
     switch(columns[index])
     {
 		case LineTableCore::CPN:
-            sortTab(heapSort(sortByProgression));
+            sortTab(mCore->heapSort(sortByProgression));
             break;
 		case LineTableCore::Cvs:
-            sortTab(heapSort(sortByvs));
+            sortTab(mCore->heapSort(sortByvs));
             break;
 		case LineTableCore:: CJs:
-            sortTab(heapSort(sortByJs));
+            sortTab(mCore->heapSort(sortByJs));
             break;
 		case LineTableCore::Cvss:
-            sortTab(heapSort(sortBy_vss));
+            sortTab(mCore->heapSort(sortBy_vss));
             break;
 		case LineTableCore::CJss:
-            sortTab(heapSort(sortByJss));
+            sortTab(mCore->heapSort(sortByJss));
             break;
 		case LineTableCore:: CF:
-            sortTab(heapSort(sortByF));
+            sortTab(mCore->heapSort(sortByF));
             break;
 		case LineTableCore::CWN:
-            sortTab(heapSort(sortByFrequency));
+            sortTab(mCore->heapSort(sortByFrequency));
             break;
         case LineTableCore::Cerr:
-            sortTab(heapSort(sortBy_err));
+            sortTab(mCore->heapSort(sortBy_err));
             break;
         case LineTableCore::CIso:
-            sortTab(heapSort(sortByIso));
+            sortTab(mCore->heapSort(sortByIso));
             break;
         case LineTableCore::CFile:
-            sortTab(heapSort(sortByFile));
+            sortTab(mCore->heapSort(sortByFile));
             break;
         case LineTableCore::CSNR:
-            sortTab(heapSort(sortBySNR));
+            sortTab(mCore->heapSort(sortBySNR));
             break;
         case LineTableCore::CDev:
-            sortTab(heapSort(sortByDev));
+            sortTab(mCore->heapSort(sortByDev));
             break;
         case LineTableCore::CC:
-            sortTab(heapSort(sortByComment));
+            sortTab(mCore->heapSort(sortByComment));
             break;
 		case LineTableCore::CFCF:
-			sortTab(heapSort(sortByFCF));
+			sortTab(mCore->heapSort(sortByFCF));
             break;
 		case LineTableCore::CEUp:
-			sortTab(heapSort(sortByEUp));
+			sortTab(mCore->heapSort(sortByEUp));
             break;
 		case LineTableCore::CEav:
-			sortTab(heapSort(sortByEav));
+			sortTab(mCore->heapSort(sortByEav));
             break;
 		case LineTableCore::CEUma:
-			sortTab(heapSort(sortByEUma));
+			sortTab(mCore->heapSort(sortByEUma));
             break;
 		case LineTableCore::CEdJ:
-			sortTab(heapSort(sortByEdJ));
+			sortTab(mCore->heapSort(sortByEdJ));
             break;
 		case LineTableCore::CCalc:
-			sortTab(heapSort(sortByCalc));
+			sortTab(mCore->heapSort(sortByCalc));
             break;
 		case LineTableCore::COmC:
-			sortTab(heapSort(sortByOmC));
+			sortTab(mCore->heapSort(sortByOmC));
             break;
         default:
             // should not happen

@@ -321,7 +321,7 @@ bool sortByF(const TableViewWindowCore *const core, const int n, const int m)
 	if (n==-1) return false;
     if (m==-1) return true;
 	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
-    if (core->getFineStructureQN(n) < core->getFineStructureQN(m)) return true;
+    if (ltc->getFineStructureQN(n) < ltc->getFineStructureQN(m)) return true;
     return false;
 }
 

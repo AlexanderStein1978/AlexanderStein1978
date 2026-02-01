@@ -6,6 +6,7 @@
 //
 
 #include "linetablecore.h"
+#include "linetable.h"
 #include "utils.h"
 #include "basedata.h"
 #include "termenergy.h"
@@ -21,7 +22,7 @@
 #include <QMessageBox>
 
 
-LineTableCore::LineTableCore(LineTable* lt, Molecule* mol, QObject *parent) : QAbstractTableModel(parent), molecule(mol), lTab(lt)
+LineTableCore::LineTableCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent)
 {
 	setColumnCount(TableNormCols);
 }
@@ -378,15 +379,10 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
         if (molecule != 0)
         {
             QString CurPath = data->file, MolPath = molecule->getFileName();
-            data->file = lTab->getAbsolutePath(CurPath, MolPath));
+            data->file = lTab->getAbsolutePath(CurPath, MolPath);
         }
     }
     return Success;
-}
-
-void LineTableCore::setRow(const QStringList& L, const int row)
-{
-	setRow(convertToBaseData(L), row);
 }
 
 void LineTableCore::writeData(QTextStream& S)
@@ -610,12 +606,6 @@ void LineTableCore::AssignFC(const int *const LO, const int *const XIT, const in
 		n=m;
 		PN = nPN;
 	}
-}
-
-int LineTableCore::columnCount(const QModelIndex &parent) const
-{
-	if (parent.isValid()) return 0;
-	return mColumns.size();
 }
 
 QVariant LineTableCore::data(const QModelIndex &index, int role) const
@@ -1071,7 +1061,7 @@ void LineTableCore::setUncertainty(const int row, const double Error, const doub
 		if (mData[row]->uncertainty < OvError) mData[row]->uncertainty = OvError;
 	}
 	else if (mData[row]->uncertainty > Error) mData[row]->uncertainty = Error;
-	EmitDataChanged(row, (mColumns[Cerr] == Cerr ? Cerr : Cerr - 1);
+	EmitDataChanged(row, (mColumns[Cerr] == Cerr ? Cerr : Cerr - 1));
 }
 
 void LineTableCore::set_vs(const int row, const int vs)
@@ -1085,3 +1075,18 @@ void LineTableCore::set_vss(const int row, const int vss)
 	reinterpret_cast<LineTableBaseData*>(mData[row])->vss = vss;
 	EmitDataChanged(row, Cvss);
 }
+
+void LineTableCore::setFCF(const int row, const double FCF)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
+	int column = (mColumns[CFCF] == CFCF ? CFCF : CFCF - 1);
+	EmitDataChanged(row, column);
+}
+
+void LineTableCore::setComment(const int row, const QString& comment)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->Comment = comment;
+	int column = (mColumns[CC] == CC ? CC : CC - 1);
+	EmitDataChanged(row, column);
+}
+

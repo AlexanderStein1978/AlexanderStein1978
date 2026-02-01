@@ -37,7 +37,7 @@ class LineTableCore : public TableViewWindowCore
 		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
 		static QString convertHeaderEnumToHeaderString(const TableCols enumValue);
 
-		LineTableCore(LineTable* lt, Molecule* mol = nullptr, QObject *parent = nullptr);
+		LineTableCore(Molecule* mol = nullptr, QObject *parent = nullptr);
 		~LineTableCore();
 		QString readData(QTextStream& S) {};
 		bool readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d);
@@ -65,6 +65,8 @@ class LineTableCore : public TableViewWindowCore
 		void set_vss(const int row, const int vss);
 		void setJss(const int row, const int Jss);
 		void setFineStructureQN(const int row, const int FQN);
+		void setFCF(const int row, const double FCF);
+		void setComment(const int row, const QString& comment);
 
 		void setUncertainty(const int row, const double uncertainty)
 		{
@@ -146,10 +148,15 @@ class LineTableCore : public TableViewWindowCore
 			return mColumns;
 		}
 
+		inline void setLineTable(LineTable *const lt)
+		{
+			lTab = lt;
+		}
+
 	private:
 		std::vector<TableCols> mColumns;
 		const QRegExp mStartSpecialPart = QRegExp("");
-		LineTable* const lTab;
+		LineTable* lTab;
 };
 
 #endif
