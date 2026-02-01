@@ -58,11 +58,6 @@ protected:
     void startSearch(int& N, int*& Rows) const;
     void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 
-    inline int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
-    {
-        return heapsort::heapSort(TableViewWindowCoreSortFunctor(mCore, sortFuncs), mCore->rowCount());
-    }
-
     MTable *table;
     TableViewWindowCore *const mCore;
     int lastClickedHeaderIndex = -1;

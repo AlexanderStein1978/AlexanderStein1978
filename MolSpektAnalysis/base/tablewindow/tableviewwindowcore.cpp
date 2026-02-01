@@ -10,6 +10,7 @@
 #include "basedata.h"
 #include "isotab.h"
 #include "molecule.h"
+#include "heapsort.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -264,3 +265,7 @@ void TableViewWindowCore::finishSearch(int *const Rows, const QModelIndexList& R
     }
 }
 
+int *TableViewWindowCore::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int))
+{
+    return heapsort::heapSort(TableViewWindowCoreSortFunctor(mCore, sortFuncs), mCore->rowCount());
+}

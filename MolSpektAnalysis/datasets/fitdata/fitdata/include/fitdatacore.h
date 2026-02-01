@@ -35,7 +35,7 @@ class FitDataCore : public TableViewWindowCore
 		std::vector<FitDataBaseData*> getDataAsFitDataBaseData();
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
-		void addRow(const QStringList& L) override;
+		void addRow(const QStringList& L);
 		int addRow(const int cr);
 		void setRow(FitDataBaseData* const data, const int row);
 		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
@@ -72,16 +72,6 @@ class FitDataCore : public TableViewWindowCore
 			return convertToFitDataCoreBaseData(L);
 		}
 
-		inline void setRow(const QStringList& L, const int row) override
-		{
-			mData[row] = convertToFitDataCoreBaseData(L);
-		}
-
-		inline void setData(const int row, FitDataBaseData * const data)
-		{
-			mData[row] = data;
-		}
-
 		inline QModelIndex getIndex(const int row, const int column) const
 		{
 			return createIndex(row, column);
@@ -103,21 +93,6 @@ class FitDataCore : public TableViewWindowCore
 		}
 		
 	private:
-
-		inline void setRow(BaseData* const data, const int row) override
-		{
-			mData[row] = data;
-		}
-
-		inline void setData(const int row, BaseData* const data)
-		{
-			mData[row] = reinterpret_cast<FitDataBaseData* const>(data);
-		}
-
-		inline void addRow(BaseData* const data) override
-		{
-			TableViewWindowCore::addRow(data);
-		}
 
 		int NSources = 0;
 		QString RWError;

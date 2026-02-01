@@ -305,7 +305,7 @@ int FitDataCore::addRow(const int cr)
 
 void FitDataCore::addRow(const QStringList& L)
 {
-	addRow(convertToFitDataCoreBaseData(L));
+	TableViewWindowCore::addRow(convertToFitDataCoreBaseData(L));
 }
 
 void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDataCore& data)

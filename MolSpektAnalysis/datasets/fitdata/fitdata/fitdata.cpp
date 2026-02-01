@@ -7,7 +7,7 @@
 
 #include "fitdata.h"
 #include "fitdatasortfunctions.h"
-#include "fitdatacoresortfunctor.h"
+#include "tableviewwindowcoresortfunctor.h"
 #include "sortforextractneworchangedwithoutsourcefunctor.h"
 #include "sortbyltabandprogfunctor.h"
 #include "linetable.h"
@@ -569,7 +569,7 @@ void FitData::getData(TableLine*& Lines, int& NLines, int JD, int F, int v, int 
     {
         Lines = new TableLine[NLines];
         int N = getNumLines();
-        int *SA = new int[N], n, *S1 = heapSort(sortByProg);
+        int *SA = new int[N], n, *S1 = mCore->heapSort(sortByProg);
         for (n=0; n < N; n++) SA[S1[n]] = n;
         delete[] S1;
         getData(Lines, SA, N, NLines, 0, v, 0, mJ, JD, F, Iso, true, state);
@@ -579,12 +579,12 @@ void FitData::getData(TableLine*& Lines, int& NLines, int JD, int F, int v, int 
 }
 
 void FitData::getData(TableLine*& Lines, int& NLines, int *&RowN,
-                      bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv, int mJ)
+                      bool sortFuncs(const TableViewWindowCore *const Tab, const int n, const int m), int *mv, int mJ)
 {
     if ((NLines = (mv != 0 ? getNumLines(mv, mJ) : getNumLines())) != 0)
     {
         int n, N = getNumLines();
-        int *SA = new int[N], *S1 = heapSort(sortFuncs);
+        int *SA = new int[N], *S1 = mCore->heapSort(sortFuncs);
         RowN = new int[NLines];
         for (n=0; n<N; n++) SA[S1[n]] = n;
         delete[] S1;

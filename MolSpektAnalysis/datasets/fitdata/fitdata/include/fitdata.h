@@ -114,32 +114,32 @@ class FitData : public TableViewWindow
 		
 		inline void sortIvJF()
 		{
-			sortTab(heapSort(sortIvJFreqF));
+			sortTab(mCore->heapSort(sortIvJFreqF));
 		}
 		
 		inline void sortvsIvJ()
 		{
-			sortTab(heapSort(SortvsIvJ));
+			sortTab(mCore->heapSort(SortvsIvJ));
 		}
 		
 		inline void sortProg()
 		{
-			sortTab(heapSort(sortByProg));
+			sortTab(mCore->heapSort(sortByProg));
 		}
 		
 		inline void sortByDev()
 		{
-			sortTab(heapSort(sortbyDeviation));
+			sortTab(mCore->heapSort(sortbyDeviation));
 		}
 		
 		inline void sortByDevRatio()
 		{
-			sortTab(heapSort(sortbyDevR));
+			sortTab(mCore->heapSort(sortbyDevR));
 		}
 
         inline void sortByLineElState()
         {
-            sortTab(heapSort(sortByElState));
+            sortTab(mCore->heapSort(sortByElState));
         }
 
         inline QString **getData(int &NRows, int &NCols) override

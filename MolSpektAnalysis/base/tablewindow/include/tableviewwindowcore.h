@@ -33,11 +33,11 @@ class TableViewWindowCore : public QAbstractTableModel
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		int getMaxJ();
 		int getMaxv();
-		virtual void addRow(BaseData* const data);
-		virtual void addRow(const QStringList& L);
-		virtual void setRow(BaseData* const data, const int row);
-		virtual void setRow(const QStringList& L, const int row);
-		virtual BaseData* getRow(const int row) const;
+		void addRow(BaseData* const data);
+		void addRow(const QStringList& L);
+		void setRow(BaseData* const data, const int row);
+		void setRow(const QStringList& L, const int row);
+		BaseData* getRow(const int row) const;
 		void insertRows(const int startRow, const std::vector<BaseData*>& newRows);
 		void deleteRow(const int index);
 		void deleteRows(const int *indices, const int numRows);
@@ -64,6 +64,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		void EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn);
 		virtual QString cellToString(const int, const int) const {return "";};
 		void RemoveEmptyRows();
+		static int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int));
 
 		inline int getNSources() const
 		{

@@ -145,7 +145,7 @@ public:
 
     inline void sortByProgNumber()
     {
-        sortTab(heapSort(sortByProgression));
+        sortTab(TableViewWindowCore::heapSort(sortByProgression));
     }
 
     inline QString getInfile() const
