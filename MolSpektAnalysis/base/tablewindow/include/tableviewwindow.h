@@ -10,9 +10,9 @@
 
 
 #include "tablewindow.h"
-
-
-class TableViewWindowCore;
+#include "heapsort.h"
+#include "tableviewwindowcoresortfunctor.h"
+#include "tableviewwindowcore.h"
 
 struct BaseData;
 
@@ -54,9 +54,14 @@ protected:
     void writeData(QTextStream& S) override;
     void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
     virtual void BaseDataToQStringArray(const BaseData&, QString *const) const = 0;
-    bool checkAllConnections(int FileColumn) override;
+    bool checkAllConnections();
     void startSearch(int& N, int*& Rows) const;
     void finishSearch(int *const Rows, const QModelIndexList& Result) const;
+
+    inline int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
+    {
+        return heapsort::heapSort(TableViewWindowCoreSortFunctor(mCore, sortFuncs), mCore->rowCount());
+    }
 
     MTable *table;
     TableViewWindowCore *const mCore;

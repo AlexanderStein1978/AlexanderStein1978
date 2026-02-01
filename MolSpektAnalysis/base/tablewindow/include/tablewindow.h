@@ -36,7 +36,7 @@ public:
 	virtual void setTabDimensions(int NRows, int NCols) = 0;
 	virtual void getTabDimensions(int &NRows, int &NCols) = 0;
 	virtual void setRowData(int Row, QString *Data) = 0;
-	void setMolecule(Molecule *Mol);
+	virtual void setMolecule(Molecule *Mol);
 	Molecule *getMolecule();
 	void setSource(QString nSource);
 	QString getSource() const;
@@ -62,10 +62,10 @@ public:
 	virtual void search(int column, double value, int smeqla) = 0;
 	virtual void search(QString Text, int column=-1, bool completeCell = false) = 0;
 	virtual void setEditable(bool Editable) = 0;
-	virtual void getViewnE(int *&Js, double *&E, int &N) = 0;
+	virtual void getViewnE(int *&Js, double *&E, int &N);
 	virtual void DeleteRows() = 0;
 	virtual void AddRow() = 0;
-	virtual void RemoveDoubled() = 0;
+	virtual void RemoveDoubled();
     virtual void setCellText(QString Text) = 0;
 	inline virtual int getNumLines() const = 0;
 	inline virtual int getNumColumns() const = 0;

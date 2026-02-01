@@ -55,7 +55,7 @@ class Spektrum : public DiagWindow
 public:
 
     Spektrum(MainWindow *MW = 0);
-    ~Spektrum();
+    virtual ~Spektrum();
 	
     IntProg* SearchLongestProg(Marker *M1);
     void editFind();

@@ -5,8 +5,8 @@
 //
 //
 
-#ifndef TABLE_VIEW_WINDOW_H
-#define TABLE_VIEW_WINDOW_H
+#ifndef TABLE_WIDGET_WINDOW_H
+#define TABLE_WIDGET_WINDOW_H
 
 
 #include "tablewindow.h"
@@ -28,7 +28,7 @@ public:
 	void insertRows(int numRows, int numColumns, QString **Data) override;
     void MarkLines(int *rN, int N) override;
     void setIsoIcon(int Col, int c = 0) override;
-    void tabItemChanged(QTableWidgetItem *Item) override;
+    void tabItemChanged(QTableWidgetItem *Item);
     void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
     QString **getData(int &NRows, int &NCols) override;
     void setCellText(QString Text) override;
@@ -58,7 +58,7 @@ protected:
     bool readData(QTextStream& S) override;
     void writeData(QTextStream& S) override;
     void shiftCellValue(int n) override;
-    int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const override;
+    int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const;
     void shrinkAllSpectRefs(int FileColumn) override;
     void sortTab(int *SortArray) override;
     bool checkAllConnections(int FileColumn) override;

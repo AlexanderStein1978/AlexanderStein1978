@@ -26,8 +26,8 @@ class TableViewWindowCore : public QAbstractTableModel
 	public:
 		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegExp readSpecialPartRegex = QRegExp());
 		~TableViewWindowCore();
-		QString readData(QTextStream& S) override;
-		void writeData(QTextStream& S) override;
+		QString readData(QTextStream& S);
+		void writeData(QTextStream& S);
 		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 		void setRowCount(const int count);
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
