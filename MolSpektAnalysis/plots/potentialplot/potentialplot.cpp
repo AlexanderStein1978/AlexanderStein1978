@@ -7,10 +7,10 @@
 
 
 #include "potentialplot.h"
-#include "potential.h"
 #include "MainWindow.h"
 #include "naturalspline.h"
 #include "SplinePoint.h"
+#include "potential.h"
 
 #include <stdio.h>
 

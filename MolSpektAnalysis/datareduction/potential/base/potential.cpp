@@ -65,7 +65,7 @@
 using std::numeric_limits;
 
 
-Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWindow(MDIChild::PotData, Main, Mol), m_saving(false),
+Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWidgetWindow(MDIChild::PotData, Main, Mol), m_saving(false),
     mWasMoving(false)
 {
     setFilter("Potentials (*.pot)");
@@ -117,7 +117,7 @@ Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWind
     DebugStream = new QTextStream(DebugFile);*/
 }
 
-Potential::Potential(const Potential &C) : TableWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
+Potential::Potential(const Potential &C) : TableWidgetWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
 {
     //printf("Potential::Potential(const Potential &C)\n");
     int n;

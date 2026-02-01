@@ -28,7 +28,7 @@ class FitDataCore : public TableViewWindowCore
 
 		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
-		QString readData(QTextStream& S) override;
+		QString readData(QTextStream& S);
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;

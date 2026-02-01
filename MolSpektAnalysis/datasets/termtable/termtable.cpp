@@ -25,7 +25,7 @@
 #include <QListWidget>
 #include <QRadioButton>
 
-TermTable::TermTable(MainWindow *MW) : TableWindow(TermEnergyTable, MW)
+TermTable::TermTable(MainWindow *MW) : TableViewWindow(nullptr, TermEnergyTable, MW)
 {
 	State = 0;
 	NPerturbations = 0;

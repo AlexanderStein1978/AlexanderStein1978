@@ -17,6 +17,7 @@ target_include_directories(TermPlot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(TermPlot
 	DiagWindow
 	FitData
+	Templates
 	Tools
 	Qt5::Widgets
 )

@@ -9,10 +9,10 @@
 #define SPEKTLIST_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 
 
-class SpectList : public TableWindow
+class SpectList : public TableWidgetWindow
 {
 public:
 	SpectList(MainWindow *MW = 0);

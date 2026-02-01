@@ -5,8 +5,8 @@
 //
 //
 
-#ifndef FITDATACORE_H
-#define FITDATACORE_H
+#ifndef LINETABLECORE_H
+#define LINETABLECORE_H
 
 
 #include "tableviewwindowcore.h"
@@ -19,6 +19,7 @@
 class TermEnergy;
 class Spektrum;
 class Molecule;
+class LineTable;
 struct vsOListElement;
 struct Marker;
 
@@ -36,7 +37,7 @@ class LineTableCore : public TableViewWindowCore
 		static QStringList convertColumnVectorToHeaderStrings(const std::vector<TableCols>& headerVector);
 		static QString convertHeaderEnumToHeaderString(const TableCols enumValue);
 
-		LineTableCore(LineTable* lt, Molecule* mol = nullptr, QObject *parent = 0);
+		LineTableCore(LineTable* lt, Molecule* mol = nullptr, QObject *parent = nullptr);
 		~LineTableCore();
 		QString readData(QTextStream& S) {};
 		bool readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d);
@@ -95,19 +96,9 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Jss;
 		}
 
-		inline void setJss(const int row, const int Jss)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->Jss = Jss;
-		}
-
 		inline int getFineStructureQN(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->F;
-		}
-
-		inline void setFineStructureQN(const int row, const int FQN)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->F = FQN;
 		}
 
 		inline double getUpperEnergy(const int row) const
@@ -130,19 +121,9 @@ class LineTableCore : public TableViewWindowCore
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->Comment;
 		}
 
-		inline void setComment(const int row, const QString& comment)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->Comment = comment;
-		}
-
 		inline double getFCF(const int row) const
 		{
 			return reinterpret_cast<LineTableBaseData*>(mData[row])->FCF;
-		}
-
-		inline void setFCF(const int row, const double FCF)
-		{
-			reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
 		}
 
 		inline double getCalculatedUpperEnergy(const int row) const

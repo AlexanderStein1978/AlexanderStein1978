@@ -16,6 +16,7 @@
 #include "montecarlosim.h"
 #include "fit.h"
 #include "potworker.h"
+#include "tablewidgetwindow.h"
 
 
 #include <QDialog>
@@ -54,7 +55,7 @@ class QProgressBar;
 class QTextStream;
 
 
-class Potential : public TableWindow
+class Potential : public TableWidgetWindow
 {
 	Q_OBJECT
     
@@ -63,7 +64,7 @@ class Potential : public TableWindow
 public:
     Potential(MainWindow *MW = 0, Molecule *Mol = 0, int ThreadNum = -1);
 	Potential(const Potential &C);
-    ~Potential();
+    virtual ~Potential();
     bool init(QTextStream& inStream);
 	Potential *scalePotential(double newRe, double newDe);
     void getEV(double ****&Ev, int &Nc, int &NI, int &Nv, int &NJ, int NumWFPoints);

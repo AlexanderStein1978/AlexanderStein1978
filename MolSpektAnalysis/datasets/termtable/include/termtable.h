@@ -10,6 +10,7 @@
 
 #include "tableviewwindow.h"
 #include "termdata.h"
+#include "heapsort.h"
 
 #include <QDialog>
 

@@ -49,7 +49,7 @@ public:
 	// void getLines(const QString &Filename, double **Lines, int *numLines);
 	void getLines(TableLine *&L, int &N);
 	void getSortedLines(TableLine *&L, int &N, int SortOrder = 0);
-    void getgoodLines(int &N, TableLine *&L, int *mv = 0, int mJ = 0, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
+    void getgoodLines(int &N, TableLine *&L, int *mv = 0, int mJ = 0, bool SortFunction(const TableViewWindowCore *const, const int, const int) = sortIJvP);
 	void setUncertainty(int *RowNumbers, double *NewUncertainty, int NLines);
 	int getNgL(int *mv = 0, int mJ = 0);
 	int getNgTE(int *mv = 0, int mJ = 0);
@@ -61,7 +61,7 @@ public:
 	Progression getSelectedProgression();
 	void findSimilarProgression(Progression P);
 	void getObsIso(bool *ObsIso, int NIso);
-    void getProgressions(int &N, Progression *&P, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
+    void getProgressions(int &N, Progression *&P, bool SortFunction(const TableViewWindowCore *const, const int, const int) = sortIJvP);
 	bool writeData(QString Filename = "") override;
 	bool readData(QString Filename = "") override;
 	void addData(QString **Data, int NR, int NC);
@@ -118,9 +118,9 @@ public:
 	void getSelData(int *&Js, double *&E, int &N);
 	void getViewnE(int *&Js, double *&E, int &N);
 
-	inline void setData(const int row, const BaseData* const data) override
+	inline void setData(const int row, BaseData* const data)
 	{
-		TableViewWindow::setData(row, data);
+		mCore->setData(row, data);
 	}
 
 	inline void MarkLines(int *R, int N) override
@@ -133,12 +133,12 @@ public:
 		return (transition != 0 ? transition->getUpperState() : 0);
 	}
 
-    inline bool checkAllConnections() override
+    inline bool checkAllConnections()
     {
         return TableWindow::checkAllConnections(LineTableCore::CFile);
     }
 
-    inline void shrinkAllSpectRefs() override
+    inline void shrinkAllSpectRefs()
     {
         TableWindow::shrinkAllSpectRefs(LineTableCore::CFile);
     }

@@ -12,7 +12,7 @@
 #include "isotab.h"
 
 
-MeasuredTermEnergies::MeasuredTermEnergies(MainWindow *MW) : TableWindow(MDIChild::LineTab, MW)
+MeasuredTermEnergies::MeasuredTermEnergies(MainWindow *MW) : TableWidgetWindow(MDIChild::LineTab, MW)
 {
 	Data = 0;
 	NumComp = NumIso = Maxv = MaxJ = numVRows = 0;

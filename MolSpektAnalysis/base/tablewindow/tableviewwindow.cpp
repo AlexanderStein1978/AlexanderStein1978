@@ -123,7 +123,7 @@ void TableViewWindow::setRowData(int Row, QString* Data)
     Changed();
 }
 
-bool TableViewWindow::checkAllConnections(int)
+bool TableViewWindow::checkAllConnections()
 {
     bool ret = true, changed = false;
     Spektrum *Spectrum = new Spektrum(MW);
