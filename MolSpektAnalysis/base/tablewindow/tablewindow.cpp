@@ -172,11 +172,6 @@ bool TableWindow::readData(QString Filename)
     return Success;
 }
 
-bool TableWindow::readData(QTextStream&)
-{
-	return false;
-}
-
 bool TableWindow::writeData(QString Filename)
 {
 	QFile Datei(Filename);
