@@ -257,7 +257,7 @@ void TableViewWindowCore::RemoveEmptyRows()
     endRemoveRows();
 }
 
-int *TableViewWindowCore::heapSort(bool sortFuncs(TableViewWindowCore *const, const int, const int))
+int *TableViewWindowCore::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
 {
     return heapsort::heapSort(TableViewWindowCoreSortFunctor(this, sortFuncs), rowCount());
 }

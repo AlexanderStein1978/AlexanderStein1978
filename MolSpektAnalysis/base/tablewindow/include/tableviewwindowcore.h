@@ -65,7 +65,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		void EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn);
 		virtual QString cellToString(const int, const int) const;
 		void RemoveEmptyRows();
-		int *heapSort(bool sortFuncs(TableViewWindowCore *const, const int, const int));
+		int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const;
 		void setData(const int row, BaseData * const data);
 		void setHorizontalHeader(const QStringList &Labels);
 		void setVerticalHeader(const QStringList &Labels);

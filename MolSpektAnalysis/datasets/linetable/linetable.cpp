@@ -3025,3 +3025,8 @@ void LineTable::shrinkAllSpectRefs()
 	table->blockSignals(false);
 	mCore->blockSignals(false);
 }
+
+void LineTable::sortByProgNumber()
+{
+	sortTab(mCore->heapSort(sortByProgression));
+}

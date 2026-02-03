@@ -15,7 +15,7 @@ class TableViewWindowCore;
 class TableViewWindowCoreSortFunctor
 {
 public:
-    TableViewWindowCoreSortFunctor(TableViewWindowCore* core, bool sortFuncs(TableViewWindowCore* const, const int, const int))
+    TableViewWindowCoreSortFunctor(TableViewWindowCore* core, bool sortFuncs(const TableViewWindowCore* const, const int, const int))
         : mCore(core), m_sortFuncs(*sortFuncs)
     {
     }
@@ -27,7 +27,7 @@ public:
 
 private:
     TableViewWindowCore* mCore;
-    bool (&m_sortFuncs)(TableViewWindowCore* const, const int, const int);
+    bool (&m_sortFuncs)(const TableViewWindowCore* const, const int, const int);
 };
 
 #endif
