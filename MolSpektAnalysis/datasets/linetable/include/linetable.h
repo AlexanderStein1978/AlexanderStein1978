@@ -118,6 +118,7 @@ public:
 	void getSelData(int *&Js, double *&E, int &N);
 	void getViewnE(int *&Js, double *&E, int &N);
 	void shrinkAllSpectRefs();
+	void sortByProgNumber();
 
 	inline void setData(const int row, BaseData* const data)
 	{
@@ -137,11 +138,6 @@ public:
     inline bool checkAllConnections()
     {
         return TableViewWindow::checkAllConnections();
-    }
-
-    inline void sortByProgNumber()
-    {
-        sortTab(mCore->heapSort(sortByProgression));
     }
 
     inline QString getInfile() const

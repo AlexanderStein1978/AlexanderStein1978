@@ -668,7 +668,7 @@ void TableWidgetWindow::setVerticalHeader(QStringList &Labels)
 
 int *TableWidgetWindow::heapSort(bool sortFuncs(const QTableWidget *const, const int, const int)) const
 {
-    return utils::heapSort(TabSortFunctor(Tab, sortFuncs), getNumLines());
+    return heapsort::heapSort(TabSortFunctor(Tab, sortFuncs), getNumLines());
 }
 
 void TableWidgetWindow::shrinkAllSpectRefs(int FileColumn)
