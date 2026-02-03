@@ -11,6 +11,7 @@
 
 #include "tablewindow.h"
 #include "heapsort.h"
+#include "basedata.h"
 #include "tableviewwindowcoresortfunctor.h"
 #include "tableviewwindowcore.h"
 
@@ -39,6 +40,39 @@ public:
     QString **getData(int &NRows, int &NCols) override;
     void setData(QString **Data, int NRows, int NCols) override;
     void scrollTo(const int row);
+    QStringList getHorizontalHeaderLabels() override;
+    void DeleteRows() override;
+    void sortTab(int* S2) override;
+
+    inline void setHorizontalHeader(QStringList &Labels) override
+    {
+        mCore->setHorizontalHeader(Labels);
+    }
+
+	inline void setVerticalHeader(QStringList &Labels) override
+    {
+        mCore->setVerticalHeader(Labels);
+    }
+
+    inline int getNumColumns() const override
+    {
+        return mCore->columnCount();
+    }
+
+    inline void shiftCellValue(int) override
+    {
+        printf("This is not implemented!");
+    }
+
+    inline void AddRow() override
+    {
+        mCore->addRow(new BaseData);
+    }
+
+    inline int getNumLines() const override
+    {
+        return mCore->rowCount();
+    }
 
 protected slots:
     void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());

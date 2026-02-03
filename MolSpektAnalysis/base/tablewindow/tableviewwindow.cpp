@@ -376,3 +376,37 @@ void TableViewWindow::setData(QString ** Data, int NRows, int NCols)
 	table->blockSignals(false);
 	Changed();
 }
+
+QStringList TableViewWindow::getHorizontalHeaderLabels()
+{
+    int N = mCore->columnCount();
+    QStringList L;
+    for (int n=0; n<N; ++n) L << mCore->headerData(n, Qt::Horizontal, Qt::DisplayRole).toString();
+    return L;
+}
+
+void TableViewWindow::DeleteRows()
+{
+    int *Rows = nullptr, N=0;
+    table->blockSignals(true);
+    mCore->blockSignals(true);
+    table->getSelectedRows(Rows, N);
+    mCore->deleteRows(Rows, N);
+    mCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
+    delete[] Rows;
+}
+
+void TableViewWindow::sortTab(int* S2)
+{
+    table->blockSignals(true);
+    mCore->blockSignals(true);
+    mCore->sortTab(S2);
+    mCore->blockSignals(false);
+    table->blockSignals(false);
+    Changed();
+}
+
+
+

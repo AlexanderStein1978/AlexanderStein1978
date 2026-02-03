@@ -21,7 +21,7 @@
 #include <math.h>
 
 
-FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWindow(FranckCondonTable, MW, M), m_NChannelsQ(0), m_NChannelsPR(0), m_ChannelFQ(NULL), m_ChannelFPR(NULL)
+FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWidgetWindow(FranckCondonTable, MW, M), m_NChannelsQ(0), m_NChannelsPR(0), m_ChannelFQ(NULL), m_ChannelFPR(NULL)
 {
 	NIso = 0;
 	NJ = 0;

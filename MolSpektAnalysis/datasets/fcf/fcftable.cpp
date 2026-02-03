@@ -21,7 +21,7 @@
 #include <QColor>
 #include <QFont>
 
-FCFTable::FCFTable(MainWindow *mw, Molecule *Mol, QString LState, QString UState) : TableWindow(MDIChild::FranckCondonView, mw)
+FCFTable::FCFTable(MainWindow *mw, Molecule *Mol, QString LState, QString UState) : TableWidgetWindow(MDIChild::FranckCondonView, mw)
 {
 	printf("FCFTable::FCFTable\n");
 	int i;

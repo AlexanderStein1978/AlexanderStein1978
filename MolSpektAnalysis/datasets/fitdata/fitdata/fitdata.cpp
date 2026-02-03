@@ -248,7 +248,6 @@ bool FitData::containsState(ElState *State)
 
 void FitData::DeleteRows()
 {
-    if (table == 0) return;
     table->blockSignals(true);
     mCore->blockSignals(true);
     int j, k, n, R = mCore->rowCount(), *Rows = nullptr, N=0, NSources = reinterpret_cast<FitDataCore*>(mCore)->getNSources();
@@ -854,21 +853,21 @@ void FitData::prepareForExtractNewOrChanged(const FitData * const i_fitDataOld, 
     int *S0new, *S0old;
     if (i_withSources)
     {
-        S0new = heapSort(sortForExtractNewOrChanged);
-        S0old = i_fitDataOld->heapSort(sortForExtractNewOrChanged);
+        S0new = mCore->heapSort(sortForExtractNewOrChanged);
+        S0old = i_fitDataOld->mCore->heapSort(sortForExtractNewOrChanged);
     }
     else
     {
         if (i_subtractSourceOffsets)
         {
-            S0new = utils::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCore, SourceOffsetNames, SourceOffset, NSourceOffset), fitDataCore->rowCount());
-            S0old = utils::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCoreOld, i_fitDataOld->SourceOffsetNames, i_fitDataOld->SourceOffset,
+            S0new = heapsort::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCore, SourceOffsetNames, SourceOffset, NSourceOffset), fitDataCore->rowCount());
+            S0old = heapsort::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCoreOld, i_fitDataOld->SourceOffsetNames, i_fitDataOld->SourceOffset,
                                                                                    i_fitDataOld->NSourceOffset), fitDataCoreOld->rowCount());
         }
         else
         {
-            S0new = utils::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCore, 0, 0, 0), fitDataCore->rowCount());
-            S0old = utils::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCoreOld, 0, 0, 0), fitDataCoreOld->rowCount());
+            S0new = heapsort::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCore, 0, 0, 0), fitDataCore->rowCount());
+            S0old = heapsort::heapSort(SortForExtractNewOrChangedWithoutSourceFunctor(fitDataCoreOld, 0, 0, 0), fitDataCoreOld->rowCount());
         }
     }
     for (int n=0; n < i_NRnew; ++n) io_Onew[S0new[n]] = n;
@@ -1172,7 +1171,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
         ME += Nv[n];
     }
     double E[ME], LE, LLE = 0.0, Dev;
-    int va[ME], CA[ME], *S1 = heapSort(sortIefJFreq), *SA = new int[NR], lv = -1, lc = -1, fc, k;
+    int va[ME], CA[ME], *S1 = mCore->heapSort(sortIefJFreq), *SA = new int[NR], lv = -1, lc = -1, fc, k;
     for (n=0; n < NR; n++) SA[S1[n]] = n;
     int vc[MC+1];
     QString B;
@@ -1329,7 +1328,7 @@ void FitData::getNumLevels(int**& LNum, int& NumIso, int& NumComp, int type, int
     {
         int NSources = fitDataCore->getNSources();
         SortByLTabAndProgFunctor SortOperator(fitDataCore, Sources, NSources, MW, molecule);
-        int *fsa = utils::heapSort(SortOperator, NR), *Pos = new int[NR], m = 0, NP, PNum, F=0, v;
+        int *fsa = heapsort::heapSort(SortOperator, NR), *Pos = new int[NR], m = 0, NP, PNum, F=0, v;
         for (n=0; n < NR; ++n) Pos[fsa[n]]=n;
         delete[] fsa;
         fsa = 0;
@@ -1426,7 +1425,7 @@ int FitData::getNumProgressions(int *mv, int mJ)
 {
     int n, m, l, b, R, J, N = getNumLines(), NSources = reinterpret_cast<FitDataCore*>(mCore)->getNSources();
     if (N==0) return 0;
-    int *S1 = heapSort(sortByProg), *SA = new int[N];
+    int *S1 = mCore->heapSort(sortByProg), *SA = new int[N];
     for (n=0; n<N; n++) SA[S1[n]] = n;
     delete[] S1;
     LineTable *LTab = (NSources > 0 ? Sources[SA[0]] : 0);
@@ -1607,7 +1606,7 @@ void FitData::RemoveDoubled()
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     int NR = fitDataCore->rowCount(), n, m, c, NSources = fitDataCore->getNSources();
-    int *SA = new int[NR], *S1 = heapSort(sortIefJFreqv), *CompT, MCT;
+    int *SA = new int[NR], *S1 = mCore->heapSort(sortIefJFreqv), *CompT, MCT;
     bool* toDel = new bool[NR];
     std::vector<int> delList;
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
@@ -1719,7 +1718,7 @@ void FitData::removeSingleLines()
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     int n, m, c, N = fitDataCore->rowCount(), lc, NSources = fitDataCore->getNSources();
-    int *SA = new int[N], *S1 = heapSort(sortByProg);
+    int *SA = new int[N], *S1 = mCore->heapSort(sortByProg);
     bool* del = new bool[N];
     memset(del, 0, sizeof(bool) * N);
     for (n=0; n<N; n++) SA[S1[n]] = n;
@@ -1920,7 +1919,7 @@ void FitData::setDev(double* dev, int* RowN, int N)
 void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
-    int *inSort = heapSort(sortIefJvFreq), i, e, N = getNumLines(), *intSort = new int[N], I, DJ, J, v;
+    int *inSort = mCore->heapSort(sortIefJvFreq), i, e, N = getNumLines(), *intSort = new int[N], I, DJ, J, v;
     double E, ObsCalc;
     table->blockSignals(true);
     fitDataCore->blockSignals(true);
@@ -2074,27 +2073,27 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
     QList<int> CL;
     if (N > 0)
     {
-        for (n=0; n<N; n++) if (Rows[n] < NSources && Sources[Rows[n]] != 0 && Sources[Rows[n]]->getTransition()->getLowerState() == State)
+        for (n=0; n<N; ++n) if (Rows[n] < NSources && Sources[Rows[n]] != 0 && Sources[Rows[n]]->getTransition()->getLowerState() == State)
         {
-            for (i=0; (i < SL.count() ? SL[i] != Sources[Rows[n]] : false); i++) ;
+            for (i=0; (i < SL.count() ? SL[i] != Sources[Rows[n]] : false); ++i);
             if (i == SL.count())
             {
                 SL.append(Sources[Rows[n]]);
                 CL.append(1);
             }
-            else CL[i]++;
+            else ++(CL[i]);
         }
         int *PN[SL.count()], *vss[SL.count()], *Jss[SL.count()];
-        QString *Err[SL.count()];
-        for (n=0; n < SL.count(); n++)
+        double *Err[SL.count()];
+        for (n=0; n < SL.count(); ++n)
         {
             PN[n] = new int[CL[n]];
             vss[n] = new int[CL[n]];
             Jss[n] = new int[CL[n]];
-            Err[n] = new QString[CL[n]];
+            Err[n] = new double[CL[n]];
             CL[n] = 0;
         }
-        for (n=0; n<N; n++)
+        for (n=0; n<N; ++n)
         {
             
             if (!Min || (cU = fitDataCore->getUncertainty(Rows[n])) < Uncertainty) fitDataCore->setUncertainty(Rows[n], nU = U);
@@ -2102,14 +2101,14 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
             else if (cU >= 9.0) fitDataCore->setUncertainty(Rows[n], nU = mU);
             if (Rows[n] < NSources && Sources[Rows[n]] != nullptr && Sources[Rows[n]]->getTransition()->getLowerState() == State)
             {
-                for (i=0; SL[i] != Sources[Rows[n]]; i++) ;
+                for (i=0; SL[i] != Sources[Rows[n]]; ++i) ;
                 PN[i][CL[i]] = fitDataCore->getProgression(Rows[n]);
                 vss[i][CL[i]] = fitDataCore->get_v(Rows[n]);
                 Jss[i][CL[i]] = fitDataCore->getJ(Rows[n]);
                 Err[i][CL[i]++] = nU;
             }
         }
-        for (n=0; n < SL.count(); n++)
+        for (n=0; n < SL.count(); ++n)
         {
             SL[n]->SetError(CL[n], PN[n], vss[n], Jss[n], Err[n]);
             delete[] PN[n];
@@ -2131,16 +2130,16 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
             else CL[i]++;
         }
         int *PN[SL.count()], *vss[SL.count()], *Jss[SL.count()];
-        QString *Err[SL.count()];
+        double *Err[SL.count()];
         for (n=0; n < SL.count(); n++)
         {
             PN[n] = new int[CL[n]];
             vss[n] = new int[CL[n]];
             Jss[n] = new int[CL[n]];
-            Err[n] = new QString[CL[n]];
+            Err[n] = new double[CL[n]];
             CL[n] = 0;
         }
-        for (m=0; m < fitDataCore->rowCount(); m++)
+        for (m=0; m < fitDataCore->rowCount(); ++m)
         {
             if (!Min || (cU = fitDataCore->getUncertainty(m)) < Uncertainty) fitDataCore->setUncertainty(m, nU = U);
             else if (cU >= 99.0) fitDataCore->setUncertainty(m, nU = MU);
@@ -2154,7 +2153,7 @@ void FitData::setUncertainty(double Uncertainty, bool Min)
                 Err[i][CL[i]++] = nU;
             }
         }
-        for (n=0; n < SL.count(); n++)
+        for (n=0; n < SL.count(); ++n)
         {
             SL[n]->SetError(CL[n], PN[n], vss[n], Jss[n], Err[n]);
             delete[] PN[n];
@@ -2318,7 +2317,7 @@ void FitData::sortByLTabAndProg()
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     SortByLTabAndProgFunctor sortFunct(fitDataCore, Sources, fitDataCore->getNSources(), MW, molecule);
-    sortTab(utils::heapSort(sortFunct, fitDataCore->rowCount()));
+    sortTab(heapsort::heapSort(sortFunct, fitDataCore->rowCount()));
 }
 
 void FitData::updateData()
@@ -2750,7 +2749,7 @@ bool FitData::writeTFGS(QString Filename)
     QFile File(Filename);
     if (!File.open(QIODevice::WriteOnly)) return false;
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
-    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
+    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = mCore->heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
     int lI = -1, SI = 0, lSI = -1, PN, lPN = -1, wv, nDig;
     double WN, err;
     QString IsoStr[nIso], B;
@@ -2844,11 +2843,6 @@ ResidualFit* FitData::getResidualFit(ElState * const i_state, const int i_Iso, c
     return 0;
 }
 
-int *FitData::heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const
-{
-    return utils::heapSort(FitDataCoreSortFunctor(reinterpret_cast<FitDataCore*>(mCore), sortFuncs), getNumLines());
-}
-
 void FitData::writeData(QTextStream& S)
 {
     mCore->writeData(S);
@@ -2858,7 +2852,7 @@ bool FitData::checkAllConnections()
 {
     bool result = true;
     if (!checkSourceConnections()) result = false;
-    if (!TableViewWindow::checkAllConnections(FitDataCore::fdcFile)) result = false;
+    if (!TableViewWindow::checkAllConnections()) result = false;
     return result;
 }
 
@@ -2960,54 +2954,49 @@ void FitData::setCellText(QString Text)
     Changed();
 }
 
-void FitData::shrinkAllSpectRefs(int)
-{
-    reinterpret_cast<FitDataCore*>(mCore)->shrinkAllSpectRefs();
-}
-
 void FitData::HeaderItemDoubleClicked(const int index)
 {
     if (lastClickedHeaderIndex != index) return;
     switch(index)
     {
         case FitDataCore::fdcIso:
-            sortTab(heapSort(sortByIsoColumn));
+            sortTab(mCore->heapSort(sortByIsoColumn));
             break;
         case FitDataCore::fdcv:
-            sortTab(heapSort(sortBy_vColumn));
+            sortTab(mCore->heapSort(sortBy_vColumn));
             break;
         case FitDataCore::fdcJ:
-            sortTab(heapSort(sortByJColumn));
+            sortTab(mCore->heapSort(sortByJColumn));
             break;
         case FitDataCore::fdcvs:
-            sortTab(heapSort(sortBy_vsColumn));
+            sortTab(mCore->heapSort(sortBy_vsColumn));
             break;
         case FitDataCore::fdcJs:
-            sortTab(heapSort(sortByJsColumn));
+            sortTab(mCore->heapSort(sortByJsColumn));
             break;
         case FitDataCore::fdcSource:
-            sortTab(heapSort(sortBySourceColumn));
+            sortTab(mCore->heapSort(sortBySourceColumn));
             break;
         case FitDataCore::fdcProg:
-            sortTab(heapSort(sortByProgressionColumn));
+            sortTab(mCore->heapSort(sortByProgressionColumn));
             break;
         case FitDataCore::fdcFile:
-            sortTab(heapSort(sortByFileColumn));
+            sortTab(mCore->heapSort(sortByFileColumn));
             break;
         case FitDataCore::fdcEnergy:
-            sortTab(heapSort(sortByEnergyColumn));
+            sortTab(mCore->heapSort(sortByEnergyColumn));
             break;
         case FitDataCore::fdcUncert:
-            sortTab(heapSort(sortByUncertaintyColumn));
+            sortTab(mCore->heapSort(sortByUncertaintyColumn));
             break;
         case FitDataCore::fdcObsCalc:
-            sortTab(heapSort(sortbyDeviation));
+            sortTab(mCore->heapSort(sortbyDeviation));
             break;
         case FitDataCore::fdcDevR:
-            sortTab(heapSort(sortbyDevR));
+            sortTab(mCore->heapSort(sortbyDevR));
             break;
         case FitDataCore::fdcLineElState:
-            sortTab(heapSort(sortByElState));
+            sortTab(mCore->heapSort(sortByElState));
             break;
         default:
             // should not happen

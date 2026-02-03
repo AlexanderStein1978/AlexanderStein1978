@@ -1090,3 +1090,8 @@ void LineTableCore::setComment(const int row, const QString& comment)
 	EmitDataChanged(row, column);
 }
 
+void LineTableCore::shrinkAllSpectRefs()
+{
+	TableViewWindowCore::shrinkAllSpectRefs();
+    EmitDataChanged(0, mData.size(), CFile, CFile);
+}

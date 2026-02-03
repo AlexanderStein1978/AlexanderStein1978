@@ -27,11 +27,11 @@ public:
 	void copyRows(int &numRows, int &numColums, QString **&Data) override;
 	void insertRows(int numRows, int numColumns, QString **Data) override;
     void MarkLines(int *rN, int N) override;
-    void setIsoIcon(int Col, int c = 0) override;
+    void setIsoIcon(int Col, int c = 0);
     void tabItemChanged(QTableWidgetItem *Item);
     void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
     QString **getData(int &NRows, int &NCols) override;
-    void setCellText(QString Text) override;
+    void setCellText(QString Text);
     void setData(QString **Data, int NRows, int NCols) override;
     void setEditable(bool Editable) override;
     void setHorizontalHeader(QStringList &Labels) override;
@@ -59,9 +59,9 @@ protected:
     void writeData(QTextStream& S) override;
     void shiftCellValue(int n) override;
     int *heapSort(bool sortFuncs(const QTableWidget *const Tab, const int n, const int m)) const;
-    void shrinkAllSpectRefs(int FileColumn) override;
+    void shrinkAllSpectRefs(int FileColumn);
     void sortTab(int *SortArray) override;
-    bool checkAllConnections(int FileColumn) override;
+    bool checkAllConnections(int FileColumn);
 
     QTableWidget *Tab;
 };

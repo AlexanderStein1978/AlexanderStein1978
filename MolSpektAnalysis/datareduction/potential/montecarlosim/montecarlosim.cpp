@@ -32,7 +32,7 @@
 #include <QTimerEvent>
 
 
-MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWindow(FitSeriesResultTable, MW)
+MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWidgetWindow(FitSeriesResultTable, MW)
 {
 	QString WorkDir, WorkDir2, WorkDir3, ResultLogFile, FitProg, FitData, FitInFile1;
 	QString FitInFile2, InitPotDir, PotentialName, FileN, ServerIP;

@@ -13,7 +13,7 @@
 #include <QTableWidget>
 #include <QProcess>
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "includepot.h"
 #include "processview.h"
 
@@ -40,7 +40,7 @@ class QCheckBox;
 class QTime;
 
 
-class MonteCarloSim : public TableWindow
+class MonteCarloSim : public TableWidgetWindow
 {
 	Q_OBJECT
 	

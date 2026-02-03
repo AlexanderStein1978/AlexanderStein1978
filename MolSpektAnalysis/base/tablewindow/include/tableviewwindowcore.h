@@ -26,6 +26,7 @@ class TableViewWindowCore : public QAbstractTableModel
 	public:
 		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegExp readSpecialPartRegex = QRegExp());
 		~TableViewWindowCore();
+		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		QString readData(QTextStream& S);
 		void writeData(QTextStream& S);
 		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -58,13 +59,17 @@ class TableViewWindowCore : public QAbstractTableModel
 		void setObsCalc(const int, const double){};
 		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setMolecule(Molecule* const mol);
-		void shrinkAllSpectRefs();
+		virtual void shrinkAllSpectRefs();
 		virtual BaseData* convertToBaseData(const QStringList& L) const;
         void EmitDataChanged(const int row, const int column);
 		void EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn);
 		virtual QString cellToString(const int, const int) const {return "";};
 		void RemoveEmptyRows();
-		static int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int));
+		int *heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const;
+		void setData(const int row, BaseData * const data);
+		void setHorizontalHeader(const QStringList &Labels);
+		void setVerticalHeader(const QStringList &Labels);
+		void sortTab(const int* const sortArray);
 
 		inline int getNSources() const
 		{
@@ -79,11 +84,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		inline std::vector<BaseData*> getData()
 		{
 			return mData;
-		}
-
-		inline void setData(const int row, BaseData * const data)
-		{
-			mData[row] = data;
 		}
 
 		inline QModelIndex getIndex(const int row, const int column) const
@@ -105,6 +105,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		void startSearch(int& N, int *& Rows) const;
 		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 
+		QStringList horizontalHeders, verticalHeaders;
 		int NSources = 0;
 		std::vector<BaseData*> mData;
 		const QRegExp mStartSpecialPart;

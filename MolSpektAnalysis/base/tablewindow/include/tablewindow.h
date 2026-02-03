@@ -58,17 +58,16 @@ public:
 	virtual void shiftCellValue(int n) = 0;
 	virtual void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) = 0;
 	void setViewnRows(MDIChild *Viewer, int NRows, int *Rows);
-	virtual void search(int column, int value, int smeqla) = 0;
-	virtual void search(int column, double value, int smeqla) = 0;
-	virtual void search(QString Text, int column=-1, bool completeCell = false) = 0;
-	virtual void setEditable(bool Editable) = 0;
+	virtual void search(int column, int value, int smeqla) {};
+	virtual void search(int column, double value, int smeqla) {};
+	virtual void search(QString Text, int column=-1, bool completeCell = false) {};
+	virtual void setEditable(bool Editable);
 	virtual void getViewnE(int *&Js, double *&E, int &N);
 	virtual void DeleteRows() = 0;
 	virtual void AddRow() = 0;
 	virtual void RemoveDoubled();
-    virtual void setCellText(QString Text) = 0;
-	inline virtual int getNumLines() const = 0;
-	inline virtual int getNumColumns() const = 0;
+	virtual int getNumLines() const = 0;
+	virtual int getNumColumns() const = 0;
 	
 	inline virtual ElState *getElState()
 	{
@@ -84,15 +83,12 @@ public slots:
 protected:
 	void resizeEvent(QResizeEvent *e);
 	virtual void resizeHelper(QRect& G) = 0;
-	virtual void setIsoIcon(int Col, int c = 0) = 0;
 	virtual void sortTab(int *SortArray) = 0;
 	void getViewnRows(bool *RV);
 	void setNumIterations(int Finished, int Max = -1);
 	void setNumParIt(int N);
 	int getNumParIt();
 	void setMaxParFits(int Max);
-    virtual bool checkAllConnections(int FileColumn) = 0;
-    virtual void shrinkAllSpectRefs(int FileColumn) = 0;
 	virtual bool readData(QTextStream& S) = 0;
 	virtual void writeData(QTextStream&) {}
 
