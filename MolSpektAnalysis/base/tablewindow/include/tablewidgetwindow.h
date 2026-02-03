@@ -14,6 +14,7 @@
 
 class TableWidgetWindow : public TableWindow
 {
+    Q_OBJECT
 public:
     TableWidgetWindow(Type typ = TermEnergyTable, MainWindow *MW = 0, Molecule *M = 0);
     virtual ~TableWidgetWindow();
@@ -52,6 +53,12 @@ public:
 		if (Tab != 0) return Tab->columnCount();
 		return 0;
 	}
+
+public slots:
+    inline bool readData(QString Filename = "") override
+    {
+        return TableWindow::readData(Filename);
+    }
 
 protected:
     void resizeHelper(QRect& G) override;

@@ -89,7 +89,7 @@ protected:
 	void setNumParIt(int N);
 	int getNumParIt();
 	void setMaxParFits(int Max);
-	virtual bool readData(QTextStream& S) = 0;
+	virtual bool readData(QTextStream& S) {};
 	virtual void writeData(QTextStream&) {}
 
     virtual inline QRegExp GetStartSpecialPartRegExp() const

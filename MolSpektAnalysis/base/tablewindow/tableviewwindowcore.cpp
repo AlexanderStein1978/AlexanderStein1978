@@ -7,6 +7,7 @@
 
 
 #include "tableviewwindowcore.h"
+#include "tableviewwindowcoresortfunctor.h"
 #include "basedata.h"
 #include "isotab.h"
 #include "molecule.h"
@@ -14,6 +15,7 @@
 
 #include <QPixmap>
 #include <QPainter>
+#include <QTextStream>
 
 
 TableViewWindowCore::TableViewWindowCore(Molecule* mol, QObject *parent, QRegExp readSpecialPartRegex) : QAbstractTableModel(parent), mStartSpecialPart(readSpecialPartRegex), molecule(mol)
@@ -139,7 +141,7 @@ BaseData * TableViewWindowCore::getRow(const int row) const
 
 void TableViewWindowCore::insertRows(const int startRow, const std::vector<BaseData *>& newRows)
 {
-    auto it = mData.begin()
+    auto it = mData.begin();
     for (int r=0; it != mData.end() && r < startRow; ++it) ++r;
     mData.insert(it, newRows.begin(), newRows.end());
 }
@@ -255,32 +257,7 @@ void TableViewWindowCore::RemoveEmptyRows()
     endRemoveRows();
 }
 
-void TableViewWindowCore::startSearch(int& N, int *& Rows) const
-{
-    table->getSelectedRows(Rows, N);
-    if (nullptr == Rows)
-    {
-        N = mCore->rowCount();
-        Rows = new int[N];
-        for (int n=0; n<N; ++n) Rows[n] = n;
-    }
-}
-
-void TableViewWindowCore::finishSearch(int *const Rows, const QModelIndexList& Result) const
-{
-    delete[] Rows;
-    if (Result.size() > 0)
-    {
-        QItemSelectionModel* model = new QItemSelectionModel;
-        for (auto it = Result.begin(); it != Result.end(); ++it) model->select(*it, QItemSelectionModel::Select);
-        table->blockSignals(true);
-        table->setSelectionModel(model);
-        table->scrollTo(Result[0]);
-        table->blockSignals(false);
-    }
-}
-
-int *TableViewWindowCore::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
+int *TableViewWindowCore::heapSort(bool sortFuncs(TableViewWindowCore *const, const int, const int))
 {
     return heapsort::heapSort(TableViewWindowCoreSortFunctor(this, sortFuncs), rowCount());
 }
@@ -336,3 +313,10 @@ void TableViewWindowCore::setVerticalHeader(const QStringList &Labels)
 	verticalHeaders = Labels;
     emit headerDataChanged(Qt::Vertical, 0, (Labels.size() > oldsize ? Labels.size() : oldsize));
 }
+
+QString TableViewWindowCore::cellToString(const int r, const int c) const
+{
+	QModelIndex index = createIndex(r, c);
+	return data(index, Qt::DisplayRole).toString();
+}
+

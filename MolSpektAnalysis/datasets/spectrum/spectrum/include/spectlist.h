@@ -14,6 +14,7 @@
 
 class SpectList : public TableWidgetWindow
 {
+	Q_OBJECT
 public:
 	SpectList(MainWindow *MW = 0);
 	void AutoSLP();
