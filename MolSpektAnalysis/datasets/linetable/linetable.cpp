@@ -3016,3 +3016,12 @@ void LineTable::HeaderItemDoubleClicked(const int index)
             break;
     }
 }
+
+void LineTable::shrinkAllSpectRefs()
+{
+	table->blockSignals(true);
+	mCore->blockSignals(true);
+	mCore->shrinkAllSpectRefs();
+	table->blockSignals(false);
+	mCore->blockSignals(false);
+}

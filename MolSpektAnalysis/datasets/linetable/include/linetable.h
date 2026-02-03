@@ -117,6 +117,7 @@ public:
 	void setMolecule(Molecule *mol);
 	void getSelData(int *&Js, double *&E, int &N);
 	void getViewnE(int *&Js, double *&E, int &N);
+	void shrinkAllSpectRefs();
 
 	inline void setData(const int row, BaseData* const data)
 	{
@@ -135,17 +136,12 @@ public:
 
     inline bool checkAllConnections()
     {
-        return TableWindow::checkAllConnections(LineTableCore::CFile);
-    }
-
-    inline void shrinkAllSpectRefs()
-    {
-        TableWindow::shrinkAllSpectRefs(LineTableCore::CFile);
+        return TableViewWindow::checkAllConnections();
     }
 
     inline void sortByProgNumber()
     {
-        sortTab(TableViewWindowCore::heapSort(sortByProgression));
+        sortTab(mCore->heapSort(sortByProgression));
     }
 
     inline QString getInfile() const

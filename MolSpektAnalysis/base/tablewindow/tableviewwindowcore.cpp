@@ -31,6 +31,21 @@ TableViewWindowCore::~TableViewWindowCore()
 	delete NewPix;
 }
 
+QVariant TableViewWindowCore::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if (role != Qt::DisplayRole && role != Qt::EditRole) return QVariant();
+	if (orientation == Qt::Vertical)
+	{
+		if (section < verticalHeaders.size()) return verticalHeaders[section];
+		else return section;
+	}
+	else
+	{
+		if (section < horizontalHeders.size()) return horizontalHeders[section];
+		else return section;
+	}
+}
+
 void TableViewWindowCore::writeData(QTextStream& S)
 {
 	char Spacer = '\t';
@@ -265,7 +280,59 @@ void TableViewWindowCore::finishSearch(int *const Rows, const QModelIndexList& R
     }
 }
 
-int *TableViewWindowCore::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int))
+int *TableViewWindowCore::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
 {
-    return heapsort::heapSort(TableViewWindowCoreSortFunctor(mCore, sortFuncs), mCore->rowCount());
+    return heapsort::heapSort(TableViewWindowCoreSortFunctor(this, sortFuncs), rowCount());
+}
+
+void TableViewWindowCore::sortTab(int* S2)
+{
+	int i, P1=0, n, N = mData.size();
+	BaseData* AIt[2];
+	for (i=0; i<N; ++i) if (S2[i] != i)
+	{
+		AIt[P1] = mData[i];
+		while (S2[i] != i)
+		{
+			AIt[1-P1] = mData[S2[i]];
+			mData[S2[i]] = AIt[P1];
+			P1 = 1 - P1;
+			n = S2[S2[i]];
+			S2[S2[i]] = S2[i];
+			S2[i] = n;
+		}
+		mData[i] = AIt[P1];
+	}
+	delete[] S2;
+}
+
+void TableViewWindowCore::shrinkAllSpectRefs()
+{
+	int m, N = mData.size();
+    QString FileName;
+    for (auto it = mData.begin(); it != mData.end(); ++it)
+    {
+        FileName = (*it)->file;
+        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
+    }
+}
+
+void TableViewWindowCore::setData(const int row, BaseData * const data)
+{
+	mData[row] = data;
+	EmitDataChanged(row, row, 0, columnCount());
+}
+
+void TableViewWindowCore::setHorizontalHeader(const QStringList &Labels)
+{
+	int oldsize = horizontalHeders.size();
+	horizontalHeders = Labels;
+    emit headerDataChanged(Qt::Horizontal, 0, (Labels.size() > oldsize ? Labels.size() : oldsize));
+}
+
+void TableViewWindowCore::setVerticalHeader(const QStringList &Labels)
+{
+	int oldsize = verticalHeaders.size();
+	verticalHeaders = Labels;
+    emit headerDataChanged(Qt::Vertical, 0, (Labels.size() > oldsize ? Labels.size() : oldsize));
 }

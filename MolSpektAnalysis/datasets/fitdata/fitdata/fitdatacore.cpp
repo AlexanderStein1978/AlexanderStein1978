@@ -437,13 +437,7 @@ void FitDataCore::setRWError(const QString& headerText)
 
 void FitDataCore::shrinkAllSpectRefs()
 {
-	int m, N = mData.size();
-    QString FileName;
-    for (auto it = mData.begin(); it != mData.end(); ++it)
-    {
-        FileName = (*it)->file;
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
-    }
+	TableViewWindowCore::shrinkAllSpectRefs();
     EmitDataChanged(0, mData.size(), fdcFile, fdcFile);
 }
 

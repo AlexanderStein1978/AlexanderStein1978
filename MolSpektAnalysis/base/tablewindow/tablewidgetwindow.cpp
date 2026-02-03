@@ -687,12 +687,12 @@ void TableWidgetWindow::sortTab(int* S2)
 	int i, P1=0, n, N = Tab->rowCount(), c, C = Tab->columnCount();
 	QString AIt[C][2];
 	Tab->blockSignals(true);
-	for (i=0; i<N; i++) if (S2[i] != i)
+	for (i=0; i<N; ++i) if (S2[i] != i)
 	{
-		for (c=0; c<C; c++) AIt[c][P1] = Tab->item(i, c)->text();
+		for (c=0; c<C; ++c) AIt[c][P1] = Tab->item(i, c)->text();
 		while (S2[i] != i)
 		{
-			for (c=0; c<C; c++)
+			for (c=0; c<C; ++c)
 			{
 				AIt[c][1-P1] = Tab->item(S2[i], c)->text();
 				Tab->item(S2[i], c)->setText(AIt[c][P1]);
@@ -702,7 +702,7 @@ void TableWidgetWindow::sortTab(int* S2)
 			S2[S2[i]] = S2[i];
 			S2[i] = n;
 		}
-		for (c=0; c<C; c++) Tab->item(i, c)->setText(AIt[c][P1]);
+		for (c=0; c<C; ++c) Tab->item(i, c)->setText(AIt[c][P1]);
 	}
 	Tab->blockSignals(false);
 	delete[] S2;

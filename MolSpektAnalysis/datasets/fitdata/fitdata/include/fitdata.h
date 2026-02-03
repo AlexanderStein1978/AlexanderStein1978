@@ -105,12 +105,12 @@ class FitData : public TableViewWindow
         bool checkAllConnections();
 		void shiftCellValue(int v) override;
 		bool containsDataForMoreThanOneState() const;
-		void setCellText(QString Text) override;
+		void setCellText(QString Text);
 		QStringList getHorizontalHeaderLabels() override;
 		void search(int column, int value, int smeqla) override;
 		void search(int column, double value, int smeqla) override;
 		void search(QString Text, int column=-1, bool completeCell = false) override;
-		void shrinkAllSpectRefs(int=0) override;
+		void shrinkAllSpectRefs();
 		
 		inline void sortIvJF()
 		{

@@ -67,6 +67,7 @@ class LineTableCore : public TableViewWindowCore
 		void setFineStructureQN(const int row, const int FQN);
 		void setFCF(const int row, const double FCF);
 		void setComment(const int row, const QString& comment);
+		void shrinkAllSpectRefs() override;
 
 		void setUncertainty(const int row, const double uncertainty)
 		{

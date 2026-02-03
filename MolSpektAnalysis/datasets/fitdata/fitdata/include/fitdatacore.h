@@ -67,6 +67,11 @@ class FitDataCore : public TableViewWindowCore
 		FitDataBaseData* convertToFitDataCoreBaseData(const QStringList& L) const;
 		QString cellToString(const int r, const int c) const override;
 
+		inline void setData(const int row, BaseData * const data)
+		{
+			TableViewWindowCore::setData(row,  data);
+		}
+
 		inline BaseData* convertToBaseData(const QStringList& L) const override
 		{
 			return convertToFitDataCoreBaseData(L);
