@@ -127,7 +127,7 @@ public:
 
 	inline void MarkLines(int *R, int N) override
 	{
-		TableWindow::MarkLines(R, N);
+		TableViewWindow::MarkLines(R, N);
 	}
 
 	inline ElState *getElState() override

@@ -8,11 +8,12 @@
 #include "particlewatchtable.h"
 #include "window.h"
 #include "watchpoint.h"
+#include "tablewidgetwindow.h"
 
 #include <QGridLayout>
 
 
-ParticleWatchTable::ParticleWatchTable(Window *iwindow, MainWindow *MW) : TableWindow(External, MW), mWatchPoint(iwindow->getNumSteps(), iwindow->getNumParticles()),
+ParticleWatchTable::ParticleWatchTable(Window *iwindow, MainWindow *MW) : TableWidgetWindow(External, MW), mWatchPoint(iwindow->getNumSteps(), iwindow->getNumParticles()),
     CoordBox(new QComboBox(this)), StepBox(new QComboBox(this)), ParticleBox(new QComboBox(this)), SumLabel(new QLabel(this)), NextButton(new QPushButton("Next iteration", this)),
     window(iwindow)
 {
