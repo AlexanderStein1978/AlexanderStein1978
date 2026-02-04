@@ -429,7 +429,7 @@ void LineTableCore::WriteTFGS(QTextStream& S, vsOListElement *vsOList, const int
 	IsoTab* Iso = molecule->getIso();
 	QString Buffer, IBuff, F, lF;
 	vsOListElement* CvsOElement = vsOList;
-	int *SO = new int[N], *S1 = heapSort(sortIJvP);
+	int *SO = new int[N], *S1 = lTab->heapSort(sortIJvP);
 	for (n=0; n<N; n++) SO[S1[n]] = n;
 	for (i=0; i<N; ++i)
 	{

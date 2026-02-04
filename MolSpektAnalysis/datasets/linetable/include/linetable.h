@@ -114,9 +114,9 @@ public:
 	void setFC(const int nF);
 	void sortbyvs();
 	void getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss, bool ***&uL, bool ***&lL);
-	void setMolecule(Molecule *mol);
+	void setMolecule(Molecule *mol) override;
 	void getSelData(int *&Js, double *&E, int &N);
-	void getViewnE(int *&Js, double *&E, int &N);
+	void getViewnE(int *&Js, double *&E, int &N) override;
 	void shrinkAllSpectRefs();
 	void sortByProgNumber();
 

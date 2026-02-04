@@ -568,7 +568,7 @@ void FitData::getData(TableLine*& Lines, int& NLines, int JD, int F, int v, int 
     {
         Lines = new TableLine[NLines];
         int N = getNumLines();
-        int *SA = new int[N], n, *S1 = mCore->heapSort(sortByProg);
+        int *SA = new int[N], n, *S1 = heapSort(sortByProg);
         for (n=0; n < N; n++) SA[S1[n]] = n;
         delete[] S1;
         getData(Lines, SA, N, NLines, 0, v, 0, mJ, JD, F, Iso, true, state);
@@ -583,7 +583,7 @@ void FitData::getData(TableLine*& Lines, int& NLines, int *&RowN,
     if ((NLines = (mv != 0 ? getNumLines(mv, mJ) : getNumLines())) != 0)
     {
         int n, N = getNumLines();
-        int *SA = new int[N], *S1 = mCore->heapSort(sortFuncs);
+        int *SA = new int[N], *S1 = heapSort(sortFuncs);
         RowN = new int[NLines];
         for (n=0; n<N; n++) SA[S1[n]] = n;
         delete[] S1;
@@ -853,8 +853,8 @@ void FitData::prepareForExtractNewOrChanged(const FitData * const i_fitDataOld, 
     int *S0new, *S0old;
     if (i_withSources)
     {
-        S0new = mCore->heapSort(sortForExtractNewOrChanged);
-        S0old = i_fitDataOld->mCore->heapSort(sortForExtractNewOrChanged);
+        S0new = heapSort(sortForExtractNewOrChanged);
+        S0old = i_fitDataOld->heapSort(sortForExtractNewOrChanged);
     }
     else
     {
@@ -1171,7 +1171,7 @@ void FitData::Assign_v(double**** TE, int NC, int NI, int NJ, int *Nv, int* IsoT
         ME += Nv[n];
     }
     double E[ME], LE, LLE = 0.0, Dev;
-    int va[ME], CA[ME], *S1 = mCore->heapSort(sortIefJFreq), *SA = new int[NR], lv = -1, lc = -1, fc, k;
+    int va[ME], CA[ME], *S1 = heapSort(sortIefJFreq), *SA = new int[NR], lv = -1, lc = -1, fc, k;
     for (n=0; n < NR; n++) SA[S1[n]] = n;
     int vc[MC+1];
     QString B;
@@ -1425,7 +1425,7 @@ int FitData::getNumProgressions(int *mv, int mJ)
 {
     int n, m, l, b, R, J, N = getNumLines(), NSources = reinterpret_cast<FitDataCore*>(mCore)->getNSources();
     if (N==0) return 0;
-    int *S1 = mCore->heapSort(sortByProg), *SA = new int[N];
+    int *S1 = heapSort(sortByProg), *SA = new int[N];
     for (n=0; n<N; n++) SA[S1[n]] = n;
     delete[] S1;
     LineTable *LTab = (NSources > 0 ? Sources[SA[0]] : 0);
@@ -1606,7 +1606,7 @@ void FitData::RemoveDoubled()
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     int NR = fitDataCore->rowCount(), n, m, c, NSources = fitDataCore->getNSources();
-    int *SA = new int[NR], *S1 = mCore->heapSort(sortIefJFreqv), *CompT, MCT;
+    int *SA = new int[NR], *S1 = heapSort(sortIefJFreqv), *CompT, MCT;
     bool* toDel = new bool[NR];
     std::vector<int> delList;
     TermTable *TT = (State != 0 ? State->getTermTable() : 0);
@@ -1718,7 +1718,7 @@ void FitData::removeSingleLines()
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
     int n, m, c, N = fitDataCore->rowCount(), lc, NSources = fitDataCore->getNSources();
-    int *SA = new int[N], *S1 = mCore->heapSort(sortByProg);
+    int *SA = new int[N], *S1 = heapSort(sortByProg);
     bool* del = new bool[N];
     memset(del, 0, sizeof(bool) * N);
     for (n=0; n<N; n++) SA[S1[n]] = n;
@@ -1919,7 +1919,7 @@ void FitData::setDev(double* dev, int* RowN, int N)
 void FitData::setDev(TableLine **TL, TLRef *SortArray, int NE, double tol)
 {
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
-    int *inSort = mCore->heapSort(sortIefJvFreq), i, e, N = getNumLines(), *intSort = new int[N], I, DJ, J, v;
+    int *inSort = heapSort(sortIefJvFreq), i, e, N = getNumLines(), *intSort = new int[N], I, DJ, J, v;
     double E, ObsCalc;
     table->blockSignals(true);
     fitDataCore->blockSignals(true);
@@ -2749,7 +2749,7 @@ bool FitData::writeTFGS(QString Filename)
     QFile File(Filename);
     if (!File.open(QIODevice::WriteOnly)) return false;
     FitDataCore* fitDataCore = reinterpret_cast<FitDataCore*>(mCore);
-    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = mCore->heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
+    int nIso = Iso->numIso, n, N = fitDataCore->rowCount(), I, vo = 0, *S1 = heapSort(sortforTFGS), *SA = new int[N], vs, Js, lvs = -2, lJs = -2;
     int lI = -1, SI = 0, lSI = -1, PN, lPN = -1, wv, nDig;
     double WN, err;
     QString IsoStr[nIso], B;
@@ -2960,43 +2960,43 @@ void FitData::HeaderItemDoubleClicked(const int index)
     switch(index)
     {
         case FitDataCore::fdcIso:
-            sortTab(mCore->heapSort(sortByIsoColumn));
+            sortTab(heapSort(sortByIsoColumn));
             break;
         case FitDataCore::fdcv:
-            sortTab(mCore->heapSort(sortBy_vColumn));
+            sortTab(heapSort(sortBy_vColumn));
             break;
         case FitDataCore::fdcJ:
-            sortTab(mCore->heapSort(sortByJColumn));
+            sortTab(heapSort(sortByJColumn));
             break;
         case FitDataCore::fdcvs:
-            sortTab(mCore->heapSort(sortBy_vsColumn));
+            sortTab(heapSort(sortBy_vsColumn));
             break;
         case FitDataCore::fdcJs:
-            sortTab(mCore->heapSort(sortByJsColumn));
+            sortTab(heapSort(sortByJsColumn));
             break;
         case FitDataCore::fdcSource:
-            sortTab(mCore->heapSort(sortBySourceColumn));
+            sortTab(heapSort(sortBySourceColumn));
             break;
         case FitDataCore::fdcProg:
-            sortTab(mCore->heapSort(sortByProgressionColumn));
+            sortTab(heapSort(sortByProgressionColumn));
             break;
         case FitDataCore::fdcFile:
-            sortTab(mCore->heapSort(sortByFileColumn));
+            sortTab(heapSort(sortByFileColumn));
             break;
         case FitDataCore::fdcEnergy:
-            sortTab(mCore->heapSort(sortByEnergyColumn));
+            sortTab(heapSort(sortByEnergyColumn));
             break;
         case FitDataCore::fdcUncert:
-            sortTab(mCore->heapSort(sortByUncertaintyColumn));
+            sortTab(heapSort(sortByUncertaintyColumn));
             break;
         case FitDataCore::fdcObsCalc:
-            sortTab(mCore->heapSort(sortbyDeviation));
+            sortTab(heapSort(sortbyDeviation));
             break;
         case FitDataCore::fdcDevR:
-            sortTab(mCore->heapSort(sortbyDevR));
+            sortTab(heapSort(sortbyDevR));
             break;
         case FitDataCore::fdcLineElState:
-            sortTab(mCore->heapSort(sortByElState));
+            sortTab(heapSort(sortByElState));
             break;
         default:
             // should not happen
