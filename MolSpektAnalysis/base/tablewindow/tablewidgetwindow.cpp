@@ -11,6 +11,7 @@
 #include "molecule.h"
 #include "Spektrum.h"
 #include "utils.h"
+#include "heapsort.h"
 
 #include <QFile>
 #include <QTextStream>

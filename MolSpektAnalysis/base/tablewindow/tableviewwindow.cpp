@@ -432,3 +432,8 @@ void TableViewWindow::finishSearch(int *const Rows, const QModelIndexList& Resul
         table->blockSignals(false);
     }
 }
+
+int *TableViewWindow::heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const
+{
+    return heapsort::heapSort(TableViewWindowCoreSortFunctor(mCore, sortFuncs), mCore->rowCount());
+}

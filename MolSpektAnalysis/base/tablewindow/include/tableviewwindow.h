@@ -43,6 +43,7 @@ public:
     QStringList getHorizontalHeaderLabels() override;
     void DeleteRows() override;
     void sortTab(int* S2) override;
+    int* heapSort(bool sortFuncs(const TableViewWindowCore *const, const int, const int)) const;
 
     inline void setHorizontalHeader(QStringList &Labels) override
     {
