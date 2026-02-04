@@ -61,7 +61,6 @@ public:
 	virtual void search(int column, int value, int smeqla) {};
 	virtual void search(int column, double value, int smeqla) {};
 	virtual void search(QString Text, int column=-1, bool completeCell = false) {};
-	virtual void setEditable(bool Editable);
 	virtual void getViewnE(int *&Js, double *&E, int &N);
 	virtual void DeleteRows() = 0;
 	virtual void AddRow() = 0;

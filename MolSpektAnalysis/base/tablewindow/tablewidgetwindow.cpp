@@ -643,11 +643,10 @@ void TableWidgetWindow::setData(QString **Data, int NR, int NC)
 
 void TableWidgetWindow::setEditable(bool Editable)
 {
-	if (Tab == 0) return;
 	int r, c, NR = Tab->rowCount(), NC = Tab->columnCount();
-	if (Editable) for (r=0; r < NR; r++) for (c=0; c < NC; c++)
+	if (Editable) for (r=0; r < NR; r++) for (c=0; c < NC; ++c)
 		Tab->item(r, c)->setFlags(Tab->item(r, c)->flags() | Qt::ItemIsEditable);
-	else for (r=0; r < NR; r++) for (c=0; c < NC; c++)
+	else for (r=0; r < NR; r++) for (c=0; c < NC; ++c)
 		Tab->item(r, c)->setFlags(Tab->item(r, c)->flags() & (~Qt::ItemIsEditable));
 }
 

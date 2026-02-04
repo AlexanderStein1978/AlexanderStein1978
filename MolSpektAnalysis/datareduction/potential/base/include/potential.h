@@ -400,7 +400,7 @@ private:
 	ElState *State;
 	int maxSplinePoints, NFC, threadNum, NFitIt;
     bool m_saving, showFitResult, getTexTableSplineFitRunning, writePotFitTraceTab, mWasMoving;
-	TableWindow *BadList;
+	TableWidgetWindow *BadList;
 	QPixmap *FixPix;
 	FitData *fitData;
 	CoupledSineWaveFunc *WaveFuncs;
