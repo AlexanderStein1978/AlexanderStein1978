@@ -398,6 +398,8 @@ void TableViewWindow::DeleteRows()
     delete[] Rows;
 }
 
+
+
 void TableViewWindow::sortTab(int* S2)
 {
     table->blockSignals(true);

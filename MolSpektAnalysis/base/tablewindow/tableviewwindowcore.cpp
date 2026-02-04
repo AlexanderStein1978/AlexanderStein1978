@@ -315,3 +315,14 @@ QString TableViewWindowCore::cellToString(const int r, const int c) const
 	return data(index, Qt::DisplayRole).toString();
 }
 
+void TableViewWindowCore::setUncertainty(const int row, const double uncertainty)
+{
+	mData[row]->uncertainty = uncertainty;
+	EmitDataChanged(row, row, 0, columnCount());
+}
+
+void TableViewWindowCore::setProgression(const int row, const int progression)
+{
+	mData[row]->progressionNumber = progression;
+	EmitDataChanged(row, row, 0, columnCount());
+}
