@@ -2226,9 +2226,9 @@ QTableWidget *MainWindow::createTable()
 	return Tab;
 }
 
-TableWindow *MainWindow::createTableWindow()
+TableWidgetWindow *MainWindow::createTableWindow()
 {
-	TableWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
+	TableWidgetWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
 	workspace->addSubWindow(Tab);
 	return Tab;
 }

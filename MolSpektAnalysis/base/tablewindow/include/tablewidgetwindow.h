@@ -34,7 +34,7 @@ public:
     QString **getData(int &NRows, int &NCols) override;
     void setCellText(QString Text);
     void setData(QString **Data, int NRows, int NCols) override;
-    void setEditable(bool Editable) override;
+    void setEditable(bool Editable);
     void setHorizontalHeader(QStringList &Labels) override;
     void setVerticalHeader(QStringList &Labels) override;
     QStringList getHorizontalHeaderLabels() override;
