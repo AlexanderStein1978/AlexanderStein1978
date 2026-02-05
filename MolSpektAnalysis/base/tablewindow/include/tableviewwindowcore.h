@@ -12,8 +12,7 @@
 #include <QAbstractTableModel>
 #include <cmath>
 
-
-struct BaseData;
+#include "basedata.h"
 
 class TermEnergy;
 class Spektrum;
@@ -60,7 +59,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		void setIsoIcon(const int row, const QPixmap* const Icon);
 		void setMolecule(Molecule* const mol);
 		virtual void shrinkAllSpectRefs();
-		virtual BaseData* convertToBaseData(const QStringList& L) const;
         void EmitDataChanged(const int row, const int column);
 		void EmitDataChanged(const int upperRow, const int lowerRow, const int leftColumn, const int rightColumn);
 		virtual QString cellToString(const int, const int) const;
@@ -69,6 +67,11 @@ class TableViewWindowCore : public QAbstractTableModel
 		void setHorizontalHeader(const QStringList &Labels);
 		void setVerticalHeader(const QStringList &Labels);
 		void sortTab(int* S2);
+
+		inline virtual BaseData* convertToBaseData(const QStringList& L) const
+		{
+			return new BaseData;
+		}
 
 		inline int getNSources() const
 		{

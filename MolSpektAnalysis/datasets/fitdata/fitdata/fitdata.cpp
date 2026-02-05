@@ -3004,6 +3004,15 @@ void FitData::HeaderItemDoubleClicked(const int index)
     }
 }
 
+void FitData::shrinkAllSpectRefs()
+{
+    table->blockSignals(true);
+    mCore->blockSignals(true);
+    mCore->shrinkAllSpectRefs();
+    table->blockSignals(false);
+    mCore->blockSignals(false);
+}
+
 QStringList FitData::getHorizontalHeaderLabels()
 {
     int c, C = mCore->columnCount();
