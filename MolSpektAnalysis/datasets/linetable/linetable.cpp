@@ -2426,9 +2426,9 @@ void LineTable::sortTab(int *S2)
 		}
 		ltc->setSourceFile(n, F2);
 	}
+	ltc->sortTab(S2);
 	ltc->blockSignals(false);
 	table->blockSignals(false);
-	TableWindow::sortTab(S2);
 }
 
 void LineTable::SetError()

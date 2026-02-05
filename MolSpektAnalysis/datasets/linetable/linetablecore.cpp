@@ -1076,6 +1076,18 @@ void LineTableCore::set_vss(const int row, const int vss)
 	EmitDataChanged(row, Cvss);
 }
 
+void LineTableCore::setJss(const int row, const int Jss)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->Jss = Jss;
+	EmitDataChanged(row, CJss);
+}
+
+void LineTableCore::setFineStructureQN(const int row, const int FQN)
+{
+	reinterpret_cast<LineTableBaseData*>(mData[row])->F = FQN;
+	EmitDataChanged(row, CF);
+}
+
 void LineTableCore::setFCF(const int row, const double FCF)
 {
 	reinterpret_cast<LineTableBaseData*>(mData[row])->FCF = FCF;
