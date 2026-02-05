@@ -406,12 +406,6 @@ void FitDataCore::setEnergy(const int row, const double energy)
 	EmitDataChanged(row, fdcEnergy);
 }
 
-void FitDataCore::setProgression(const int row, const int progression)
-{
-	mData[row]->progressionNumber = progression;
-	EmitDataChanged(row, fdcProg);
-}
-
 void FitDataCore::setSecondState(const int row, const QString& state)
 {
  	reinterpret_cast<FitDataBaseData*>(mData[row])->secondState = state;
@@ -433,6 +427,12 @@ void FitDataCore::setRWError(const QString& headerText)
 {
 	RWError = headerText;
 	emit headerDataChanged(Qt::Horizontal, fdcLineElState, fdcLineElState);
+}
+
+void FitDataCore::setRow(FitDataBaseData *const data, const int row)
+{
+	mData[row] = data;
+	EmitDataChanged(row, row, 0, columnCount());
 }
 
 void FitDataCore::shrinkAllSpectRefs()

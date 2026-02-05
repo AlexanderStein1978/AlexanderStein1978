@@ -26,7 +26,6 @@ class TableViewWindowCore : public QAbstractTableModel
 		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegExp readSpecialPartRegex = QRegExp());
 		~TableViewWindowCore();
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-		QString readData(QTextStream& S);
 		void writeData(QTextStream& S);
 		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 		void setRowCount(const int count);
@@ -67,6 +66,11 @@ class TableViewWindowCore : public QAbstractTableModel
 		void setHorizontalHeader(const QStringList &Labels);
 		void setVerticalHeader(const QStringList &Labels);
 		void sortTab(int* S2);
+
+		inline virtual QString readData(QTextStream&)
+		{
+			return QString();
+		}
 
 		inline virtual BaseData* convertToBaseData(const QStringList& L) const
 		{
