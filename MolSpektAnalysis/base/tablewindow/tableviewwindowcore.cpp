@@ -92,7 +92,6 @@ int TableViewWindowCore::getMaxv()
 	return Mv;
 }
 
-
 int TableViewWindowCore::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid()) return 0;
@@ -114,6 +113,12 @@ void TableViewWindowCore::setRowCount(const int count)
 		mData.resize(count);
 		endRemoveRows();
 	}
+}
+
+int TableViewWindowCore::columnCount(const QModelIndex& parent) const
+{
+	if (parent.isValid()) return 0;
+	return 9;
 }
 
 void TableViewWindowCore::addRow(BaseData* const data)
@@ -325,4 +330,12 @@ void TableViewWindowCore::setProgression(const int row, const int progression)
 {
 	mData[row]->progressionNumber = progression;
 	EmitDataChanged(row, row, 0, columnCount());
+}
+
+void TableViewWindowCore::addRow(const QStringList& L)
+{
+	int r = mData.size();
+	beginInsertRows(QModelIndex(), r, r);
+	mData.push_back(convertToBaseData(L));
+	endInsertRows();
 }
