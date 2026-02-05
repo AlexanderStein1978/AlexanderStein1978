@@ -196,7 +196,7 @@ public:
 	
 	inline void setData(QString **Data, int NRows, int NCols)
 	{
-		TableWindow::setData(Data, NRows, NCols);
+		TableWidgetWindow::setData(Data, NRows, NCols);
 		updatePot();
 	}
 	

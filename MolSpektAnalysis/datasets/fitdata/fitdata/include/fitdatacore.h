@@ -28,7 +28,7 @@ class FitDataCore : public TableViewWindowCore
 
 		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
-		QString readData(QTextStream& S);
+		QString readData(QTextStream& S) override;
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -49,8 +49,6 @@ class FitDataCore : public TableViewWindowCore
 		const QString& getSource(const int row) const;
 		void setSource(const int row, const QString& source);
 		void setSourceFile(const int row, const QString& filename);
-		int getProgression(const int row) const;
-		void setProgression(const int row, const int progression);
 		void setEnergy(const int row, const double energy);
 		void setUncertainty(const int row, const double uncertainty);
 		void setObsCalc(const int row, const double obsCalc);

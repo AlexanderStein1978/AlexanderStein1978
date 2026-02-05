@@ -237,7 +237,7 @@ void Potential::setWorker(PotWorker* NWorker)
 void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::cutRows(numRows, numColumns, Data);
+    TableWidgetWindow::cutRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -245,7 +245,7 @@ void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 void Potential::DeleteRows()
 {
     setBlockChangeSignal(true);
-    TableWindow::DeleteRows();
+    TableWidgetWindow::DeleteRows();
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -253,7 +253,7 @@ void Potential::DeleteRows()
 void Potential::insertRows(int numRows, int numColumns, QString** Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::insertRows(numRows, numColumns, Data);
+    TableWidgetWindow::insertRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }
