@@ -265,11 +265,16 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 	QStringList L;
 	int s, i;
 	bool Success = true, COK;
+	if (mData.size() > 0)
+	{
+		for (auto it = mData.begin(); it != mData.end(); ++it) if (nullptr != *it) delete *it;
+		mData.clear();
+	}
     for (int n=0; n < numLines; ++n)
     {
 		B = S2.readLine();
         L = B.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
-		LineTableBaseData* data = reinterpret_cast<LineTableBaseData*>(mData[n]);
+		LineTableBaseData* data = new LineTableBaseData;
 		if ((s = L.size()) < 8)
 		{
 			printf("Fehler beim Lesen, Zeile %d ist zu kurz!\n", n);
@@ -324,7 +329,9 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 			data->uncertainty = L[7].toDouble();
 			data->isotope = L[8].toInt();
 			data->file = L[9];
-			for (L[i].toDouble(&COK); !COK && !L[i].isEmpty(); L[++i].toDouble(&COK))
+			int maxL = L.size() - 1;
+			i=10;
+			for (L[i].toDouble(&COK); i < maxL && !COK && !L[i].isEmpty(); L[++i].toDouble(&COK))
 			{
 				L[CFile] += ' ' + L[i];
 				if (i==s-1)
@@ -334,6 +341,11 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 				}
 			}
 			if (i > CSNR) data->file = L[CFile];
+			if (i >= L.size())
+			{
+				mData.push_back(data);
+				continue;
+			}
 			if (COK) data->SNR = L[i++].toDouble();
 			if (i<s && L[i].toDouble() != 0.0) data->obsMinusCalc = L[i++].toDouble();
 			if (s >= TableNormCols && i<s) data->Comment = L[i];
@@ -374,6 +386,7 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 				}
 			}
 		}
+		mData.push_back(data);
 		lTab->setImported();
 		//printf("n=%d, N=%d\n", n, N);
         if (molecule != 0)
