@@ -259,6 +259,7 @@ void LineTableCore::setColumnCount(const int count)
 
 bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)
 {
+
 	QTextStream S2(&Buffer, QIODevice::ReadOnly);
 	//printf("Ende: N=%d\n", N);
 	QString B, Comm;
@@ -296,6 +297,7 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 					data->uncertainty = L[6].toDouble();
 					data->F = L[7].toInt() + 1;
 					data->isotope = 10;
+					mData.push_back(data);
 					continue;
 				}
 				else if (s==11)
@@ -309,6 +311,7 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 					data->waveNumber = L[6].toDouble();
 					data->uncertainty = L[7].toDouble();
 					data->isotope = L[8].toInt();
+					mData.push_back(data);
 					continue;
 				}
 				else
@@ -395,6 +398,8 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
             data->file = lTab->getAbsolutePath(CurPath, MolPath);
         }
     }
+    beginInsertRows(QModelIndex(), 0, mData.size() - 1);
+	endInsertRows();
     return Success;
 }
 
