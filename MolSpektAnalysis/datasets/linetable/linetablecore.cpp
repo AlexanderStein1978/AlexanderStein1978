@@ -398,7 +398,7 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
             data->file = lTab->getAbsolutePath(CurPath, MolPath);
         }
     }
-    beginInsertRows(QModelIndex(), 0, mData.size() - 1);
+    beginInsertRows(QModelIndex(), 0, mData.size());
 	endInsertRows();
     return Success;
 }
