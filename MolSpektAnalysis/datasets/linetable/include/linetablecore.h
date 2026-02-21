@@ -28,6 +28,8 @@ class QTextStream;
 
 class LineTableCore : public TableViewWindowCore
 {
+	Q_OBJECT
+
 	public:
 
 		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC, CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
@@ -39,7 +41,7 @@ class LineTableCore : public TableViewWindowCore
 
 		LineTableCore(Molecule* mol = nullptr, QObject *parent = nullptr);
 		~LineTableCore();
-		QString readData(QTextStream& S) {};
+		QString readData(QTextStream& S) override {return QString();};
 		bool readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d);
 		void writeData(QTextStream& S);
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;

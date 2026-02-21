@@ -259,7 +259,6 @@ void LineTableCore::setColumnCount(const int count)
 
 bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)
 {
-
 	QTextStream S2(&Buffer, QIODevice::ReadOnly);
 	//printf("Ende: N=%d\n", N);
 	QString B, Comm;
@@ -271,6 +270,7 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
 		for (auto it = mData.begin(); it != mData.end(); ++it) if (nullptr != *it) delete *it;
 		mData.clear();
 	}
+	beginInsertRows(QModelIndex(), 0, numLines - 2);
     for (int n=0; n < numLines; ++n)
     {
 		B = S2.readLine();
@@ -398,7 +398,6 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
             data->file = lTab->getAbsolutePath(CurPath, MolPath);
         }
     }
-    beginInsertRows(QModelIndex(), 0, mData.size());
 	endInsertRows();
     return Success;
 }
@@ -840,6 +839,7 @@ void LineTableCore::AddMarked(Marker ** Lines, const Marker* const LaserLine, co
 void LineTableCore::ShowUpTerm(const int* const SO, const int MCT, const int* const CT, const int* const IsoT, double ****ELU, const int Mv, const int MJ, double ****UT,
 							   const int mvs, const int Jeo, const int* const UIsoT, const float S, const int UNC, const int UMCT, const int* const UCT)
 {
+	if (nullptr == molecule) return;
 	int i, j, v, c, I, n, N = mData.size(), NI = molecule->getNumIso();
 	int **Z = CreateInt(N, 6), li[2] = {-1, -1};
 	double E, ES, dE, *T = new double[N];
