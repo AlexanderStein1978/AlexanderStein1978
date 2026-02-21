@@ -43,6 +43,7 @@
 #include "matrix.h"
 
 #include <math.h>
+#include <QHeaderView>
 
 
 LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableViewWindow(new LineTableCore, LineTab, MW, M)
@@ -51,6 +52,7 @@ LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableViewWind
 	setFilter("Line table (*.lines)");
 	setFileExt(".lines");
 	table->setModel(mCore);
+	table->verticalHeader()->setVisible(true);
 	transition = T;
 	NR = 0;
 	lRow = -1;
