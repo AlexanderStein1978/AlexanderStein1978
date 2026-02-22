@@ -71,6 +71,7 @@ void TableViewWindow::resizeHelper(QRect& G)
     switch(Typ)
 	{
 		case TermEnergyTable:
+        case LineTab:
 			G = table->geometry();
 			G.setWidth(width());
 			G.setHeight(height() - 40);

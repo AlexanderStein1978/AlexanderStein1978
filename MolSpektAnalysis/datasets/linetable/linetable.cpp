@@ -630,6 +630,7 @@ bool LineTable::readData(QString Filename)
     }
     LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
 	ltc->readData(N, Buffer, FCA, MaxPN, d);
+	ltc->removeNotNeededColumns();
 	Saved();
 	emit DataChanged();
 	return Success;

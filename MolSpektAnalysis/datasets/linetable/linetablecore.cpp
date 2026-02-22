@@ -257,6 +257,95 @@ void LineTableCore::setColumnCount(const int count)
 	}
 }
 
+void LineTableCore::removeNotNeededColumns()
+{
+	int invC = 0;
+	auto dit = mData.begin();
+	for (auto it = mColumns.begin(); it != mColumns.end(); ++it)
+	{
+		if ((*it) == CF)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->F != -1) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CFCF)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->FCF != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CEUp)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->upperEnergy != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CEav)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->averageUpperEnergy != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CEUma)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->diffToAverageEnergy != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CEdJ)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->energyDiffToNextJ != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == CCalc)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->calculatedEnergy != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+		else if ((*it) == COmC)
+		{
+			for (dit = mData.begin(); dit != mData.end(); ++dit) if (reinterpret_cast<LineTableBaseData*>(*dit)->diffToCalculatedEnergy != 0.0) break;
+			if (dit == mData.end())
+			{
+				++invC;
+				*it = CInvalid;
+			}
+		}
+	}
+	if (0 < invC)
+	{
+		beginRemoveColumns(QModelIndex(), CF, mColumns.size() - invC);
+		std::vector<TableCols> newColumnV;
+		for (auto it = mColumns.begin(); it != mColumns.end(); ++it) if (CInvalid != *it) newColumnV.push_back(*it);
+		mColumns = newColumnV;
+		endRemoveColumns();
+	}
+}
+
 bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA, int& MaxPN, const int d)
 {
 	QTextStream S2(&Buffer, QIODevice::ReadOnly);
