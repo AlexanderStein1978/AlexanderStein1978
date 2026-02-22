@@ -628,13 +628,8 @@ bool LineTable::readData(QString Filename)
 		N++;
 		//printf("N=%d\n", N);
     }
-    table->blockSignals(true);
-	mCore->blockSignals(true);
     LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
-	ltc->setRowCount(N);
 	ltc->readData(N, Buffer, FCA, MaxPN, d);
-	mCore->blockSignals(false);
-    table->blockSignals(false);
 	Saved();
 	emit DataChanged();
 	return Success;
