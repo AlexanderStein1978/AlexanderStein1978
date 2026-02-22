@@ -32,7 +32,7 @@ class LineTableCore : public TableViewWindowCore
 
 	public:
 
-		enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC, CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
+		enum TableCols {CInvalid = -1, CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC, CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
 		static const int TableNormCols = 12;
 
 		static std::vector<TableCols> convertHeaderStringsToColumnVector(const QStringList& headerStrings);
@@ -51,6 +51,7 @@ class LineTableCore : public TableViewWindowCore
 		void setColumnCount(const int count);
 		BaseData* convertToBaseData(const QStringList& L) const override;
 		LineTableBaseData* convertStringArrayToLineTableBaseData(const QString* const array, const int length) const;
+		void removeNotNeededColumns();
 		void WriteTFGS(QTextStream& S, vsOListElement *vsOList, const int vs0);
 		void Assign_vs(double ****const UD, const double AT, const int NumC, const int mvs, const int* const SO);
 		void AssignFC(const int *const LO, const int *const XIT, const int* const EIT, const int ENv, const int ENJ, double ****EData, const int XNv, const int XNJ,
