@@ -629,8 +629,10 @@ bool LineTable::readData(QString Filename)
 		//printf("N=%d\n", N);
     }
     LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
+	ltc->setSowNotColumnCount(true);
 	ltc->readData(N, Buffer, FCA, MaxPN, d);
-	ltc->removeNotNeededColumns();
+//	ltc->removeNotNeededColumns();
+	ltc->setSowNotColumnCount(false);
 	Saved();
 	emit DataChanged();
 	return Success;

@@ -157,10 +157,16 @@ class LineTableCore : public TableViewWindowCore
 			lTab = lt;
 		}
 
+		inline void setSowNotColumnCount(const bool notShow)
+		{
+			mNotShowColumnCount = notShow;
+		}
+
 	private:
 		std::vector<TableCols> mColumns;
 		const QRegExp mStartSpecialPart = QRegExp("");
 		LineTable* lTab;
+		bool mNotShowColumnCount = false;
 };
 
 #endif
