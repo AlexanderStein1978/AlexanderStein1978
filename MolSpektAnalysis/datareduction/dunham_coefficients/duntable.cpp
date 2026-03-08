@@ -27,10 +27,11 @@
 #include <QStringList>
 #include <QGridLayout>
 
+
 using std::numeric_limits;
 
-DunTable::DunTable(MainWindow *MW, Molecule *Mol) 
-	: TableWindow(DunhamTable, MW, Mol)
+
+DunTable::DunTable(MainWindow *MW, Molecule *Mol) : TableWidgetWindow(DunhamTable, MW, Mol)
 {
 	numCoefficients = vp1 = vp2 = Jp1 = Jp2 = 0;
 	State = 0;
@@ -44,7 +45,6 @@ DunTable::DunTable(MainWindow *MW, Molecule *Mol)
 	Saved();
 	printf("End DunTable::DunTable\n");
 }
-
 
 DunTable::~DunTable()
 {

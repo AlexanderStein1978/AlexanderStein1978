@@ -9,12 +9,12 @@
 #define LOGMODEL_H
 
 
-#include <QAbstractTableModel>
+#include "tableviewwindowcore.h"
 
 class LogList;
 
 
-class LogModel : public QAbstractTableModel
+class LogModel : public TableViewWindowCore
 {
 public:
     LogModel(QObject *parent = 0);

@@ -9,7 +9,7 @@
 #define PARTICLEWATCHTABLE_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "watchpoint.h"
 
 class QComboBox;
@@ -20,7 +20,7 @@ class Window;
 class MainWindow;
 
 
-class ParticleWatchTable : public TableWindow
+class ParticleWatchTable : public TableWidgetWindow
 {
     Q_OBJECT
 

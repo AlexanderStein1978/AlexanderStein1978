@@ -15,7 +15,7 @@
 #include <QTextStream>
 
 
-SpectList::SpectList(MainWindow *MW) : TableWindow(MDIChild::TextTable1, MW)
+SpectList::SpectList(MainWindow *MW) : TableWidgetWindow(MDIChild::TextTable1, MW)
 {
 	setWindowTitle("List of spectra");
 	Tab->setColumnCount(2);

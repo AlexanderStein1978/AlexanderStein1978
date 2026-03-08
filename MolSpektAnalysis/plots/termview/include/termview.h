@@ -8,19 +8,23 @@
 #ifndef TERMVIEW_H
 #define TERMVIEW_H
 
-#include <tablewindow.h>
+#include "tablewidgetwindow.h"
+
+#include <QWidget>
 
 class TermTable;
 
 
-class TermView : public TableWindow
+class TermView : public TableWidgetWindow
 {
 	Q_OBJECT
 public:
     TermView(TermTable *Term);
-    ~TermView();
+    virtual ~TermView();
+
 private slots:
 	void ShowData();
+
 private:
 	double ****Data;
 	int vMax, JMax, NComp, NIso;

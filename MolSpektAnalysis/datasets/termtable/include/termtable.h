@@ -8,8 +8,9 @@
 #ifndef TERMTABLE_H
 #define TERMTABLE_H
 
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "termdata.h"
+#include "heapsort.h"
 
 #include <QDialog>
 
@@ -22,7 +23,7 @@ class QRadioButton;
 struct Perturbation;
 
 
-class TermTable : public TableWindow
+class TermTable : public TableViewWindow
 {
 public:
     TermTable(MainWindow *MW = 0);
