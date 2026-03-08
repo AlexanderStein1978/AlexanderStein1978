@@ -521,10 +521,10 @@ void LineTableCore::writeData(QTextStream& S)
 		else LFile = Buffer;
         if (molecule != 0) Buffer = lTab->getRelativePath(Buffer, molecule->getFileName());
 		S << " " << Buffer;
-		if ((Buffer = QString::number(data->SNR, 'f', 6)).isEmpty()) Buffer = "0";
-		S << ("      " + Buffer).right(7);
+		if ((Buffer = QString::number(data->SNR, 'g', 6)).isEmpty()) Buffer = "0";
+		S << ("         " + Buffer).right(10);
 		if ((Buffer = QString::number(data->obsMinusCalc, 'f', 10)).isEmpty()) Buffer = "0";
-		S << ("          " + Buffer).right(11);
+		S << ("                  " + Buffer).right(15);
 		S << " " << data->Comment << char(10);
 	}
 }

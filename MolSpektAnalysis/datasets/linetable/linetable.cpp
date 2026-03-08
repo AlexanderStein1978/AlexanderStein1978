@@ -1984,7 +1984,7 @@ void LineTable::AcceptAssignments(QString SpektFile, bool accept)
 void LineTable::TabSelChanged()
 {
 	LineTableCore* ltc = reinterpret_cast<LineTableCore*>(mCore);
-	int r, n, N, *Js, MJ, Mv, NIso, Jss, I, vss, *Rows, NR;
+	int r, n, N, *Js, MJ, Mv, NIso, Jss, I, vss, *Rows = nullptr, NR = 0;
 	bool UTA = true;
 	double *E, ****ELU = 0, uE;
 	ElState *LS;
