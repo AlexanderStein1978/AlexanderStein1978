@@ -71,7 +71,6 @@ LineTable::LineTable(MainWindow *MW, Molecule *M, Transition *T) : TableViewWind
 	setName("newLineTable");
 	setSource("own work");
 	setWindowTitle("New line table");
-	table->setColumnWidth(LineTableCore::CPN, 50);
 	table->setColumnWidth(LineTableCore::Cvs, 50);
 	table->setColumnWidth(LineTableCore::CJs, 50);
 	table->setColumnWidth(LineTableCore::Cvss, 50);
