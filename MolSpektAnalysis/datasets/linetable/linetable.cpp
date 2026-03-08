@@ -102,6 +102,7 @@ void LineTable::setMolecule(Molecule *Mol)
 	TableWindow::setMolecule(Mol);
 	if (Mol != 0) Iso = Mol->getIso();
 	else Iso = 0;
+	mCore->setMolecule(Mol);
 	//printf("Ende von LineTable::setMolecule\n");
 }
 
