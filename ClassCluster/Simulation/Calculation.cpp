@@ -703,7 +703,7 @@ void Calculation::run()
         {
             if (mRotationChanged)
             {
-                int *Sort = utils::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
+                int *Sort = heapsort::heapSort(yz_SortFunctor(P, (rotated ? yz_SortFunctor::yzY : yz_SortFunctor::yzZ)), N);
                 for (n=0; n<N; ++n) D[Sort[n]] = P + n;
                 mRotationChanged = false;
             }
@@ -1316,7 +1316,7 @@ double Calculation::setEnergy(const double T, const double V, const double delta
     }
     else
 	{
-        int *Sort = utils::heapSort(VSortFunctor(P), N), EOrder[N];
+        int *Sort = heapsort::heapSort(VSortFunctor(P), N), EOrder[N];
         for (n=0; n<N; ++n) EOrder[Sort[n]] = n;
         delete[] Sort;
         for (n=N-1; n>=0; --n)

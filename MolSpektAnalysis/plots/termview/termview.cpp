@@ -14,7 +14,7 @@
 
 #include <QStringList>
 
-TermView::TermView(TermTable *Term) : TableWindow(TermEnergyView)
+TermView::TermView(TermTable *Term) : TableWidgetWindow(TermEnergyView)
 {
 	int i, I1, I2, NSt = Term->getNumStates();
 	QString N1, N2, Name = "Overview table for " + Term->getName();

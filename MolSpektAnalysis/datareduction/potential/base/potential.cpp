@@ -65,7 +65,7 @@
 using std::numeric_limits;
 
 
-Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWindow(MDIChild::PotData, Main, Mol), m_saving(false),
+Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWidgetWindow(MDIChild::PotData, Main, Mol), m_saving(false),
     mWasMoving(false)
 {
     setFilter("Potentials (*.pot)");
@@ -117,7 +117,7 @@ Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWind
     DebugStream = new QTextStream(DebugFile);*/
 }
 
-Potential::Potential(const Potential &C) : TableWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
+Potential::Potential(const Potential &C) : TableWidgetWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
 {
     //printf("Potential::Potential(const Potential &C)\n");
     int n;
@@ -237,7 +237,7 @@ void Potential::setWorker(PotWorker* NWorker)
 void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::cutRows(numRows, numColumns, Data);
+    TableWidgetWindow::cutRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -245,7 +245,7 @@ void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 void Potential::DeleteRows()
 {
     setBlockChangeSignal(true);
-    TableWindow::DeleteRows();
+    TableWidgetWindow::DeleteRows();
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -253,7 +253,7 @@ void Potential::DeleteRows()
 void Potential::insertRows(int numRows, int numColumns, QString** Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::insertRows(numRows, numColumns, Data);
+    TableWidgetWindow::insertRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }

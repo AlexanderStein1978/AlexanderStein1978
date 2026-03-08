@@ -19,7 +19,7 @@ bool SortForExtractNewOrChangedWithoutSourceFunctor::operator ()(const int n, co
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    const std::string S1(m_Tab->getOtherState(n)), S2(m_Tab->getOtherState(m));
+    const QString S1(m_Tab->getOtherState(n)), S2(m_Tab->getOtherState(m));
     if (S1 < S2) return true;
     if (S1 > S2) return false;
     const int Iso1 = m_Tab->getIso(n), Iso2 = m_Tab->getIso(m);
@@ -40,7 +40,7 @@ bool SortForExtractNewOrChangedWithoutSourceFunctor::operator ()(const int n, co
     double DeltaE1 = 0.0, DeltaE2 = 0.0;
     if (m_NSourceOffset > 0)
     {
-        QString SourceName1 = m_Tab->getSource(n).c_str(), SourceName2 = m_Tab->getSource(m).c_str();
+        QString SourceName1 = m_Tab->getSource(n), SourceName2 = m_Tab->getSource(m);
         for (int i=0; i < m_NSourceOffset; ++i)
         {
             if (m_SourceOffsetNames[i] == SourceName1) DeltaE1 = m_SourceOffset[i];

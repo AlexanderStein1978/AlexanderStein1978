@@ -9,11 +9,12 @@
 #define SPEKTLIST_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 
 
-class SpectList : public TableWindow
+class SpectList : public TableWidgetWindow
 {
+	Q_OBJECT
 public:
 	SpectList(MainWindow *MW = 0);
 	void AutoSLP();

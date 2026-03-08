@@ -9,13 +9,13 @@
 #define MEASUREDTERMENERGIES_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 
 class MainWindow;
 class Molecule;
 
 
-class MeasuredTermEnergies : public TableWindow
+class MeasuredTermEnergies : public TableWidgetWindow
 {
 	public:
 		MeasuredTermEnergies(MainWindow *MW = 0);

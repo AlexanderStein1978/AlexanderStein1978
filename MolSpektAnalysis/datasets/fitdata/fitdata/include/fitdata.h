@@ -10,7 +10,7 @@
 #define FITDATA_H
 
 
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "levelcomb.h"
 #include "fitdatasortfunctions.h"
 #include "fitdatacore.h"
@@ -30,27 +30,26 @@ class Spektrum;
 
 class QListWidget;
 
+struct FitDataBaseData;
 
 enum {eLevel, fLevel};
 
 
-class FitData : public TableWindow
+class FitData : public TableViewWindow
 {
 	Q_OBJECT
 	
 	public:
 		FitData(ElState *State = 0, MainWindow* MW = 0, Molecule* M = 0);
-		~FitData();
+		virtual ~FitData();
         void getData(TableLine *&Lines, int &NLines, int JD = -1, int F = -2, int v = -2, int mJ = 0, int Iso = -1, ElState* state = 0);
 		void getData(TableLine *&Lines, int &NLines, int *&RowN,
-                     bool sortFuncs(const FitDataCore *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
+                     bool sortFuncs(const TableViewWindowCore *const Tab, const int n, const int m), int *mv = 0, int mJ = 0);
 		void setData(TableLine *Lines, int NLines);
 		void addData(TableLine *Lines, int NLines);
 		ElState *getElState() override;
 		void setElState(ElState *State);
         void setMolecule(Molecule *Mol) override;
-		int getMaxJ();
-		int getMaxv();
 		void updateData();
 		void updateRow(TableLine *Line);
 		void updateEnergy(int N, int *r, double *Energy);
@@ -68,7 +67,6 @@ class FitData : public TableWindow
 		void DeleteRows() override;
 		void removeDataFSource();
 		void removeSingleLines();
-		bool isDataAvailable();
 		bool readData(QString Filename) override;
 		bool writeData(QString Filename = "") override;
 		bool writeExPotFitInput(QString fileName);
@@ -104,25 +102,15 @@ class FitData : public TableWindow
         void sortByLTabAndProg();
         void setResidualFit(ResidualFit *i_residualFit);
         ResidualFit* getResidualFit(ElState* const i_state, const int Iso, const int v, const int comp);
-		void setTabDimensions(int NRows, int NCols) override;
-		void getTabDimensions(int &NRows, int &NCols) override;
-		void setRowData(int Row, QString *Data) override;
         bool checkAllConnections();
-		void copyRows(int &numRows, int &numColums, QString **&Data) override;
-		void cutRows(int &numRows, int &numColums, QString **&Data) override;
-		void insertRows(int numRows, int numColumns, QString **Data) override;
-		void MarkLines(int *rN, int N) override;
 		void shiftCellValue(int v) override;
 		bool containsDataForMoreThanOneState() const;
-		void exportTableData(QString FileName, bool selectedCells, bool exchangeRowsColumns) override;
-		QString **getData(int &NRows, int &NCols) override;
-		void setCellText(QString Text) override;
-		void setData(QString **Data, int NRows, int NCols) override;
+		void setCellText(QString Text);
 		QStringList getHorizontalHeaderLabels() override;
 		void search(int column, int value, int smeqla) override;
 		void search(int column, double value, int smeqla) override;
 		void search(QString Text, int column=-1, bool completeCell = false) override;
-		void shrinkAllSpectRefs(int=0) override;
+		void shrinkAllSpectRefs();
 		
 		inline void sortIvJF()
 		{
@@ -154,29 +142,38 @@ class FitData : public TableWindow
             sortTab(heapSort(sortByElState));
         }
 
+        inline QString **getData(int &NRows, int &NCols) override
+        {
+			return TableViewWindow::getData(NRows, NCols);
+		}
+
+		inline void setData(QString **Data, int NRows, int NCols) override
+		{
+			TableViewWindow::setData(Data, NRows, NCols);
+		}
+
     protected:
 
         virtual bool ReadSpecialPart(QTextStream& i_stream, const QString& i_startString) override;
 		bool readData(QTextStream& S) override;
 		void writeData(QTextStream& S) override;
 
+		inline void BaseDataToQStringArray(const BaseData& data, QString *const array) const override
+		{
+			 FitDataBaseDataToQStringArray(*reinterpret_cast<const FitDataBaseData*>(&data), array);
+		}
+
 	signals:
 		void AssignmentsAccepted(FitData*);
 		
 	private slots:
-		void ContentChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 		void HeaderItemDoubleClicked(const int index);
 
-		void HeaderItemClicked(const int index)
-		{
-			lastClickedHeaderIndex = index;
-		}
-		
 	private:
         typedef enum sortForExtractNewOrChangedO{SFENOCisSmaller, SFENOCenergyIsSmaller, SFENOCisEqual, SFENOCenergyIsBigger, SFENOCisBigger}
 			sortForExtractNewOrChangedOrder;
 	
-		static void BaseDataToQStringArray(const BaseData& data, QString *const array);
+		static void FitDataBaseDataToQStringArray(const FitDataBaseData& data, QString *const array);
 
         void getData(TableLine *Lines, int *SA, int i_SAL, int& NLines, int *RowN = 0, int mv = -1, int *Mv = 0,
                      int mJ = 0, int JD = -1, int F = -2, int Iso = -1, bool OnlyAssignedVss = false, ElState* state = 0);
@@ -187,18 +184,11 @@ class FitData : public TableWindow
         sortForExtractNewOrChangedOrder getForExtractNewOrChangedOrder(const FitData *const i_fitDataOld, const int i_RowNew, const int i_RowOld,
 																	   const bool i_withSources, const bool i_subtractSourceOffset) const;
         bool AreSourcesAvailable() const;
-		int *heapSort(bool sortFuncs(const FitDataCore *const, const int, const int)) const;
-		bool checkAllConnections(int FileColumn) override;
-		void copyRows(int &numRows, int &numColums, int *&Rows, QString **&Data);
-		void writeCell(QTextStream& S, const int r, const int c) const;
-		void startSearch(int& N, int*& Rows) const;
-		void finishSearch(int *const Rows, const QModelIndexList& Result) const;
 		void updateSources();
 
         ElState *State, **LineElStates;
-		FitDataCore* fitDataCore;
 		LineTable **Sources;
-		int NMarkedLevels, *FC, lRow, NSourceOffset, lastClickedHeaderIndex = -1;
+		int NMarkedLevels, *FC, lRow, NSourceOffset;
 		QString *SourceOffsetNames;
 		double *SourceOffset;
         QList<ResidualFit*> residualFits;

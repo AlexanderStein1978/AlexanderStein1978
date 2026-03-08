@@ -2226,9 +2226,9 @@ QTableWidget *MainWindow::createTable()
 	return Tab;
 }
 
-TableWindow *MainWindow::createTableWindow()
+TableWidgetWindow *MainWindow::createTableWindow()
 {
-	TableWindow *Tab = new TableWindow(MDIChild::TextTable1, this);
+	TableWidgetWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
 	workspace->addSubWindow(Tab);
 	return Tab;
 }
@@ -3443,7 +3443,7 @@ void MainWindow::setTextInCells()
     L->addWidget(Cancel, 2, 1);
     connect(OK, SIGNAL(clicked()), &D, SLOT(accept()));
     connect(Cancel, SIGNAL(clicked()), &D, SLOT(reject()));
-    if (D.exec() == QDialog::Accepted) dynamic_cast<TableWindow*>(workspace->activeSubWindow()->widget())->setCellText(Text->text());
+    if (D.exec() == QDialog::Accepted) dynamic_cast<TableWidgetWindow*>(workspace->activeSubWindow()->widget())->setCellText(Text->text());
 }
 
 void MainWindow::findWrongData()
@@ -4308,7 +4308,7 @@ void MainWindow::showBandConstants()
 	double **C, **err;
 	QStringList HL;
 	D->getBandConstants(C, err, NC, NLD, NSR, NAD, nv);
-	TableWindow *Tab = new TableWindow(MDIChild::TextTable1, this);
+	TableWidgetWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
 	QString **Data = CreateQString(nv, 2 * NC);
 	for (c=0, ND = NC - NAD - NLD - NSR; c < ND; c++)
 	{
@@ -6326,7 +6326,7 @@ void MainWindow::setFC()
 	connect(Cancel, SIGNAL(clicked()), D, SLOT(reject()));
 	if (D->exec() == QDialog::Accepted) 
 	{
-		if (Table != 0) Table->setFC(FE->text());
+		if (Table != 0) Table->setFC(FE->text().toInt());
 		else
 		{
 			FitData *FD = dynamic_cast<FitData*>(workspace->activeSubWindow()->widget());
@@ -6810,7 +6810,7 @@ void MainWindow::importCoupledPotfitOutput()
 	}
     if (NUpdateFitData > 0)
     {
-        int *isort = utils::heapSort(TableLineSortFunctor(TL, NL), N);
+        int *isort = heapsort::heapSort(TableLineSortFunctor(TL, NL), N);
         TLRef sort[N];
         for (sort[isort[0]].state = 0; NL[sort[isort[0]].state] == 0; ++sort[isort[0]].state) ;
         for (n = 1, sort[isort[0]].line = 0; n<N; ++n)

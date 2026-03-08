@@ -40,6 +40,7 @@ class FCFTab;
 class FitData;
 class IsoTab;
 class ShowAction;
+class TableWidgetWindow;
 
  
 class MainWindow : public QMainWindow
@@ -98,7 +99,7 @@ class MainWindow : public QMainWindow
 		SpectList *CreateSpectList();
 		SpectSimulation *CreateSpectSimulation();
 		QTableWidget *createTable();
-		TableWindow *createTableWindow();
+		TableWidgetWindow *createTableWindow();
 		ElState *CreateElState();
 		Transition *CreateTransition();
 		DiagWindow *CreateDiagWindow(MDIChild::Type = MDIChild::SimpleDiagWindow);
