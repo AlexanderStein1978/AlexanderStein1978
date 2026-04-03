@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(PotentialDefinition)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
 
 add_library(PotentialDefinition STATIC
     include/potentialdefinerinputdata.h

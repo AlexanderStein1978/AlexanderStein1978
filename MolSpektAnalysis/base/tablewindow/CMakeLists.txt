@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(TableWindow)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(TableWindow STATIC
 	include/tablewindow.h
@@ -20,5 +20,5 @@ target_include_directories(TableWindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 target_link_libraries(TableWindow PRIVATE
 	MdiChild
 	MolSpektAnalysisMainWindow
-	Qt5::Widgets
+	Qt6::Widgets
 )

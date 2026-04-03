@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(MdiChild)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(MdiChild STATIC
 	include/mdichild.h
@@ -15,5 +15,5 @@ target_include_directories(MdiChild PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(MdiChild PRIVATE
 	MolSpektAnalysisMainWindow
-	Qt5::Widgets
+	Qt6::Widgets
 )

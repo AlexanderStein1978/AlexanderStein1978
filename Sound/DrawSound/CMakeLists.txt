@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(DrawSound)
 
@@ -6,7 +6,7 @@ add_definitions(-DDATA_DIRECTORY="${CMAKE_SOURCE_DIR}/Sound/Data")
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Multimedia REQUIRED)
 
 add_library(DrawSound STATIC
     include/oscillator.h
@@ -49,6 +49,6 @@ target_include_directories(DrawSound PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(DrawSound
     DiagWindow
-    Qt5::Widgets
-    Qt5::Multimedia
+    Qt6::Widgets
+    Qt6::Multimedia
 )

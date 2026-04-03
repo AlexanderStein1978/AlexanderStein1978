@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(MolSpektAnalysisMainWindow)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS PrintSupport Widgets REQUIRED)
+find_package(Qt6 COMPONENTS PrintSupport Widgets REQUIRED)
 
 add_library(MolSpektAnalysisMainWindow STATIC
 	include/MainWindow.h
@@ -30,6 +30,6 @@ target_link_libraries(MolSpektAnalysisMainWindow
 	TermView
 	Tools
 	WaveFuncPlot
-	Qt5::PrintSupport
-	Qt5::Widgets
+	Qt6::PrintSupport
+	Qt6::Widgets
 )

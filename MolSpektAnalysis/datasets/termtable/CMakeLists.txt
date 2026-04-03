@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(TermTable)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(TermTable STATIC
 	include/cttidialog.h
@@ -25,5 +25,5 @@ target_link_libraries(TermTable
 	MolSpektAnalysisMainWindow
 	TableWindow
 	Tools
-	Qt5::Widgets
+	Qt6::Widgets
 )

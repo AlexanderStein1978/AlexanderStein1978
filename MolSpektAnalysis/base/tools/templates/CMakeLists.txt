@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(Templates)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(Templates STATIC
 	include/doublevector.h
@@ -17,4 +17,4 @@ add_library(Templates STATIC
 
 target_include_directories(Templates PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(Templates Qt5::Widgets)
+target_link_libraries(Templates Qt6::Widgets)

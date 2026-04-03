@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(Calc)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(Calc STATIC
     include/fit.h
@@ -17,5 +17,5 @@ target_link_libraries(Calc PRIVATE
     Molecule
 	Residualfit
 	Tools
-	Qt5::Widgets
+	Qt6::Widgets
 )

@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(Progressions)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(Progressions STATIC
 	include/aprog.h
@@ -24,5 +24,5 @@ target_link_libraries(Progressions
 	Molecule
 	MolSpektAnalysisMainWindow
 	MolSpektAnalysisStructs
-	Qt5::Widgets
+	Qt6::Widgets
 )

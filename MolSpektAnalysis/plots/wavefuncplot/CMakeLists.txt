@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(WaveFuncPlot)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(WaveFuncPlot STATIC
 	include/wavefuncplot.h
@@ -18,5 +18,5 @@ target_link_libraries(WaveFuncPlot
 	MolSpektAnalysisMainWindow
 	MonteCarloSim
 	PotentialStructs
-	Qt5::Widgets
+	Qt6::Widgets
 )
