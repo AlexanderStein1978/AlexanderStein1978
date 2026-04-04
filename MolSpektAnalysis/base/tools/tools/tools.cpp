@@ -8,12 +8,11 @@
 #include "tools.h"
 #include "utils.h"
 
-#include <math.h>
-#include <stdio.h>
-
-#include <qmessagebox.h>
+#include <QmessageBox>
 #include <QLineEdit>
 
+#include <math.h>
+#include <stdio.h>
 
 bool SolvLinEqS(double **G, int n)
 {
