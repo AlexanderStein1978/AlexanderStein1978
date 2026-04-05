@@ -106,9 +106,9 @@ protected:
     void shrinkAllSpectRefs(int FileColumn);
 	virtual bool readData(QTextStream& S) = 0;
 
-    virtual inline QRegExp GetStartSpecialPartRegExp() const
+    virtual inline  QRegularExpression GetStartSpecialPartRegExp() const
     {
-        return QRegExp();
+        return QRegularExpression();
     }
 
     virtual inline bool ReadSpecialPart(QTextStream& /*i_stream*/, const QString& /*i_startString*/)

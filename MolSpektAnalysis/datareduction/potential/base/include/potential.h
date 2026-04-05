@@ -12,7 +12,7 @@
 
 #include "PotFit.h"
 #include "tools.h"
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "montecarlosim.h"
 #include "fit.h"
 #include "potworker.h"
@@ -38,7 +38,6 @@ struct SplinePoint;
 struct WantedCoeffValue;
 struct PotentialData;
 
-
 class QListWidget;
 class QLineEdit;
 class QLabel;
@@ -54,7 +53,7 @@ class QProgressBar;
 class QTextStream;
 
 
-class Potential : public TableWindow
+class Potential : public TableWidgetWindow
 {
 	Q_OBJECT
     

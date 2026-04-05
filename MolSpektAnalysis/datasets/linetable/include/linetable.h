@@ -29,7 +29,6 @@ struct vsOListElement;
 
 class QComboBox;
 class QPushButton;
-class QStringList;
 class QTableWidgetItem;
 class QTableWidgetSelectionRange;
 //class QList<QTableWidgetSelectionRange>;

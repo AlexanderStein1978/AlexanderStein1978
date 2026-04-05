@@ -95,7 +95,7 @@ class FitDataCore : public QAbstractTableModel
 		int *Z, *CompZ, numStates, mColumnCount;
 		std::vector<BaseData*> mData;
 		IsoTab *Iso;
-		const QRegExp mStartSpecialPart = QRegExp("SourceOffsets:|Begin ResidualFit");
+		const QRegularExpression mStartSpecialPart = QRegularExpression("SourceOffsets:|Begin ResidualFit");
 };
 
 #endif
