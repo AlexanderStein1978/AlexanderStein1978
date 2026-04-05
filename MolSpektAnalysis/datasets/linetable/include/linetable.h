@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,8 +10,9 @@
 
 
 #include "Transition.h"
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "linetablesortfunctions.h"
+#include "linetablecore.h"
 
 #include <qmessagebox.h>
 
@@ -19,9 +20,8 @@ class Molecule;
 class MainWindow;
 class Marker;
 class Progression;
-class IsoTab;
+struct IsoTab;
 class Spektrum;
-class Progression;
 class TableLine;
 class TermEnergy;
 
@@ -34,12 +34,7 @@ class QTableWidgetSelectionRange;
 //class QList<QTableWidgetSelectionRange>;
 
 
-enum TableCols {CPN, Cvs, CJs, Cvss, CJss, CF, CWN, Cerr, CIso, CFile, CSNR, CDev, CC,
-				CFCF, CEUp, CEav, CEUma, CEdJ, CCalc, COmC};
-#define TableNormCols 13
-
-
-class LineTable : public TableWindow
+class LineTable : public TableViewWindow
 {
 	Q_OBJECT
 	
@@ -50,10 +45,10 @@ public:
 	Transition *getTransition();
 	int getAnzahlLinien();
     void getLines(int **Zuordnung, double *Energien, double *Uncertainties);
-	void getLines(const QString &Filename, double **Lines, int *numLines);
+	// void getLines(const QString &Filename, double **Lines, int *numLines);
 	void getLines(TableLine *&L, int &N);
 	void getSortedLines(TableLine *&L, int &N, int SortOrder = 0);
-    void getgoodLines(int &N, TableLine *&L, int *mv = 0, int mJ = 0, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
+    void getgoodLines(int &N, TableLine *&L, int *mv = 0, int mJ = 0, bool SortFunction(const TableViewWindowCore *const, const int, const int) = sortIJvP);
 	void setUncertainty(int *RowNumbers, double *NewUncertainty, int NLines);
 	int getNgL(int *mv = 0, int mJ = 0);
 	int getNgTE(int *mv = 0, int mJ = 0);
@@ -65,11 +60,11 @@ public:
 	Progression getSelectedProgression();
 	void findSimilarProgression(Progression P);
 	void getObsIso(bool *ObsIso, int NIso);
-    void getProgressions(int &N, Progression *&P, bool SortFunction(const QTableWidget *const, const int, const int) = sortIJvP);
-	bool writeData(QString Filename = "");
-	bool readData(QString Filename = "");
+    void getProgressions(int &N, Progression *&P, bool SortFunction(const TableViewWindowCore *const, const int, const int) = sortIJvP);
+	bool writeData(QString Filename = "") override;
+	bool readData(QString Filename = "") override;
 	void addData(QString **Data, int NR, int NC);
-	void setData(int NRows, int nCols, QStringList &HHeader, QTableWidgetItem ***Data);
+	void setData(const std::vector<LineTableCore::TableCols>& mColumns, const std::vector<BaseData*> data);
 	void splitTable();
 	void WriteTFGS(QString FileName = "", int vso = 1000, vsOListElement *vsOList = 0);
 	void W2AI(QString sldc = "");
@@ -81,17 +76,6 @@ public:
     void MarkSelected();
 	void MarkLines(int *Iso, int *vs, int *Js, double *WN, int N);
 	void findErrors();
-	
-	inline void MarkLines(int *R, int N)
-	{
-		TableWindow::MarkLines(R, N);
-	}
-	
-	inline ElState *getElState()
-	{
-		return (transition != 0 ? transition->getUpperState() : 0); 
-	}
-	
 	void TakeOnChanges();
     void TestProgressions(int NumWFPoints);
     void DeleteRows();
@@ -114,7 +98,6 @@ public:
 	void SortfRemDoubled();
 	void SetError();
 	void SetError(int NL, int *PN, int *vss, int *Jss, double *Err);
-	void SetError(int NL, int *PN, int *vss, int *Jss, QString *Err);
 	void DeleteRows(int NL, int *PN, int *vss = 0, int *Jss = 0);
 	void SetPN();
 	void Shiftvup();
@@ -127,27 +110,44 @@ public:
 	void SetvssAscending();
 	void Delete();
 	void setvs();
-	void setFC(QString nF);
+	void setFC(const int nF);
 	void sortbyvs();
 	void getKnownLevels(int NI, int &mvs, int &mvss, int &mJs, int &mJss, bool ***&uL, bool ***&lL);
-	void setMolecule(Molecule *mol);
+	void setMolecule(Molecule *mol) override;
 	void getSelData(int *&Js, double *&E, int &N);
-	void getViewnE(int *&Js, double *&E, int &N);
+	void getViewnE(int *&Js, double *&E, int &N) override;
+	void shrinkAllSpectRefs();
+	void sortByProgNumber();
+
+	inline void setData(const int row, BaseData* const data)
+	{
+		mCore->setData(row, data);
+	}
+
+	inline void MarkLines(int *R, int N) override
+	{
+		TableViewWindow::MarkLines(R, N);
+	}
+
+	inline ElState *getElState() override
+	{
+		return (transition != 0 ? transition->getUpperState() : 0);
+	}
 
     inline bool checkAllConnections()
     {
-        return TableWindow::checkAllConnections(CFile);
+        return TableViewWindow::checkAllConnections();
     }
 
-    inline void shrinkAllSpectRefs()
-    {
-        TableWindow::shrinkAllSpectRefs(CFile);
-    }
+    inline QString getInfile() const
+	{
+		return InFile;
+	}
 
-    inline void sortByProgNumber()
-    {
-        sortTab(heapSort(sortByProgression));
-    }
+	inline int getNumNewLines() const
+	{
+		return NpL;
+	}
 	
 public slots:
 	void updateMarker(Spektrum *Spectrum);
@@ -155,22 +155,21 @@ public slots:
 	
 private slots:
 	void TabSelChanged();
+	void HeaderItemDoubleClicked(const int index);
 	
 signals:
 	void DataChanged();
 	
 private:
-	void sortTab(int *SortArray);
+	void sortTab(int *SortArray) override;
 	void UpdateMarker(Spektrum *Spectrum = 0, int numLines = -1, int *Lines = 0, bool remove = false);
 	
 	Transition *transition;
 	int NR, lRow, MaxPN, mvs, mJs, mIso, NpProg, NpL, *SelJs, NSel, *SO, NSO;
 	double Error, OvError, *SelE;
 	QString InFile, mSpectrum;
-	QStringList HeaderLabels;
 	TableWindow *termTable;
 	IsoTab *Iso;
-	QList<QTableWidgetSelectionRange> SelR;
 };
 
 

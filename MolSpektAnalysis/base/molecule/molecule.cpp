@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QGridLayout>
+#include <QPainter>
 
 
 Molecule::Molecule(MainWindow *mw) : MDIChild(MDIChild::MolData, mw, "Molecules (*.mol)", ".mol")
@@ -1034,128 +1035,146 @@ int Molecule::getNumIso()
 
 IsoTab *Molecule::getIso()
 {
-	if (atom1 == 0)
+	if (mIsoTab.numIso == 0)
 	{
-		printf("Molecule::getIso(): atom1 is 0, can't calculate the data!\n");
-		return 0;
-	}
-	if (atom2 == 0)
-	{
-		printf("Molecule::getIso(): atom2 is 0, can't calculate the data!\n");
-		return 0;
-	}
-	IsoTab *rIso;
-	int i, j, n, m, k=0, numIso, ib;
-	double NA, m1, m2;
-	QString B;
-	TermTable *xmTerm = (States[0]->getNumTermTables() > 0 ? States[0]->getTermTable() : 0);
-	n = atom1->getnIso();
-	if (atom1 == atom2)
-	{
-		numIso = (n * (n + 1)) / 2;
-		rIso = new IsoTab(numIso);
-		*rIso->chSymb1 = atom1->getChSymb();
-		*rIso->chSymb2 = atom2->getChSymb();
-		for (i=0; i<n; i++) for (j=i; j<n; j++)
+		if (atom1 == nullptr)
 		{
-			rIso->mNumIso2[k] = atom1->getnNuc(j);
-			rIso->mNumIso1[k] = rIso->mNumIso2[i];
-			rIso->mIso1[k] = atom1->getIsoMass(i);
-			rIso->mIso2[k] = atom2->getIsoMass(j);
-			if (i == j)
-			{
-				rIso->texName[k] = "^{" + QString::number(rIso->mNumIso1[k]) + "}" 
-						+ *rIso->chSymb1 + "_2";
-				NA = atom1->getIsoNA(i);
-				rIso->relNA[k] = NA * NA;
-				if (atom1->getCoreSpin(i) == 0) rIso->JStep[k] = 2;
-				else rIso->JStep[k] = 1; 
-				rIso->redMass[k++] = atom1->getIsoMass(i) * .5;
-			}
-			else
-			{
-				rIso->texName[k] = "^{" + QString::number(rIso->mNumIso1[k]) + "}" + *rIso->chSymb1 
-								 + "^{" + QString::number(rIso->mNumIso2[k]) + "}" + *rIso->chSymb1;
-				rIso->relNA[k] = 2 * atom1->getIsoNA(i) * atom1->getIsoNA(j);
-				rIso->JStep[k] = 1;
-				m1 = atom1->getIsoMass(i);
-				m2 = atom2->getIsoMass(j);
-				rIso->redMass[k++] = m1 * m2 / (m1 + m2);
-			}
+			printf("Molecule::getIso(): atom1 is 0, can't calculate the data!\n");
+			return nullptr;
 		}
-	}
-	else
-	{
-		m = atom2->getnIso();
-		numIso = n * m;
-		rIso = new IsoTab(numIso);
-		*rIso->chSymb1 = atom1->getChSymb();
-		*rIso->chSymb2 = atom2->getChSymb();
-		for (i=0; i<n; i++) for (j=0; j<m; j++)
+		if (atom2 == nullptr)
 		{
-			rIso->mIso1[k] = atom1->getIsoMass(i);
-			rIso->mIso2[k] = atom2->getIsoMass(j);
-			rIso->mNumIso1[k] = atom1->getnNuc(i);
-			rIso->mNumIso2[k] = atom2->getnNuc(j);
-			rIso->texName[k] = "^{" + QString::number(rIso->mNumIso1[k]) + "}" + *rIso->chSymb1
-					         + "^{" + QString::number(rIso->mNumIso2[k]) + "}" + *rIso->chSymb2;
-			rIso->relNA[k] = atom1->getIsoNA(i) * atom2->getIsoNA(j);
-			rIso->JStep[k] = 1;
-			m1 = atom1->getIsoMass(i);
-			m2 = atom2->getIsoMass(j);
-			rIso->redMass[k++] = m1 * m2 / (m1 + m2);
+			printf("Molecule::getIso(): atom2 is 0, can't calculate the data!\n");
+			return nullptr;
 		}
-	}
-	if ((k = RefIso->currentIndex()) == -1) for (i = 0, NA = 0.0; i < numIso; i++) 
-			if (rIso->relNA[i] > NA) NA = rIso->relNA[k = i];
-	rIso->refIso = k;
-	if (xmTerm != 0)
-	{
-		n = xmTerm->getNumIso();
-		for (m=0; m<n; m++)
+		int i, j, n, m, k=0, ib;
+		double NA, m1, m2;
+		QString B;
+		TermTable *xmTerm = (States[0]->getNumTermTables() > 0 ? States[0]->getTermTable() : 0);
+		mIsoTab.moleculeOwned = true;
+		n = atom1->getnIso();
+		if (atom1 == atom2)
 		{
-			xmTerm->GetIsoZ(m, i, j);
-			if (i != rIso->mNumIso1[m] || j != rIso->mNumIso2[m])
+			mIsoTab.numIso = (n * (n + 1)) / 2;
+			mIsoTab.createArrays();
+			*mIsoTab.chSymb1 = atom1->getChSymb();
+			*mIsoTab.chSymb2 = atom2->getChSymb();
+			for (i=0; i<n; i++) for (j=i; j<n; j++)
 			{
-				for (k=m+1; (k < numIso ? i != rIso->mNumIso1[k] || j != rIso->mNumIso2[k] : false); k++) ;
-				if (k < numIso)
+				mIsoTab.mNumIso2[k] = atom1->getnNuc(j);
+				mIsoTab.mNumIso1[k] = mIsoTab.mNumIso2[i];
+				mIsoTab.mIso1[k] = atom1->getIsoMass(i);
+				mIsoTab.mIso2[k] = atom2->getIsoMass(j);
+				if (i == j)
 				{
-					m1 = rIso->mIso1[m];
-					rIso->mIso1[m] = rIso->mIso1[k];
-					rIso->mIso1[k] = m1;
-					m1 = rIso->mIso2[m];
-					rIso->mIso2[m] = rIso->mIso2[k];
-					rIso->mIso2[k] = m1;
-					ib = rIso->mNumIso1[m];
-					rIso->mNumIso1[m] = rIso->mNumIso1[k];
-					rIso->mNumIso1[k] = ib;
-					ib = rIso->mNumIso2[m];
-					rIso->mNumIso2[m] = rIso->mNumIso2[k];
-					rIso->mNumIso2[k] = ib;
-					B = rIso->texName[m];
-					rIso->texName[m] = rIso->texName[k];
-					rIso->texName[k] = B;
-					m1 = rIso->relNA[m];
-					rIso->relNA[m] = rIso->relNA[k];
-					rIso->relNA[k] = m1;
-					ib = rIso->JStep[m];
-					rIso->JStep[m] = rIso->JStep[k];
-					rIso->JStep[k] = ib;
-					m1 = rIso->redMass[m];
-					rIso->redMass[m] = rIso->redMass[k];
-					rIso->redMass[k] = m1;
-					if (rIso->refIso == m) rIso->refIso = k;
-					else if (rIso->refIso == k) rIso->refIso = m;
+					mIsoTab.texName[k] = "^{" + QString::number(mIsoTab.mNumIso1[k]) + "}"
+						+ *mIsoTab.chSymb1 + "_2";
+					NA = atom1->getIsoNA(i);
+					mIsoTab.relNA[k] = NA * NA;
+					if (atom1->getCoreSpin(i) == 0) mIsoTab.JStep[k] = 2;
+					else mIsoTab.JStep[k] = 1;
+					mIsoTab.redMass[k++] = atom1->getIsoMass(i) * .5;
+				}
+				else
+				{
+					mIsoTab.texName[k] = "^{" + QString::number(mIsoTab.mNumIso1[k]) + "}" + *mIsoTab.chSymb1
+								 + "^{" + QString::number(mIsoTab.mNumIso2[k]) + "}" + *mIsoTab.chSymb1;
+					mIsoTab.relNA[k] = 2 * atom1->getIsoNA(i) * atom1->getIsoNA(j);
+					mIsoTab.JStep[k] = 1;
+					m1 = atom1->getIsoMass(i);
+					m2 = atom2->getIsoMass(j);
+					mIsoTab.redMass[k++] = m1 * m2 / (m1 + m2);
 				}
 			}
 		}
+		else
+		{
+			m = atom2->getnIso();
+			mIsoTab.numIso = n * m;
+			mIsoTab.createArrays();
+			*mIsoTab.chSymb1 = atom1->getChSymb();
+			*mIsoTab.chSymb2 = atom2->getChSymb();
+			for (i=0; i<n; i++) for (j=0; j<m; j++)
+			{
+				mIsoTab.mIso1[k] = atom1->getIsoMass(i);
+				mIsoTab.mIso2[k] = atom2->getIsoMass(j);
+				mIsoTab.mNumIso1[k] = atom1->getnNuc(i);
+				mIsoTab.mNumIso2[k] = atom2->getnNuc(j);
+				mIsoTab.texName[k] = "^{" + QString::number(mIsoTab.mNumIso1[k]) + "}" + *mIsoTab.chSymb1
+					         + "^{" + QString::number(mIsoTab.mNumIso2[k]) + "}" + *mIsoTab.chSymb2;
+				mIsoTab.relNA[k] = atom1->getIsoNA(i) * atom2->getIsoNA(j);
+				mIsoTab.JStep[k] = 1;
+				m1 = atom1->getIsoMass(i);
+				m2 = atom2->getIsoMass(j);
+				mIsoTab.redMass[k++] = m1 * m2 / (m1 + m2);
+			}
+		}
+		if ((k = RefIso->currentIndex()) == -1) for (i = 0, NA = 0.0; i < mIsoTab.numIso; i++)
+			if (mIsoTab.relNA[i] > NA) NA = mIsoTab.relNA[k = i];
+		mIsoTab.refIso = k;
+		if (xmTerm != 0)
+		{
+			n = xmTerm->getNumIso();
+			for (m=0; m<n; m++)
+			{
+				xmTerm->GetIsoZ(m, i, j);
+				if (i != mIsoTab.mNumIso1[m] || j != mIsoTab.mNumIso2[m])
+				{
+					for (k=m+1; (k < mIsoTab.numIso ? i != mIsoTab.mNumIso1[k] || j != mIsoTab.mNumIso2[k] : false); k++) ;
+					if (k < mIsoTab.numIso)
+					{
+						m1 = mIsoTab.mIso1[m];
+						mIsoTab.mIso1[m] = mIsoTab.mIso1[k];
+						mIsoTab.mIso1[k] = m1;
+						m1 = mIsoTab.mIso2[m];
+						mIsoTab.mIso2[m] = mIsoTab.mIso2[k];
+						mIsoTab.mIso2[k] = m1;
+						ib = mIsoTab.mNumIso1[m];
+						mIsoTab.mNumIso1[m] = mIsoTab.mNumIso1[k];
+						mIsoTab.mNumIso1[k] = ib;
+						ib = mIsoTab.mNumIso2[m];
+						mIsoTab.mNumIso2[m] = mIsoTab.mNumIso2[k];
+						mIsoTab.mNumIso2[k] = ib;
+						B = mIsoTab.texName[m];
+						mIsoTab.texName[m] = mIsoTab.texName[k];
+						mIsoTab.texName[k] = B;
+						m1 = mIsoTab.relNA[m];
+						mIsoTab.relNA[m] = mIsoTab.relNA[k];
+						mIsoTab.relNA[k] = m1;
+						ib = mIsoTab.JStep[m];
+						mIsoTab.JStep[m] = mIsoTab.JStep[k];
+						mIsoTab.JStep[k] = ib;
+						m1 = mIsoTab.redMass[m];
+						mIsoTab.redMass[m] = mIsoTab.redMass[k];
+						mIsoTab.redMass[k] = m1;
+						if (mIsoTab.refIso == m) mIsoTab.refIso = k;
+						else if (mIsoTab.refIso == k) mIsoTab.refIso = m;
+					}
+				}
+			}
+		}
+		for (i = 0; i < mIsoTab.numIso; ++i)
+		{
+			mIsoTab.relRedMass[i] = mIsoTab.redMass[mIsoTab.refIso] / mIsoTab.redMass[i];
+			mIsoTab.rootRRM[i] = sqrt(mIsoTab.relRedMass[i]);
+			if (mIsoTab.mNumIso1[i] == mIsoTab.mNumIso2[i] && *mIsoTab.chSymb1 == *mIsoTab.chSymb2) mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + "2";
+			else mIsoTab.Isoname[i] = QString::number(mIsoTab.mNumIso1[i]) + *mIsoTab.chSymb1 + QString::number(mIsoTab.mNumIso2[i]) + *mIsoTab.chSymb2;
+		}
+		int w, h, groundOffset;
+		QFont F;
+		QPainter P;
+		for (n=0; n < mIsoTab.numIso; ++n)
+		{
+			w = TextWidth(F, mIsoTab.texName[n]);
+			h = TextHeight(F, mIsoTab.texName[n], &groundOffset);
+			mIsoTab.IsoImage[n] = QPixmap(w, h);
+			mIsoTab.IsoImage[n].fill();
+			P.begin(mIsoTab.IsoImage + n);
+			WriteText(P, 0, h - groundOffset, mIsoTab.texName[n], F, 0);
+			P.end();
+		}
 	}
-	for (i = 0; i < numIso; i++) 
-	{
-		rIso->relRedMass[i] = rIso->redMass[rIso->refIso] / rIso->redMass[i];
-		rIso->rootRRM[i] = sqrt(rIso->relRedMass[i]);
-	}
-	return rIso;
+	return &mIsoTab;
 }
 
 void Molecule::getRefIso(int &A1, int &A2)
@@ -1906,7 +1925,8 @@ void Molecule::UpdateStateBox()
 void Molecule::shrinkAllSpectRefs()
 {
     int n, m;
-    for (n=0; n < numStates; ++n) for (m=0; m < States[n]->getNumFitDataSets(); ++m) if (States[n]->getFitData(m) != 0) States[n]->getFitData(m)->shrinkAllSpectRefs();
+    for (n=0; n < numStates; ++n) for (m=0; m < States[n]->getNumFitDataSets(); ++m) if (States[n]->getFitData(m) != 0)
+		States[n]->getFitData(m)->shrinkAllSpectRefs();
     for (n=0; n < numTransitions; ++n) for (m=0; m < Transitions[n]->getNumLineTables(); ++m) if (Transitions[n]->getLineTable(m) != 0)
         Transitions[n]->getLineTable(m)->shrinkAllSpectRefs();
 }

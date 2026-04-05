@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,93 +9,95 @@
 #define FITDATACORE_H
 
 
-#include <QAbstractTableModel>
-#include <vector>
+#include "tableviewwindowcore.h"
+#include "fitdatabasedata.h"
 
-struct BaseData;
+#include <vector>
 
 class TermEnergy;
 class Spektrum;
-class IsoTab;
+class Molecule;
 
-class FitDataCore : public QAbstractTableModel
+class QTextStream;
+
+class FitDataCore : public TableViewWindowCore
 {
 	public:
 		enum FitDataColumn {fdcIso, fdcv, fdcJ, fdcvs, fdcJs, fdcSource, fdcProg, fdcFile, fdcEnergy,
         fdcUncert, fdcObsCalc, fdcDevR, fdcLineElState};
 
-		FitDataCore(QObject *parent = 0);
+		FitDataCore(Molecule* mol = nullptr, QObject *parent = 0);
 		~FitDataCore();
-		QString readData(QTextStream& S);
-		int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-		void setRowCount(const int count);
+		QString readData(QTextStream& S) override;
 		int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 		QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const override;
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-		std::vector<BaseData*> getData();
+		std::vector<FitDataBaseData*> getDataAsFitDataBaseData();
 		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-		void setData(double ****nData, int numComp, int numIso, int maxv, int maxJ,
-					 int *CompZ = 0, int nStates = 0, double *****nMixKoeff = 0);
-		void setIso(IsoTab *Iso);
-		IsoTab *getIso();
-		void setIsoZ(int *Z);
-		void GetIsoZ(int IsoI, int &NIso1, int &NIso2);
-		int *getCompZ();
-		int getNumComp();
-		int getNumIso();
-		int getMaxJ();
-		int getMaxv();
-		void getRows(int C, int I, int v, int *J, int N, int *R);
-		void getJE(int *R, int N, int *J, double *E);
 		int addMarkedLevel(TermEnergy& TE, Spektrum *Source);
+		void addRow(const QStringList& L);
 		int addRow(const int cr);
-		void setRow(const BaseData& data, const int row);
+		void setRow(FitDataBaseData* const data, const int row);
+		FitDataBaseData* getRowAsFitDataBaseData(const int row) const;
 		void addData(const int i_numLines, int *const i_Lines, const FitDataCore& data);
-		void deleteRows(const int *indices, const int numRows);
-		int get_v(const int row) const;
+		void setIso(const int row, const int v) override;
 		void set_v(const int row, const int v);
-		const std::string& get_vs(const int row) const;
-		void set_vs(const int row, const std::string& vs);
-		int getJ(const int row) const;
-		int getJs(const int row) const;
-		int getIso(const int row) const;
-		const std::string& getSource(const int row) const;
-		void setSource(const int row, const std::string& source);
-		const std::string& getSourceFile(const int row) const;
-		void setSourceFile(const int row, const std::string& filename);
-		int getProgression(const int row) const;
-		double getEnergy(const int row) const;
-		double getUncertainty(const int row) const;
+		void setJ(const int row, const int J);
+		const QString& get_vs(const int row) const;
+		void set_vs(const int row, const QString& vs);
+		void setJs(const int row, const int J) override;
+		const QString& getSource(const int row) const;
+		void setSource(const int row, const QString& source);
+		void setSourceFile(const int row, const QString& filename);
+		void setEnergy(const int row, const double energy);
+		void setUncertainty(const int row, const double uncertainty);
 		void setObsCalc(const int row, const double obsCalc);
-		void setDevRatio(const int row, const double DevR);
-		const std::string& getOtherState(const int row) const;
-		void setSecondState(const int row, const std::string& state);
+		float getDevRatio(const int row) const;
+		void setDevRatio(const int row, const float DevR);
+		const QString& getOtherState(const int row) const;
+		void setSecondState(const int row, const QString& state);
+		void setRWError(const QString& headerText);
+		void shrinkAllSpectRefs();
+		void search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const;
+		void search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column=-1,
+					const bool completeCell = false) const;
+		FitDataBaseData* convertToFitDataCoreBaseData(const QStringList& L) const;
+		QString cellToString(const int r, const int c) const override;
 
-		inline int *getIsoZ() const
+		inline void setData(const int row, BaseData * const data)
 		{
-			return Z;
+			TableViewWindowCore::setData(row,  data);
+		}
+
+		inline BaseData* convertToBaseData(const QStringList& L) const override
+		{
+			return convertToFitDataCoreBaseData(L);
+		}
+
+		inline QModelIndex getIndex(const int row, const int column) const
+		{
+			return createIndex(row, column);
+		}
+
+		inline int getNSources() const
+		{
+			return NSources;
+		}
+
+		inline void setNSources(const int N)
+		{
+			NSources = N;
+		}
+
+		inline bool isRWErr()
+		{
+			return !RWError.isEmpty();
 		}
 		
-		inline int getnumStates() const
-		{
-			return numStates;
-		}
-
-		inline void setColumnCount(const int newCount)
-		{
-			mColumnCount = newCount;
-		}
-
-		inline const BaseData* getData(const int row) const
-		{
-			return mData[row];
-		}
-
 	private:
-		int *Z, *CompZ, numStates, mColumnCount;
-		std::vector<BaseData*> mData;
-		IsoTab *Iso;
-		const QRegularExpression mStartSpecialPart = QRegularExpression("SourceOffsets:|Begin ResidualFit");
+		int NSources = 0;
+		QString RWError;
 };
 
 #endif

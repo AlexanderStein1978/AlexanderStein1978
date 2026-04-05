@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,7 +9,7 @@
 #define LOGWINDOW_H
 
 
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "logmodel.h"
 
 class QFile;
@@ -22,7 +22,7 @@ class QMutex;
 class MainWindow;
 
 
-class LogWindow : public TableWindow
+class LogWindow : public TableViewWindow
 {
     Q_OBJECT
 public:

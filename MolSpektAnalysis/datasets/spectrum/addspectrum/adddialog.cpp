@@ -231,7 +231,7 @@ void AddDialog::MolChanged(QString Name)
 	IsoTab *Iso = Mol->getIso();
 	for (n=0, NumIso = Iso->numIso; n < NumIso; n++)
 	{
-		IsoBox->addItem(SN = Iso->getIsoName(n));
+		IsoBox->addItem(SN = Iso->Isoname[n]);
 		RIsoBox->addItem(SN);
 	}
 	UpdateAllVs->setEnabled(false);

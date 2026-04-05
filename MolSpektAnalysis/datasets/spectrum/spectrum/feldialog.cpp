@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -138,7 +138,6 @@ void FELDialog::StateChanged(QString Name)
 	State = Mol->getStateP(n);
 	IsoBox->blockSignals(true);
 	IsoBox->clear();
-	for (n=0; n < Mol->getNumIso(); n++) if (DataA(Mol, State, n)) IsoBox->addItem(Iso->getIsoName(n));
+	for (n=0; n < Mol->getNumIso(); n++) if (DataA(Mol, State, n)) IsoBox->addItem(Iso->Isoname[n]);
 	IsoBox->blockSignals(false);
-	delete Iso;
 }

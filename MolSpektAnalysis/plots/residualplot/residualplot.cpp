@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -211,7 +211,6 @@ void ResidualPlot::AddLocalPerturbation()
     if (!m_ResidualFit->isFitDataAvailable()) SetResidualFitData();
     std::vector<Js> pertFitData = GetPertFitData();
     int n = m_ResidualFit->addLocalPerturbation(IsoT->relRedMass[Iso], state->getOmega(), pertFitData, mol->getJStep(Iso), Be);
-    delete IsoT;
     Paint();
     if (n>=0)
     {
@@ -471,7 +470,6 @@ void ResidualPlot::SetResidualFitData()
     m_ResidualFit->setFitData(nData[C][Iso][v], points, IsoT->relRedMass[Iso], state->getOmega(), mol->getJStep(Iso), state->getBe());
     Block = false;
     delete[] points;
-    delete IsoT;
 }
 
 void ResidualPlot::ShowResidualFit()
@@ -818,7 +816,6 @@ void ResidualPlot::Printall()
 		}
 	}
 	delete PD;
-	delete IsoT;
 }
 
 void ResidualPlot::refSourceBoxChanged()
@@ -1519,18 +1516,17 @@ void ResidualPlot::sourceBoxChanged()
 		for (n=m=0; n < NIso; n++) if (nv[n] > 0) 
 		{
 			//printf("addIso %d, m=%d\n", n, m);
-			IsoBox->addItem(IT->getIsoName(IsoZ[n]));
+			IsoBox->addItem(IT->Isoname[IsoZ[n]]);
 			if (n < Iso) m++;
 		}
 	}
 	else for (n=m=0; n < NIso; n++) if (nv[n] > 0)
 	{
-		IsoBox->addItem(IT->getIsoName(n));
+		IsoBox->addItem(IT->Isoname[n]);
 		if (n < Iso) m++;
 	}
 	if (m >= IsoBox->count()) m=0;
 	//printf("Iso=%d, m=%d\n", Iso, m);
-	delete IT;
 	IsoBox->setCurrentIndex(m);
 	Block = false;
 	//printf("Vor IsoBox\n");

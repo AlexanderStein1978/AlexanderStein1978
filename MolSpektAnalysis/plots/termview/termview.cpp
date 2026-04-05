@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -14,7 +14,7 @@
 
 #include <QStringList>
 
-TermView::TermView(TermTable *Term) : TableWindow(TermEnergyView)
+TermView::TermView(TermTable *Term) : TableWidgetWindow(TermEnergyView)
 {
 	int i, I1, I2, NSt = Term->getNumStates();
 	QString N1, N2, Name = "Overview table for " + Term->getName();

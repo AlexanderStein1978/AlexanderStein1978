@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -7,86 +7,101 @@
 
 #include "fitdatacore.h"
 #include "utils.h"
-#include "isotab.h"
-#include "basedata.h"
+#include "fitdatabasedata.h"
+#include "termenergy.h"
+#include "Spektrum.h"
+#include "elstate.h"
+#include "molecule.h"
+
+#include <QTextStream>
+#include <QPixmap>
+#include <QPainter>
+#include <QMessageBox>
 
 
-FitDataCore::FitDataCore(QObject *parent) : QAbstractTableModel(parent)
+FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent, QRegExp("SourceOffsets:|Begin ResidualFit"))
 {
-	Data = 0;
-	Iso = 0;
-	numComp = numStates = 0;
-	Z = 0;
-	vStart = 0;
-	CompZ = 0;
-	MixCoeff = 0;
 }
 
 FitDataCore::~FitDataCore()
 {
-	if (Iso != 0) delete Iso;
-	if (Z != 0) delete[] Z;
-	if (CompZ != 0) delete[] CompZ;
-	for (auto it = mData.begin(); it != mData.end(); ++it) delete *it;
 }
 
-QString FitDataCore::readData(int& S)
+FitDataBaseData * FitDataCore::convertToFitDataCoreBaseData(const QStringList& L) const
 {
-	for (int r=0; !S.atEnd(); r++)
+	FitDataBaseData *data = new FitDataBaseData;
+	int lc = L.count();
+	IsoTab * Iso = nullptr;
+	if (nullptr != molecule) Iso = molecule->getIso();
+	for (int n=0; n < lc && n <= fdcLineElState; n++)
 	{
+		switch(n)
+		{
+			case fdcIso:
+				data->isotope = L[n].toInt();
+				if (nullptr != Iso) data->IsoIcon = &Iso->IsoImage[data->isotope];
+				break;
+			case fdcv:
+				data->v = L[n].toInt();
+				break;
+			case fdcJ:
+				data->J = L[n].toInt();
+				break;
+			case fdcvs:
+				data->vs = L[n];
+				break;
+			case fdcJs:
+				data->Js = L[n].toInt();
+				break;
+			case fdcSource:
+				data->source = L[n];
+				break;
+			case fdcProg:
+				data->progressionNumber = L[n].toInt();
+				break;
+			case fdcFile:
+				data->file = L[n];
+				break;
+			case fdcEnergy:
+				data->energy = L[n].toDouble();
+				break;
+			case fdcUncert:
+				data->uncertainty = L[n].toDouble();
+				break;
+			case fdcObsCalc:
+				data->obsMinusCalc = L[n].toDouble();
+				break;
+			case fdcDevR:
+				data->devR = L[n].toDouble();
+				break;
+			case fdcLineElState:
+				data->secondState = L[n];
+				break;
+			default:
+				// not possible
+			break;
+		}
+	}
+	return data;
+}
+
+QString FitDataCore::readData(QTextStream& S)
+{
+	QString Buffer;
+	QString Spacer = "\t";
+	while (S.readLine().left(15) != "Column titles: ") ;
+	beginInsertRows(QModelIndex(), -1, -1);
+	while(!S.atEnd())
+	{
+		Buffer = S.readLine();
 		if (Buffer.indexOf(mStartSpecialPart) >= 0) return Buffer;
 		const QStringList L = Buffer.split(Spacer);
-		BaseData data;
-		for (int n=0; n < lc && n <= fdcLineElState; n++)
-		{
-			switch(n)
-			{
-				case fdcIso:
-					data.isotope = L[n].toInt();
-					break;
-				case fdcv:
-					data.v = L[n].toInt();
-					break;
-				case fdcJ:
-					data.J = L[n].toInt();
-					break;
-				case fdcvs:
-					data.vs = L[n].toStdString();
-					break;
-				case fdcJs:
-					data.Js = L[n].toInt();
-					break;
-				case fdcSource:
-					data.source = L[n].toStdString();
-					break;
-				case fdcProg:
-					data.prog = L[n].toInt();
-					break;
-				case fdcFile:
-					data.file = L[n].toStdString();
-					break;
-				case fdcEnergy:
-					data.energy = L[n].toDouble();
-					break;
-				case fdcUncert:
-					data.uncert = L[n].toDouble();
-					break;
-				case fdcObsCalc:
-					data.obs_calc = L[n].toDouble();
-					break;
-				case fdcDevR:
-					data.devR = L[n].toDouble();
-					break;
-				case fdcLineElState:
-					data.secondState L[n].toStdString();
-					break;
-				default:
-					// not possible
-					break;
-			}
-		}
-		mData.push_back(data);
+		if (L.size() < 10) continue;
+		mData.push_back(convertToBaseData(L));
 	}
+	endInsertRows();
+	beginInsertRows(QModelIndex(), 0, mData.size() - 2);
+	endInsertRows();
 	return "";
 }
 
@@ -98,35 +113,62 @@ int FitDataCore::columnCount(const QModelIndex &parent) const
 
 QVariant FitDataCore::data(const QModelIndex &index, int role) const
 {
-	if (role != Qt::DisplayRole) return QVariant();
-	switch (index.column())
+	int row = index.row(), column = index.column(), numDigits;
+	if (role == Qt::DecorationRole)
+	{
+		if (column == fdcIso && nullptr != molecule)
+		{
+			if (nullptr == mData[row]->IsoIcon)
+			{
+				int n = mData[row]->isotope / 10 - 1;
+				IsoTab* Iso = molecule->getIso();
+				if (0 <= n && n < Iso->numIso) mData[row]->IsoIcon = &Iso->IsoImage[n];
+			}
+			return *mData[row]->IsoIcon;
+		}
+		if (row >= NSources) return *NewPix;
+	}
+	if (role == Qt::TextAlignmentRole)
+	{
+		if (column == fdcSource || column == fdcFile || column == fdcLineElState) return Qt::AlignLeft;
+		return Qt::AlignRight;
+	}
+	if (role != Qt::DisplayRole && role != Qt::EditRole) return QVariant();
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[row]);
+	if (column == fdcEnergy || column == fdcUncert || column == fdcObsCalc) numDigits = getNumDecimalPlaces(element->uncertainty);
+	switch (column)
 	{
 		case fdcIso:
-			return mData[index.row()]->isotope;
+			return element->isotope;
 		case fdcv:
-			return mData[index.row()]->v;
+			return element->v;
 		case fdcJ:
-			return mData[index.row()]->J;
+			return element->J;
 		case fdcvs:
-			return mData[index.row()]->vs;
+			return element->vs;
 		case fdcJs:
-			return mData[index.row()]->Js;
+			return element->Js;
 		case fdcSource:
-			return mData[index.row()]->source;
+			return element->source;
 		case fdcProg:
-			return mData[index.row()]->prog;
+			return element->progressionNumber;
 		case fdcFile:
-			return mData[index.row()]->file;
+			return element->file;
 		case fdcEnergy:
-			return mData[index.row()]->energy;
+			if (!RWError.isEmpty())
+			{
+				numDigits = -int(floor(log10(element->uncertainty)));
+				if (numDigits < 4) numDigits = 4;
+			}
+			return QString::number(element->energy, 'f', numDigits);
 		case fdcUncert:
-			return mData[index.row()]->uncert;
+			return QString::number(element->uncertainty, 'f', numDigits);
 		case fdcObsCalc:
-			return mData[index.row()]->obs_calc;
+			return QString::number(element->obsMinusCalc, 'f', numDigits);
 		case fdcDevR:
-			return mData[index.row()]->DevR;
+			return QString::number(element->devR, 'f', 3);
 		case fdcLineElState:
-			return mData[index.row()]->secondState;
+			return element->secondState;
 		default:
 			return QVariant();
 			break;
@@ -137,125 +179,56 @@ QVariant FitDataCore::data(const QModelIndex &index, int role) const
 bool FitDataCore::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (role != Qt::EditRole) return false;
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[index.row()]);
 	switch (index.column())
 	{
 		case fdcIso:
-			mData[index.row()]->isotope = value;
+			element->isotope = value.toUInt();
 			break;
 		case fdcv:
-			mData[index.row()]->v = value;
+			element->v = value.toUInt();
 			break;
 		case fdcJ:
-			mData[index.row()]->J = value;
+			element->J = value.toUInt();
 			break;
 		case fdcvs:
-			mData[index.row()]->vs = value;
+			element->vs = value.toString();
 			break;
 		case fdcJs:
-			mData[index.row()]->Js = value;
+			element->Js = value.toUInt();
 			break;
 		case fdcSource:
-			mData[index.row()]->source = value;
+			element->source = value.toString();
 			break;
 		case fdcProg:
-			mData[index.row()]->prog = value;
+			element->progressionNumber = value.toInt();
 			break;
 		case fdcFile:
-			mData[index.row()]->file = value;
+			element->file = value.toString();
 			break;
 		case fdcEnergy:
-			mData[index.row()]->energy = value;
+			element->energy = value.toDouble();
 			break;
 		case fdcUncert:
-			mData[index.row()]->uncert = value;
+			element->uncertainty = value.toDouble();
 			break;
 		case fdcObsCalc:
-			mData[index.row()]->obs_calc = value;
+			element->obsMinusCalc = value.toDouble();
 			break;
 		case fdcDevR:
-			mData[index.row()]->DevR = value;
+			element->devR = value.toDouble();
 			break;
 		case fdcLineElState:
-			mData[index.row()]->secondState = value;
+			element->secondState = value.toString();
 			break;
 		default:
 			return false;
 			break;
 	}
-	QList<int> roles;
+	QVector<int> roles;
 	roles.append(role);
 	emit dataChanged(index, index, roles);
 	return true;
-}
-
-void FitDataCore::getJE(int* R, int N, int* J, double* E)
-{
-	int I, C, v, n, lI, lC;
-	for (n=I=C=v=lI=lC=0; n<N; n++)
-	{
-		while (I < numIso ? R[n] >= vStart[I][0][0] : false) I++;
-		I--;
-		if (I != lI) C=v=0;
-		while (C < numComp ? R[n] >= vStart[I][C][0] : false) C++;
-		C--;
-		if (C != lC) v=0;
-		while (v < numv ? R[n] >= vStart[I][C][v] : false) v++;
-		v--;
-		J[n] = R[n] - vStart[I][C][v];
-		E[n] = Data[C][I][v][J[n]];
-		lI = I;
-		lC = C;
-	}
-}
-
-void FitDataCore::getRows(int C, int I, int v, int* J, int N, int* R)
-{
-	int n;
-	for (n=0; n<N; n++) R[n] = vStart[I][C][v] + J[n];
-}
-
-int* FitDataCore::getCompZ()
-{
-	return CompZ;
-}
-
-double ****FitDataCore::getData()
-{
-	return Data;
-}
-
-void FitDataCore::GetIsoZ(int IsoI, int &NIso1, int &NIso2)
-{
-	if (Iso == 0 || Z == 0) NIso1 = NIso2 = 0;
-	else
-	{
-		NIso1 = Iso->mNumIso1[Z[IsoI]];
-		NIso2 = Iso->mNumIso2[Z[IsoI]];
-	}
-}
-
-int FitDataCore::getMaxJ()
-{
-	int MJ=0;
-	for (auto it = mData.begin(); it != mData.end(); ++it) if (it->J > MJ) MJ = it->J;
-	return MJ;
-}
-
-int FitDataCore::getMaxv()
-{
-	int Mv=0;
-	for (auto it = mData.begin(); it != mData.end(); ++it) if (it->v > Mv) Mv = it->v;
-	return Mv;
-}
-
-int FitDataCore::getNumComp()
-{
-	return numComp;
-}
-
-int FitDataCore::getNumIso()
-{
-	return numIso;
 }
 
 QVariant FitDataCore::headerData(int section, Qt::Orientation orientation, int role) const
@@ -268,10 +241,10 @@ QVariant FitDataCore::headerData(int section, Qt::Orientation orientation, int r
 			return "Iso";
 		case fdcv:
 			return "v";
-		case fdcJ;:
+		case fdcJ:
 			return "J";
 		case fdcvs:
-			return "v';
+			return "v'";
 		case fdcJs:
 			return "J'";
 		case fdcSource:
@@ -286,10 +259,11 @@ QVariant FitDataCore::headerData(int section, Qt::Orientation orientation, int r
 			return "uncert.";
 		case fdcObsCalc:
 			return "obs-calc";
-		case fdcDevR;
+		case fdcDevR:
 			return "DevR";
 		case fdcLineElState:
-			return "Second State";
+			if (RWError.isEmpty()) return "Second State";
+			return RWError;
 		default:
 			return QVariant();
 			break;
@@ -297,129 +271,47 @@ QVariant FitDataCore::headerData(int section, Qt::Orientation orientation, int r
 	return QVariant();
 }
 
-int FitDataCore::rowCount(const QModelIndex& parent) const
+int FitDataCore::addMarkedLevel(TermEnergy& TE, Spektrum* Source)
 {
-	if (parent.isValid()) return 0;
-	return mData.size();
-}
-
-void FitDataCore::setRowCount(const int count)
-{
-	beginInsertRows();
-	mData.resize(count);
-	endInsertRows();
-}
-
-void FitDataCore::setData(double ****nData, int nC, int nI, int mv, int mJ, int *CZ, int nMixC, double *****newMixC)
-{
-	int r, I, C, v, J;
-	if (Data != 0)
-	{
-		beginRemoveRows(QModelIndex(), 0, numRows - 1);
-		Destroy(Data, numComp, numIso, numv);
-		Destroy(vStart, numIso, numComp);
-		if (MixCoeff != 0)
-		{
-			beginRemoveColumns(QModelIndex(), 6, 5 + numStates);
-			Destroy(MixCoeff, numComp, numIso, numv, numJ);
-			MixCoeff = 0;
-			numStates = 0;
-			endRemoveColumns();
-		}
-		Data = 0;
-		vStart = 0;
-		numRows = numIso = numComp = numv = numJ = 0;
-		delete[] CompZ;
-		endRemoveRows();
-	}
-	if (CZ != 0) CompZ = CZ;
-	else
-	{
-		CompZ = new int[nC];
-		for (r=0; r < nC; r++) CompZ[r] = r;
-	}
-	vStart = CreateInt(nI, nC, mv+1);
-	for (r=I=0; I < nI; I++) for (C=0; C < nC; C++) for (v=0; v <= mv; v++) 
-	{
-		vStart[I][C][v] = r;
-		for (J=0; J <= mJ; J++) if (nData[C][I][v][J] != 0.0) r++;
-	}
-	beginInsertRows(QModelIndex(), 0, r-1);
-	numRows = r;
-	Data = nData;
-	numComp = nC;
-	numIso = nI;
-	numv = mv + 1;
-	numJ = mJ + 1;
-	if (nMixC > 0)
-	{
-		beginInsertColumns(QModelIndex(), 6, 5 + nMixC);
-		numStates = nMixC;
-		MixCoeff = newMixC;
-		endInsertColumns();
-	}
-	endInsertRows();
-}
-
-void FitDataCore::setIso(IsoTab *nIso)
-{
-	if (Iso != 0) delete Iso;
-	Iso = nIso;
-}
-
-void FitDataCore::setIsoZ(int *nZ)
-{
-	if (Z != 0) delete[] Z;
-	Z = nZ;
-}
-
-IsoTab *FitDataCore::getIso()
-{
-	return Iso;
-}
-
-int FitDataCore::addMarkedLevel(int& TE, Spektrum* Source)
-{
-	beginInsertRows();
 	int R = mData.size();
-    mData.resize(R+1);
-	BaseData* element = mData[R];
-	element->isotope = TE.Iso;
+	beginInsertRows(QModelIndex(), R-1, R-1);
+	FitDataBaseData* element = new FitDataBaseData;
+	element->isotope = static_cast<char>(TE.Iso);
 	element->v = TE.v;
 	element->J = TE.J;
-	element->vs = (TE.FC == -1 ? "TE" : std::to_string(-1 - TE.FC));
+	element->vs = (TE.FC == -1 ? "TE" : QString::number(-1 - TE.FC));
 	element->source = Source->getName();
 	element->file = Source->getFileName();
 	element->energy = TE.E;
-	element->uncert = TE.err;
-	element->obs_calc = TE.dev;
+	element->uncertainty = TE.err;
+	element->obsMinusCalc = TE.dev;
 	element->devR = TE.DevR;
 	element->secondState = TE.State->getName();
+	mData.push_back(element);
 	endInsertRows();
     return R;
 }
 
 int FitDataCore::addRow(const int cr)
 {
-	beginInsertRows();
+	beginInsertRows(QModelIndex(), cr - 1, cr - 1);
 	int r=0, nr = mData.size();
-	const_iterator<BaseData*> it;
+	std::vector<BaseData*>::const_iterator it;
 	for (it = mData.begin(); r < cr; ++r) ++it;
-	mData.insert(it, new TermEnergy);
+	mData.insert(it, new FitDataBaseData);
 	endInsertRows();
 	return nr;
 }
 
-void FitDataCore::addRow(const BaseData& data)
+void FitDataCore::addRow(const QStringList& L)
 {
-	beginInsertRows();
-	mData.push_back(data);
-	endInsertRows();
+	TableViewWindowCore::addRow(convertToFitDataCoreBaseData(L));
 }
 
 void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDataCore& data)
 {
-	beginInsertRows();
+	int dataSize = mData.size();
+	beginInsertRows(QModelIndex(), dataSize, dataSize + data.mData.size() - 2);
 	auto it = data.mData.begin();
 	int r=0;
 	for (int i=0; i < i_numLines; ++i)
@@ -429,120 +321,666 @@ void FitDataCore::addData(const int i_numLines, int *const i_Lines, const FitDat
 			++r;
 			++it;
 		}
-		while (r > i_lines[i])
+		while (r > i_Lines[i])
 		{
 			--r;
 			--it;
 		}
-		mData.insert(mData.end(), it);
+		mData.insert(mData.end(), it, data.mData.end());
 	}
 	endInsertRows();
-}
-
-void FitDataCore::deleteRows(const int *indices, const int numRows)
-{
-	beginRemoveRows();
-	int numDeleted = 0, size = mData.size(), i, j;
-	for (i=0; i < rowEnd; ++i) mData[indices[i]] = nullptr;
-	for (i=0; i < mData[i] == nullptr && i < size; ++i) ;
-	for (j=i+1; j < size; j++) if (mData[j] != nullptr) mData[i++] = mData[j];
-	mData.resize(i);
-	endRemoveRows();
-}
-
-int FitDataCore::get_v(const int row) const
-{
-	return mData[row]->v;
 }
 
 void FitDataCore::set_v(const int row, const int v)
 {
 	mData[row]->v = v;
-	QModelIndex index = createIndex(row, fdcv);
-	emit dataChanged(index, index, Qt::EditRole);
+	EmitDataChanged(row, fdcv);
 }
 
-const std::string & FitDataCore::get_vs(const int row) const
+const QString & FitDataCore::get_vs(const int row) const
 {
-	return mData[row]->vs;
+	return reinterpret_cast<FitDataBaseData*>(mData[row])->vs;
 }
 
-void FitDataCore::set_vs(const int row, const std::string& vs)
+void FitDataCore::set_vs(const int row, const QString& vs)
 {
-	mData[row] = vs;
-	QModelIndex index = createIndex(row, fdcvs);
-	emit dataChanged(index, index, Qt::EditRole);
+	reinterpret_cast<FitDataBaseData*>(mData[row])->vs = vs;
+	EmitDataChanged(row, fdcvs);
 }
 
-int FitDataCore::getJ(const int row) const
+void FitDataCore::setJ(const int row, const int J)
 {
-	return mData[row]->J;
+	mData[row]->J = J;
+	EmitDataChanged(row, fdcJ);
 }
 
-int FitDataCore::getJs(const int row) const
+void FitDataCore::setJs(const int row, const int Js)
 {
-	return mData[row]->Js;
+	mData[row]->Js = Js;
+	EmitDataChanged(row, fdcJs);
 }
 
-int FitDataCore::getIso(const int row) const
+void FitDataCore::setIso(const int row, const int iso)
 {
-	return mData[row]->isotope;
+	mData[row]->isotope = iso;
+	EmitDataChanged(row, fdcIso);
 }
 
-const std::string & FitDataCore::getSource(const int row) const
+const QString & FitDataCore::getSource(const int row) const
 {
-	return mData[row]->source;
+	return reinterpret_cast<FitDataBaseData*>(mData[row])->source;
 }
 
-void FitDataCore::setSource(const int row, const std::string& source)
+void FitDataCore::setSource(const int row, const QString& source)
 {
-	mData[row]->source = source;
-	QModelIndex index = createIndex(row, fdcSource);
-	emit dataChanged(index, index, Qt::EditRole);
+	reinterpret_cast<FitDataBaseData*>(mData[row])->source = source;
+	EmitDataChanged(row, fdcSource);
 }
 
-const std::string & FitDataCore::getSourceFile(const int row) const
+void FitDataCore::setSourceFile(const int row, const QString& filename)
 {
-	return mData[row]->file;
+	mData[row]->file = filename;
+	EmitDataChanged(row, fdcFile);
 }
 
 void FitDataCore::setObsCalc(const int row, const double obsCalc)
 {
-	mData[row]->obs_calc = obsCalc;
-	QModelIndex index = createIndex(row, fdcObsCalc);
-	emit dataChanged(index, index, Qt::EditRole);
+	mData[row]->obsMinusCalc = obsCalc;
+	EmitDataChanged(row, fdcObsCalc);
 }
 
-const std::string & FitDataCore::getOtherState(const int row) const
+const QString & FitDataCore::getOtherState(const int row) const
 {
-	return mData[row]->secondState;
+	return reinterpret_cast<FitDataBaseData*>(mData[row])->secondState;
 }
 
-double FitDataCore::getUncertainty(const int row) const
+void FitDataCore::setUncertainty(const int row, const double uncertainty)
 {
-	return mData[row]->uncert;
+	mData[row]->uncertainty = uncertainty;
+	EmitDataChanged(row, fdcUncert);
 }
 
-double FitDataCore::getEnergy(const int row) const
+void FitDataCore::setEnergy(const int row, const double energy)
 {
-	return mData[row]->energy;
+	mData[row]->energy = energy;
+	EmitDataChanged(row, fdcEnergy);
 }
 
-int FitDataCore::getProgression(const int row) const
+void FitDataCore::setSecondState(const int row, const QString& state)
 {
-	return mData[row]->prog;
+ 	reinterpret_cast<FitDataBaseData*>(mData[row])->secondState = state;
+	EmitDataChanged(row, fdcLineElState);
 }
 
-void FitDataCore::setSecondState(const int row, const std::string& state)
+float FitDataCore::getDevRatio(const int row) const
 {
-	mData[row]->secondState = state;
-	QModelIndex index = createIndex(row, fdcLineElState);
-	emit dataChanged(index, index, Qt::EditRole);
+	return reinterpret_cast<FitDataBaseData*>(mData[row])->devR;
 }
 
-void FitDataCore::setDevRatio(const int row, const double DevR)
+void FitDataCore::setDevRatio(const int row, const float DevR)
 {
-	mData[row]->devR = DevR;
-	QModelIndex index = createIndex(row, fdcDevR);
-	emit dataChanged(index, index, Qt::EditRole);
+	reinterpret_cast<FitDataBaseData*>(mData[row])->devR = DevR;
+	EmitDataChanged(row, fdcDevR);
+}
+
+void FitDataCore::setRWError(const QString& headerText)
+{
+	RWError = headerText;
+	emit headerDataChanged(Qt::Horizontal, fdcLineElState, fdcLineElState);
+}
+
+void FitDataCore::setRow(FitDataBaseData *const data, const int row)
+{
+	mData[row] = data;
+	EmitDataChanged(row, row, 0, columnCount());
+}
+
+void FitDataCore::shrinkAllSpectRefs()
+{
+	TableViewWindowCore::shrinkAllSpectRefs();
+    EmitDataChanged(0, mData.size(), fdcFile, fdcFile);
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const int column, const int value, const int smeqla, QModelIndexList& Result) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	switch (smeqla)
+	{
+		case 0:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value == element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value == element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value == element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value == element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value == element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value == element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value == static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value == static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value == static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value == static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 1:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 2:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value < element->isotope) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value < element->v) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value < element->J) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value < element->vs.toInt()) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value < element->Js) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value < element->progressionNumber) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value < static_cast<int>(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value < static_cast<int>(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value < static_cast<int>(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value < static_cast<int>(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 3:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(static_cast<int>(element->energy))) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(static_cast<int>(element->uncertainty))) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(static_cast<int>(element->obsMinusCalc))) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(static_cast<int>(element->devR))) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 4:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(mData[Rows[n]]->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(mData[Rows[n]]->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(mData[Rows[n]]->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(mData[Rows[n]]->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(mData[Rows[n]]->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(static_cast<int>(element->energy))) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(static_cast<int>(element->uncertainty))) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(static_cast<int>(element->obsMinusCalc))) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(static_cast<int>(element->devR))) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+	}
+	if (Result.empty()) QMessageBox::information(nullptr, "MolSpektAnalysis", "A number fulfilling the condition could not be found.");
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const int column, const double value, const int smeqla, QModelIndexList& Result) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	switch (smeqla)
+	{
+		case 0:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value == static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value == static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value == static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value == static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value == static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value == static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value == element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value == element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value == element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value == element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 1:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 2:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value < static_cast<double>(element->isotope)) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value < static_cast<double>(element->v)) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value < static_cast<double>(element->J)) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value < static_cast<double>(element->vs.toInt())) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value < static_cast<double>(element->Js)) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value < static_cast<double>(element->progressionNumber)) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value < element->energy) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value < element->uncertainty) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value < element->obsMinusCalc) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value < element->devR) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 3:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(static_cast<double>(element->isotope))) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(static_cast<double>(element->v))) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(static_cast<double>(element->J))) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(static_cast<double>(element->vs.toInt()))) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(static_cast<double>(element->Js))) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(static_cast<double>(element->progressionNumber))) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(element->devR)) Result << createIndex(n, c);
+							break;
+						default:
+							// not reasonable
+							break;
+					}
+				}
+			}
+			break;
+		case 4:
+            for (int n=0; n < NRows; ++n)
+			{
+				FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[Rows[n]]);
+				for (c = firstColumn; c <= lastColumn; ++c)
+				{
+					switch (c)
+					{
+						case fdcIso:
+							if (value > abs(static_cast<double>(element->isotope))) Result << createIndex(n, c);
+							break;
+						case fdcv:
+							if (value > abs(static_cast<double>(element->v))) Result << createIndex(n, c);
+							break;
+						case fdcJ:
+							if (value > abs(static_cast<double>(element->J))) Result << createIndex(n, c);
+							break;
+						case fdcvs:
+							if (value > abs(static_cast<double>(element->vs.toInt()))) Result << createIndex(n, c);
+							break;
+						case fdcJs:
+							if (value > abs(static_cast<double>(element->Js))) Result << createIndex(n, c);
+							break;
+						case fdcProg:
+							if (value > abs(static_cast<double>(element->progressionNumber))) Result << createIndex(n, c);
+							break;
+						case fdcEnergy:
+							if (value > abs(element->energy)) Result << createIndex(n, c);
+							break;
+						case fdcUncert:
+							if (value > abs(element->uncertainty)) Result << createIndex(n, c);
+							break;
+						case fdcObsCalc:
+							if (value > abs(element->obsMinusCalc)) Result << createIndex(n, c);
+							break;
+						case fdcDevR:
+							if (value > abs(element->devR)) Result << createIndex(n, c);
+							break;
+					}
+				}
+			}
+			break;
+	}
+	if (Result.empty()) QMessageBox::information(nullptr, "MolSpektAnalysis", "A number fullfilling the condition could not be found.");
+}
+
+void FitDataCore::search(const int* const Rows, const int NRows, const QString& Text, QModelIndexList& Result, const int column,
+					 	 const bool completeCell) const
+{
+	int firstColumn = column, lastColumn = column, c;
+	if (column == -1)
+	{
+		firstColumn = 0;
+		lastColumn = columnCount() - 1;
+	}
+	for (int n=0; n < NRows; ++n) for (c = firstColumn; c <= lastColumn; ++c)
+	{
+		QModelIndex index = createIndex(Rows[n], c);
+		QString field = data(index).toString();
+		if (completeCell ? field == Text : field.indexOf(Text) >= 0) Result << index; 
+	}
+	if (Result.empty()) QMessageBox::information(nullptr, "MolSpektAnalysis", "The text \'" + Text + "\' could not be found in the table.");
+}
+
+QString FitDataCore::cellToString(const int r, const int c) const
+{
+    QString R;
+	FitDataBaseData* element = reinterpret_cast<FitDataBaseData*>(mData[r]);
+    switch(c)
+    {
+        case fdcIso:
+            R = QString::number(element->isotope);
+            break;
+        case fdcv:
+            R =  QString::number(element->v);
+            break;
+        case fdcJ:
+            R =  QString::number(element->J);
+            break;
+        case fdcvs:
+            R =  element->vs;
+            break;
+        case fdcJs:
+            R =  QString::number(element->Js);
+            break;
+        case fdcSource:
+            R =  element->source;
+            break;
+        case fdcProg:
+            R =  QString::number(element->progressionNumber);
+            break;
+        case fdcFile:
+            R = element->file;
+            break;
+        case fdcEnergy:
+            R =  QString::number(element->energy, 'f', getNumDecimalPlaces(element->uncertainty));
+            break;
+        case fdcUncert:
+        {
+            double u = element->uncertainty;
+            R =  QString::number(u, 'f', getNumDecimalPlaces(u));
+            break;
+        }
+        case fdcObsCalc:
+            R =  QString::number(element->obsMinusCalc, 'f', getNumDecimalPlaces(element->uncertainty));
+            break;
+        case fdcDevR:
+            R =  QString::number(element->devR, 'f', 3);
+            break;
+        case fdcLineElState:
+            R =  element->secondState;
+    }
+    return R;
 }

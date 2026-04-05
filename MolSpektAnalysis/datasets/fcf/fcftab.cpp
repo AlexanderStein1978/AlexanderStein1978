@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -21,7 +21,7 @@
 #include <math.h>
 
 
-FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWindow(FranckCondonTable, MW, M), m_NChannelsQ(0), m_NChannelsPR(0), m_ChannelFQ(NULL), m_ChannelFPR(NULL)
+FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWidgetWindow(FranckCondonTable, MW, M), m_NChannelsQ(0), m_NChannelsPR(0), m_ChannelFQ(NULL), m_ChannelFPR(NULL)
 {
 	NIso = 0;
 	NJ = 0;
@@ -34,12 +34,11 @@ FCFTab::FCFTab(MainWindow* MW, Molecule* M): TableWindow(FranckCondonTable, MW, 
 	Trans = 0;
 	IsoTab *IsoT = M->getIso();
 	int i;
-	for (i=0; i < (nIso = IsoT->numIso); i++) Iso->addItem(IsoT->getIsoName(i));
+	for (i=0; i < (nIso = IsoT->numIso); i++) Iso->addItem(IsoT->Isoname[i]);
 	connect(Iso, SIGNAL(currentIndexChanged(int)), this, SLOT(IsoChanged(int)));
 	connect(JsB, SIGNAL(currentIndexChanged(int)), this, SLOT(JsChanged()));
 	connect(JssB, SIGNAL(currentIndexChanged(int)), this, SLOT(JssChanged()));
 	Iso->setCurrentIndex(IsoT->refIso);
-	delete IsoT;
 }
 
 FCFTab::~FCFTab()

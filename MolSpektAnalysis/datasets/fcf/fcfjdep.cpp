@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -215,9 +215,8 @@ void FCFJDep::molChanged(int i)
 	ElState *S;
 	QString SN;
 	int n, N;
-	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->getIsoName(n));
+	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->Isoname[n]);
 	IsoB->setCurrentIndex(Iso->refIso);
-	delete Iso;
 	for (n=0, N = Mol->getNumStates(); n<N; n++)
 	{
 		S = Mol->getStateP(n);

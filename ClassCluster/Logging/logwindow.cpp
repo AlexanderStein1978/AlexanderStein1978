@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -17,10 +17,12 @@
 #include <QMutex>
 
 #include "loglist.h"
+#include "tableviewwindowcore.h"
 
 
-LogWindow::LogWindow(MainWindow *parent) : TableWindow(External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mMaxTableSize(new QLineEdit(this)), mFileDialogButton(new QPushButton("...", this)),
-    mWriteLogFileCheckBox(new QCheckBox("Write messages to file", this)), mModel(), mLoggerMutex(nullptr), mLogStream(nullptr), mLogFile(nullptr), mWriteToFile(false)
+LogWindow::LogWindow(MainWindow *parent) : TableViewWindow(&mModel, External, parent, nullptr), mFilenameEdit(new QLineEdit(this)), mMaxTableSize(new QLineEdit(this)),
+    mFileDialogButton(new QPushButton("...", this)), mWriteLogFileCheckBox(new QCheckBox("Write messages to file", this)), mLoggerMutex(nullptr), mLogStream(nullptr), mLogFile(nullptr),
+    mWriteToFile(false)
 {
     QGridLayout* L = new QGridLayout(this);
     L->addWidget(mWriteLogFileCheckBox, 0, 0);

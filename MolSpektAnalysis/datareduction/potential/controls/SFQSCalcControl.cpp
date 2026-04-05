@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,8 +9,8 @@
 #include "SFQSCalcControl.h"
 #include "potential.h"
 #include "fitdata.h"
-#include "utils.h"
 #include "isotab.h"
+#include "utils.h"
 #include "elstate.h"
 #include "MainWindow.h"
 

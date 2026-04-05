@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,12 +9,12 @@
 #define LOGMODEL_H
 
 
-#include <QAbstractTableModel>
+#include "tableviewwindowcore.h"
 
 class LogList;
 
 
-class LogModel : public QAbstractTableModel
+class LogModel : public TableViewWindowCore
 {
 public:
     LogModel(QObject *parent = 0);

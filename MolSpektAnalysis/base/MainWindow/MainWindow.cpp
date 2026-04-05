@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -2226,9 +2226,9 @@ QTableWidget *MainWindow::createTable()
 	return Tab;
 }
 
-TableWindow *MainWindow::createTableWindow()
+TableWidgetWindow *MainWindow::createTableWindow()
 {
-	TableWindow *Tab = new TableWindow(MDIChild::TextTable1, this);
+	TableWidgetWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
 	workspace->addSubWindow(Tab);
 	return Tab;
 }
@@ -3443,7 +3443,7 @@ void MainWindow::setTextInCells()
     L->addWidget(Cancel, 2, 1);
     connect(OK, SIGNAL(clicked()), &D, SLOT(accept()));
     connect(Cancel, SIGNAL(clicked()), &D, SLOT(reject()));
-    if (D.exec() == QDialog::Accepted) dynamic_cast<TableWindow*>(workspace->activeSubWindow()->widget())->setCellText(Text->text());
+    if (D.exec() == QDialog::Accepted) dynamic_cast<TableWidgetWindow*>(workspace->activeSubWindow()->widget())->setCellText(Text->text());
 }
 
 void MainWindow::findWrongData()
@@ -3785,7 +3785,6 @@ void MainWindow::showIsotopologues()
 	}
 	Tab->setWindowTitle("Isotopomers of " + S1 + S2);
 	Tab->show();
-	delete Iso;
 }
 
 void MainWindow::showLevelNumbers()
@@ -3833,7 +3832,6 @@ void MainWindow::showLevelNumbers()
 	//printf("Vor Destroy\n");
 	Destroy(Level, Iso->numIso, NS, mv + 1);
 	Destroy(Numbers, Iso->numIso);
-	delete Iso;
 	//printf("Ende showLevelNumbers\n");
 }
 
@@ -4310,7 +4308,7 @@ void MainWindow::showBandConstants()
 	double **C, **err;
 	QStringList HL;
 	D->getBandConstants(C, err, NC, NLD, NSR, NAD, nv);
-	TableWindow *Tab = new TableWindow(MDIChild::TextTable1, this);
+	TableWidgetWindow *Tab = new TableWidgetWindow(MDIChild::TextTable1, this);
 	QString **Data = CreateQString(nv, 2 * NC);
 	for (c=0, ND = NC - NAD - NLD - NSR; c < ND; c++)
 	{
@@ -4816,7 +4814,6 @@ void MainWindow::fitScatNodePos()
 			Tab->setItem(n, i, new QTableWidgetItem(QString::number(NodePos[i][n], 'f', 3)));
 	workspace->addSubWindow(Tab);
 	Tab->show();
-	delete IsoT;
 	//printf("Vor Destroy\n");
 	Destroy(NodePos, NI);
 }
@@ -4980,7 +4977,7 @@ void MainWindow::addCalculatedLevels()
     La->addWidget(OK = new QPushButton("OK", D), 7, 0);
     La->addWidget(Cancel = new QPushButton("Cancel", D), 7, 1);
 	for (n=0; n<N; n++) TTB->addItem(St->getTermTableName(n));
-	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->getIsoName(n));
+	for (n=0; n < Iso->numIso; n++) IsoB->addItem(Iso->Isoname[n]);
 	IsoB->addItem("All isotopologues");
     CompB->addItem("e levels");
     if (St->getLambda() == 1)
@@ -4995,7 +4992,6 @@ void MainWindow::addCalculatedLevels()
 	if (D->exec() == QDialog::Rejected)
 	{
 		delete D;
-		delete Iso;
 		return;
 	}
     int v, vM = vE->text().toInt(), I = IsoB->currentIndex(), JM = JMaxE->text().toInt(), comp = CompB->currentIndex();
@@ -5004,11 +5000,7 @@ void MainWindow::addCalculatedLevels()
 	bool Max = MaxB->isChecked(), AllIso;
 	double Err = ErrE->text().toDouble();
 	delete D;
-	if (TT == 0) 
-	{
-		delete Iso;
-		return;
-	}
+	if (TT == 0) return;
 	if (I == Iso->numIso)
 	{
 		I = Iso->numIso - 1;
@@ -5020,13 +5012,11 @@ void MainWindow::addCalculatedLevels()
 		if (AllIso) I = TT->getNumIso() - 1;
 		else
 		{
-			QMessageBox::information(this, "MolSpectAnalysis", "Error: Levels for the isotopologue " + Iso->getIsoName(I)
+			QMessageBox::information(this, "MolSpectAnalysis", "Error: Levels for the isotopologue " + Iso->Isoname[I]
 		                         + " are not available in the term energy table \"" + TT->getName() + "\"!");
-			delete Iso;
 			return;
 		}
 	}
-	delete Iso;
 	if (vM > TT->getMaxv()) 
 	{
 		if (!Max)
@@ -5172,7 +5162,7 @@ void MainWindow::showNumLevels()
     ColumnHeads << "Sum";
     W->setHorizontalHeaderLabels(ColumnHeads);
 	for (I=0; I < Iso->numIso; I++)
-		W->setVerticalHeaderItem(I, new QTableWidgetItem(Iso->getIsoName(I)));
+		W->setVerticalHeaderItem(I, new QTableWidgetItem(Iso->Isoname[I]));
 	W->setVerticalHeaderItem(Iso->numIso, new QTableWidgetItem("Sum"));
 	for (I = GS = 0; I < NI; I++)
 	{
@@ -5193,7 +5183,6 @@ void MainWindow::showNumLevels()
 	W->setItem(Iso->numIso, NC, new QTableWidgetItem(QString::number(GS)));
 	workspace->addSubWindow(W);
 	W->show();
-	delete Iso;
 	Destroy(LN, NI);
 }
 
@@ -5273,7 +5262,7 @@ void MainWindow::exportPotPoints()
 	QComboBox *AdCorrIsoB = new QComboBox(D);
 	L->addWidget(AdCorrIsoB, 6, 1);
 	AdCorrIsoB->setEditable(false);
-	if (Iso != 0 && Pot->isAdCorrA()) for (n=0; n < Iso->numIso; n++) AdCorrIsoB->addItem(Iso->getIsoName(n));
+	if (Iso != 0 && Pot->isAdCorrA()) for (n=0; n < Iso->numIso; n++) AdCorrIsoB->addItem(Iso->Isoname[n]);
 	else
 	{
 		ADCorr->setEnabled(false);
@@ -5503,7 +5492,7 @@ void MainWindow::exportObservedLevelLists()
 				for (J=0; (J < NJ ? !Data[s][m][I][v][J] : false); J++) ;
 			if (v < nv || J < NJ)
 			{
-				File.setFileName(WDir + "Level" + StL[s]->getName() + (m<2 ? "LIF" : "Abs") + (Iso != 0 ? Iso->getIsoName(I) : "") 
+				File.setFileName(WDir + "Level" + StL[s]->getName() + (m<2 ? "LIF" : "Abs") + (Iso != 0 ? Iso->Isoname[I] : "") 
 									+ (m==0 || m==2 ? "e.dat" : "f.dat"));
 				File.open(QIODevice::WriteOnly);
 				Str.setDevice(&File);
@@ -5746,7 +5735,7 @@ void MainWindow::fitIsoMass()
 	L->setRowMinimumHeight(2, 20);
 	L->addWidget(OK, 3, 0);
 	L->addWidget(Cancel, 3, 1);
-	for (i=0; i < NI; i++) IsoB->addItem(Iso->getIsoName(i));
+	for (i=0; i < NI; i++) IsoB->addItem(Iso->Isoname[i]);
 	IsoB->setEditable(false);
 	SE->setValidator(new QDoubleValidator(1e-10, 1e-2, 0, SE));
 	connect(OK, SIGNAL(clicked()), D, SLOT(accept()));
@@ -5755,13 +5744,12 @@ void MainWindow::fitIsoMass()
 	{
         FQS = Pot->FitIsoMass(IsoL[IsoB->currentIndex()], SE->text().toDouble(), IsoMass, NumPoints);
 		QMessageBox::information(this, "MolSpektAnalysis", "The resulting mass of the isotopologue " 
-								+ Iso->getIsoName(IsoL[IsoB->currentIndex()]) + " is " 
+								+ Iso->Isoname[IsoL[IsoB->currentIndex()]] + " is " 
 								+ QString::number(IsoMass, 'f', 12) + " u, the obtained chisq is "
 								+ QString::number(FQS, 'g', 3) + '.');
 	}
 	delete[] IsoL;
 	delete D;
-	delete Iso;
 }
 
 void MainWindow::fitTangToenniesPot()
@@ -6143,9 +6131,8 @@ void MainWindow::Assignvs()
                                 if (n == LAvIso) WarningMSG += " and ";
                                 else WarningMSG += ", ";
                             }
-                            WarningMSG += isoTab->getIsoName(n);
+                            WarningMSG += isoTab->Isoname[n];
                         }
-                        delete isoTab;
                         WarningMSG += "!\n";
                     }
                     if (QMessageBox::question(this, "MolSpektAnalysis", WarningMSG + "Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
@@ -6339,7 +6326,7 @@ void MainWindow::setFC()
 	connect(Cancel, SIGNAL(clicked()), D, SLOT(reject()));
 	if (D->exec() == QDialog::Accepted) 
 	{
-		if (Table != 0) Table->setFC(FE->text());
+		if (Table != 0) Table->setFC(FE->text().toInt());
 		else
 		{
 			FitData *FD = dynamic_cast<FitData*>(workspace->activeSubWindow()->widget());
@@ -6790,8 +6777,8 @@ void MainWindow::importCoupledPotfitOutput()
 	Buffer = S.readAll();
 	QStringList SL = Buffer.split('\n');
 	for (n=0; n<10; n++) NL[n] = 0;
-	for (N=0; (N < SL.count() ? SL[N].left(11) != " bad lines:" : false); N++)
-		NL[SL[N].mid(11, 1).toInt()]++;
+	for (N=0; N < SL.count() && SL[N].left(11) != " bad lines:"; ++N)
+		++NL[SL[N].mid(11, 1).toInt()];
 	TableLine *TL[10];
 	int Mv[10], MJ[10];
 	for (n=0; n < 10; n++) if (NL[n] > 0) 
@@ -6804,8 +6791,8 @@ void MainWindow::importCoupledPotfitOutput()
 		s = SL[n].mid(11, 1).toInt();
 		i1 = SL[n].left(3).toInt();
 		i2 = SL[n].mid(3, 3).toInt();
-		for (m=0; (m < Iso->numIso ? (Iso->mNumIso1[m] != i1 || Iso->mNumIso2[m] != i2)
-					&& (Iso->mNumIso1[m] != i2 || Iso->mNumIso2[m] != i1) : false); m++) ;
+		for (m=0; m < Iso->numIso && (Iso->mNumIso1[m] != i1 || Iso->mNumIso2[m] != i2)
+					&& (Iso->mNumIso1[m] != i2 || Iso->mNumIso2[m] != i1); ++m) ;
 		TL[s][NL[s]].Iso = m;
 		if ((TL[s][NL[s]].vss = SL[n].mid(6, 3).toInt()) > Mv[s]) Mv[s] = TL[s][NL[s]].vss;
 		TL[s][NL[s]].vs = SL[n].mid(9, 3).toInt();
@@ -6823,7 +6810,7 @@ void MainWindow::importCoupledPotfitOutput()
 	}
     if (NUpdateFitData > 0)
     {
-        int *isort = utils::heapSort(TableLineSortFunctor(TL, NL), N);
+        int *isort = heapsort::heapSort(TableLineSortFunctor(TL, NL), N);
         TLRef sort[N];
         for (sort[isort[0]].state = 0; NL[sort[isort[0]].state] == 0; ++sort[isort[0]].state) ;
         for (n = 1, sort[isort[0]].line = 0; n<N; ++n)
@@ -6932,7 +6919,6 @@ void MainWindow::importCoupledTermTable()
 		TT->setData(Data, 1, NI, Nv - 1, NJ - 1, 0, NStates, MixC);
 		TT->show();
 		delete[] States;
-		delete Iso;
 		return;
 	}
 	Nc = new int[NStates];
@@ -7134,7 +7120,6 @@ void MainWindow::importCoupledTermTable()
 	}
 	delete[] MC;
 	delete[] DA;
-	delete Iso;
 	delete[] Nc;
 	delete[] S;
 	delete[] L;
@@ -7242,7 +7227,6 @@ void MainWindow::importCoupledWaveFunctions()
 		WFile.setFileName(IsoDirs[0] + WFDir[n]);
 		WFile.open(QIODevice::ReadOnly);
 		S.setDevice(&WFile);
-		if (IsoT != 0) delete IsoT;
 		IsoT = Mol->getIso();
 		S.readLine();
 		for (NCoeff = 0; !S.atEnd() && NCoeff < 1000; NCoeff++)
@@ -7362,7 +7346,6 @@ void MainWindow::importCoupledWaveFunctions()
 	SWF->setSource(PotFile);
 	Pot->setCouplingData(SWF, NChan, States, Components);
 	delete[] IsoDirs;
-	delete IsoT;
 }
 
 void MainWindow::importDunhamAsen()

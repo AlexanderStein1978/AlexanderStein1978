@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -16,13 +16,14 @@
 #include "montecarlosim.h"
 #include "fit.h"
 #include "potworker.h"
+#include "tablewidgetwindow.h"
 
 
 #include <QDialog>
 #include <QThread>
 
 class ElState;
-class IsoTab;
+struct IsoTab;
 class NaturalSpline;
 class AnaPot;
 class MTTPot;
@@ -62,7 +63,7 @@ class Potential : public TableWidgetWindow
 public:
     Potential(MainWindow *MW = 0, Molecule *Mol = 0, int ThreadNum = -1);
 	Potential(const Potential &C);
-    ~Potential();
+    virtual ~Potential();
     bool init(QTextStream& inStream);
 	Potential *scalePotential(double newRe, double newDe);
     void getEV(double ****&Ev, int &Nc, int &NI, int &Nv, int &NJ, int NumWFPoints);
@@ -194,7 +195,7 @@ public:
 	
 	inline void setData(QString **Data, int NRows, int NCols)
 	{
-		TableWindow::setData(Data, NRows, NCols);
+		TableWidgetWindow::setData(Data, NRows, NCols);
 		updatePot();
 	}
 	
@@ -398,7 +399,7 @@ private:
 	ElState *State;
 	int maxSplinePoints, NFC, threadNum, NFitIt;
     bool m_saving, showFitResult, getTexTableSplineFitRunning, writePotFitTraceTab, mWasMoving;
-	TableWindow *BadList;
+	TableWidgetWindow *BadList;
 	QPixmap *FixPix;
 	FitData *fitData;
 	CoupledSineWaveFunc *WaveFuncs;

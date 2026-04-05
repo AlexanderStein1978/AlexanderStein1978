@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,24 +10,21 @@
 
 #include "constants.h"
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "elstate.h"
 
-class IsoTab;
+struct IsoTab;
 class TableLine;
 class TermTable;
 class Transition;
 
 
-/**
-	@author Alexander Stein <AlexanderStein@t-online.de>
-*/
-class DunTable : public TableWindow
+class DunTable : public TableWidgetWindow
 {
 	Q_OBJECT
 public:
 	DunTable(MainWindow *MW = 0, Molecule *Mol = 0);
-    ~DunTable();
+    virtual ~DunTable();
 	bool readData(QString Filename);
 	bool writeData(QString Filename = "");
 	void exportTF();

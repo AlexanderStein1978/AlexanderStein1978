@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -21,7 +21,7 @@
 #include <QColor>
 #include <QFont>
 
-FCFTable::FCFTable(MainWindow *mw, Molecule *Mol, QString LState, QString UState) : TableWindow(MDIChild::FranckCondonView, mw)
+FCFTable::FCFTable(MainWindow *mw, Molecule *Mol, QString LState, QString UState) : TableWidgetWindow(MDIChild::FranckCondonView, mw)
 {
 	printf("FCFTable::FCFTable\n");
 	int i;
@@ -154,7 +154,6 @@ void FCFTable::UpdateMolData()
 		LSBox->addItem(Text = molecule->getState(i));
 		USBox->addItem(Text);
 	}
-	delete IT;
 }
 
 void FCFTable::ViewChanged(int i)

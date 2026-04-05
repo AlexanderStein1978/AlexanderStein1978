@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -65,7 +65,7 @@
 using std::numeric_limits;
 
 
-Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWindow(MDIChild::PotData, Main, Mol), m_saving(false),
+Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWidgetWindow(MDIChild::PotData, Main, Mol), m_saving(false),
     mWasMoving(false)
 {
     setFilter("Potentials (*.pot)");
@@ -117,7 +117,7 @@ Potential::Potential(MainWindow *Main, Molecule *Mol, int ThreadNum) : TableWind
     DebugStream = new QTextStream(DebugFile);*/
 }
 
-Potential::Potential(const Potential &C) : TableWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
+Potential::Potential(const Potential &C) : TableWidgetWindow(PotData, C.MW, C.molecule), m_saving(false), mWasMoving(C.mWasMoving)
 {
     //printf("Potential::Potential(const Potential &C)\n");
     int n;
@@ -237,7 +237,7 @@ void Potential::setWorker(PotWorker* NWorker)
 void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::cutRows(numRows, numColumns, Data);
+    TableWidgetWindow::cutRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -245,7 +245,7 @@ void Potential::cutRows(int& numRows, int& numColumns, QString**& Data)
 void Potential::DeleteRows()
 {
     setBlockChangeSignal(true);
-    TableWindow::DeleteRows();
+    TableWidgetWindow::DeleteRows();
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -253,7 +253,7 @@ void Potential::DeleteRows()
 void Potential::insertRows(int numRows, int numColumns, QString** Data)
 {
     setBlockChangeSignal(true);
-    TableWindow::insertRows(numRows, numColumns, Data);
+    TableWidgetWindow::insertRows(numRows, numColumns, Data);
     setBlockChangeSignal(false);
     updatePot();
 }
@@ -649,7 +649,7 @@ void Potential::exportWaveFunction(int NumWFPoints)
     L->addWidget(OK, 6, 0);
     L->addWidget(Cancel, 6, 1);
     WaveFuncs->getIso(NI, I);
-    for (n=0; n < NI; n++) IB->addItem(Iso->getIsoName(I[n]));
+    for (n=0; n < NI; n++) IB->addItem(Iso->Isoname[I[n]]);
     IB->setEditable(false);
     connect(OK, SIGNAL(clicked()), D, SLOT(accept()));
     connect(Cancel, SIGNAL(clicked()), D, SLOT(reject()));
@@ -669,7 +669,7 @@ void Potential::exportWaveFunction(int NumWFPoints)
                     QFile F(FileName);
                     F.open(QIODevice::WriteOnly);
                     QTextStream S(&F);
-                    S << "Isotopologue " << Iso->getIsoName(I[i]) << ", v'=" << QString::number(v) << ", J'=" 
+                    S << "Isotopologue " << Iso->Isoname[I[i]] << ", v'=" << QString::number(v) << ", J'=" 
                       << QString::number(J) << "\n"; 
                     for (n=0, r = rmin / a0_Angstrom; n < NumWFPoints; n++, r+=h)
                     {
@@ -686,7 +686,6 @@ void Potential::exportWaveFunction(int NumWFPoints)
                                         + " and J'=" + QString::number(J) + " does not exist!");
     }
     Destroy(WF, NC, Nv);
-    delete Iso;
     delete D;
 }
 
@@ -1125,7 +1124,7 @@ void Potential::exportAsymptoticLevels(QString FileName, int numv, int maxJ, int
     IsoTab *IsoT = Worker->getIsoT();
     for (I=0; I<NI; I++)
     {
-        S << "Isotopologue " + IsoT->getIsoName(I) + ":\n";
+        S << "Isotopologue " + IsoT->Isoname[I] + ":\n";
         for (J=JStart[I]; (J < NJ ? EL[I][J] != NULL : false); J += JStep[I])
         {
             S << "J=" + QString::number(J) + ":\n";
@@ -5353,7 +5352,6 @@ double Potential::guessBe()
     double Re, E;
     getMinimum(Re, E);
     double Be = 1e18 * C_h / (M_PI * M_PI * 8.0 * Iso->redMass[Iso->refIso] * Re * Re * C_u * C_c);
-    delete Iso;
     return Be;
 }
 
@@ -5455,7 +5453,7 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
     RS << "Potential\tC6\tC8\tC10\tRmin\tDe\tD0\tn\tb\tRm\tTm\tnC\tRi\tRa";
     for (n=0; n < NIso; n++) 
     {
-        RS << "\t" << IsoT->getIsoName(n);
+        RS << "\t" << IsoT->Isoname[n];
         IsoS1[n] = "  AtomMass_A=" + QString::number(IsoT->mIso1[n], 'f', 8) + "\n";
         IsoS2[n] = "  AtomMass_B=" + QString::number(IsoT->mIso2[n], 'f', 8) + "\n";
     }

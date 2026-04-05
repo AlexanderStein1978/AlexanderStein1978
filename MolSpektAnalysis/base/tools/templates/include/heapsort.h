@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,18 +9,17 @@
 #define HEAPSORT
 
 
-
-namespace utils
+namespace heapsort
 {
     template <class T> int* heapSort(T sortOperator, int N)
     {
         int i, n, m;
         int S1[N], *S2 = new int[N], B=0;
-        for (i=0; i<N; i++) S1[i] = i;
+        for (i=0; i<N; ++i) S1[i] = i;
         while (B>=0)
         {
             B=-1;
-            for (n=0, m=2; m<=N; n++, m+=2)
+            for (n=0, m=2; m<=N; ++n, (++m)++)
             {
                 if (m == N || sortOperator(S1[m-1], S1[m]))
                     i=m-1;
@@ -33,16 +32,16 @@ namespace utils
                 }
             }
         }
-        for (i=0; i<N; i++)
+        for (i=0; i<N; ++i)
         {
             S2[S1[0]]=i;
             for (n=0, m=2; S1[n] != -1; m=2*((n=m)+1))
             {
                 if (m < N)
                 {
-                    if (sortOperator(S1[m-1], S1[m])) m--;
+                    if (sortOperator(S1[m-1], S1[m])) --m;
                 }
-                else if (m==N) m--;
+                else if (m==N) --m;
                 else break;
                 S1[n] = S1[m];
             }

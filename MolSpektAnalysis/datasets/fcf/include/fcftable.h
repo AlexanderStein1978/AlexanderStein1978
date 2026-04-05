@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -10,11 +10,11 @@
 #define FCFTABLE_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "MainWindow.h"
 
 
-class FCFTable : public TableWindow
+class FCFTable : public TableWidgetWindow
 {
 	Q_OBJECT
 public:

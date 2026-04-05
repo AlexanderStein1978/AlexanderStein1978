@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,7 +9,7 @@
 #define PARTICLEWATCHTABLE_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "watchpoint.h"
 
 class QComboBox;
@@ -20,7 +20,7 @@ class Window;
 class MainWindow;
 
 
-class ParticleWatchTable : public TableWindow
+class ParticleWatchTable : public TableWidgetWindow
 {
     Q_OBJECT
 

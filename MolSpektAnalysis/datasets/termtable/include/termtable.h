@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -8,14 +8,14 @@
 #ifndef TERMTABLE_H
 #define TERMTABLE_H
 
-#include "tablewindow.h"
+#include "tableviewwindow.h"
 #include "termdata.h"
+#include "heapsort.h"
 
 #include <QDialog>
 
 
 class Molecule;
-class IsoTab;
 
 class QListWidget;
 class QRadioButton;
@@ -23,7 +23,7 @@ class QRadioButton;
 struct Perturbation;
 
 
-class TermTable : public TableWindow
+class TermTable : public TableViewWindow
 {
 public:
     TermTable(MainWindow *MW = 0);

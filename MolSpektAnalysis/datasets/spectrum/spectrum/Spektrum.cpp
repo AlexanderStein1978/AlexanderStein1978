@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -1285,7 +1285,6 @@ void Spektrum::PictureClicked(QPoint *P)
 		}
 		addMarker(false);
 	}
-	if (IsoT != 0) delete IsoT;
     Paint();
 }
 
@@ -2902,7 +2901,6 @@ void Spektrum::MarkProgression(IntProg &P)
 		P.marker[n]->uncertainty = 0.0;
 		P.marker[n]->FC = P.FC;
 	}
-	if (Iso != 0) delete Iso;
 	//if (P.satellite) printf("MarkProgression: satellite\n");
 }
 	
@@ -3369,7 +3367,6 @@ void Spektrum::FindEmissionLines(Molecule* mol, int Iso, ElState* EState, double
 			}
 		}
 	}
-	delete IsoT;
 	delete[] Js;
 	delete[] Jss;
 	delete[] DD;
@@ -3554,7 +3551,6 @@ void Spektrum::assignBandByDoubletPartners()
 		Progs[n].marker[0]->vs = -1;
 		Progs[n].marker[0]->vss = bv;
 	}
-	delete Iso;
 	delete[] Progs;
 	ContinueProgressions();
 }
@@ -5044,7 +5040,7 @@ void Spektrum::FindLinesFromTable(LineTable *LTab)
 			marker[m].DisplayData = true;
 			marker[m].FC = Lines[n].FC;
 			marker[m].Iso = Lines[n].Iso;
-			marker[m].IsoName = Iso->getIsoName(Lines[n].Iso);
+			marker[m].IsoName = Iso->Isoname[Lines[n].Iso];
 			marker[m].Js = Lines[n].Js;
 			marker[m].Jss = Lines[n].Jss;
 			marker[m].LState = LS;
@@ -5059,7 +5055,6 @@ void Spektrum::FindLinesFromTable(LineTable *LTab)
 		}
 		else if (marker[m].Marked) marker[m].overlap = true;
 	}
-	delete Iso;
 	delete[] Lines;
 	addMarker(false);
 	if (MW != 0) MW->setActive(this);
