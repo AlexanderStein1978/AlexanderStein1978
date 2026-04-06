@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -18,7 +18,7 @@
 #include <QTextStream>
 
 
-TableViewWindowCore::TableViewWindowCore(Molecule* mol, QObject *parent, QRegExp readSpecialPartRegex) : QAbstractTableModel(parent), mStartSpecialPart(readSpecialPartRegex), molecule(mol)
+TableViewWindowCore::TableViewWindowCore(Molecule* mol, QObject *parent, QRegularExpression readSpecialPartRegex) : QAbstractTableModel(parent), mStartSpecialPart(readSpecialPartRegex), molecule(mol)
 {
     NewPix = new QPixmap(10, 10);
     QPainter P(NewPix);
@@ -290,7 +290,7 @@ void TableViewWindowCore::shrinkAllSpectRefs()
     for (auto it = mData.begin(); it != mData.end(); ++it)
     {
         FileName = (*it)->file;
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
+        if ((m = FileName.lastIndexOf(QRegularExpression("[\\/]"))) >= 0) (*it)->file = FileName.right(FileName.length() - m - 1);
     }
 }
 

@@ -5,6 +5,10 @@
 //
 //
 
+#include <QComboBox>
+#include <QDateTime>
+#include <QFile>
+
 #include "fcftab.h"
 #include "MainWindow.h"
 #include "molecule.h"
@@ -13,10 +17,6 @@
 #include "isotab.h"
 #include "CoupledSineWaveFunc.h"
 #include "Transition.h"
-
-#include <QComboBox>
-#include <QDateTime>
-#include <QFile>
 
 #include <math.h>
 

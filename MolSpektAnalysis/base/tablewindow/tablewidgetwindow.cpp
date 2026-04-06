@@ -287,7 +287,7 @@ bool TableWidgetWindow::readData(QTextStream& S)
 	QString Buffer;
 	QStringList L;
 	bool Success;
-	QRegExp specialSectionStart = GetStartSpecialPartRegExp();
+	QRegularExpression specialSectionStart = GetStartSpecialPartRegExp();
 	Tab->blockSignals(true);
 	for (r=0, cc = Tab->columnCount(); !S.atEnd(); ++r)
 	{
@@ -302,7 +302,7 @@ bool TableWidgetWindow::readData(QTextStream& S)
 			}
 			Buffer = S.readLine();
 		}
-		else if (!specialSectionStart.isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
+		else if (!specialSectionStart.pattern().isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
 		L = Buffer.split(Spacer);
 		if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
 		for (n=0; n < lc; ++n) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
@@ -529,10 +529,13 @@ void TableWidgetWindow::exportTableData(QString FileName, bool selectedCells, bo
 {
 	if (Tab == 0) return;
 	int n, r, c;
-	bool VHI = (Tab->verticalHeaderItem(0) != 0 ?
-					Tab->verticalHeaderItem(0)->text() != "1" : false);
+	bool VHI = (Tab->verticalHeaderItem(0) != 0 && Tab->verticalHeaderItem(0)->text() != "1");
 	QFile F(FileName);
-	F.open(QIODevice::WriteOnly);
+	if (!F.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for writing: " + FileName + "!");
+		return;
+	}
 	QTextStream S(&F);
 	if (selectedCells)
 	{
@@ -678,7 +681,7 @@ void TableWidgetWindow::shrinkAllSpectRefs(int FileColumn)
     for (n=0; n < Tab->rowCount(); ++n) if (Tab->item(n, FileColumn) != 0)
     {
         FileName = Tab->item(n, FileColumn)->text();
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
+        if ((m = FileName.lastIndexOf(QRegularExpression("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
     }
 }
 

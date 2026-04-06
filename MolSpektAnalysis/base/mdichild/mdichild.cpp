@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -15,6 +15,8 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QPainter>
+#include <QRegularExpression>
+
 
 MDIChild::MDIChild(Type ntype, MainWindow *mw, QString filter, QString FE) : QWidget(nullptr), m_fileNameChanged(false)
 {
@@ -96,7 +98,7 @@ void MDIChild::setFileName(QString N)
 
 QString MDIChild::getFName()
 {
-	return FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	return FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 }
 
 QString MDIChild::getFilter()
@@ -261,7 +263,7 @@ bool MDIChild::read(QFile *Datei)
 
 QString MDIChild::getRelativePath(const QString& CurrentPath, const QString &MolPath)
 {
-    QStringList MolList = MolPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts), LocalList = CurrentPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts);
+    QStringList MolList = MolPath.split(QRegularExpression("[\\/]"), Qt::SkipEmptyParts), LocalList = CurrentPath.split(QRegularExpression("[\\/]"), Qt::SkipEmptyParts);
     int n, m;
     for (n=0; n < MolList.length() && n < LocalList.length() && MolList[n] == LocalList[n]; ++n) ;
     if (n==0) return CurrentPath;
@@ -277,9 +279,9 @@ QString MDIChild::getAbsolutePath(QString &CurrentPath, QString &MolPath)
         return CurrentPath;
     int m, n, s, l = MolPath.length();
     for (n=s=0; CurrentPath.mid(s, 3) == "../"; s+=3, ++n) ;
-    for (m=0; m<=n; ++m) l = MolPath.lastIndexOf(QRegExp("[\\/]"), l-1);
+    for (m=0; m<=n; ++m) l = MolPath.lastIndexOf(QRegularExpression("[\\/]"), l-1);
 	if (l == -1) return CurrentPath;
-    QStringList L = CurrentPath.split(QRegExp("[\\/]"));
+    QStringList L = CurrentPath.split(QRegularExpression("[\\/]"));
     QString Result = MolPath.left(l);
     while (n < L.length()) Result += DIRSEP + L[n++];
     return Result;
@@ -914,7 +916,7 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, int& groundOffse
 		//printf("Vor write, h=%d\n", h);
 		h = FM.height();
 		//printf("Nach height\n");
-		w = FM.width(T);
+		w = FM.boundingRect(T).width();
 		//printf("Nach Metrics\n");
 		if (write)
 		{

@@ -5,13 +5,12 @@
 //
 //
 
-
-#include "MLRPot.h"
-#include "potentialdata.h"
-
 #include <QMutex>
 #include <QFile>
 #include <QTextStream>
+
+#include "MLRPot.h"
+#include "potentialdata.h"
 
 
 MLRPot::MLRPot(PotFit *Fit) : PotWorker(Fit, MorseLongRangePotential)
@@ -302,7 +301,7 @@ void MLRPot::shift(double Energy)
 void MLRPot::test()
 {
     QFile F("test.dat");
-    F.open(QIODevice::WriteOnly);
+    if (!F.open(QIODevice::WriteOnly)) return;
     QTextStream S(&F);
     double B, V, R, E, dBeta[Nbeta], dC[NLRC], dRe, dDe, ds, lE;
     int n;

@@ -7,6 +7,14 @@
 
 #define _USE_MATH_DEFINES
 
+#include <QGridLayout>
+#include <QFile>
+#include <QLabel>
+#include <QTextStream>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QDebug>
+
 #include "Calculation.h"
 #include "heapsort.h"
 #include "random_sortfunctor.h"
@@ -18,14 +26,6 @@
 #include "watchpoint.h"
 #include "vector.h"
 #include "potentialdefinerinputdata.h"
-
-#include <QGridLayout>
-#include <QFile>
-#include <QLabel>
-#include <QTextStream>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QDebug>
 
 #include <math.h>
 #include <cstdlib>

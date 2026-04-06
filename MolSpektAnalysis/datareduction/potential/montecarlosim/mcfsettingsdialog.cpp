@@ -5,11 +5,6 @@
 //
 //
 
-
-#include "mcfsettingsdialog.h"
-#include "MainWindow.h"
-#include "potential.h"
-
 #include <QPushButton>
 #include <QLineEdit>
 #include <QLabel>
@@ -22,6 +17,10 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFileDialog>
+
+#include "mcfsettingsdialog.h"
+#include "MainWindow.h"
+#include "potential.h"
 
 
 MCFSettingsDialog::MCFSettingsDialog(MainWindow* parent): QDialog(parent)

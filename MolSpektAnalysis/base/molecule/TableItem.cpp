@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -23,7 +23,8 @@ void TableItem::mousePressEvent(QMouseEvent *E)
 {
 	if (E->button() == Qt::RightButton)
 	{
-		emit RightClicked(E->globalPos());
+		QPointF position = E->globalPosition();
+		emit RightClicked(QPoint(static_cast<int>(position.x()), static_cast<int>(position.y())));
 		E->accept();
 	}
 	else QLineEdit::mousePressEvent(E);

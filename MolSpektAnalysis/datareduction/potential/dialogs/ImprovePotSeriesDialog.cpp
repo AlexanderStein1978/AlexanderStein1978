@@ -5,18 +5,17 @@
 //
 //
 
-
-#include "ImprovePotSeriesDialog.h"
-#include "MainWindow.h"
-#include "potential.h"
-#include "molecule.h"
-
 #include <QGridLayout>
 #include <QPushButton>
 #include <QDoubleValidator>
 #include <QMessageBox>
 #include <QDir>
 #include <QFileDialog>
+
+#include "ImprovePotSeriesDialog.h"
+#include "MainWindow.h"
+#include "potential.h"
+#include "molecule.h"
 
 
 ImprovePotSeriesDialog::ImprovePotSeriesDialog(MainWindow* MW, QString Dir, Potential* OPot): QDialog()

@@ -164,7 +164,7 @@ class LineTableCore : public TableViewWindowCore
 
 	private:
 		std::vector<TableCols> mColumns;
-		const QRegExp mStartSpecialPart = QRegExp("");
+		const QRegularExpression mStartSpecialPart = QRegularExpression("");
 		LineTable* lTab;
 		bool mNotShowColumnCount = false;
 };

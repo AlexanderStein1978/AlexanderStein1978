@@ -5,6 +5,13 @@
 //
 //
 
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QGridLayout>
+#include <QPainter>
+
 #include "molecule.h"
 #include "termtable.h"
 #include "duntable.h"
@@ -17,13 +24,6 @@
 #include "TableItem.h"
 
 #include <math.h>
-
-#include <QFile>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QGridLayout>
-#include <QPainter>
 
 
 Molecule::Molecule(MainWindow *mw) : MDIChild(MDIChild::MolData, mw, "Molecules (*.mol)", ".mol")

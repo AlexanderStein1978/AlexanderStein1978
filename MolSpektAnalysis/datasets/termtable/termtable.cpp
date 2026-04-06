@@ -122,8 +122,7 @@ bool TermTable::readData(QString FileName)
 		if (!OpenXnfitTO(FileName)) 
 		{
 			QString Fehlermeldung = "Die Datei " + FileName + " konnte nicht geöffnet werden.";
-			QMessageBox::information( this, "Application name", 
-									  "Fehler beim Öffnen der Datei.", Fehlermeldung);
+			QMessageBox::information( this, "MolSpektAnalysis", Fehlermeldung);
 			return false;
 		}
 		Filename = FileName;
@@ -233,8 +232,7 @@ bool TermTable::readData(QString FileName)
 							" has more rows than the maximum amount of allowed rows of "; 
 			Fehlermeldung += QString::number(MaxTermRows);
 			Fehlermeldung += '!';
-			QMessageBox::information( this, "MolSpektAnalysis", 
-											  "Error opening file.", Fehlermeldung);
+			QMessageBox::information( this, "MolSpektAnalysis", Fehlermeldung);
 		}
 		//printf("Vor Iso\n");
 		if (molecule == 0)

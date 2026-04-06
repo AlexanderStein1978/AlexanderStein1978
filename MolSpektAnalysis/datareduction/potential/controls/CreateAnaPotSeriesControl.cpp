@@ -1,10 +1,13 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
+#include <QTextStream>
+#include <QFile>
+#include <QDir>
 
 #include "CreateAnaPotSeriesControl.h"
 #include "tablewindow.h"
@@ -12,11 +15,6 @@
 #include "molecule.h"
 #include "fitdata.h"
 #include "potential.h"
-
-#include <QTextStream>
-#include <QFile>
-#include <QDir>
-
 
 
 CreateAnaPotSeriesControl::CreateAnaPotSeriesControl(MainWindow* MW, ElState* St, Potential* OPot, FitData* fDat, QString SPDir, QString FDDir, QString APDir, 

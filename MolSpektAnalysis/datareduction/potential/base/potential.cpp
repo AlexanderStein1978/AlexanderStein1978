@@ -1,9 +1,31 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
+#include <QObject>
+#include <QFileDialog>
+#include <QString>
+#include <QStringList>
+#include <QTextStream>
+#include <QFile>
+#include <QMessageBox>
+#include <QDialog>
+#include <QProcess>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QLabel>
+#include <QGridLayout>
+#include <QPainter>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QMutex>
+#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QProgressBar>
 
 #include "potential.h"
 #include "tools.h"
@@ -38,28 +60,6 @@
 #include <math.h>
 #include <limits>
 #include <stdlib.h>
-
-#include <QObject>
-#include <QFileDialog>
-#include <QString>
-#include <QStringList>
-#include <QTextStream>
-#include <QFile>
-#include <QMessageBox>
-#include <QDialog>
-#include <QProcess>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QLabel>
-#include <QGridLayout>
-#include <QPainter>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QMutex>
-#include <QTextEdit>
-#include <QPlainTextEdit>
-#include <QProgressBar>
 
 
 using std::numeric_limits;
@@ -667,16 +667,19 @@ void Potential::exportWaveFunction(int NumWFPoints)
                                                                     "Text files (*.dat)")).isEmpty()) 
                 {
                     QFile F(FileName);
-                    F.open(QIODevice::WriteOnly);
-                    QTextStream S(&F);
-                    S << "Isotopologue " << Iso->Isoname[I[i]] << ", v'=" << QString::number(v) << ", J'=" 
-                      << QString::number(J) << "\n"; 
-                    for (n=0, r = rmin / a0_Angstrom; n < NumWFPoints; n++, r+=h)
-                    {
-                        S << QString::number(r, 'f', 12);
-                        for (i=0; i < NC; i++) S << "\t" << QString::number(WF[i][v][n] * UF, 'e', 12);
-                        S << "\n";
-                    }
+                    if (F.open(QIODevice::WriteOnly))
+					{
+						QTextStream S(&F);
+						S << "Isotopologue " << Iso->Isoname[I[i]] << ", v'=" << QString::number(v) << ", J'=" 
+							<< QString::number(J) << "\n"; 
+						for (n=0, r = rmin / a0_Angstrom; n < NumWFPoints; n++, r+=h)
+						{
+							S << QString::number(r, 'f', 12);
+							for (i=0; i < NC; i++) S << "\t" << QString::number(WF[i][v][n] * UF, 'e', 12);
+							S << "\n";
+						}
+					}
+					else QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
                 }
             }
             else QMessageBox::information(this, "MolSpektAnalysis", "Error: the level with v'=" + QString::number(v) +
@@ -1119,7 +1122,11 @@ void Potential::exportAsymptoticLevels(QString FileName, int numv, int maxJ, int
     delete[] RPot;
     delete[] Y;
     QFile File(FileName);
-    File.open(QIODevice::WriteOnly);
+    if (!File.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+		return;
+	}
     QTextStream S(&File);
     IsoTab *IsoT = Worker->getIsoT();
     for (I=0; I<NI; I++)
@@ -3538,7 +3545,7 @@ bool Potential::writeData(QString Filename, bool writeFitData)
             if (WaveFuncs->getFileName().isEmpty())
             {
                 Filename = WaveFuncs->getSource();
-                Filename = Filename.right(Filename.length() - Filename.lastIndexOf(QRegExp("[\\/]")) - 1);
+                Filename = Filename.right(Filename.length() - Filename.lastIndexOf(QRegularExpression("[\\/]")) - 1);
                 Filename = Filename.left(Filename.indexOf('.') + 1) + "SWF";
                 WaveFuncs->setFileName(Filename);
             }
@@ -3584,9 +3591,12 @@ bool Potential::writeData(QString Filename, bool writeFitData)
         if (writePotFitTraceTab && !PotFitTraceTab.isEmpty())
         {
             QFile File(Filename.left(Filename.lastIndexOf('.')) + "_FTT.dat");
-            File.open(QIODevice::WriteOnly);
-            File.write((PotFitTraceTab.join("\n") + "\n").toLatin1());
-            writePotFitTraceTab = false;
+            if (File.open(QIODevice::WriteOnly))
+			{
+				File.write((PotFitTraceTab.join("\n") + "\n").toLatin1());
+				writePotFitTraceTab = false;
+			}
+			else QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
         }
     }
     m_saving = false;
@@ -3599,12 +3609,14 @@ bool Potential::writePotData(QString Filename)
     double b, De, iCoeff, iOff, iExp, Ra, Ri, Rm, Tm, *LRCoeff, *PotCoeff, EI_A, EIalpha, EI_gamma;
     int nPotCoeff, nLRCoeff, *pLRCoeff, pCC = 0, n, intIExp, RIso1, RIso2;
     double Diff, D;
-    if (Filename.isEmpty()) 
-        if ((Filename = QFileDialog::getSaveFileName(NULL, tr("Select file name"), tr(""), tr(""))).isEmpty())
-            return false;
+    if (Filename.isEmpty() && (Filename = QFileDialog::getSaveFileName(NULL, tr("Select file name"), tr(""), tr(""))).isEmpty()) return false;
     QFile File(Filename);
     //if (!write(&File)) return false;
-    File.open(QIODevice::WriteOnly);
+    if (!File.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+		return false;
+	}
     QTextStream S(&File);
     QString Buffer;
     AnaPot *aPot = Worker->getAnaPotForReading();
@@ -3700,7 +3712,11 @@ void Potential::writePoints(QString FileName, double RMin, double RMax, int NPoi
     double M, E, *Min, *Max, *AMin, *AMax;
     bool MM = !MCSDir.isEmpty();
     QFile Datei(FileName);
-    Datei.open(QIODevice::WriteOnly);
+    if (!Datei.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+		return;
+	}
     QTextStream S(&Datei);
     if (MM)
     {
@@ -5121,7 +5137,7 @@ void Potential::UpdatePot(PreliminaryPotentialType type)
             else if ((i = Buffer[n].indexOf("C_")) != -1)
             {
                 if (NLRC == 0) LRCTabOffs = n;
-                PLRC[NLRC] = Buffer[n].right(Buffer[n].count() - i - 2).toInt();
+                PLRC[NLRC] = Buffer[n].right(Buffer[n].length() - i - 2).toInt();
                 LRCfree[NLRC] = Tab->item(n, 0)->icon().isNull();
                 LRC[NLRC++] = (Tab->item(n, 1) != 0 ? Tab->item(n, 1)->text().toDouble() : 0.0);
             }
@@ -5435,7 +5451,11 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
     ResFile.replace('/', '\\');
     QFile IFile(InFile);
     QFile OFile(OutFile);
-    IFile.open(QIODevice::ReadOnly);
+    if (!IFile.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for reading!");
+		return;
+	}
     QTextStream IS(&IFile);
     QTextStream OS(&OFile);
     QStringList InList;
@@ -5446,7 +5466,11 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
     QFile RFile(ResFile);
     QProcess *Calc = new QProcess;
     Calc->setWorkingDirectory(InFile.left(InFile.lastIndexOf('\\')));
-    RFile.open(QIODevice::WriteOnly);
+    if (!RFile.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+		return;
+	}
     QTextStream RS(&RFile);
     QDir PDir(PotDir);
     QFileInfoList PList = PDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
@@ -5487,7 +5511,11 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
         RS << QString::number(Ri, 'f', 3) << "\t" << QString::number(Ra, 'f', 6);
         for (m=0; m < NIso; m++)
         {
-            IFile.open(QIODevice::WriteOnly);
+            if (!IFile.open(QIODevice::WriteOnly))
+			{
+				QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+				return;
+			}
             IS.setDevice(&IFile);
             for (i=0; i < InList.size(); i++) IS << InList[i] << "\n";
             IS << IsoS1[m] << IsoS2[m] << " /\n" << "   11" << PotFile.replace('/', '\\') << "\n" 
@@ -5538,7 +5566,11 @@ void Potential::autoCalcScatLengthsPotentialSet(int NumWFPoints)
                                          "5Error in " + ProgDir + ": " + Calc->readAll());
                 return;
             }
-            OFile.open(QIODevice::ReadOnly);
+            if (!OFile.open(QIODevice::ReadOnly))
+			{
+				QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+				return;
+			}
             OS.setDevice(&OFile);
             while ((Buffer = OS.readLine()).left(48) != 
                              " Elastic and Inelastic Scattering Lengths [bohr]" && !OS.atEnd()) ;

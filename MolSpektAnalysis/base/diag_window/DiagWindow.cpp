@@ -998,12 +998,12 @@ void DiagWindow::PSpektrum(QPainter &P, const QRect &A, bool PrintFN )
 			double xsc = Image->width() / (XMax - XMin);
 			double ysc = Image->height() / (YMax - YMin);
 			P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
-							   A.height() - ScaleXHeight), Image->mirrored(),
+							   A.height() - ScaleXHeight), Image->flipped(),
 						QRectF((xmin - XMin) * xsc, Image->height() - (ymax - YMin) * ysc,
 							   (xmax - xmin) * xsc, (ymax - ymin) * ysc));
 		}
 		else P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
-							   A.height() - ScaleXHeight), Image->mirrored());
+							   A.height() - ScaleXHeight), Image->flipped());
 	}
     if (nDatenS == 0) return;
 	//printf("Nach Painter\n");
@@ -1321,7 +1321,7 @@ void DiagWindow::exportPicture()
 	if (!Bild->savePicture(FileName, rFilter.left(rFilter.lastIndexOf(' '))))
 		QMessageBox::information(this, "MolSpektAnalysis", 
 								 "Error: the picture could not be saved!");
-	MW->setDir(FileName.left(FileName.lastIndexOf(QRegExp("[\\/]"))), Pict);
+	MW->setDir(FileName.left(FileName.lastIndexOf(QRegularExpression("[\\/]"))), Pict);
 }
 
 void DiagWindow::SetPoints()
@@ -1361,8 +1361,9 @@ void DiagWindow::mouseMoved(QMouseEvent *e)
     if (points != 0 && sPoint >= 0 && cPosx != 0 && cPosy != 0)
     {
         e->setAccepted(true);
-        points[sPoint].x = aPosx + double(e->x() - cPosx) / XSF;
-        points[sPoint].y = aPosy + double(cPosy - e->y()) / YSF;
+		QPointF pos = e->position();
+        points[sPoint].x = aPosx + (pos.x() + static_cast<double>(cPosx)) / XSF;
+        points[sPoint].y = aPosy + (static_cast<double>(cPosy) - pos.y()) / YSF;
         MovePoint();
         Paint();
     }
@@ -1371,7 +1372,8 @@ void DiagWindow::mouseMoved(QMouseEvent *e)
 void DiagWindow::mousePressed(QMouseEvent *e)
 {
     if (!showPoints || points == 0) return;
-    int mx = e->x(), my = e->y(), px, py, n;
+	QPointF pos = e->position();
+    int mx = static_cast<int>(pos.x()), my = static_cast<int>(pos.y()), px, py, n;
     //printf("mousePressed, mx=%d, my=%d\n", mx, my);
     sPoint = -1;
     for (n=0; n < numPoints; n++)
@@ -1388,7 +1390,8 @@ void DiagWindow::mousePressed(QMouseEvent *e)
             cPosx = mx;
             cPosy = my;
         }
-        ShowPopupMenu(e->globalPos());
+		QPointF pos = e->globalPosition();
+        ShowPopupMenu(QPoint(pos.x(), pos.y()));
         e->setAccepted(true);
     }
     else if (e->button() == Qt::LeftButton && sPoint >= 0)
@@ -1408,8 +1411,9 @@ void DiagWindow::mouseReleased(QMouseEvent *e)
     if (points != 0 && sPoint >= 0 && cPosx != 0 && cPosy != 0)
     {
         //printf("PotentialPlot::mouseReleased\n");
-        double x = aPosx + double(e->x() - cPosx) / XSF;
-        double y = aPosy + double(cPosy - e->y()) / YSF;
+		QPointF pos = e->position();
+        double x = aPosx + (pos.x() + static_cast<double>(cPosx)) / XSF;
+        double y = aPosy + (static_cast<double>(cPosy) - pos.y()) / YSF;
         HandleHistoryAfterMoving();
         MovePoint(sPoint, x, y);
         e->setAccepted(true);

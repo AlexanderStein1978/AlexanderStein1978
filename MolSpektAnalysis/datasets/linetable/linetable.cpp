@@ -790,7 +790,12 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		delete QB;
 		if (R == 0)
 		{
-			File.open(QIODevice::ReadOnly);
+			if (!File.open(QIODevice::ReadOnly))
+			{
+				QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for reading!");
+				delete[] D;
+				return false;
+			}
 			QTextStream RS(&File);
 			L1 = RS.readLine();
 			NFD = L1.left(5).toInt();
@@ -802,7 +807,7 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 						+ QString::number(lambda) 
 						+ ". Do you want to keep or change it?", this);
 				QB->addButton("Keep it");
-				QB->addButton("Changed it");
+				QB->addButton("Change it");
 				QB->addButton("Cancel");
 				QB->exec();
 				i = QB->getResult();
@@ -987,14 +992,17 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		}
 	}
 	if (L1.left(5).toInt() != m) L1 = ("     " + QString::number(m)).right(5) + L1.right(L1.length() - 5);
-	File.open(QIODevice::WriteOnly);
-	QTextStream WS(&File);
-	WS << L1 << "\n";
-	for (n=0; n < nIA; n++) WS << IsoSA[n] << "\n";
-	for (n=0; n < nIB; n++) WS << IsoSB[n] << "\n";
-	WS << LP1 << "\n" << LP2 << "\n";
-	for (n=0; n<m; ++n) WS << LL[n];
-	File.close();
+	if (File.open(QIODevice::WriteOnly))
+	{
+		QTextStream WS(&File);
+		WS << L1 << "\n";
+		for (n=0; n < nIA; n++) WS << IsoSA[n] << "\n";
+		for (n=0; n < nIB; n++) WS << IsoSB[n] << "\n";
+		WS << LP1 << "\n" << LP2 << "\n";
+		for (n=0; n<m; ++n) WS << LL[n];
+		File.close();
+	}
+	else QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
 	delete[] LL;
 	delete[] FD;
 	delete[] D;
@@ -1006,7 +1014,7 @@ void LineTable::WriteTFGS(QString FileName, int vsO, vsOListElement *vsOList)
 {
 	if (Iso == 0)
 	{
-		QMessageBox::information(this, "MolSpektAnalysis", 
+		QMessageBox::critical(this, "MolSpektAnalysis", 
 			"Error: The line table has to be assigned to a molecule first!", QMessageBox::Ok);
 		return;
 	}
@@ -1017,7 +1025,11 @@ void LineTable::WriteTFGS(QString FileName, int vsO, vsOListElement *vsOList)
 			(MW != nullptr ? MW->getDir(getType()) : ""), "All files (*.*)");
 	if (FileName.isEmpty()) return;
 	QFile Datei(FileName);
-	Datei.open(QIODevice::WriteOnly | QIODevice::Append);
+	if (!Datei.open(QIODevice::WriteOnly | QIODevice::Append))
+	{
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+		return;
+	}
 	QTextStream S(&Datei);
 	QString Buffer, IBuff, F, lF;
 	vsOListElement *CvsOElement = vsOList;
@@ -1871,7 +1883,7 @@ void LineTable::AddMarked(int AnzahlMarker, Marker *marker, Marker *LaserLine, Q
 		UState = transition->getUpperState();
 	}
 	//printf("Nach States\n");
-	i = SpektFile.lastIndexOf(QRegExp("[\\/]")) + 1;
+	i = SpektFile.lastIndexOf(QRegularExpression("[\\/]")) + 1;
 	j = SpektFile.indexOf('.', i);
 	j = (j > 0 ? j : SpektFile.length()) - i;
 	QString Buffer, SFN = SpektFile.mid(i, j);
@@ -2882,7 +2894,7 @@ void LineTable::SetPN()
 		nI = ltc->getIso(SA[n]);
 		nv = ltc->get_vs(SA[n]);
 		nWn = (UTA ? ltc->getUpperEnergy(SA[n]) : 0.0);
-		i = (nFi = ltc->getSourceFile(SA[n])).lastIndexOf(QRegExp("[\\/]")) + 1;
+		i = (nFi = ltc->getSourceFile(SA[n])).lastIndexOf(QRegularExpression("[\\/]")) + 1;
 		j = nFi.indexOf('.', i);
 		nFi = nFi.mid(i, (j>=0 ? j : nFi.length()) - i);
 		nF = ltc->getFineStructureQN(SA[n]);

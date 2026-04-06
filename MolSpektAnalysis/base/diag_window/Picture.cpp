@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -164,10 +164,11 @@ void Picture::mouseMoveEvent(QMouseEvent *e)
     //printf("MouseMoveEvent\n");
     e->setAccepted(false);
 	emit mouseMoved(e);
+	QPointF pos = e->position();
 	if (mouseCross) 
 	{
-		crossX = e->x();
-		crossY = e->y();
+		crossX = static_cast<int>(pos.x());
+		crossY = static_cast<int>(pos.y());
 		update();
 	}
 	if (mPressed && !e->isAccepted())
@@ -176,14 +177,14 @@ void Picture::mouseMoveEvent(QMouseEvent *e)
 		GetMW(mx1, mx2, xm, xw);
 		GetMW(my1, my2, ym, yw);
 		QRect RA(xm, ym, xw + 1, yw + 1);
-		mx2 = e->x();
-		my2 = e->y();
+		mx2 = static_cast<int>(pos.x());
+		my2 = static_cast<int>(pos.y());
 		GetMW(mx1, mx2, xm, xw);
 		GetMW(my1, my2, ym, yw);
 		SRect.setRect(xm, ym, xw, yw);
 		update(MaxRect(RA, SRect));
 	}
-	emit MouseMoved(e->x(), e->y());
+	emit MouseMoved(static_cast<int>(pos.x()), static_cast<int>(pos.y()));
 	e->setAccepted(true);
 }
 
@@ -195,8 +196,9 @@ void Picture::mousePressEvent(QMouseEvent *e)
 	if (e->isAccepted()) return;
     if (e->button() == Qt::LeftButton)
     {
-		mx2 = mx1 = e->x();
-		my2 = my1 = e->y();
+		QPointF pos = e->position();
+		mx2 = mx1 = static_cast<int>(pos.x());
+		my2 = my1 = static_cast<int>(pos.y());
 		if (e->modifiers() == Qt::ShiftModifier)
 		{
 			mx1 = rmx;
@@ -281,13 +283,15 @@ void Picture::mouseReleaseEvent(QMouseEvent *e)
 		{
 			if (e->button() == Qt::LeftButton) 
 			{
-				QPoint P(e->x(), e->y());
+				QPointF posF(e->position());
+				QPoint P(static_cast<int>(posF.x()), static_cast<int>(posF.y()));
 				emit LeftClicked(&P);
 				emit LeftClicked(&P, e->modifiers() == Qt::ControlModifier);
 			}
     		else if (e->button() == Qt::RightButton) 
 			{
-				QPoint P(e->globalPos());
+				QPointF posF(e->globalPosition());
+				QPoint P(static_cast<int>(posF.x()), static_cast<int>(posF.y()));
 				emit RightClicked();
 				emit RightClicked(&P);
 			}

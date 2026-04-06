@@ -27,12 +27,7 @@ bool sortIvJFreqF(const TableViewWindowCore * const core, const int n, const int
     if (in > im) return false;
     if (Jsn < Jsm) return true;
     if (Jsn > Jsm) return false;
-<<<<<<< HEAD
-    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m))))
-        return true;
-=======
     if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
->>>>>>> linetable
     if (in > im) return false;
     if (Jssn < Jssm) return true;
     if (Jssn > Jssm) return false;
@@ -46,12 +41,7 @@ bool SortvsIvJ(const TableViewWindowCore *const core, const int n, const int m)
     int in, im;
     if (n==-1) return false;
     if (m==-1) return true;
-<<<<<<< HEAD
-    if ((in = stdStringToInt(Tab->get_vs(n))) > (im = stdStringToInt(Tab->get_vs(m))))
-        return true;
-=======
     if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
->>>>>>> linetable
     if (in < im) return false;
     if ((in = core->getIso(n)) < (im = core->getIso(m)))
         return true;
@@ -118,11 +108,7 @@ bool sortIefJFreqv(const TableViewWindowCore *const core, const int n, const int
     if (In > Im) return false;
     if ((in = core->get_v(n)) < (im = core->get_v(m))) return true;
     if (in > im) return false;
-<<<<<<< HEAD
-    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m)))) return true;
-=======
     if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
->>>>>>> linetable
     return false;
 }
 
@@ -167,11 +153,7 @@ bool sortforTFGS(const TableViewWindowCore *const core, const int n, const int m
     if (Sn > Sm) return false;
     if (Bn == "nA" && Bm != "nA") return true;
     if (Bn != "nA" && Bm == "nA") return false;
-<<<<<<< HEAD
-    int vn = stdStringToInt(Bn), vm = stdStringToInt(Bm);
-=======
     int vn = Bn.toInt(), vm = Bm.toInt();
->>>>>>> linetable
     if (vn < vm) return true;
     if (vn > vm) return false;
     int Jn = ftc->getJs(n), Jm = ftc->getJs(m);

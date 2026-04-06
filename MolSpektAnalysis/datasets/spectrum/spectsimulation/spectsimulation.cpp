@@ -5,6 +5,18 @@
 //
 //
 
+#include <QFile>
+#include <QPainter>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QPaintDevice>
+#include <QRect>
+#include <QString>
+#include <QTextStream>
+#include <QStringList>
+#include <QChar>
+#include <QMessageBox>
+
 #include "spectsimulation.h"
 #include "constants.h"
 #include "MainWindow.h"
@@ -21,17 +33,6 @@
 
 #include <math.h>
 
-#include <QPainter>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QPaintDevice>
-#include <QRect>
-#include <QString>
-#include <QTextStream>
-#include <QStringList>
-#include <QChar>
-#include <QFile>
-#include <QMessageBox>
 
 SpectSimulation::SpectSimulation(MainWindow *mw) 
 	: DiagWindow(SpectrumSimulation, mw, "Simulated spectra (*.sspk)", ".sspk")

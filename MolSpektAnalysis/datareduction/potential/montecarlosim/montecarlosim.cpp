@@ -5,16 +5,6 @@
 //
 //
 
-#include "montecarlosim.h"
-#include "potential.h"
-#include "MainWindow.h"
-#include "utils.h"
-#include "elstate.h"
-#include "mcfsettingsdialog.h"
-#include "fieldwindow.h"
-
-#include <math.h>
-
 #include <QProcess>
 #include <QFile>
 #include <QTextStream>
@@ -30,6 +20,16 @@
 #include <QCheckBox>
 #include <QButtonGroup>
 #include <QTimerEvent>
+
+#include "montecarlosim.h"
+#include "potential.h"
+#include "MainWindow.h"
+#include "utils.h"
+#include "elstate.h"
+#include "mcfsettingsdialog.h"
+#include "fieldwindow.h"
+
+#include <math.h>
 
 
 MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWidgetWindow(FitSeriesResultTable, MW)
@@ -1518,7 +1518,7 @@ void MonteCarloSim::ProcessFinished(int N, int LP, bool RecursiveCalls, FitResul
 							{
 								delete Pot;
 								Pot = new Potential(*Pot);
-								Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegExp("[\\/]")) - 1);
+								Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 								Pot->VaryCoefficients(false, NFixedCoefficients, FixedCoefficients);
 								Pot->setFileName(NameB.left(NameB.lastIndexOf(".")) + QString("w%0.pot").arg(N));
 								Pot->setName(Buffer.left(Buffer.lastIndexOf(".")) + "w" + QString::number(N));
@@ -1581,7 +1581,7 @@ void MonteCarloSim::ProcessFinished(int N, int LP, bool RecursiveCalls, FitResul
 								{
 									delete Pot;
 									Pot = new Potential(*StartPot);
-									Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegExp("[\\/]")) - 1);
+									Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 									Pot->VaryCoefficients(false, NFixedCoefficients, FixedCoefficients);
 									Pot->setFileName(NameB.left(NameB.lastIndexOf(".")) + QString("w%0.pot").arg(N));
 									Pot->setName(Buffer.left(Buffer.lastIndexOf(".")) + "w" + QString::number(N));
@@ -1640,7 +1640,7 @@ void MonteCarloSim::ProcessFinished(int N, int LP, bool RecursiveCalls, FitResul
 								{
 									delete Pot;
 									Pot = new Potential(*StartPot);
-									Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegExp("[\\/]")) - 1);
+									Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 									Pot->VaryCoefficients(false, NFixedCoefficients, FixedCoefficients);
 									Pot->setFileName(NameB.left(NameB.lastIndexOf(".")) + QString("w%0.pot").arg(N));
 									Pot->setName(Buffer.left(Buffer.lastIndexOf(".")) + "w" + QString::number(N));
@@ -1670,7 +1670,7 @@ void MonteCarloSim::ProcessFinished(int N, int LP, bool RecursiveCalls, FitResul
 							if (!InitPots[c].isEmpty()) LoadPotential(Pot, InitPots[c], N);
 							else 
 							{
-								Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegExp("[\\/]")) - 1);
+								Buffer = NameB.right(NameB.length() - NameB.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 								Pot->VaryCoefficients(false, NFixedCoefficients, FixedCoefficients);
 								Pot->setFileName(NameB.left(NameB.lastIndexOf(".")) + QString("w%0.pot").arg(N));
 								Pot->setName(Buffer.left(Buffer.lastIndexOf(".")) + "w" + QString::number(N));
