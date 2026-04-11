@@ -7,7 +7,6 @@
 
 #include <QWidget>
 
-
 class SoundRecordAndDrawControl;
 class QComboBox;
 
@@ -26,7 +25,7 @@ private slots:
     void DeviceChanged(int index);
 
 private:
-    QComboBox *mDeviceBox, *mSampleSizeBox, *mSampleRateBox, *mSampleTypeBox;
+    QComboBox *mDeviceBox, *mSampleSizeBox, *mSampleRateBox;
     SoundRecordAndDrawControl* mControl;
     const char *const mInputData;
     const int mNBytes;
