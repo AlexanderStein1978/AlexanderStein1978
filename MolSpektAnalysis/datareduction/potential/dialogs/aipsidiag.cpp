@@ -1,16 +1,9 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
-
-#include "aipsidiag.h"
-#include "MainWindow.h"
-#include "potential.h"
-#include "molecule.h"
-#include "utils.h"
-#include "constants.h"
 
 #include <QLineEdit>
 #include <QListWidget>
@@ -24,6 +17,14 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+
+#include "aipsidiag.h"
+#include "MainWindow.h"
+#include "potential.h"
+#include "molecule.h"
+#include "utils.h"
+#include "constants.h"
+
 
 AIPSIDialog::AIPSIDialog(MainWindow *mw)
 {

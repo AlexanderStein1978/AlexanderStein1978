@@ -5,6 +5,19 @@
 //
 //
 
+#include <QTableWidget>
+#include <QStringList>
+#include <QGridLayout>
+#include <QListWidget>
+#include <QComboBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QPainter>
+#include <QFile>
+#include <QTextStream>
+#include <QCheckBox>
+#include <QHeaderView>
+
 #include "fitdata.h"
 #include "fitdatasortfunctions.h"
 #include "tableviewwindowcoresortfunctor.h"
@@ -33,19 +46,6 @@
 #include "espotfitinputelstateassigndialog.h" 
 #include "mtable.h"
 #include "basedata.h"
-
-#include <QTableWidget>
-#include <QStringList>
-#include <QGridLayout>
-#include <QListWidget>
-#include <QComboBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QPainter>
-#include <QFile>
-#include <QTextStream>
-#include <QCheckBox>
-#include <QHeaderView>
 
 #include <stdio.h>
 #include <math.h>
@@ -815,8 +815,8 @@ FitData::sortForExtractNewOrChangedOrder FitData::getForExtractNewOrChangedOrder
     }
     else
     {
-        const bool absOld = QString::number(fitDataCoreOld->getUncertainty(i_RowOld), 'f', 4).contains(QRegExp("[234]01"));
-        const bool absNew = QString::number(fitDataCore->getUncertainty(i_RowNew), 'f', 4).contains(QRegExp("[234]01"));
+        const bool absOld = QString::number(fitDataCoreOld->getUncertainty(i_RowOld), 'f', 4).contains(QRegularExpression("[234]01"));
+        const bool absNew = QString::number(fitDataCore->getUncertainty(i_RowNew), 'f', 4).contains(QRegularExpression("[234]01"));
         if (absOld && !absNew) return SFENOCisSmaller;
         if (!absOld && absNew) return SFENOCisBigger;
         if (i_subtractSourceOffset)
@@ -905,7 +905,11 @@ bool FitData::readData(QString Filename)
     if (!TableWindow::readData(Filename)) 
     {
         QFile F(Filename);
-        F.open(QIODevice::ReadOnly);
+        if (!F.open(QIODevice::ReadOnly))
+		{
+			QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for reading!");
+			return false;
+		}
         QTextStream S(&F);
         int r, c, NR = S.readLine().left(5).toInt(), mv = 0, mJ=0;
         if (NR == 0)
@@ -1840,7 +1844,7 @@ void FitData::addData(TableLine* Lines, int NLines)
         else if (!Lines[n].SourceName.isEmpty()) fitDataCore->setSource(m, Lines[n].SourceName);
         else
         {
-            i = Lines[n].File.lastIndexOf(QRegExp("[\\/]")) + 1;
+            i = Lines[n].File.lastIndexOf(QRegularExpression("[\\/]")) + 1;
             j = Lines[n].File.indexOf('.', i);
             fitDataCore->setSource(m, Lines[n].File.mid(i, j-i));
         }
@@ -2671,7 +2675,11 @@ bool FitData::writeData(QString Filename)
     if ((NSourceOffset > 0 || residualFits.size() > 0) && Success)
     {
         QFile F(getFileName());
-        F.open(QIODevice::Append);
+        if (!F.open(QIODevice::Append))
+		{
+			QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
+			return false;
+		}
         QTextStream S(&F);
         if (NSourceOffset > 0)
         {
@@ -2839,7 +2847,7 @@ void FitData::setResidualFit(ResidualFit *i_residualFit)
 ResidualFit* FitData::getResidualFit(ElState * const i_state, const int i_Iso, const int i_v, const int i_comp)
 {
     for (QList<ResidualFit*>::iterator it = residualFits.begin(); it != residualFits.end(); ++it)
-        if ((*it)->getIso() == i_Iso && (*it)->getv() == i_v && (*it)->getComp() == i_comp && (*it)->getStateName() == i_state->getName()) return *it;
+        if ((*it)->getIso() == i_Iso && (*it)->getv() == i_v && (*it)->getComp() == i_comp && *(*it)->getStateName() == i_state->getName()) return *it;
     return 0;
 }
 

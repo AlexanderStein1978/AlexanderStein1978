@@ -5,6 +5,14 @@
 //
 //
 
+#include <QGridLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
+#include <QCloseEvent>
+#include <QTextStream>
+#include <QDir>
+
 #include "controlwindow.h"
 #include "Calculation.h"
 #include "window.h"
@@ -16,14 +24,6 @@
 #include "particlewatchtable.h"
 #include "potentialdefiner.h"
 
-#include <QGridLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QLineEdit>
-#include <QCloseEvent>
-#include <QTextStream>
-#include <QDir>
-
 
 ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), DEEdit(new QLineEdit("-1.0", this)),
     Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
@@ -33,9 +33,8 @@ ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new
 {
     QFile settingsFile(SettingsFileName);
     for (int n=0; n < Calculation::NumPot; ++n) PotControls[n] = new PotControl(this, mw);
-    if (settingsFile.exists())
+    if (settingsFile.exists() && settingsFile.open(QIODevice::ReadOnly))
     {
-        settingsFile.open(QIODevice::ReadOnly);
         QTextStream S(&settingsFile);
         Init(S);
     }
@@ -413,9 +412,11 @@ void ControlWindow::restoreSnapShot()
 void ControlWindow::saveSettings()
 {
     QFile file(SettingsFileName);
-    file.open(QIODevice::WriteOnly);
-    QTextStream S(&file);
-    Serialize(S);
+    if (file.open(QIODevice::WriteOnly))
+    {	
+		QTextStream S(&file);
+		Serialize(S);
+	}
 }
 
 void ControlWindow::Serialize(QTextStream& outStream)

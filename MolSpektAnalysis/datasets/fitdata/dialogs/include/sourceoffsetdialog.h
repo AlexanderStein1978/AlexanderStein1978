@@ -11,7 +11,6 @@
 
 #include <QDialog> 
 
-class QStringList;
 class QLineEdit;
 
 class MainWindow;

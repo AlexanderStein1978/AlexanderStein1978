@@ -1,9 +1,16 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
+#include <QFile>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QFileDialog>
+#include <QStringList>
+#include <QGridLayout>
 
 #include "duntable.h"
 #include "molecule.h"
@@ -19,14 +26,6 @@
 
 #include <math.h>
 #include <limits>
-
-#include <QFile>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QFileDialog>
-#include <QStringList>
-#include <QGridLayout>
-
 
 using std::numeric_limits;
 
@@ -1533,22 +1532,24 @@ double DunTable::fitDunSet(int N, int nP, FitData *FD, int **DunList, int Ml, in
 	}
 	Destroy(D, Mk+1);
 	QFile FR("Rem.log"), FU("Res.log");
-	FR.open(QIODevice::WriteOnly);
-	FU.open(QIODevice::WriteOnly);
-	QTextStream SR(&FR), SU(&FU);
-	SR << "PN	Iso	v	J	obs-calc\n";
-	SU << "PN	Iso	v	J	obs-calc\n";
-	for (k=0; k<N; k++)
+	if (FR.open(QIODevice::WriteOnly) && FU.open(QIODevice::WriteOnly))
 	{
-		if (ssig[k] < 100.0) SU << xx[k][3] << "\t" << xx[k][0] << "\t" << xx[k][1] 
-	      						<< "\t" << xx[k][2] << "\t" 
-								<< QString::number(sqrt(ssig[k] * dev[k]), 'f', 4) << "\n";
-		else SR << xx[k][3] << "\t" << xx[k][0] << "\t" << xx[k][1] 
-				<< "\t" << xx[k][2] << "\t" 
-				<< QString::number(sqrt(ssig[k] * dev[k]), 'f', 4) << "\n";
+		QTextStream SR(&FR), SU(&FU);
+		SR << "PN	Iso	v	J	obs-calc\n";
+		SU << "PN	Iso	v	J	obs-calc\n";
+		for (k=0; k<N; k++)
+		{
+			if (ssig[k] < 100.0) SU << xx[k][3] << "\t" << xx[k][0] << "\t" << xx[k][1] 
+									<< "\t" << xx[k][2] << "\t" 
+									<< QString::number(sqrt(ssig[k] * dev[k]), 'f', 4) << "\n";
+			else SR << xx[k][3] << "\t" << xx[k][0] << "\t" << xx[k][1] 
+					<< "\t" << xx[k][2] << "\t" 
+					<< QString::number(sqrt(ssig[k] * dev[k]), 'f', 4) << "\n";
+		}
+		FR.close();
+		FU.close();
 	}
-	FR.close();
-	FU.close();
+	else QMessageBox::warning(this, "MolSpektAnalysis", "Failed to open logfile for writing!");
 	printf("Finished!\n");
 	return FQS;
 }

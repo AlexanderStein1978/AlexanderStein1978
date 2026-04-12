@@ -160,13 +160,7 @@ bool TableWindow::readData(QString Filename)
 		if (Buffer.left(7) == "Max v: ") vMax->setText(Buffer.right(Buffer.length() - 7));
 		else if (Buffer.left(7) == "Max J: ") JMax->setText(Buffer.right(Buffer.length() - 7));
 	}
-	bool Success = true;
-	if (Typ == FitDataSet)
-	{
-		Buffer = readData(S);
-		if (!Buffer.isEmpty()) Success = ReadSpecialPart(S, Buffer);
-	}
-	else Success = readData(S);
+	bool Success = readData(S);
 	Saved();
 	//printf("Ende readData\n");
     return Success;

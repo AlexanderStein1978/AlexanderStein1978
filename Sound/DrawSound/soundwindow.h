@@ -1,12 +1,19 @@
+//
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
+//
+// Copyright: See README file that comes with this source code
+//
+//
+
 #pragma once
 
 #include "sounddrawwindow.h"
-
 
 class FrequencyWindow;
 class QAction;
 class OscillatorDiagram;
 class OscillatorDataViewer;
+class QAudioSink;
 
 
 class SoundWindow : public SoundDrawWindow
@@ -65,8 +72,8 @@ private:
     void createLabellingData();
 
     QComboBox* mOutputDeviceBox;
-    QAudioOutput* mAudioOutput;
-    QIODevice* mAudioInputDevice;
+    QAudioSink* mAudioOutput = nullptr;
+    QIODevice* mAudioInputDevice = nullptr;
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename, mLabelFilename, mKeyText;
     const QString mLabelOrderFilename;

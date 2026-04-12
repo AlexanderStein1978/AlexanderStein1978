@@ -1,16 +1,16 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
+#include <QFile>
+#include <QTimer>
+#include <QTextStream>
 
 #include "processview.h"
 #include "potential.h"
-
-#include <QTimer>
-#include <QTextStream>
 
 
 ProcessView::ProcessView(QWidget* parent, QString Dir, int PN) : QPlainTextEdit(parent)
@@ -47,9 +47,8 @@ QStringList ProcessView::getBadList(int N)
 				+ QString::number(N) + BadListName.right(BadListName.length() - n));
 	QFile F(BLN);
 	QStringList R;
-	if (F.exists())
+	if (F.exists() && F.open(QIODevice::ReadOnly))
 	{
-		F.open(QIODevice::ReadOnly);
 		QTextStream S(&F);
 		while (!S.atEnd()) R << S.readLine();
 	}
@@ -110,9 +109,8 @@ double ProcessView::getSigma(int N)
 			FitOutFileName + QString::number(N) : FitOutFileName.left(n) 
 			+ QString::number(N) + FitOutFileName.right(FitOutFileName.length() - n));
 	double R = -1.0;
-	if (F.exists())
+	if (F.exists() && F.open(QIODevice::ReadOnly))
 	{
-		F.open(QIODevice::ReadOnly);
 		QTextStream S(&F);
 		QString B;
 		while (!S.atEnd() && (n = B.indexOf("Sigma=")) == -1) B = S.readLine();

@@ -5,14 +5,6 @@
 //
 //
 
-#include "potcontrol.h"
-#include "potstruct.h"
-#include "potential.h"
-#include "potentialplot.h"
-#include "controlwindow.h"
-#include "Calculation.h"
-#include "MainWindow.h"
-
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
@@ -21,6 +13,14 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QTextStream>
+
+#include "potcontrol.h"
+#include "potstruct.h"
+#include "potential.h"
+#include "potentialplot.h"
+#include "controlwindow.h"
+#include "Calculation.h"
+#include "MainWindow.h"
 
 
 PotControl::PotControl(ControlWindow *i_parent, MainWindow *mw)

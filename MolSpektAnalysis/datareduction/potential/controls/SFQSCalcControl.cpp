@@ -1,10 +1,11 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
+#include <QDir>
 
 #include "SFQSCalcControl.h"
 #include "potential.h"
@@ -13,8 +14,6 @@
 #include "utils.h"
 #include "elstate.h"
 #include "MainWindow.h"
-
-#include <QDir>
 
 
 SFQSCalcControl::SFQSCalcControl(MainWindow* MW, ElState* St, Potential *Pot, QString PotDir, QString FDatDir, double SFQSRad, int NumParFits)

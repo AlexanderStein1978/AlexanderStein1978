@@ -12,7 +12,7 @@
 
 #include "PotFit.h"
 #include "tools.h"
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "montecarlosim.h"
 #include "fit.h"
 #include "potworker.h"
@@ -38,7 +38,6 @@ class TermTable;
 struct SplinePoint;
 struct WantedCoeffValue;
 struct PotentialData;
-
 
 class QListWidget;
 class QLineEdit;

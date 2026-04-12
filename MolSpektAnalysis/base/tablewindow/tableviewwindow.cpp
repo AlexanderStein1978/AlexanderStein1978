@@ -12,6 +12,8 @@
 #include "utils.h"
 
 #include <QTextStream>
+#include <QFile>
+#include <QMessageBox>
 
 
 TableViewWindow::TableViewWindow(TableViewWindowCore *const core, Type typ, MainWindow *MW, Molecule *M) : TableWindow(typ, MW, M), mCore(core)
@@ -253,7 +255,11 @@ void TableViewWindow::exportTableData(QString FileName, bool selectedCells, bool
 {
 	int n, r, c, NR = mCore->rowCount(), NC = mCore->columnCount();
 	QFile F(FileName);
-	F.open(QIODevice::WriteOnly);
+	if (!F.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for writing: " + FileName + "!");
+		return;
+	}
 	QTextStream S(&F);
 	if (selectedCells)
 	{

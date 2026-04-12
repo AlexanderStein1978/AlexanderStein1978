@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -96,7 +96,6 @@ class FitDataCore : public TableViewWindowCore
 		}
 		
 	private:
-
 		int NSources = 0;
 		QString RWError;
 };

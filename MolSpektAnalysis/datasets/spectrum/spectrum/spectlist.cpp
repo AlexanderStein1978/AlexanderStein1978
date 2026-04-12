@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QMessageBox>
 
 
 SpectList::SpectList(MainWindow *MW) : TableWidgetWindow(MDIChild::TextTable1, MW)
@@ -39,7 +40,7 @@ void SpectList::AutoSLP()
 		F.setFileName(FN);
 		if (!F.exists())
 		{
-			FN = FN.right(FN.length() - FN.lastIndexOf(QRegExp("[\\/]"))  - 1);
+			FN = FN.right(FN.length() - FN.lastIndexOf(QRegularExpression("[\\/]"))  - 1);
 			for (m=0; m < Dirs.count(); m++)
 			{
 				F.setFileName(Dirs[m] + FN);
@@ -52,17 +53,21 @@ void SpectList::AutoSLP()
 				if (!FN.isEmpty())
 				{
 					Tab->item(n, 0)->setText(FN);
-					FN = FN.left(FN.lastIndexOf(QRegExp("[\\/]")) + 1);
+					FN = FN.left(FN.lastIndexOf(QRegularExpression("[\\/]")) + 1);
 					for (m=0; m < Dirs.count(); m++) if (Dirs[m] == FN) break;
 					if (m == Dirs.count()) Dirs << FN;
 				}
 			}
 		}
 	}
-	Log.open(QIODevice::WriteOnly);
+	if (!Log.open(QIODevice::WriteOnly))
+	{	
+		QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open logfile for writing!");
+		return;
+	}
 	QTextStream LS(&Log);
 	Spektrum *S = MW->CreateSpectrum();
-	for (n=0; n<N; n++)
+	for (n=0; n<N; ++n)
 	{
 		if (Tab->item(n, 0) == 0) continue;
 		if ((FN = Tab->item(n, 0)->text()).isEmpty()) continue;

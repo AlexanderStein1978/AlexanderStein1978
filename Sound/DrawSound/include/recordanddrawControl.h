@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QAudioFormat>
 #include <QAudioDecoder>
+#include <QMediaCaptureSession>
 
 
 class DiagWindow;
@@ -20,6 +21,8 @@ class QComboBox;
 class QAudioInput;
 class QFile;
 class QLineEdit;
+class QMediaRecorder;
+class QMediaDevices;
 
 
 class SoundRecordAndDrawControl : public QWidget
@@ -38,7 +41,7 @@ public:
     SoundRecordAndDrawControl(SoundMainWindow* MW);
     ~SoundRecordAndDrawControl();
 
-    void Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleType sampleType, const char* const inputData, const int nBytes);
+    void Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleFormat sampleType, const char* const inputData, const int nBytes);
     void Save(const char* const inputData, const int nBytes);
     void InitializeAssignmentData(const int numElements, const int numOscillators);
     AssignmentElement* GetAssignmentData(int& numElements) const;
@@ -80,6 +83,7 @@ private slots:
     void Error(QAudioDecoder::Error error);
     void BufferReady();
     void ShowMessage(Message message);
+	void updateFormats();
 
 signals:
     void showMessage(Message);
@@ -94,8 +98,9 @@ private:
     void createDecoder();
     void clearAssignmentData();
 
+	bool mUpdatingFormats = false;
     DecodingFor mDecodingFor = DF_Nothing;
-    QComboBox *mInputSelectorBox;
+    QComboBox *mInputSelectorBox, *mFileFormatBox, *mCodecBox;
     QPushButton *mStartButton, *mStopButton, *mDrawButton, *mDecodeButton, *mInputFileDialogButton, *mOutputFileDialogButton, *mSplitFileButton;
     QLabel *mSizeDisplay, *mLengthDisplay;
     QLineEdit *mInputFileNameEdit, *mOutputFileNameEdit, *mPacketSizeEdit;
@@ -104,10 +109,13 @@ private:
     QByteArray mDecodeBuffer;
     const QString RST = "RST";
     QFile *mInputFile, *mOutputFile;
-    QAudioFormat::SampleType mSampleType;
+    QAudioFormat::SampleFormat mSampleType;
     int mSampleSize, mSampleRate, mNumChannels, mNumAssignmentElements;
     qint64 mProcessedUSec;
     std::vector<DiagWindow*> mFrequencyWindows;
     SoundMainWindow* mMW;
     AssignmentElement* mAssignmentElements = nullptr;
+	QMediaCaptureSession m_captureSession;
+    QMediaRecorder *m_audioRecorder = nullptr;
+    QMediaDevices *m_mediaDevices = nullptr;
 };

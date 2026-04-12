@@ -19,7 +19,6 @@ class QRadioButton;
 class QLineEdit;
 class QListWidget;
 class QComboBox;
-class QStringList;
 class QString;
 
 class MainWindow;

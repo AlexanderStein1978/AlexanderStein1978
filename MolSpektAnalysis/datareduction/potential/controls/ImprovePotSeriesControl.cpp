@@ -1,9 +1,11 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
+
+#include <QDir>
 
 #include "ImprovePotSeriesControl.h"
 #include "constants.h"
@@ -11,8 +13,6 @@
 #include "utils.h"
 #include "elstate.h"
 #include "MainWindow.h"
-
-#include <QDir>
 
 
 ImprovePotSeriesControl::ImprovePotSeriesControl(MainWindow* MW, ElState* St, Potential* OPot, FitData* FDat, QString potDir, 

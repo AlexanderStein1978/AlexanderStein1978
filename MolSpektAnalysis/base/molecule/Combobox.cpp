@@ -36,7 +36,8 @@ void ComboBox::mousePressEvent(QMouseEvent *E)
 {
 	if (E->button() == Qt::RightButton)
 	{
-		emit RightClicked(E->globalPos());
+		QPointF position = E->globalPosition();
+		emit RightClicked(QPoint(static_cast<int>(position.x()), static_cast<int>(position.y())));
 		E->accept();
 	}
 	else QComboBox::mousePressEvent(E);

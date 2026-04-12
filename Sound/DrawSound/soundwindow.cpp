@@ -1,10 +1,20 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
+#include <QAudioOutput>
+#include <QAction>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QPainter>
+#include <QMediaDevices>
+#include <QAudioDevice>
+#include <QAudioSink>
 
 #include "soundwindow.h"
 #include "frequencywindow.h"
@@ -23,14 +33,6 @@
 #include "oscillatordiagram.h"
 #include "oscillatordataviewer.h"
 
-#include <QAudioOutput>
-#include <QAction>
-#include <QMenu>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QPainter>
-
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate)
 : SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename)
@@ -38,8 +40,8 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
 , mDeleteAct(new QAction("Delete", this)), mClearLabelsAct(new QAction("Clear labels", this)), mEditPhonemeAct(new QAction("Edit phoneme...", this))
 , mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
-    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
+    QList<QAudioDevice> deviceList = QMediaDevices::audioOutputs();
+    for (QAudioDevice device : deviceList) mOutputDeviceBox->addItem(device.description());
     mOutputDeviceBox->setEditable(false);
     QGridLayout *Layout = new QGridLayout;
     Layout->addWidget(new QLabel("Sound output device:", this), 0, 0);
@@ -82,12 +84,14 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
     QFile labelOrderFile(mLabelOrderFilename);
-    labelOrderFile.open(QIODevice::ReadOnly);
-    mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
-    if (!mLabelOrder.empty())
-    {
-        mMinLabelWidth = mLabelOrder[0].toDouble();
-        mLabelOrder.pop_front();
+    if (labelOrderFile.open(QIODevice::ReadOnly))
+	{
+		mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
+		if (!mLabelOrder.empty())
+		{
+			mMinLabelWidth = mLabelOrder[0].toDouble();
+			mLabelOrder.pop_front();
+		}
     }
 }
 
@@ -132,17 +136,14 @@ void SoundWindow::setFastAssignmentMode(bool enable)
 
 void SoundWindow::startPlaying()
 {
-    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    QList<QAudioDevice> deviceList = QMediaDevices::audioOutputs();
     QAudioFormat format;
     format.setSampleRate(mSampleRate);
     format.setChannelCount(1);
-    format.setSampleSize(32);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::Float);
+    format.setSampleFormat(QAudioFormat::Float);
     if (nullptr != mAudioOutput) delete mAudioOutput;
     else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
-    mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
+    mAudioOutput = new QAudioSink(format, this);
     mAudioInputDevice = mAudioOutput->start();
     if (mPlayState == PSPlayContinuously) connect(mAudioOutput, SIGNAL(notify()), this, SLOT(continuePlaying()));
     continuePlaying();
@@ -163,7 +164,6 @@ void SoundWindow::continuePlaying()
     float* data;
     int length = getSoundData(&data);
     mAudioInputDevice->write(reinterpret_cast<char*>(data), 4*length);
-    if (mPlayState == PSPlayContinuously) mAudioOutput->setNotifyInterval(static_cast<int>((static_cast<double>(length) / mSampleRate) * 1000));
     delete[] data;
 }
 
@@ -278,11 +278,14 @@ void SoundWindow::WriteToFile()
 {
     QString filename = QFileDialog::getSaveFileName(this, "Select filename to save", DATA_DIRECTORY  "/Chars");
     QFile file(filename);
-    file.open(QIODevice::WriteOnly);
-    float* data;
-    int length = getSoundData(&data);
-    file.write(reinterpret_cast<char*>(data), 4*length);
-    delete[] data;
+    if (!file.open(QIODevice::WriteOnly)) QMessageBox::warning(this, "DrawSound", "Failed to open selected file for writing!");
+	else
+	{
+		float* data;
+		int length = getSoundData(&data);
+		file.write(reinterpret_cast<char*>(data), 4*length);
+		delete[] data;
+	}
 }
 
 void SoundWindow::addLabel(const QString& phoneme, const double time)
@@ -359,9 +362,12 @@ void SoundWindow::SaveLabels()
         stream << label.phoneme << '[' << label.index << ']' << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
     QFile labelOrderFile(mLabelOrderFilename);
-    labelOrderFile.open(QIODevice::WriteOnly);
-    labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
-    Saved();
+    if (!labelOrderFile.open(QIODevice::WriteOnly)) QMessageBox::warning(this, "DrawSound", "Failed to open label file for writing!");
+	else
+	{
+		labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
+		Saved();
+	}
 }
 
 void SoundWindow::LoadLabels()
@@ -374,7 +380,11 @@ void SoundWindow::LoadLabels()
     }
     mLabels.clear();
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::warning(this, "DrawSound", "Failed to open label file for reading!");
+		return;
+	}
     file.readLine();
     file.readLine();
     while(!file.atEnd())
@@ -515,7 +525,11 @@ void SoundWindow::WriteAnnInput()
     QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
-    file.open(QIODevice::WriteOnly);
+    if (!file.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::warning(this, "DrawSound", "Failed to open selected file for writing!");
+		return;
+	}
     QDataStream stream(&file);
     int FFTLength;
     double **data = new double*[mLabels.size()];
@@ -534,7 +548,11 @@ void SoundWindow::ReadAndVerifyAnnOutput()
     QString filename = QFileDialog::getOpenFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::warning(this, "DrawSound", "Failed to open selected file for reading!");
+		return;
+	}
     QDataStream stream(&file);
     quint16 T1NR, T1NC, T2NR, T2NC;
     stream >> T1NR >> T1NC;

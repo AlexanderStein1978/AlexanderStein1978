@@ -1468,7 +1468,7 @@ Atom *MainWindow::getAtom(QString FileName)
 	int i;
 	//printf("MainWindow::getAtom: Filename=%s\n", FileName.ascii());
 	for (i=0; i<numAtoms; i++) if (atoms[i]->getFileName() == FileName) return atoms[i];
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numAtoms; i++) if (FN == atoms[i]->getFName()) return atoms[i];
 	for (i=0; i < numNAAtoms; i++) if (FileName == NAAtoms[i]) return 0;
 	Atom *nAtom = CreateAtom();
@@ -1544,13 +1544,12 @@ TermTable *MainWindow::getTermTable(QString FileName, Molecule *molecule, ElStat
 	for (i=0; i<numTermTables; i++) /*{*/if ((S1 = termTables[i]->getFileName()) == FileName) 
 		return termTables[i]; 
 		//printf("TermTables[%d] = %s, Filename = %s!\n", i, S1.ascii(), FileName.ascii());}
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numTermTables; i++) if (FN == termTables[i]->getFName()) return termTables[i];
 	for (i=0; i < numNATermTables; i++) if (NATermTables[i] == FileName) return 0;
 	TermTable *nTerm = CreateTermTable();
 	if (nTerm == 0) return 0;
-	if (State != 0 ? (State == molecule->getStateP(0) ? State->getTermTableFileName() != FileName : true) : false) 
-		nTerm->setMolecule(molecule, State);
+	if (State != 0 && (State == molecule->getStateP(0) ? State->getTermTableFileName() != FileName : true)) nTerm->setMolecule(molecule, State);
 	if (!nTerm->readData(FileName))
 	{
 		nTerm->close();
@@ -1610,7 +1609,7 @@ DunTable *MainWindow::getDunTable(QString FileName, Molecule *molecule)
 	QString S1;
 	for (i=0; i<numDunTables; i++) if ((S1 = dunTables[i]->getFileName()) == FileName)
 			return dunTables[i];
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numDunTables; i++) if (FN == dunTables[i]->getFName()) return dunTables[i];
 	for (i=0; i < numNADunTables; i++) if (NADunTables[i] == FileName) return 0;
 	DunTable *Dunham = CreateDunTable();
@@ -1656,7 +1655,7 @@ Potential *MainWindow::getPotential(QString FileName, Molecule *molecule)
 	int i;
 	for (i=0; i<numPotentials; i++) if (potentials[i]->getFileName() == FileName)
 			return potentials[i];
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numPotentials; i++) if (FN == potentials[i]->getFName()) return potentials[i];
 	for (i=0; i < numNAPotentials; i++) if (NAPotentials[i] == FileName) return 0;
 	Potential *Pot = CreatePotential();
@@ -1689,7 +1688,7 @@ FitData* MainWindow::getFitData(QString Filename, Molecule* molecule)
 	int i;
 	for (i=0; i < numFitDataSets; i++) if (fitDataSets[i]->getFileName() == Filename)
 		return fitDataSets[i];
-	QString FN = Filename.right(Filename.length() - Filename.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = Filename.right(Filename.length() - Filename.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numFitDataSets; i++) if (FN == fitDataSets[i]->getFName()) return fitDataSets[i];
 	for (i=0; i < numNAFitDataSets; i++) if (NAFitDataSets[i] == Filename) return 0;
 	FitData *Set = CreateFitData();
@@ -1725,7 +1724,7 @@ LineTable *MainWindow::getLineTable(QString FileName, Molecule *molecule)
 	QString S1;
 	for (i=0; i < numLineTables; i++) if ((S1 = lineTables[i]->getFileName()) == FileName) 
 			return lineTables[i];
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numLineTables; i++) if (FN == lineTables[i]->getFName()) return lineTables[i];
 	for (i=0; i < numNALineTables; i++) if (NALineTables[i] == FileName) return 0;
 	LineTable *Table = CreateLineTable();
@@ -1762,7 +1761,7 @@ FCFTab* MainWindow::getFCFTable(QString Filename, Molecule* molecule)
 	QString S1;
 	for (i=0; i < numFCFTables; i++) if ((S1 = fcfTables[i]->getFileName()) == Filename)
 		return fcfTables[i];
-	QString FN = Filename.right(Filename.length() - Filename.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = Filename.right(Filename.length() - Filename.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numFCFTables; i++) if (FN == fcfTables[i]->getFName()) return fcfTables[i];
 	for (i=0; i < numNAFCFTables; i++) if (NAFCFTables[i] == Filename) return 0;
 	FCFTab *Table = CreateFCFTable();
@@ -1795,7 +1794,7 @@ Spektrum *MainWindow::getSpectrum(QString FileName)
 	int i;
 	QString S1;
 	for (i=0; i < numSpectra; i++) if ((S1 = spectra[i]->getFileName()) == FileName) return spectra[i];
-	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegExp("[\\/]")) - 1);
+	QString FN = FileName.right(FileName.length() - FileName.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	for (i=0; i < numSpectra; i++) if (FN == spectra[i]->getFName()) return spectra[i];
 	if (numSpectra > 0) printf("FN=%s, FName=%s\n", FN.toLatin1().data(), spectra[0]->getFName().toLatin1().data());
 	for (i=0; i < numNASpectra; i++) if (NASpectra[i] == FileName) return 0;
@@ -2756,7 +2755,11 @@ void MainWindow::importFitData()
 	FitData *FD = CreateFitData();
 	if (FD == 0) return;
 	QFile F(Filename);
-	F.open(QIODevice::ReadOnly);
+	if (!F.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading: " + Filename + "!");
+		return;
+	}
 	QTextStream S(&F);
 	QString Buffer = S.readLine();
     QString Buffer2 = S.readLine();
@@ -2861,7 +2864,7 @@ void MainWindow::importSpectList()
 	QString Filename = QFileDialog::getOpenFileName(this,
 						"Choose a spectList to import", Dir, Filter);
 	if (Filename.isEmpty()) return;
-	Dir = Filename.left(Filename.lastIndexOf(QRegExp("[\\/]")));
+	Dir = Filename.left(Filename.lastIndexOf(QRegularExpression("[\\/]")));
 	if (!checkNotOpened(Filename, "")) return;
 	SpectList *SL = CreateSpectList();
 	if (SL != 0) if (SL->readData(Filename)) SL->show();
@@ -4401,7 +4404,7 @@ void MainWindow::exportTableData()
 	QString Di = (TableDataDir.isEmpty() ? Dir : TableDataDir), F;
 	if ((F = QFileDialog::getSaveFileName(this, "Select file name", Di, 
 		                           "Text files (*.dat)")).isEmpty()) return;
-	TableDataDir = F.left(F.lastIndexOf(QRegExp("[\\/]")));
+	TableDataDir = F.left(F.lastIndexOf(QRegularExpression("[\\/]")));
 	QDialog *D = new QDialog(this);
 	QGridLayout *L = new QGridLayout(D);
 	D->setWindowTitle("Data to export:");
@@ -4582,7 +4585,11 @@ void MainWindow::summarizePotInfo()
 		else if (PotList[n].right(7) == "FTT.dat")
 		{
 			QFile file(D.absoluteFilePath(PotList[n]));
-			file.open(QIODevice::ReadOnly);
+			if (!file.open(QIODevice::ReadOnly))
+			{
+				QMessageBox::warning(this, "MolSpectAnalysis", "Failed to open file for reading: " + file.fileName() + "!");
+				continue;
+			}
 			QTextStream S(&file);
 			QString Line = S.readLine();
 			QStringList Header = Line.split('\t'), Row;
@@ -5488,13 +5495,16 @@ void MainWindow::exportObservedLevelLists()
 		if (WDir.right(1) != DIRSEP) WDir += DIRSEP;
 		for (s=0; s < NStates; s++) for (m=0; m<4; m++) for (I=0; I < NI; I++)
 		{
-			for (v=0, J = NJ; v < nv && J == NJ; v++) 
-				for (J=0; (J < NJ ? !Data[s][m][I][v][J] : false); J++) ;
+			for (v=0, J = NJ; v < nv && J == NJ; ++v) for (J=0; J < NJ && !Data[s][m][I][v][J]; ++J) ;
 			if (v < nv || J < NJ)
 			{
 				File.setFileName(WDir + "Level" + StL[s]->getName() + (m<2 ? "LIF" : "Abs") + (Iso != 0 ? Iso->Isoname[I] : "") 
 									+ (m==0 || m==2 ? "e.dat" : "f.dat"));
-				File.open(QIODevice::WriteOnly);
+				if (!File.open(QIODevice::WriteOnly))
+				{
+					QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for writing: " + File.fileName() + "!");
+					return;
+				}
 				Str.setDevice(&File);
 				Str << "v\tJ\n";
 				for (v=0; v < nv; v++) for (J=0; J < NJ; J++) if (Data[s][m][I][v][J]) 
@@ -6624,7 +6634,11 @@ void MainWindow::importMTTPotentials()
 					"Choose a file with MTT potential data to import", Dir, "Text files (*.dat)");
 	if (Filename.isEmpty()) return;
 	QFile File(Filename);
-	File.open(QIODevice::ReadOnly);
+	if (!File.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading: " + Filename + "!");
+		return;
+	}
 	QTextStream S(&File);
 	QString Source = S.readLine();
 	QStringList L, Names = S.readLine().split("\t");
@@ -6753,7 +6767,7 @@ void MainWindow::importCoupledPotfitOutput()
 					"Choose an output file to import", Dir, "Output files (out_*)");
 	if (Filename.isEmpty()) return;
     CoupledPotFitOutputImportDialog Dialog(this);
-	Dir = Filename.left(Filename.lastIndexOf(QRegExp("[\\/]")) + 1);
+	Dir = Filename.left(Filename.lastIndexOf(QRegularExpression("[\\/]")) + 1);
     if (Dialog.exec() == QDialog::Rejected) return;
     int n, N, NUpdateFitData;
     Molecule* Mol;
@@ -6763,7 +6777,11 @@ void MainWindow::importCoupledPotfitOutput()
     IsoTab *Iso = Mol->getIso();
 	if (Iso == 0) return;
 	QFile File(Filename);
-	File.open(QIODevice::ReadOnly);
+	if (!File.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading: " + Filename + "!");
+		return;
+	}
 	QTextStream S(&File);
 	QString Buffer;
 	while (Buffer.left(18) != " iso   vo- vu type" && Buffer.left(18) != " iso   vo st  type" && !S.atEnd()) 
@@ -6844,7 +6862,7 @@ void MainWindow::importCoupledPotfitOutput()
     }
 	FitData *FD;
 	QString SName = Filename.right(Filename.length() 
-									- Filename.lastIndexOf(QRegExp("[\\/]")) - 1);
+									- Filename.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	QString Name = SName.left(SName.indexOf('.'));
 	for (n=0; n < 10; n++) if (NL[n] > 0)
 	{
@@ -6864,7 +6882,7 @@ void MainWindow::importCoupledTermTable()
 	QString Filename = QFileDialog::getOpenFileName(this, 
 					"Choose an term energy file to import", Dir, "Term energy files (T5_E_Bv)");
 	if (Filename.isEmpty()) return;
-	Dir = Filename.left(Filename.lastIndexOf(QRegExp("[\\/]")) + 1);
+	Dir = Filename.left(Filename.lastIndexOf(QRegularExpression("[\\/]")) + 1);
 	int Nv, NJ, s, c=0, i, n, I=0, v=0, J=0, NStates, NI, *Nc, R, *S, *L;
 	bool **DA, singleTab;
 	double Diff, D, Mu;
@@ -6878,7 +6896,11 @@ void MainWindow::importCoupledTermTable()
 	if (R == QDialog::Rejected || NStates == 0 || Nv <= 0 || NJ <= 0) return;
 	IsoTab *Iso = Mol->getIso();
 	QFile F(Filename);
-	F.open(QIODevice::ReadOnly);
+	if (!F.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading: " + Filename + "!");
+		return;
+	}
 	QTextStream St(&F);
 	QStringList IData;
 	St.readLine();
@@ -7173,7 +7195,11 @@ void MainWindow::importCoupledWaveFunctions()
 					"Error: The file T5_E_Bv does not exist!");
 			continue;
 		}
-		TFile.open(QIODevice::ReadOnly);
+		if (!TFile.open(QIODevice::ReadOnly))
+		{
+			QMessageBox::warning(this, "MolSpectAnalysis", "Failed to open file for reading: \"" + T5File + "\"!");
+			continue;
+		}
 		S.setDevice(&TFile);
 		S.readLine();
 		S.readLine();
@@ -7225,7 +7251,11 @@ void MainWindow::importCoupledWaveFunctions()
 		WFDir.setPath(IsoDirs[0]);
 		for (n=0; WFDir[n].left(3) != "wf "; n++) ;
 		WFile.setFileName(IsoDirs[0] + WFDir[n]);
-		WFile.open(QIODevice::ReadOnly);
+		if (!WFile.open(QIODevice::ReadOnly))
+		{
+			QMessageBox::warning(this, "MolSpectAnalysis", "Error reading file \"" + IsoDirs[0] + WFDir[n] + "\"!");
+			continue;
+		}
 		S.setDevice(&WFile);
 		IsoT = Mol->getIso();
 		S.readLine();
@@ -7285,7 +7315,11 @@ void MainWindow::importCoupledWaveFunctions()
 			J = WFDir[m].right(WFDir[m].length() - r - 1).toInt();
 			for (c=0, WF[n][J][v] = new double*[NChan]; c < NChan; c++)
 				WF[n][J][v][c] = new double[NCoeff];
-			WFile.open(QIODevice::ReadOnly);
+			if (!WFile.open(QIODevice::ReadOnly))
+			{
+				QMessageBox::warning(this, "MolSpectAnalysis", "Error reading file \"" + IsoDirs[n] + WFDir[m] + "\"!");
+				continue;
+			}
 			S.setDevice(&WFile);
 			S.readLine();
 			for (r=0; r < NCoeff; r++)
@@ -7302,37 +7336,40 @@ void MainWindow::importCoupledWaveFunctions()
 		}
 	}
 	if (!ErrFile.isEmpty()) 
-		QMessageBox::information(this, "MolSpectAnalysis", "Error reading file \""
+		QMessageBox::warning(this, "MolSpectAnalysis", "Error reading file \""
 			+ ErrFile + "\"!");
-	TFile.open(QIODevice::ReadOnly);
-	S.setDevice(&TFile);
-	S.readLine();
-	for ( ; !S.atEnd(); v++)
+	if (!TFile.open(QIODevice::ReadOnly)) QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading.");
+	else
 	{
-        L = S.readLine().split(' ', Qt::SkipEmptyParts);
-		if (L.count() < 5 + NChan)
+		S.setDevice(&TFile);
+		S.readLine();
+		for ( ; !S.atEnd(); v++)
 		{
-			if (L[0] == "mass:")
+			L = S.readLine().split(' ', Qt::SkipEmptyParts);
+			if (L.count() < 5 + NChan)
 			{
-				for (m=1, MD = ID = fabs((IM = L[1].toDouble()) - IsoT->redMass[0]); 
-					 m < IsoT->numIso; m++) if ((ID = fabs(IM - IsoT->redMass[m])) < MD) 
+				if (L[0] == "mass:")
 				{
-					MD = ID;
-					n = ITR[m];
+					for (m=1, MD = ID = fabs((IM = L[1].toDouble()) - IsoT->redMass[0]); 
+						m < IsoT->numIso; m++) if ((ID = fabs(IM - IsoT->redMass[m])) < MD) 
+					{
+						MD = ID;
+						n = ITR[m];
+					}	
+					L = S.readLine().split(' ', Qt::SkipEmptyParts);
+					//for (m=0; m < L.count(); m++) printf("L[%d]=%s\n", m, L[m].toAscii().data());
+					if (L.count() < 5 + NChan) continue;
+					J = L[0].toInt();
+					v=0;
 				}
-                L = S.readLine().split(' ', Qt::SkipEmptyParts);
-				//for (m=0; m < L.count(); m++) printf("L[%d]=%s\n", m, L[m].toAscii().data());
-				if (L.count() < 5 + NChan) continue;
-				J = L[0].toInt();
-				v=0;
+				else continue;
 			}
-			else continue;
-		}
-		if (n>=0 && J < NJ && v < Nv ? WF[n][J][v] != 0 : false)
-		{
-			E[n][J][v] = L[2].toDouble();
-			MC[n][J][v] = new double[NChan];
-			for (m=0; m < NChan; m++) MC[n][J][v][m] = L[5+m].toDouble();
+			if (n>=0 && J < NJ && v < Nv && WF[n][J][v] != 0)
+			{
+				E[n][J][v] = L[2].toDouble();
+				MC[n][J][v] = new double[NChan];
+				for (m=0; m < NChan; m++) MC[n][J][v][m] = L[5+m].toDouble();
+			}
 		}
 	}
 	bool Err = false;

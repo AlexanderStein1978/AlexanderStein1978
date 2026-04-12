@@ -17,7 +17,7 @@ FieldWindow::FieldWindow(int*** iField, int N1, int N2)
 	QFontMetricsF FM(font());
 	NResults = 0;
 	Results = 0;
-	Step = FM.width("888") + 4;
+	Step = FM.tightBoundingRect("888").width() + 4;
 	Field = iField;
 	NxPos = N1;
 	NyPos = N2;
@@ -113,7 +113,7 @@ void FieldWindow::paintEvent(QPaintEvent* PE)
 			P.setPen(QColor(255, 255, 255));
 		}
 		Text = QString::number(Field[n][m][0]);
-		P.drawText(n * Step + (Step - FM.width(Text)) / 2, m * Step + TOff, Text);
+		P.drawText(n * Step + (Step - FM.tightBoundingRect(Text).width()) / 2, m * Step + TOff, Text);
 	}
 	if (xPos != 0)
 	{
@@ -122,7 +122,7 @@ void FieldWindow::paintEvent(QPaintEvent* PE)
 		{
 			P.fillRect(xPos[n] * Step, yPos[n] * Step, Step, Step, QColor(0, 0, 255));
 			Text = QString::number(n);
-			P.drawText(xPos[n] * Step + (Step - FM.width(Text)) / 2, 
+			P.drawText(xPos[n] * Step + (Step - FM.tightBoundingRect(Text).width()) / 2, 
 					   yPos[n] * Step + TOff, Text);
 		}
 	}
