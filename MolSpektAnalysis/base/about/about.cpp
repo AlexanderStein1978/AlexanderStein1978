@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -49,7 +49,7 @@ About::About()
 <p>I do not mind if you ask me questions how to use this program.</p>\
 <p>If this program should significantly help you creating results you use for publications,\
    I would be grateful if you could cite one of our articles significant parts of the results published in were created under the use of this program:</p>\
-   You can reach to me at <a href=\"mailto:webmaster@alexandersteinchanneler1978.com\"</a>.\
+   You can reach to me at <a href=\"mailto:AlexanderStein@t-online.de\"</a>.\
 <ul>\
 <li><a href=\"http://link.springer.com/article/10.1140/epjd%2Fe2008-00089-y\">A. Stein, A. Pashov, P. F. Staanum, H. Kn&ouml;ckel and E. Tiemann,\
     <i>The European Physical Journal D</i>, <b>48</b>, 177 (2008)</a></li>\

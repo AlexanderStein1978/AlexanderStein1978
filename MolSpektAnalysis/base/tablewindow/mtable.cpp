@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -17,6 +17,12 @@ MTable::MTable(QWidget* parent): QTableView(parent)
 void MTable::getSelectedRows(int* Rows, int NR)
 {
 	QModelIndexList L = selectedIndexes();
+	if (0 == L.size())
+	{
+		Rows = nullptr;
+		NR = 0;
+		return;
+	}
 	int n, N = L.count(), M=0, r;
 	for (n=0; n<N; n++) if ((r = L[n].row()) > M) M=r;
 	bool *B = new bool[M];

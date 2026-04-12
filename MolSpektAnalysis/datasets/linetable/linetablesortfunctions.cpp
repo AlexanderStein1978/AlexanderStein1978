@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -15,24 +15,24 @@
 #include <cmath>
 
 
-bool isnSPG(const QTableWidget *const Tab, const int n, const int m)
+bool isnSPG(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (core->getIso(n) - 1) / 10;
+	int im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
-		return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m))) return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = ltc->getJs(n), Jsm = ltc->getJs(m);
 	if (Jsn < Jsm) return true;
 	if (Jsn > Jsm) return false;
-	int Jssn = Tab->item(n, CJss)->text().toInt(), Jssm = Tab->item(m, CJss)->text().toInt(), dn, dm;
-	if ((dn = fabs(Jssn - Jsn)) < (dm = fabs(Jssm - Jsm))) return true;
+	int Jssn = ltc->getJss(n), Jssm = ltc->getJss(m), dn, dm;
+	if ((dn = abs(Jssn - Jsn)) < (dm = abs(Jssm - Jsm))) return true;
 	if (dn > dm) return false;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
 	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
 	int jn = Fn.indexOf('.', in), jm = Fm.indexOf('.', im);
@@ -41,10 +41,9 @@ bool isnSPG(const QTableWidget *const Tab, const int n, const int m)
 	//printf("F1: %s, F2: %s\n", Fn.toAscii().data(), Fm.toAscii().data());
 	if ((in = QString::compare(Fn, Fm, Qt::CaseInsensitive)) < 0) return true;
 	if (in > 0) return false;
-	if ((in = Tab->item(n, CPN)->text().toInt()) < (im = Tab->item(m, CPN)->text().toInt())) return true;
+	if ((in = ltc->getProgression(n)) < (im = ltc->getProgression(m))) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvss)->text().toInt()) < (im = Tab->item(m, Cvss)->text().toInt())) 
-		return true;
+	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m))) return true;
 	if (in > im) return false;
 	if (Jssn < Jssm) return true;
 	return false;
@@ -64,72 +63,72 @@ bool isnSPG(TermEnergy &T1, TermEnergy &T2)
 	return false;
 }
 
-bool sortUtIvJ(const QTableWidget *const Tab, const int n, const int m)
+bool sortUtIvJ(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	double En = Tab->item(n, CEUp)->text().toDouble(), Em = Tab->item(m, CEUp)->text().toDouble();
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	double En = ltc->getUpperEnergy(n), Em = ltc->getUpperEnergy(m);
 	if (En < Em) return true;
 	if (En > Em) return false;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (ltc->getIso(n) - 1) / 10;
+	int im = (ltc->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
-		return true;
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m)))	return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = ltc->getJs(n), Jsm = ltc->getJs(m);
 	if (Jsn < Jsm) return true;
 	return false;		
 }
 
-bool sortIJvP(const QTableWidget *const Tab, const int n, const int m)
+bool sortIJvP(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (core->getIso(n) - 1) / 10;
+	int im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = core->getJs(n), Jsm = core->getJs(m);
 	if (Jsn < Jsm) return true;
 	if (Jsn > Jsm) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
-		return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m))) return true;
 	if (in > im) return false;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
 	if (Fn < Fm) return true;
 	if (Fn > Fm) return false;
-	int Jssn = Tab->item(n, CJss)->text().toInt(), Jssm = Tab->item(m, CJss)->text().toInt();
-	if ((in = fabs(Jsn - Jssn)) < (im = fabs(Jsm - Jssm))) return true;
+	int Jssn = ltc->getJss(n), Jssm = ltc->getJss(m);
+	if ((in = abs(Jsn - Jssn)) < (im = abs(Jsm - Jssm))) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, CF)->text().toInt()) < (im = Tab->item(m, CF)->text().toDouble())) return true;
+	if ((in = ltc->getFineStructureQN(n)) < (im = ltc->getFineStructureQN(m))) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvss)->text().toInt()) < (im = Tab->item(m, Cvss)->text().toInt())) 
-		return true;
+	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m))) return true;
 	if (in > im) return false;
 	if (Jssn < Jssm) return true;
 	return false;
 }
 
-bool sortForSPN(const QTableWidget *const Tab, const int n, const int m)
+bool sortForSPN(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int jn, in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int jm, im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int jn, in = (core->getIso(n) - 1) / 10;
+	int jm, im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m)))
 		return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = core->getJs(n), Jsm = core->getJs(m);
 	if (Jsn < Jsm) return true;
 	if (Jsn > Jsm) return false;
-	int Jssn = Tab->item(n, CJss)->text().toInt(), Jssm = Tab->item(m, CJss)->text().toInt(), dn, dm;
+	int Jssn = ltc->getJss(n), Jssm = ltc->getJss(m), dn, dm;
 	if ((dn = abs(Jssn - Jsn)) < (dm = abs(Jssm - Jsm))) return true;
 	if (dn > dm) return false;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = core->getSourceFile(n), Fm = core->getSourceFile(m);
 	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
 	jn = Fn.indexOf('.', in);
@@ -139,106 +138,105 @@ bool sortForSPN(const QTableWidget *const Tab, const int n, const int m)
 	//printf("F1: %s, F2: %s\n", Fn.toAscii().data(), Fm.toAscii().data());
 	if ((in = QString::compare(Fn, Fm, Qt::CaseInsensitive)) < 0) return true;
 	if (in > 0) return false;
-	if ((in = Tab->item(n, CF)->text().toInt()) < (im = Tab->item(m, CF)->text().toInt())) return true;
-	if (in > im || Tab->columnCount() <= CEUp) return false;
-	if (Tab->item(n, CEUp)->text().toDouble() < Tab->item(m, CEUp)->text().toDouble()) return true;
+	if ((in = ltc->getFineStructureQN(n)) < (im = ltc->getFineStructureQN(m))) return true;
+	if (in > im || core->columnCount() <= LineTableCore::CEUp) return false;
+	if (ltc->getUpperEnergy(n) < ltc->getUpperEnergy(m)) return true;
 	return false;
 }
 
-bool sortIvPJ(const QTableWidget *const Tab, const int n, const int m)
+bool sortIvPJ(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (core->getIso(n) - 1) / 10;
+	int im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
-		return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m))) return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = ltc->getJs(n), Jsm = ltc->getJs(m);
 	if (Jsn < Jsm) return true;
 	if (Jsn > Jsm) return false;
-	if ((in = Tab->item(n, CF)->text().toInt()) < (im = Tab->item(m, CF)->text().toDouble())) return true;
+	if ((in = ltc->getFineStructureQN(n)) < (im = ltc->getFineStructureQN(m))) return true;
 	if (in > im) return false;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
 	if (Fn < Fm) return true;
 	if (Fn > Fm) return false;
-	if ((in = Tab->item(n, Cvss)->text().toInt()) < (im = Tab->item(m, Cvss)->text().toInt())) 
-		return true;
+	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m))) return true;
 	if (in > im) return false;
-	int Jssn = Tab->item(n, CJss)->text().toInt(), Jssm = Tab->item(m, CJss)->text().toInt();
+	int Jssn = ltc->getJss(n), Jssm = ltc->getJss(m);
 	if (Jssn < Jssm) return true;
 	return false;
 }
 
-bool sortFPInt(const QTableWidget *const Tab, const int n, const int m)
+bool sortFPInt(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = core->getSourceFile(n), Fm = core->getSourceFile(m);
 	if (Fn < Fm) return true;
 	if (Fn > Fm) return false;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (core->getIso(n) - 1) / 10;
+	int im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
-		return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m))) return true;
 	if (in > im) return false;
-	int Jsn = Tab->item(n, CJs)->text().toInt(), Jsm = Tab->item(m, CJs)->text().toInt();
+	int Jsn = ltc->getJs(n), Jsm = ltc->getJs(m);
 	if (Jsn < Jsm) return true;
 	if (Jsn > Jsm) return false;
-	if ((in = Tab->item(n, CF)->text().toInt()) < (im = Tab->item(m, CF)->text().toDouble())) return true;
+	if ((in = ltc->getFineStructureQN(n)) < (im = ltc->getFineStructureQN(m))) return true;
 	if (in > im) return false;
-	double Intn = Tab->item(n, CSNR)->text().toDouble(), Intm = Tab->item(m, CSNR)->text().toDouble();
+	double Intn = ltc->getSNR(n), Intm = ltc->getSNR(m);
 	if (Intn > Intm) return true;
 	return false;
 }
 
-bool sortIJvFreq(const QTableWidget *const Tab, const int n, const int m)
+bool sortIJvFreq(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int in = (core->getIso(n) - 1) / 10;
+	int im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	in = Tab->item(n, CJs)->text().toInt(), im = Tab->item(m, CJs)->text().toInt();
+	in = core->getJs(n), im = core->getJs(m);
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) 
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m)))
 		return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, CJss)->text().toInt()) < (im = Tab->item(m, CJss)->text().toInt())) 
+	if ((in = ltc->getJss(n)) < (im = ltc->getJss(m)))
 		return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvss)->text().toInt()) < (im = Tab->item(m, Cvss)->text().toInt())) 
+	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m)))
 		return true;
 	if (in > im) return false;
-	double Intn = Tab->item(n, CWN)->text().toDouble(), Intm = Tab->item(m, CWN)->text().toDouble();
+	double Intn = ltc->getWaveNumber(n), Intm = ltc->getWaveNumber(m);
 	if (Intn > Intm) return true;
 	return false;
 }
 
-bool sortfRemDoubl(const QTableWidget *const Tab, const int n, const int m)
+bool sortfRemDoubl(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	int jn, in = (Tab->item(n, CIso)->text().toInt() - 1) / 10;
-	int jm, im = (Tab->item(m, CIso)->text().toInt() - 1) / 10;
+	int jn, in = (core->getIso(n) - 1) / 10;
+	int jm, im = (core->getIso(m) - 1) / 10;
 	if (in < im) return true;
 	if (in > im) return false;
-	in = Tab->item(n, CJs)->text().toInt(), im = Tab->item(m, CJs)->text().toInt();
+	in = core->getJs(n), im = core->getJs(m);
 	if (in < im) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, CJss)->text().toInt()) < (im = Tab->item(m, CJss)->text().toInt())) 
-		return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if ((in = ltc->getJss(n)) < (im = ltc->getJss(m))) return true;
 	if (in > im) return false;
-	if ((in = Tab->item(n, Cvss)->text().toInt()) < (im = Tab->item(m, Cvss)->text().toInt())) 
-		return true;
+	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m))) return true;
 	if (in > im) return false;
-	QString Fn = Tab->item(n, CFile)->text(), Fm = Tab->item(m, CFile)->text();
+	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
 	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
 	jn = Fn.indexOf('.', in);
@@ -247,44 +245,195 @@ bool sortfRemDoubl(const QTableWidget *const Tab, const int n, const int m)
 	Fm = Fm.mid(im, (jm >= 0 ? jm : Fm.length()) - im);
 	if ((in = QString::compare(Fn, Fm, Qt::CaseInsensitive)) < 0) return true;
 	if (in > 0) return false;
-	double Intn = Tab->item(n, CWN)->text().toDouble(), Intm = Tab->item(m, CWN)->text().toDouble();
+	double Intn = ltc->getWaveNumber(n), Intm = ltc->getWaveNumber(m);
 	if (Intn > Intm) return true;
 	if (Intn < Intm) return false;
-	if ((in = Tab->item(n, Cvs)->text().toInt()) < (im = Tab->item(m, Cvs)->text().toInt())) return true;
+	if ((in = ltc->get_vs(n)) < (im = ltc->get_vs(m))) return true;
 	return false;
 }
 
-bool sortBySpectrum(const QTableWidget *const Tab, const int n, const int m)
+bool sortBySpectrum(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	QString S1 = Tab->item(n, CFile)->text(), S2 = Tab->item(m, CFile)->text();
+	QString S1 = core->getSourceFile(n), S2 = core->getSourceFile(m);
     const int i = S1.lastIndexOf(QRegExp("[\\/]"));
     S1 = S1.right(S1.length() - i - 1);
 	S2 = S2.right(S2.length() - S2.lastIndexOf(QRegExp("[\\/]")) - 1);
 	return (QString::compare(S1, S2, Qt::CaseInsensitive) < 0 ? true : false);
 }
 
-bool sortByvs(const QTableWidget *const Tab, const int n, const int m)
+bool sortByvs(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	if (Tab->item(n, Cvs)->text().toInt() < Tab->item(m, Cvs)->text().toInt()) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if (ltc->get_vs(n) < ltc->get_vs(m)) return true;
 	return false;
 }
 
-bool sortByFrequency(const QTableWidget *const Tab, const int n, const int m)
+bool sortByFrequency(const TableViewWindowCore *const core, const int n, const int m)
 {
 	if (n==-1) return false;
 	if (m==-1) return true;
-	if (Tab->item(n, CWN)->text().toDouble() < Tab->item(m, CWN)->text().toDouble()) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if (ltc->getWaveNumber(n) < ltc->getWaveNumber(m)) return true;
 	return false;
 }
 
-bool sortByProgression(const QTableWidget *const Tab, const int n, const int m)
+bool sortByProgression(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    if (Tab->item(n, CPN)->text().toInt() < Tab->item(m, CPN)->text().toInt()) return true;
+    if (core->getProgression(n) < core->getProgression(m)) return true;
+    return false;
+}
+
+bool sortByJs(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->get_vs(n) < ltc->get_vs(m)) return true;
+    return false;
+}
+
+bool sortBy_vss(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->get_vss(n) < ltc->get_vss(m)) return true;
+    return false;
+}
+
+bool sortByJss(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getJss(n) < ltc->getJss(m)) return true;
+    return false;
+}
+
+bool sortByF(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getFineStructureQN(n) < ltc->getFineStructureQN(m)) return true;
+    return false;
+}
+
+bool sortBy_err(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getUncertainty(n) < core->getUncertainty(m)) return true;
+    return false;
+}
+
+bool sortByIso(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getIso(n) < core->getIso(m)) return true;
+    return false;
+}
+
+bool sortByFile(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getSourceFile(n) < core->getSourceFile(m)) return true;
+    return false;
+}
+
+bool sortBySNR(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getSNR(n) < ltc->getSNR(m)) return true;
+    return false;
+}
+
+bool sortByDev(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getObsCalc(n) < core->getObsCalc(m)) return true;
+    return false;
+}
+
+bool sortByComment(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getComment(n) < ltc->getComment(m)) return true;
+    return false;
+}
+
+bool sortByFCF(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getFCF(n) < ltc->getFCF(m)) return true;
+    return false;
+}
+
+bool sortByEUp(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getUpperEnergy(n) < ltc->getUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEav(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getAverageUpperEnergy(n) < ltc->getAverageUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEUma(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getDiffToAverageUpperEnergy(n) < ltc->getDiffToAverageUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByEdJ(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+	if (ltc->getDiffToNextJ(n) < ltc->getDiffToNextJ(m)) return true;
+    return false;
+}
+
+bool sortByCalc(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getCalculatedUpperEnergy(n) < ltc->getCalculatedUpperEnergy(m)) return true;
+    return false;
+}
+
+bool sortByOmC(const TableViewWindowCore *const core, const int n, const int m)
+{
+	if (n==-1) return false;
+    if (m==-1) return true;
+	const LineTableCore* ltc = reinterpret_cast<const LineTableCore*>(core);
+    if (ltc->getDeviationToCalculatedUpperEnergy(n) < ltc->getDeviationToCalculatedUpperEnergy(m)) return true;
     return false;
 }

@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,194 +9,293 @@
 #include "fitdatasortfunctions.h"
 #include "fitdata.h"
 #include "tableline.h"
-
-#include <QTableWidget>
-
-#include <cmath>
+#include "utils.h"
 
 
-bool sortIvJFreqF(const QTableWidget * const Tab, const int n, const int m)
+bool sortIvJFreqF(const TableViewWindowCore * const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    int in = Tab->item(n, 0)->text().toInt(), Jsn = Tab->item(n, 2)->text().toInt(), Jsm = Tab->item(m, 2)->text().toInt();
-    int im = Tab->item(m, 0)->text().toInt(), Jssn = Tab->item(n, 4)->text().toInt(), Jssm = Tab->item(m, 4)->text().toInt();
+    int in = core->getIso(n), Jsn = core->getJ(n), Jsm = core->getJ(m);
+    int im = core->getIso(m), Jssn = core->getJs(n), Jssm = core->getJs(m);
     if (in < im) return true;
     if (in > im) return false;
-    in = Tab->item(n, 1)->text().toInt(), im = Tab->item(m, 1)->text().toInt();
+    in = core->get_v(n), im = core->get_v(m);
     if (in < im) return true;
     if (in > im) return false;
     if ((in = abs(Jssn - Jsn)) < (im = abs(Jsm - Jssm))) return true;
     if (in > im) return false;
     if (Jsn < Jsm) return true;
     if (Jsn > Jsm) return false;
-    if ((in = Tab->item(n, 3)->text().toInt()) < (im = Tab->item(m, 3)->text().toInt())) 
+<<<<<<< HEAD
+    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m))))
         return true;
+=======
+    if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
+>>>>>>> linetable
     if (in > im) return false;
     if (Jssn < Jssm) return true;
     if (Jssn > Jssm) return false;
-    double Intn = Tab->item(n, 8)->text().toDouble(), Intm = Tab->item(m, 8)->text().toDouble();
+    double Intn = core->getEnergy(n), Intm = core->getEnergy(m);
     if (Intn > Intm) return true;
     return false;
 }
 
-bool SortvsIvJ(const QTableWidget *const Tab, const int n, const int m)
+bool SortvsIvJ(const TableViewWindowCore *const core, const int n, const int m)
 {
     int in, im;
     if (n==-1) return false;
     if (m==-1) return true;
-    if ((in = Tab->item(n, 3)->text().toInt()) > (im = Tab->item(m, 3)->text().toInt()))
+<<<<<<< HEAD
+    if ((in = stdStringToInt(Tab->get_vs(n))) > (im = stdStringToInt(Tab->get_vs(m))))
         return true;
+=======
+    if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
+>>>>>>> linetable
     if (in < im) return false;
-    if ((in = Tab->item(n, 0)->text().toInt()) < (im = Tab->item(m, 0)->text().toInt()))
+    if ((in = core->getIso(n)) < (im = core->getIso(m)))
         return true;
     if (in > im) return false;
-    if ((in = Tab->item(n, 1)->text().toInt()) < (im = Tab->item(m, 1)->text().toInt()))
+    if ((in = core->get_v(n)) < (im = core->get_v(m)))
         return true;
     if (in > im) return false;
-    if ((in = Tab->item(n, 2)->text().toInt()) < (im = Tab->item(m, 2)->text().toInt()))
+    if ((in = core->getJ(n)) < (im = core->getJ(m)))
         return true;
     if (in > im) return false;
-    if ((in = Tab->item(n, 4)->text().toInt()) < (im = Tab->item(m, 4)->text().toInt()))
+    if ((in = core->getJs(n)) < (im = core->getJs(m)))
         return true;
     return false;
 }
 
-bool sortIefJFreq(const QTableWidget *const Tab, const int n, const int m)
+bool sortIefJFreq(const TableViewWindowCore *const core, const int n, const int m)
 {
     int in, im, Jn, Jm;
     if (n==-1) return false;
     if (m==-1) return true;
-    if ((in = Tab->item(n, 0)->text().toInt()) < (im = Tab->item(m, 0)->text().toInt())) return true;
+    if ((in = core->getIso(n)) < (im = core->getIso(m))) return true;
     if (in > im) return false;
-    if ((in = fabs((Jn = Tab->item(n, 2)->text().toInt()) - Tab->item(n, 4)->text().toInt()))  
-         < (im = fabs((Jm = Tab->item(m, 2)->text().toInt()) - Tab->item(m, 4)->text().toInt()))) return true;
+    if ((in = abs((Jn = core->getJ(n)) - core->getJs(n)))
+         < (im = abs((Jm = core->getJ(m)) - core->getJs(m)))) return true;
     if (in > im) return false;
     if (Jn < Jm) return true;
     if (Jn > Jm) return false;
-    if (Tab->item(n, 8)->text().toDouble() < Tab->item(m, 8)->text().toDouble()) return true;
+    if (core->getEnergy(n) < core->getEnergy(m)) return true;
     return false;
 }
 
-bool sortIefJvFreq(const QTableWidget *const Tab, const int n, const int m)
+bool sortIefJvFreq(const TableViewWindowCore *const core, const int n, const int m)
 {
     int in, im, Jn, Jm;
     if (n==-1) return false;
     if (m==-1) return true;
-    if ((in = Tab->item(n, 0)->text().toInt()) < (im = Tab->item(m, 0)->text().toInt())) return true;
+    if ((in = core->getIso(n)) < (im = core->getIso(m))) return true;
     if (in > im) return false;
-    if ((in = fabs((Jn = Tab->item(n, 2)->text().toInt()) - Tab->item(n, 4)->text().toInt()))
-          < (im = fabs((Jm = Tab->item(m, 2)->text().toInt()) - Tab->item(m, 4)->text().toInt()))) return true;
+    if ((in = abs((Jn = core->getJ(n)) - core->getJs(n)))
+          < (im = abs((Jm = core->getJ(m)) - core->getJs(m)))) return true;
     if (in > im) return false;
     if (Jn < Jm) return true;
     if (Jn > Jm) return false;
-    if ((in = Tab->item(n, fdcv)->text().toInt()) < (im = Tab->item(m, fdcv)->text().toInt())) return true;
+    if ((in = core->get_v(n)) < (im = core->get_v(m))) return true;
     if (in > im) return false;
-    if (Tab->item(n, 8)->text().toDouble() < Tab->item(m, 8)->text().toDouble()) return true;
+    if (core->getEnergy(n) < core->getEnergy(m)) return true;
     return false;
 }
 
-bool sortIefJFreqv(const QTableWidget *const Tab, const int n, const int m)
+bool sortIefJFreqv(const TableViewWindowCore *const core, const int n, const int m)
 {
     int in, im, Jn, Jm;
     double Im, In;
     if (n==-1) return false;
     if (m==-1) return true;
-    if ((in = Tab->item(n, 0)->text().toInt()) < (im = Tab->item(m, 0)->text().toInt())) return true;
+    if ((in = core->getIso(n)) < (im = core->getIso(m))) return true;
     if (in > im) return false;
-    if ((in = fabs((Jn = Tab->item(n, 2)->text().toInt()) - Tab->item(n, 4)->text().toInt()))  
-         < (im = fabs((Jm = Tab->item(m, 2)->text().toInt()) - Tab->item(m, 4)->text().toInt()))) return true;
+    if ((in = abs((Jn = core->getJ(n)) - core->getJs(n)))
+         < (im = abs((Jm = core->getJ(m)) - core->getJs(m)))) return true;
     if (in > im) return false;
     if (Jn < Jm) return true;
     if (Jn > Jm) return false;
-    if ((In = Tab->item(n, 8)->text().toDouble()) < (Im = Tab->item(m, 8)->text().toDouble())) return true;
+    if ((In = core->getEnergy(n)) < (Im = core->getEnergy(m))) return true;
     if (In > Im) return false;
-    if ((in = Tab->item(n, 1)->text().toInt()) < (im = Tab->item(m, 1)->text().toInt())) return true;
+    if ((in = core->get_v(n)) < (im = core->get_v(m))) return true;
     if (in > im) return false;
-    if ((in = Tab->item(n, 3)->text().toInt()) < (im = Tab->item(m, 3)->text().toInt())) return true;
+<<<<<<< HEAD
+    if ((in = stdStringToInt(Tab->get_vs(n))) < (im = stdStringToInt(Tab->get_vs(m)))) return true;
+=======
+    if ((in = reinterpret_cast<const FitDataCore*>(core)->get_vs(n).toInt()) < (im = reinterpret_cast<const FitDataCore*>(core)->get_vs(m).toInt())) return true;
+>>>>>>> linetable
     return false;
 }
 
-bool sortByProg(const QTableWidget *const Tab, const int n, const int m)
+bool sortByProg(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    QString LTn = Tab->item(n, 5)->text(), LTm = Tab->item(m, 5)->text();
+    QString LTn = core->getSourceFile(n), LTm = core->getSourceFile(m);
     if (LTn < LTm) return true;
     if (LTn > LTm) return false;
-    if (Tab->item(n, 6)->text().toInt() < Tab->item(m, 6)->text().toInt()) return true;
+    if (core->getProgression(n) < core->getProgression(m)) return true;
     return false;
 }
 
-bool sortbyDeviation(const QTableWidget *const Tab, const int n, const int m)
+bool sortbyDeviation(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    if (fabs(Tab->item(n, 10)->text().toDouble()) > fabs(Tab->item(m, 10)->text().toDouble())) return true;
+    if (fabs(core->getObsCalc(n)) > fabs(core->getObsCalc(m))) return true;
     return false;
 }
 
-bool sortbyDevR(const QTableWidget *const Tab, const int n, const int m)
+bool sortbyDevR(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    if (fabs(Tab->item(n, 11)->text().toDouble()) > fabs(Tab->item(m, 11)->text().toDouble())) return true;
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    if (fabs(ftc->getDevRatio(n)) > fabs(ftc->getDevRatio(m))) return true;
     return false;
 }
 
-bool sortforTFGS(const QTableWidget *const Tab, const int n, const int m)
+bool sortforTFGS(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    QString Bn = Tab->item(n, 3)->text(), Bm = Tab->item(m, 3)->text();
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    QString Bn = ftc->get_vs(n), Bm = ftc->get_vs(m);
     if (Bn == "TE" && Bm != "TE") return true;
     if (Bn != "TE" && Bm == "TE") return false;
-    QString Sn = Tab->item(n, 5)->text(), Sm = Tab->item(m, 5)->text();
+    QString Sn = ftc->getSource(n), Sm = ftc->getSource(m);
     if (Sn < Sm) return true;
     if (Sn > Sm) return false;
     if (Bn == "nA" && Bm != "nA") return true;
     if (Bn != "nA" && Bm == "nA") return false;
+<<<<<<< HEAD
+    int vn = stdStringToInt(Bn), vm = stdStringToInt(Bm);
+=======
     int vn = Bn.toInt(), vm = Bm.toInt();
+>>>>>>> linetable
     if (vn < vm) return true;
     if (vn > vm) return false;
-    int Jn = Tab->item(n, 4)->text().toInt(), Jm = Tab->item(m, 4)->text().toInt();
+    int Jn = ftc->getJs(n), Jm = ftc->getJs(m);
     if (Jn < Jm) return true;
     if (Jn > Jm) return false;
-    if (Tab->item(n, 6)->text().toInt() < Tab->item(m, 6)->text().toInt()) return true;
+    if (ftc->getProgression(n) < ftc->getProgression(m)) return true;
     return false;
 }
 
-bool sortByElState(const QTableWidget *const Tab, const int n, const int m)
+bool sortByElState(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    if (Tab->item(n, fdcLineElState)->text() < Tab->item(m, fdcLineElState)->text()) return true;
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    if (ftc->getOtherState(n) < ftc->getOtherState(m)) return true;
     return false;
 }
 
-bool sortForExtractNewOrChanged(const QTableWidget * const Tab, const int n, const int m)
+bool sortForExtractNewOrChanged(const TableViewWindowCore *const core, const int n, const int m)
 {
     if (n==-1) return false;
     if (m==-1) return true;
-    const QString S1(Tab->item(n, fdcLineElState)->text()), S2(Tab->item(m, fdcLineElState)->text());
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    const QString S1(ftc->getOtherState(n)), S2(ftc->getOtherState(m));
     if (S1 < S2) return true;
     if (S1 > S2) return false;
-    const int Iso1 = Tab->item(n, fdcIso)->text().toInt(), Iso2 = Tab->item(m, fdcIso)->text().toInt();
+    const int Iso1 = ftc->getIso(n), Iso2 = ftc->getIso(m);
     if (Iso1 < Iso2) return true;
     if (Iso1 > Iso2) return false;
-    const int v1 = Tab->item(n, fdcv)->text().toInt(), v2 = Tab->item(m, fdcv)->text().toInt();
+    const int v1 = ftc->get_v(n), v2 = ftc->get_v(m);
     if (v1 < v2) return true;
     if (v1 > v2) return false;
-    const int J1 = Tab->item(n, fdcJ)->text().toInt(), J2 = Tab->item(m, fdcJ)->text().toInt();
+    const int J1 = ftc->getJ(n), J2 = ftc->getJ(m);
     if (J1 < J2) return true;
     if (J1 > J2) return false;
-    const bool ef1 = (Tab->item(n, fdcJs)->text().toInt() == J1), ef2 = (Tab->item(m, fdcJs)->text().toInt() == J2);
+    const bool ef1 = (ftc->getJs(n) == J1), ef2 = (ftc->getJs(m) == J2);
     if (ef1 && !ef2) return true;
     if (!ef1 && ef2) return false;
-    const QString Source1(Tab->item(n, fdcSource)->text()), Source2(Tab->item(m, fdcSource)->text());
+    const QString Source1(ftc->getSource(n)), Source2(ftc->getSource(m));
     if (Source1 < Source2) return true;
     if (Source1 > Source2) return false;
-    const double E1 = Tab->item(n, fdcEnergy)->text().toDouble(), E2 = Tab->item(m, fdcEnergy)->text().toDouble();
+    const double E1 = ftc->getEnergy(n), E2 = ftc->getEnergy(m);
     if (E1 < E2) return true;
+    return false;
+}
+
+bool sortByIsoColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getIso(n) < core->getIso(m)) return true;
+    return false;
+}
+
+bool sortBy_vColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->get_v(n) < core->get_v(m)) return true;
+    return false;
+}
+
+bool sortByJColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getJ(n) < core->getJ(m)) return true;
+    return false;
+}
+
+bool sortBy_vsColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    if (ftc->get_vs(n) < ftc->get_vs(m)) return true;
+    return false;
+}
+
+bool sortByJsColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getJs(n) < core->getJs(m)) return true;
+    return false;
+}
+
+bool sortBySourceColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    const FitDataCore* ftc = reinterpret_cast<const FitDataCore*>(core);
+    if (ftc->getSource(n) < ftc->getSource(m)) return true;
+    return false;
+}
+
+bool sortByProgressionColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getProgression(n) < core->getProgression(m)) return true;
+    return false;
+}
+
+bool sortByFileColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getSourceFile(n) < core->getSourceFile(m)) return true;
+    return false;
+}
+
+bool sortByEnergyColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getEnergy(n) < core->getEnergy(m)) return true;
+    return false;
+}
+
+bool sortByUncertaintyColumn(const TableViewWindowCore *const core, const int n, const int m)
+{
+    if (n==-1) return false;
+    if (m==-1) return true;
+    if (core->getUncertainty(n) < core->getUncertainty(m)) return true;
     return false;
 }

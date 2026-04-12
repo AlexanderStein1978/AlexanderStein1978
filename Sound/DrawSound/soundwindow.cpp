@@ -1,3 +1,11 @@
+//
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+//
+// Copyright: See README file that comes with this source code
+//
+//
+
+
 #include "soundwindow.h"
 #include "frequencywindow.h"
 #include "datensatz.h"

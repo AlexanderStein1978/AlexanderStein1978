@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,13 +9,13 @@
 #define MEASUREDTERMENERGIES_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 
 class MainWindow;
 class Molecule;
 
 
-class MeasuredTermEnergies : public TableWindow
+class MeasuredTermEnergies : public TableWidgetWindow
 {
 	public:
 		MeasuredTermEnergies(MainWindow *MW = 0);

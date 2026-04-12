@@ -7,11 +7,19 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_library(TableWindow STATIC
+	include/basedata.h
+	include/tableviewwindow.h
+	include/tableviewwindowcore.h
+	include/tableviewwindowcoresortfunctor.h
+	include/tablewidgetwindow.h
 	include/tablewindow.h
 	include/viewlist.h
 	include/mtable.h
 	include/tabsortfunctor.h
     mtable.cpp
+    tableviewwindow.cpp
+    tableviewwindowcore.cpp
+    tablewidgetwindow.cpp
 	tablewindow.cpp
 )
 

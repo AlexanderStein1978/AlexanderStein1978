@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -20,6 +20,11 @@ public:
 	MTable(QWidget *parent = 0);
 	void getSelectedRows(int *Rows, int N);
 	
+	inline QModelIndexList getSelectedIndexes()
+	{
+		return selectedIndexes();
+	}
+
 protected slots:
 	
 	inline void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -27,7 +32,7 @@ protected slots:
 		QTableView::selectionChanged(selected, deselected);
 		emit SelChanged();
 	}
-	
+
 signals:
 	void SelChanged();
 };

@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -13,7 +13,7 @@
 #include <QTableWidget>
 #include <QProcess>
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 #include "includepot.h"
 #include "processview.h"
 
@@ -40,7 +40,7 @@ class QCheckBox;
 class QTime;
 
 
-class MonteCarloSim : public TableWindow
+class MonteCarloSim : public TableWidgetWindow
 {
 	Q_OBJECT
 	

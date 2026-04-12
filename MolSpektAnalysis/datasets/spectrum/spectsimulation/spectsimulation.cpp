@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -70,7 +70,6 @@ SpectSimulation::SpectSimulation(MainWindow *mw)
 SpectSimulation::~SpectSimulation()
 {
 	if (Lines != 0) delete[] Lines;
-	if (Iso != 0) delete Iso;
 }
 
 void SpectSimulation::cExcProfile(double Cf, double I, double Lf, double &Rs, double &Re, 
@@ -225,7 +224,7 @@ bool SpectSimulation::readData(QString FileName)
 		QMessageBox::information(this, tr("QT4MolSpektAn"), tr("Wrong file format!"));
 		return false;
 	}
-	for (n=0; n < NI; n++) IsoN[n] = Iso->getIsoName(n);
+	for (n=0; n < NI; n++) IsoN[n] = Iso->Isoname[n];
 	Daten->reinit();
 	while (!S.atEnd())
 	{
@@ -959,7 +958,7 @@ bool SpectSimulation::writeData(QString FileName)
 	S << "Table of lines:\n";
 	S << "Molecule:\tupper state:\tlower state:\tJ'\tv'\tJ''\tv''\tfrequency:\tintensity:\n";
 	for (i=0; i < NumLines; i++) 
-			S << Iso->getIsoName(Lines[i].I) << "\t" << Lines[i].Su->getName() << "\t"
+			S << Iso->Isoname[Lines[i].Iso] << "\t" << Lines[i].Su->getName() << "\t"
 				<< Lines[i].Sl->getName() << "\t" << Lines[i].vs << "\t" << Lines[i].Js << "\t"
 				<< Lines[i].vss << "\t" << Lines[i].Jss << "\t" << QString::number(Lines[i].R, 'f', 11)
 				<< "\t" << QString::number(Lines[i].I, 'g', 8) << "\n";

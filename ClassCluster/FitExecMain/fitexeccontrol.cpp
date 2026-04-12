@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -281,7 +281,7 @@ void FitExecControl::saveResults()
 
     double **drawData = Create(92000, 2);
     DataSortFunctor sorter(angles, 92, 1000);
-    int *sort = utils::heapSort(sorter, 92000);
+    int *sort = heapsort::heapSort(sorter, 92000);
     int **sortData = sorter.getResult(sort);
     DiagWindow* resultWindow = new DiagWindow;
     for (int n=0; n<92000; ++n)

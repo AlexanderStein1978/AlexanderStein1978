@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -41,7 +41,7 @@ public:
 	bool isSaved();
 	virtual bool isAssigned();
 	void setMainWindow(MainWindow *MW);
-	int TextHeight(QFont Font, QString Text);
+	int TextHeight(QFont Font, QString Text, int* groundOffset = nullptr);
 	int TextWidth(QFont Font, QString Text);
 	void WriteText(QPainter &P, int x, int y, QString Text, QFont Font, int Orientation);
 	virtual void Print(QPrinter &P);
@@ -49,8 +49,9 @@ public:
 	virtual bool askForQuit();
     QString getAbsolutePath(QString &CurrentPath, QString &MolPath);
     QString getRelativePath(const QString &CurrentPath, const QString &MolPath);
+	void setImported();
 
-    QString getRelativePath(const QString &MolPath)
+	QString getRelativePath(const QString &MolPath)
     {
         return getRelativePath(FileName, MolPath);
     }
@@ -84,7 +85,6 @@ public slots:
     void Saved();
 
 protected:
-	void setImported();
 	void setNewCreated();
 	void setFilter(QString filter);
 	void setFileExt(QString FileExt);
@@ -104,8 +104,7 @@ signals:
 	void fileNameChanged();
 	void propertiesChanged();
 private:
-	void Text(QPainter &P, int x, int y, int &w, int &h, QString T, const QFont F, int O, 
-					 bool write);
+	void Text(QPainter &P, int x, int y, int &w, int &h, int& groundOffset, QString T, const QFont F, int O, bool write);
 	
     bool m_fileNameChanged, blockChangeSignal;
 	bool changed;

@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -423,13 +423,14 @@ void MDIChild::setImported()
 }
 
 
-int MDIChild::TextHeight(QFont F, QString T)
+int MDIChild::TextHeight(QFont F, QString T, int* groundOffset)
 {
 	//printf("Beginn TextHeight\n");
-	int w, h;
+	int w, h, g;
 	QPainter P;
 	//F = QFont();
-	Text(P, 0, 0, w, h, T, F, 0, false);
+	Text(P, 0, 0, w, h, g, T, F, 0, false);
+	if (nullptr != groundOffset) *groundOffset = g;
 	//printf("Ende TextHeight\n");
 	return h;
 }
@@ -437,24 +438,23 @@ int MDIChild::TextHeight(QFont F, QString T)
 int MDIChild::TextWidth(QFont F, QString T)
 {
 	QPainter P;
-	int w, h;
-	Text(P, 0, 0, w, h, T, F, 0, false);
+	int w, h, g;
+	Text(P, 0, 0, w, h, g, T, F, 0, false);
 	return w;
 }
 
 void MDIChild::WriteText(QPainter &P, int x, int y, QString T, QFont Font, int Orientation)
 {
-	int w, h;
-	Text(P, x, y, w, h, T, Font, Orientation, true);
+	int w, h, g;
+	Text(P, x, y, w, h, g, T, Font, Orientation, true);
 }
 
-void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const QFont F, int O,
-							 bool write)
+void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, int& groundOffset, QString T, const QFont F, int O, bool write)
 {
-	//printf("Text: T=%s\n", T.ascii());
-	w=h=0;
+	//printf("Text: T=%s\n", T.toStdString().c_str());
+	groundOffset = w = h = 0;
 	if (T.length() == 0) return;
-	int n=0, m=0, o=0, p=0, b, nw, nh, s=0, shift;
+	int n=0, m=0, o=0, p=0, b, nw, nh, s=0, shift, newGroundOffset;
 	double B;
 	//F = QFont();
 	QFontMetricsF FM(F);
@@ -514,9 +514,9 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const
 	else if ((n = T.indexOf("\\leftarrow")) != -1) s=50;
 	if (s!=0)
 	{
-		if (n>0) Text(PD, x, y, w, h, T.left(n), F, O, write);
+		if (n>0) Text(PD, x, y, w, h, newGroundOffset, T.left(n), F, O, write);
 		else w=h=0;
-		if (s < 0 && (T.length() > n+2 ? T[n+1] == '{' : false))
+		if (s < 0 && T.length() > n+2 && T[n+1] == '{')
 		{
 			m = T.indexOf('}', n+2);
 			o = T.indexOf('{', m+1);
@@ -701,10 +701,11 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const
 				else SF.setPointSizeF(B = 0.75 * F.pointSizeF());
 				if (s == -1) shift = - FM.ascent() / 2;
 				else shift = FM.ascent() / 2;
-				if (O==0) Text(PD, x+w, y + shift, nw, nh, T.mid(o, m-o), SF, O, write);
-				else Text(PD, x + shift, y - w, nw, nh, T.mid(o, m-o), SF, O, write);
+				if (O==0) Text(PD, x+w, y + shift, nw, nh, newGroundOffset, T.mid(o, m-o), SF, O, write);
+				else Text(PD, x + shift, y - w, nw, nh, newGroundOffset, T.mid(o, m-o), SF, O, write);
 				w += nw;
-				if ((b = FM.ascent() / 2 + nh) > h) h = b;
+				if ((b = nh + abs(shift)) > h) h = b;
+				if (s == -2) groundOffset = shift + newGroundOffset;
 				//printf("T.length=%d, p=%d\n", T.length(), p);
 			}
 			else if (s == 49 || s == 50)
@@ -893,18 +894,19 @@ void MDIChild::Text(QPainter &PD, int x, int y, int &w, int &h, QString T, const
 					break;
 				}
 				SF.setFamily("Symbol");
-				if (O==0) Text(PD, x+w, y, nw, nh, L, SF, O, write);
-				else Text(PD, x, y-w, nw, nh, L, SF, O, write);
+				if (O==0) Text(PD, x+w, y, nw, nh, newGroundOffset, L, SF, O, write);
+				else Text(PD, x, y-w, nw, nh, newGroundOffset, L, SF, O, write);
 				w += nw;
 				if (nh > h) h = nh;
 			}
 		}
 		if (p < T.length())
 		{
-			if (O==0) Text(PD, x+w, y, nw, nh, T.right(T.length() - p), F, O, write);
-			else Text(PD, x, y-w, nw, nh, T.right(T.length() - p), F, O, write);
+			if (O==0) Text(PD, x+w, y, nw, nh, newGroundOffset, T.right(T.length() - p), F, O, write);
+			else Text(PD, x, y-w, nw, nh, newGroundOffset, T.right(T.length() - p), F, O, write);
 			w += nw;
 			if (nh > h) h = nh;
+			if (newGroundOffset > groundOffset) groundOffset = newGroundOffset;
 		}
 	}
 	else

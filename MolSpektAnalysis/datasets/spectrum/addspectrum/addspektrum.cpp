@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -895,7 +895,6 @@ void AddSpectrum::stateChanged()
                 ResFit = newResidualFit;
                 ResFit->setFitData(NPoints, points, isoTab->relRedMass[Iso], State->getOmega(), mol->getJStep(Iso), State->getBe());
                 setEnergyReference();
-                delete isoTab;
             }
             else
             {

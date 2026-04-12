@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -27,10 +27,11 @@
 #include <QStringList>
 #include <QGridLayout>
 
+
 using std::numeric_limits;
 
-DunTable::DunTable(MainWindow *MW, Molecule *Mol) 
-	: TableWindow(DunhamTable, MW, Mol)
+
+DunTable::DunTable(MainWindow *MW, Molecule *Mol) : TableWidgetWindow(DunhamTable, MW, Mol)
 {
 	numCoefficients = vp1 = vp2 = Jp1 = Jp2 = 0;
 	State = 0;
@@ -44,7 +45,6 @@ DunTable::DunTable(MainWindow *MW, Molecule *Mol)
 	Saved();
 	printf("End DunTable::DunTable\n");
 }
-
 
 DunTable::~DunTable()
 {
@@ -407,7 +407,6 @@ void DunTable::calcTermEnergies(TermTable *&TT, bool show, int vMax, int JMax)
 	Destroy(vF, Iso->numIso);
 	Destroy(JF, Iso->numIso);
 	if (SpinRF != 0) Destroy(SpinRF, 2, Iso->numIso, JMax + 1);
-	delete Iso;
 	if (TT == 0) 
 	{
 		TT = MW->CreateTermTable();
@@ -487,7 +486,6 @@ void DunTable::removeFinestructure(TableLine *&Data, int &N)
 	}
 	Destroy(vF, Iso->numIso, mv + 1);
 	Destroy(JF, 2, Iso->numIso, mJ + 1);
-	delete Iso;
 }
 
 void DunTable::removeLambdaDoubling(TableLine *&Data, int &N)
@@ -521,7 +519,6 @@ void DunTable::removeLambdaDoubling(TableLine *&Data, int &N)
 		Data[n].WN -= LD[j] * vF[Data[n].Iso][Data[n].vss][LDvF[j]] * JF[Data[n].Iso][Data[n].Jss][LDJF[j]];
 	Destroy(vF, Iso->numIso, mv + 1);
 	Destroy(JF, Iso->numIso, mJ + 1);
-	delete Iso;
 }
 
 void DunTable::applyAdiabaticCorrection(TableLine*& Data, int& N)
@@ -555,7 +552,6 @@ void DunTable::applyAdiabaticCorrection(TableLine*& Data, int& N)
 							* JF[Data[n].Iso][Data[n].Jss][ACJF[j]];
 	Destroy(vF, Iso->numIso, mv + 1);
 	Destroy(JF, Iso->numIso, mJ + 1);
-	delete Iso;
 }
 
 bool DunTable::readData(QString FileName)
@@ -1178,7 +1174,6 @@ void DunTable::Fit(int mk, int ml, bool RemD, int vc1, int Jc1, int vc2, int Jc2
 	//printf("Vor fitDunCoeff\n");
 	if (FS) FQS = fitDunCoeff(N, nP, FD, DunList, ml, mk, nC, vF, JF, Res, err, Iso);
 	else FQS = fitDunSet(N, nP, FD, DunList, ml, mk, nC, vF, JF, Res, err, RemD, Iso);
-	delete Iso;
 	//printf("Nach fitDunCoeff\n");	
 	for (n=0; n < nC; n++) SA[n] = n;
 	for (iB = 0; iB != -1; ) for (n=1, iB = -1; n < nC; n++)

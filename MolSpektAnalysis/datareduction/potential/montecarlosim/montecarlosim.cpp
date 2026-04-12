@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -32,7 +32,7 @@
 #include <QTimerEvent>
 
 
-MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWindow(FitSeriesResultTable, MW)
+MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWidgetWindow(FitSeriesResultTable, MW)
 {
 	QString WorkDir, WorkDir2, WorkDir3, ResultLogFile, FitProg, FitData, FitInFile1;
 	QString FitInFile2, InitPotDir, PotentialName, FileN, ServerIP;

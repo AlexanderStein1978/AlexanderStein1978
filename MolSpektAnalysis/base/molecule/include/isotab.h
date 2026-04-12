@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -11,22 +11,21 @@
 
 #include <QString>
 
+class QPixmap;
+
 
 struct IsoTab
 {
-    IsoTab(int NumIso);
+    IsoTab();
     ~IsoTab();
-    QString getIsoName(int N);
-
-    inline int getIsoIndex(int mI1, int mI2)
-    {
-        for (int n=0; n < numIso; ++n) if ((mNumIso1[n] == mI1 && mNumIso2[n] == mI2) || (mNumIso1[n] == mI2 && mNumIso2[n] == mI1)) return n;
-        return -1;
-    }
+    int getIsoIndex(int mI1, int mI2);
+    void createArrays();
 	
-    QString *chSymb1, *chSymb2, *texName;
-    int numIso, *mNumIso1, *mNumIso2, refIso, *JStep;
-    double *relNA, *redMass, *relRedMass, *rootRRM, *mIso1, *mIso2;
+    QString *chSymb1 = nullptr, *chSymb2 = nullptr, *texName = nullptr, *Isoname = nullptr;
+    int numIso = 0, *mNumIso1 = nullptr, *mNumIso2 = nullptr, refIso = 0, *JStep = nullptr;
+    double *relNA = nullptr, *redMass = nullptr, *relRedMass = nullptr, *rootRRM = nullptr, *mIso1 = nullptr, *mIso2 = nullptr;
+    QPixmap *IsoImage = nullptr;
+    bool moleculeOwned = false;
 };
 
 #endif

@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -9,7 +9,7 @@
 #define FCFTAB_H
 
 
-#include "tablewindow.h"
+#include "tablewidgetwindow.h"
 
 
 class MainWindow;
@@ -17,13 +17,13 @@ class Molecule;
 class Transition;
 
 
-class FCFTab : public TableWindow
+class FCFTab : public TableWidgetWindow
 {
 	Q_OBJECT
 	
 public:
     FCFTab(MainWindow* MW = 0, Molecule* M = 0);
-	~FCFTab();
+	virtual ~FCFTab();
 	void setData(QString Pot1, QString Pot2, int *NIso, int **NJ, int ***Nvs, int ***Nvss, 
 				 float *****Data);
     bool calcFCF(ElState *State1, ElState *State2, int Maxvs, int Maxvss, int MaxJ, int NumWFPoints);

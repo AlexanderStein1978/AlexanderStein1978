@@ -28,7 +28,7 @@ reproduce the bug, the more likely is it, that I will find the time to fix it an
 I do not mind if you ask me questions how to use this program.
 If this program should significantly help you creating results you use for publications,
 I would be grateful if you could cite one of our articles significant parts of the results published in were created under the use of this program:
-You can reach to me at "webmaster@alexandersteinchanneler1978.com"
+You can reach to me at "AlexanderStein@t-online.de"
 
 I do not mind if you ask me questions how to use this program.
 

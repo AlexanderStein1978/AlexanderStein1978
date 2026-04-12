@@ -10,10 +10,13 @@ add_library(LineTable STATIC
 	include/fspdiag.h
 	include/linetable.h
 	include/linetablesortfunctions.h
+	include/linetablebasedata.h
+	include/linetablecore.h
 	include/tableline.h
 	include/termenergy.h
     fspdiag.cpp
 	linetable.cpp
+	linetablecore.cpp
 	questionbox.cpp
 	questionbox.h
 	linetablesortfunctions.cpp

@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <webmaster@alexandersteinchanneler1978.com>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
 //
 // Copyright: See README file that comes with this source code
 //
@@ -25,7 +25,7 @@
 #include <QListWidget>
 #include <QRadioButton>
 
-TermTable::TermTable(MainWindow *MW) : TableWindow(TermEnergyTable, MW)
+TermTable::TermTable(MainWindow *MW) : TableViewWindow(nullptr, TermEnergyTable, MW)
 {
 	State = 0;
 	NPerturbations = 0;
@@ -286,7 +286,9 @@ bool TermTable::readData(QString FileName)
 				}
 			}
 			IsoM = ic;
-			IsoTab *IsoT = new IsoTab(ic);
+			IsoTab *IsoT = new IsoTab;
+			IsoT->numIso = ic;
+			IsoT->createArrays();
 			int *Z = new int[ic];
 			for (i=0; i < ic; i++)
 			{
@@ -575,7 +577,7 @@ bool TermTable::OpenXnfitTO(QString Dateiname)
 	if (molecule != 0) AssignIso();
 	else
 	{
-		IsoTab *IsoT = new IsoTab(1);
+		IsoTab *IsoT = new IsoTab;
 		tDat->setIso(IsoT);
 		int *Z = new int;
 		*Z = 1;
@@ -736,8 +738,7 @@ void TermTable::GetIsoZ(int IsoI, int &I1, int &I2)
 	printf("IsoI=%d,Z=%d\n", IsoI, Z[IsoI]);
 	IsoTab *Iso = molecule->getIso();
 	I1 = Iso->mNumIso1[Z[IsoI]];
-	I2 = Iso->mNumIso2[Z[IsoI]];
-	delete Iso;*/
+	I2 = Iso->mNumIso2[Z[IsoI]];*/
 }
 
 ElState* TermTable::getElState()
