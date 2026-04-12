@@ -394,64 +394,39 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
         double ***data = Create(mNumChannels, nSamples, 2);
         for (i=pos=0, currentTime = 0.0; i < nSamples; ++i, currentTime += timeStep, pos += frameSize)
         {
-            for (n=0; n < mNumChannels; ++n) data[n][i][0] = currentTime;
-            switch (mSampleType)
-            {
-                case QAudioFormat::UnSignedInt:
-                    switch (mSampleSize)
-                    {
-                        case 8:
-                            for (n=0; n < mNumChannels; ++n) data[n][i][1] = static_cast<u_int8_t>(inputData[pos + n]);
-                            break;
-                        case 16:
-                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const u_int16_t*>(inputData + p);
-                            break;
-                        default:
-                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
-                            {
-                                u_int32_t sample = 0;
-                                memcpy(&sample, inputData + p, sampleSizeBytes);
-                                data[n][i][1] = sample;
-                                break;
-                            }
-                    }
-                case QAudioFormat::Float:
-                    if (mSampleSize < 32) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
-                    {
-                        _Float32 sample = 0.0f;
-                        memcpy(&sample, inputData + p, sampleSizeBytes);
-                        data[n][i][1] = sample;
-                    }
-                    else if (mSampleSize == 32) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const _Float32*>(inputData + p);
-                    else if (mSampleSize < 64) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
-                    {
-                        double sample = 0.0;
-                        memcpy(&sample, inputData + p, sampleSizeBytes);
-                        data[n][i][1] = sample;
-                    }
-                    else if (mSampleSize == 64) for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const double*>(inputData + p);
-                    // printf("(%g|%g), ", data[i][0], data[i][1]);
+            for (n=0; n < mNumChannels; ++n)
+			{
+				data[n][i][0] = currentTime;
+				switch (mSampleType)
+				{
+					case QAudioFormat::UInt8:
+                    data[n][i][1] = static_cast<uint8_t>(inputData[pos + n]);
                     break;
-                case QAudioFormat::Unknown:
-                case QAudioFormat::SignedInt:
+				case QAudioFormat::Int16:
+					data[n][i][1] = *reinterpret_cast<const uint16_t*>(inputData + pos + n * sampleSizeBytes);
+					break;
+				case QAudioFormat::Int32:
+					data[n][i][1] = *reinterpret_cast<const uint32_t*>(inputData + pos + n * sampleSizeBytes);
+					break;
+                case QAudioFormat::Float:
+                    data[n][i][1] = *reinterpret_cast<const float*>(inputData + pos + n * sampleSizeBytes);
+					break;
                 default:
                     switch (mSampleSize)
                     {
                         case 8:
-                            for (n=0; n < mNumChannels; ++n) data[n][i][1] = inputData[i + n];
+                            data[n][i][1] = inputData[i + n];
                             break;
                         case 16:
-                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes) data[n][i][1] = *reinterpret_cast<const int16_t*>(inputData + p);
+                            data[n][i][1] = *reinterpret_cast<const int16_t*>(inputData + pos + n * sampleSizeBytes);
                             break;
                         default:
-                            for (n=0, p=pos; n < mNumChannels; ++n, p += sampleSizeBytes)
-                            {
-                                int32_t sample = 0;
-                                memcpy(&sample, inputData + p, sampleSizeBytes);
-                                data[n][i][1] = sample;
-                            }
+                            int32_t sample = 0;
+                            memcpy(&sample, inputData + pos + n * sampleSizeBytes, sampleSizeBytes);
+                            data[n][i][1] = sample;
                             break;
                     }
+				}
             }
         }
         SoundDrawWindow* window = new SoundWindow(this, mMW, mInputFileNameEdit->text(), mSampleRate);
@@ -462,7 +437,7 @@ void SoundRecordAndDrawControl::draw(const char* const inputData, const int nByt
     }
 }
 
-void SoundRecordAndDrawControl::Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleType sampleType, const char *const inputData, const int nBytes)
+void SoundRecordAndDrawControl::Draw(const int sampleSize, const int sampleRate, const QAudioFormat::SampleFormat sampleType, const char *const inputData, const int nBytes)
 {
     mSampleSize = sampleSize;
     mSampleRate = sampleRate;
@@ -501,8 +476,8 @@ void SoundRecordAndDrawControl::BufferReady()
             return;
         }
         mSampleRate = format.sampleRate();
-        mSampleSize = format.sampleSize();
-        mSampleType = format.sampleType();
+        mSampleSize = format.bytesPerFrame() * 8;
+        mSampleType = format.sampleFormat();
         if (mDecodingFor == DF_File) writeRST();
     }
     if (mDecodingFor == DF_File)
@@ -510,7 +485,7 @@ void SoundRecordAndDrawControl::BufferReady()
         static int callCounter = 0;
         printf("Number of Calls: %d\n", ++callCounter);
         int count = buffer.byteCount();
-        int bytesWritten = mOutputFile->write(reinterpret_cast<const char*>(buffer.constData()), count);
+        int bytesWritten = mOutputFile->write(buffer.constData<char>(), count);
         if (bytesWritten < count)
         {
             emit showMessage(NotAllDataCouldBeWritten);
@@ -520,7 +495,7 @@ void SoundRecordAndDrawControl::BufferReady()
     else
     {
         mProcessedUSec += buffer.duration();
-        mDecodeBuffer.append(reinterpret_cast<const char*>(buffer.constData()), buffer.byteCount());
+        mDecodeBuffer.append(buffer.constData<char>(), buffer.byteCount());
     }
 }
 
@@ -535,7 +510,7 @@ void SoundRecordAndDrawControl::ShowMessage(Message message)
             QMessageBox::warning(this, "DrawSound", "Error: Not all data could be written!");
             break;
         case DecodeError:
-            QMessageBox::warning(this, "DrawSound", "Error: %s\n", mDecoder->errorString().toLatin1().data());
+            QMessageBox::warning(this, "DrawSound", "Error: " + mDecoder->errorString());
             break;
     }
 }
