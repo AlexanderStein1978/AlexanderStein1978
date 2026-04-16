@@ -5,7 +5,7 @@
 //
 //
 
-#include <QmessageBox>
+#include <QMessageBox>
 
 #include "tools.h"
 #include "utils.h"
