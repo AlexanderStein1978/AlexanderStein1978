@@ -5,13 +5,10 @@
 //
 //
 
-<<<<<<< HEAD
 #include <QComboBox>
 #include <QDateTime>
 #include <QFile>
 
-=======
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 #include "fcftab.h"
 #include "MainWindow.h"
 #include "molecule.h"

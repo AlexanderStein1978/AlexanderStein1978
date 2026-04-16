@@ -1,9 +1,5 @@
 //
-<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
-=======
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
@@ -31,17 +27,6 @@
 #include <math.h>
 #include <limits>
 
-<<<<<<< HEAD
-=======
-#include <QFile>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QFileDialog>
-#include <QStringList>
-#include <QGridLayout>
-
-
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 using std::numeric_limits;
 
 

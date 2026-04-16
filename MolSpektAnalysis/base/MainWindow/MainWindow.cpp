@@ -7341,14 +7341,9 @@ void MainWindow::importCoupledWaveFunctions()
 	if (!TFile.open(QIODevice::ReadOnly)) QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for reading.");
 	else
 	{
-<<<<<<< HEAD
 		S.setDevice(&TFile);
 		S.readLine();
 		for ( ; !S.atEnd(); v++)
-=======
-        L = S.readLine().split(' ', Qt::SkipEmptyParts);
-		if (L.count() < 5 + NChan)
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		{
 			L = S.readLine().split(' ', Qt::SkipEmptyParts);
 			if (L.count() < 5 + NChan)
@@ -7367,7 +7362,6 @@ void MainWindow::importCoupledWaveFunctions()
 					J = L[0].toInt();
 					v=0;
 				}
-<<<<<<< HEAD
 				else continue;
 			}
 			if (n>=0 && J < NJ && v < Nv && WF[n][J][v] != 0)
@@ -7375,13 +7369,6 @@ void MainWindow::importCoupledWaveFunctions()
 				E[n][J][v] = L[2].toDouble();
 				MC[n][J][v] = new double[NChan];
 				for (m=0; m < NChan; m++) MC[n][J][v][m] = L[5+m].toDouble();
-=======
-                L = S.readLine().split(' ', Qt::SkipEmptyParts);
-				//for (m=0; m < L.count(); m++) printf("L[%d]=%s\n", m, L[m].toAscii().data());
-				if (L.count() < 5 + NChan) continue;
-				J = L[0].toInt();
-				v=0;
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 			}
 		}
 	}

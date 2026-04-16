@@ -1,9 +1,5 @@
 //
-<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
-=======
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //

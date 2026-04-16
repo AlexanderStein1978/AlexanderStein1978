@@ -287,11 +287,7 @@ bool TableWidgetWindow::readData(QTextStream& S)
 	QString Buffer;
 	QStringList L;
 	bool Success;
-<<<<<<< HEAD
 	QRegularExpression specialSectionStart = GetStartSpecialPartRegExp();
-=======
-	QRegExp specialSectionStart = GetStartSpecialPartRegExp();
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	Tab->blockSignals(true);
 	for (r=0, cc = Tab->columnCount(); !S.atEnd(); ++r)
 	{
@@ -306,11 +302,7 @@ bool TableWidgetWindow::readData(QTextStream& S)
 			}
 			Buffer = S.readLine();
 		}
-<<<<<<< HEAD
 		else if (!specialSectionStart.pattern().isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
-=======
-		else if (!specialSectionStart.isEmpty() && Buffer.indexOf(specialSectionStart) >= 0 && (!(Success = ReadSpecialPart(S, Buffer)) || S.atEnd())) break;
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		L = Buffer.split(Spacer);
 		if ((lc = L.count()) > cc) Tab->setColumnCount(cc = lc);
 		for (n=0; n < lc; ++n) Tab->setItem(r, n, new QTableWidgetItem(L[n]));
@@ -537,7 +529,6 @@ void TableWidgetWindow::exportTableData(QString FileName, bool selectedCells, bo
 {
 	if (Tab == 0) return;
 	int n, r, c;
-<<<<<<< HEAD
 	bool VHI = (Tab->verticalHeaderItem(0) != 0 && Tab->verticalHeaderItem(0)->text() != "1");
 	QFile F(FileName);
 	if (!F.open(QIODevice::WriteOnly))
@@ -545,12 +536,6 @@ void TableWidgetWindow::exportTableData(QString FileName, bool selectedCells, bo
 		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for writing: " + FileName + "!");
 		return;
 	}
-=======
-	bool VHI = (Tab->verticalHeaderItem(0) != 0 ?
-					Tab->verticalHeaderItem(0)->text() != "1" : false);
-	QFile F(FileName);
-	F.open(QIODevice::WriteOnly);
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	QTextStream S(&F);
 	if (selectedCells)
 	{
@@ -696,11 +681,7 @@ void TableWidgetWindow::shrinkAllSpectRefs(int FileColumn)
     for (n=0; n < Tab->rowCount(); ++n) if (Tab->item(n, FileColumn) != 0)
     {
         FileName = Tab->item(n, FileColumn)->text();
-<<<<<<< HEAD
         if ((m = FileName.lastIndexOf(QRegularExpression("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
-=======
-        if ((m = FileName.lastIndexOf(QRegExp("[\\/]"))) >= 0) Tab->item(n, FileColumn)->setText(FileName.right(FileName.length() - m - 1));
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     }
 }
 

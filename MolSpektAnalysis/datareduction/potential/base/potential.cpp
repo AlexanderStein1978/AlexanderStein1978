@@ -1,9 +1,5 @@
 //
-<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
-=======
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
@@ -671,7 +667,6 @@ void Potential::exportWaveFunction(int NumWFPoints)
                                                                     "Text files (*.dat)")).isEmpty()) 
                 {
                     QFile F(FileName);
-<<<<<<< HEAD
                     if (F.open(QIODevice::WriteOnly))
 					{
 						QTextStream S(&F);
@@ -685,18 +680,6 @@ void Potential::exportWaveFunction(int NumWFPoints)
 						}
 					}
 					else QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
-=======
-                    F.open(QIODevice::WriteOnly);
-                    QTextStream S(&F);
-                    S << "Isotopologue " << Iso->Isoname[I[i]] << ", v'=" << QString::number(v) << ", J'=" 
-                      << QString::number(J) << "\n"; 
-                    for (n=0, r = rmin / a0_Angstrom; n < NumWFPoints; n++, r+=h)
-                    {
-                        S << QString::number(r, 'f', 12);
-                        for (i=0; i < NC; i++) S << "\t" << QString::number(WF[i][v][n] * UF, 'e', 12);
-                        S << "\n";
-                    }
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
                 }
             }
             else QMessageBox::information(this, "MolSpektAnalysis", "Error: the level with v'=" + QString::number(v) +

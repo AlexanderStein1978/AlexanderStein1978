@@ -30,9 +30,5 @@ target_link_libraries(Potential PRIVATE
 	TableWindow
 	TermTable
 	Tools
-<<<<<<< HEAD
 	Qt6::Widgets
-=======
-	Qt5::Widgets
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 )

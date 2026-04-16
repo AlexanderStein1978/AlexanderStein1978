@@ -998,20 +998,12 @@ void DiagWindow::PSpektrum(QPainter &P, const QRect &A, bool PrintFN )
 			double xsc = Image->width() / (XMax - XMin);
 			double ysc = Image->height() / (YMax - YMin);
 			P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
-<<<<<<< HEAD
 							   A.height() - ScaleXHeight), Image->flipped(),
-=======
-							   A.height() - ScaleXHeight), Image->mirrored(),
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 						QRectF((xmin - XMin) * xsc, Image->height() - (ymax - YMin) * ysc,
 							   (xmax - xmin) * xsc, (ymax - ymin) * ysc));
 		}
 		else P.drawImage(QRectF(A.left() + ScaleYWidth - 1, A.top() + ScaleTopOffset, A.width() - ScaleYWidth + 1,
-<<<<<<< HEAD
 							   A.height() - ScaleXHeight), Image->flipped());
-=======
-							   A.height() - ScaleXHeight), Image->mirrored());
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	}
     if (nDatenS == 0) return;
 	//printf("Nach Painter\n");

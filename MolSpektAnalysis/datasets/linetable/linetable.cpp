@@ -992,7 +992,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		}
 	}
 	if (L1.left(5).toInt() != m) L1 = ("     " + QString::number(m)).right(5) + L1.right(L1.length() - 5);
-<<<<<<< HEAD
 	if (File.open(QIODevice::WriteOnly))
 	{
 		QTextStream WS(&File);
@@ -1004,16 +1003,6 @@ bool LineTable::writeExcPotFitInput(QString Filename)
 		File.close();
 	}
 	else QMessageBox::critical(this, "MolSpektAnalysis", "Failed to open file for writing!");
-=======
-	File.open(QIODevice::WriteOnly);
-	QTextStream WS(&File);
-	WS << L1 << "\n";
-	for (n=0; n < nIA; n++) WS << IsoSA[n] << "\n";
-	for (n=0; n < nIB; n++) WS << IsoSB[n] << "\n";
-	WS << LP1 << "\n" << LP2 << "\n";
-	for (n=0; n<m; ++n) WS << LL[n];
-	File.close();
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	delete[] LL;
 	delete[] FD;
 	delete[] D;
@@ -2905,11 +2894,7 @@ void LineTable::SetPN()
 		nI = ltc->getIso(SA[n]);
 		nv = ltc->get_vs(SA[n]);
 		nWn = (UTA ? ltc->getUpperEnergy(SA[n]) : 0.0);
-<<<<<<< HEAD
 		i = (nFi = ltc->getSourceFile(SA[n])).lastIndexOf(QRegularExpression("[\\/]")) + 1;
-=======
-		i = (nFi = ltc->getSourceFile(SA[n])).lastIndexOf(QRegExp("[\\/]")) + 1;
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		j = nFi.indexOf('.', i);
 		nFi = nFi.mid(i, (j>=0 ? j : nFi.length()) - i);
 		nF = ltc->getFineStructureQN(SA[n]);

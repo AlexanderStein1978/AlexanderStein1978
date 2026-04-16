@@ -10,10 +10,8 @@
 
 
 #include <QAbstractTableModel>
-<<<<<<< HEAD
 #include <QRegularExpression>
-=======
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
+
 #include <cmath>
 
 #include "basedata.h"
@@ -27,11 +25,7 @@ class QTextStream;
 class TableViewWindowCore : public QAbstractTableModel
 {
 	public:
-<<<<<<< HEAD
 		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegularExpression readSpecialPartRegex = QRegularExpression());
-=======
-		TableViewWindowCore(Molecule* mol = nullptr, QObject *parent = 0, QRegExp readSpecialPartRegex = QRegExp());
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		~TableViewWindowCore();
 		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 		void writeData(QTextStream& S);
@@ -122,11 +116,7 @@ class TableViewWindowCore : public QAbstractTableModel
 		QStringList horizontalHeders, verticalHeaders;
 		int NSources = 0;
 		std::vector<BaseData*> mData;
-<<<<<<< HEAD
 		const QRegularExpression mStartSpecialPart;
-=======
-		const QRegExp mStartSpecialPart;
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		QPixmap *NewPix;
 		Molecule* molecule;
 };

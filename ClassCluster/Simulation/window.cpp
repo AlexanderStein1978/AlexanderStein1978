@@ -538,15 +538,11 @@ void Window::writeSnapShot(Particle *P, int N)
 void Window::writeSnapShot(Particle *P, int N, QString &fileName)
 {
     QFile file(fileName);
-<<<<<<< HEAD
     if (!file.open(QIODevice::WriteOnly))
 	{
 		QMessageBox::critical(this, "MolSpectAnalysis", "Failed to open file for writing: " + fileName + "!");
 		return;
 	}
-=======
-    file.open(QIODevice::WriteOnly);
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     QTextStream S(&file);
     S << "Speed:\t" << QString::number(Calc->getSpeed(), 'f', 12) << "\n";
     S << "StepSize:\t" << QString::number(Calc->getStepSize(), 'f', 12) << "\n";

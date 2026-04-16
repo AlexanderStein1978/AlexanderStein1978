@@ -1,5 +1,5 @@
 //
-// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
 // Copyright: See README file that comes with this source code
 //
@@ -46,22 +46,6 @@
 #include "espotfitinputelstateassigndialog.h" 
 #include "mtable.h"
 #include "basedata.h"
-<<<<<<< HEAD
-=======
-
-#include <QTableWidget>
-#include <QStringList>
-#include <QGridLayout>
-#include <QListWidget>
-#include <QComboBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QPainter>
-#include <QFile>
-#include <QTextStream>
-#include <QCheckBox>
-#include <QHeaderView>
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <stdio.h>
 #include <math.h>
@@ -831,13 +815,8 @@ FitData::sortForExtractNewOrChangedOrder FitData::getForExtractNewOrChangedOrder
     }
     else
     {
-<<<<<<< HEAD
         const bool absOld = QString::number(fitDataCoreOld->getUncertainty(i_RowOld), 'f', 4).contains(QRegularExpression("[234]01"));
         const bool absNew = QString::number(fitDataCore->getUncertainty(i_RowNew), 'f', 4).contains(QRegularExpression("[234]01"));
-=======
-        const bool absOld = QString::number(fitDataCoreOld->getUncertainty(i_RowOld), 'f', 4).contains(QRegExp("[234]01"));
-        const bool absNew = QString::number(fitDataCore->getUncertainty(i_RowNew), 'f', 4).contains(QRegExp("[234]01"));
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
         if (absOld && !absNew) return SFENOCisSmaller;
         if (!absOld && absNew) return SFENOCisBigger;
         if (i_subtractSourceOffset)

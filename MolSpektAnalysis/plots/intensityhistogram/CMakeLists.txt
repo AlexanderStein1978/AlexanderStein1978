@@ -16,9 +16,5 @@ target_include_directories(IntensityHistogram PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(IntensityHistogram
 	DiagWindow
 	Spektrum
-<<<<<<< HEAD
 	Qt6::Widgets
-=======
-	Qt5::Widgets
->>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 )
