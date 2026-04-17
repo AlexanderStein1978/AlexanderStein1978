@@ -4,6 +4,20 @@
 // Copyright: See README file that comes with this source code
 //
 //
+<<<<<<< HEAD
+=======
+
+#include "controlwindow.h"
+#include "Calculation.h"
+#include "window.h"
+#include "potcontrol.h"
+#include "potstruct.h"
+#include "potentialplot.h"
+#include "MainWindow.h"
+#include "potential.h"
+#include "particlewatchtable.h"
+#include "potentialdefiner.h"
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -24,7 +38,10 @@
 #include "particlewatchtable.h"
 #include "potentialdefiner.h"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 ControlWindow::ControlWindow(MainWindow * const mw) : window(nullptr), StepE(new QLineEdit(QString::number(1e-3, 'f', 3), this)), EnE(new QLineEdit(this)), DEEdit(new QLineEdit("-1.0", this)),
     Speed(new QLineEdit(QString::number(1e3, 'f', 3), this)), PotRangeScaleEdit(new QLineEdit(QString::number(1.0, 'f', 3), this)), LayerDistanceEdit(new QLineEdit("5.657", this)),
     IpAddressEdit(new QLineEdit("192.168.1.1", this)), ConnectionStatus(new QLabel("disconnected", this)), NetworkSelection(new QComboBox(this)), Connect(new QPushButton("Connect", this)),
@@ -412,11 +429,17 @@ void ControlWindow::restoreSnapShot()
 void ControlWindow::saveSettings()
 {
     QFile file(SettingsFileName);
+<<<<<<< HEAD
     if (file.open(QIODevice::WriteOnly))
     {	
 		QTextStream S(&file);
 		Serialize(S);
 	}
+=======
+    file.open(QIODevice::WriteOnly);
+    QTextStream S(&file);
+    Serialize(S);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 }
 
 void ControlWindow::Serialize(QTextStream& outStream)

@@ -25,6 +25,16 @@
 
 #include <math.h>
 
+<<<<<<< HEAD
+=======
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QGridLayout>
+#include <QPainter>
+
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 Molecule::Molecule(MainWindow *mw) : MDIChild(MDIChild::MolData, mw, "Molecules (*.mol)", ".mol")
 {

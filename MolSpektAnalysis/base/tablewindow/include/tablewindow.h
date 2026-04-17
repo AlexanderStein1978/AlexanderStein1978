@@ -88,7 +88,11 @@ protected:
 	void setNumParIt(int N);
 	int getNumParIt();
 	void setMaxParFits(int Max);
+<<<<<<< HEAD
 	virtual bool readData(QTextStream& S) {return true;};
+=======
+	virtual bool readData(QTextStream& S) {};
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	virtual void writeData(QTextStream&) {}
 
     virtual inline  QRegularExpression GetStartSpecialPartRegExp() const

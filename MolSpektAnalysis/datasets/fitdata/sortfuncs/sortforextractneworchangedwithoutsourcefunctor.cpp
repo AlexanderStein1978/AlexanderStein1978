@@ -1,5 +1,9 @@
 //
+<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
+=======
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
@@ -34,8 +38,12 @@ bool SortForExtractNewOrChangedWithoutSourceFunctor::operator ()(const int n, co
     const bool ef1 = (m_Tab->getJs(n) == J1), ef2 = (m_Tab->getJs(m) == J2);
     if (ef1 && !ef2) return true;
     if (!ef1 && ef2) return false;
+<<<<<<< HEAD
     const bool abs1 = QString::number(m_Tab->getUncertainty(n), 'f', 4).contains(QRegularExpression("[234]01"));
 	const bool abs2 = QString::number(m_Tab->getUncertainty(m), 'f', 4).contains(QRegularExpression("[234]01"));
+=======
+    const bool abs1 = QString::number(m_Tab->getUncertainty(n), 'f', 4).contains(QRegExp("[234]01")), abs2 = QString::number(m_Tab->getUncertainty(m), 'f', 4).contains(QRegExp("[234]01"));
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     if (abs1 && !abs2) return true;
     if (!abs1 && abs2) return false;
     double DeltaE1 = 0.0, DeltaE2 = 0.0;

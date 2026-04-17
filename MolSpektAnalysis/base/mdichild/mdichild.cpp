@@ -1,5 +1,9 @@
 //
+<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
+=======
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
@@ -17,7 +21,10 @@
 #include <QPainter>
 #include <QRegularExpression>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 MDIChild::MDIChild(Type ntype, MainWindow *mw, QString filter, QString FE) : QWidget(nullptr), m_fileNameChanged(false)
 {
 	//printf("MDIChild::MDIChild, mw=%d\n", mw);
@@ -263,7 +270,11 @@ bool MDIChild::read(QFile *Datei)
 
 QString MDIChild::getRelativePath(const QString& CurrentPath, const QString &MolPath)
 {
+<<<<<<< HEAD
     QStringList MolList = MolPath.split(QRegularExpression("[\\/]"), Qt::SkipEmptyParts), LocalList = CurrentPath.split(QRegularExpression("[\\/]"), Qt::SkipEmptyParts);
+=======
+    QStringList MolList = MolPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts), LocalList = CurrentPath.split(QRegExp("[\\/]"), Qt::SkipEmptyParts);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     int n, m;
     for (n=0; n < MolList.length() && n < LocalList.length() && MolList[n] == LocalList[n]; ++n) ;
     if (n==0) return CurrentPath;

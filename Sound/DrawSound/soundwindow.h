@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
 //
@@ -5,15 +6,24 @@
 //
 //
 
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 #pragma once
 
 #include "sounddrawwindow.h"
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 class FrequencyWindow;
 class QAction;
 class OscillatorDiagram;
 class OscillatorDataViewer;
+<<<<<<< HEAD
 class QAudioSink;
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 
 class SoundWindow : public SoundDrawWindow
@@ -72,8 +82,13 @@ private:
     void createLabellingData();
 
     QComboBox* mOutputDeviceBox;
+<<<<<<< HEAD
     QAudioSink* mAudioOutput = nullptr;
     QIODevice* mAudioInputDevice = nullptr;
+=======
+    QAudioOutput* mAudioOutput;
+    QIODevice* mAudioInputDevice;
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     FrequencyWindow* mFFTWindow = nullptr;
     QString mFilename, mLabelFilename, mKeyText;
     const QString mLabelOrderFilename;

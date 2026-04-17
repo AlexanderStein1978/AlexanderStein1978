@@ -4,6 +4,19 @@
 // Copyright: See README file that comes with this source code
 //
 //
+<<<<<<< HEAD
+=======
+
+#include "montecarlosim.h"
+#include "potential.h"
+#include "MainWindow.h"
+#include "utils.h"
+#include "elstate.h"
+#include "mcfsettingsdialog.h"
+#include "fieldwindow.h"
+
+#include <math.h>
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <QProcess>
 #include <QFile>
@@ -29,9 +42,12 @@
 #include "mcfsettingsdialog.h"
 #include "fieldwindow.h"
 
+<<<<<<< HEAD
 #include <math.h>
 
 
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 MonteCarloSim::MonteCarloSim(MainWindow *MW, MCFSettingsDialog *D) : TableWidgetWindow(FitSeriesResultTable, MW)
 {
 	QString WorkDir, WorkDir2, WorkDir3, ResultLogFile, FitProg, FitData, FitInFile1;

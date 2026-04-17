@@ -133,8 +133,12 @@ void SoundDrawWindow::mouseMoved(QMouseEvent* e)
     }
     else
     {
+<<<<<<< HEAD
         const QPointF position = e->position();
 		const int x = position.x(), y = position.y();
+=======
+        const int x = e->x(), y = e->y();
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
         const double mouseXDiff = x - mMoveMouseStartPoint.x(), mouseYDiff = y - mMoveMouseStartPoint.y();
         switch (mMouseState)
         {
@@ -258,13 +262,21 @@ void SoundDrawWindow::mousePressed(QMouseEvent* e)
 {
     if (!ZoomB->isChecked() &&  e->button() == Qt::LeftButton)
     {
+<<<<<<< HEAD
 		const QPointF position = e->position();
         std::pair<int, MouseState> state = getBestMouseState(QPoint(static_cast<int>(position.x()), static_cast<int>(position.y())));
+=======
+        std::pair<int, MouseState> state = getBestMouseState(e->pos());
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
         mMoveState = mMouseState = state.second;
         if (mMouseState != MSOutside)
         {
             mMovingRect = (state.first >= 0 ? &mLabels[state.first].rect : mSelectionRect);
+<<<<<<< HEAD
             mMoveMouseStartPoint = QPoint(static_cast<int>(position.x()), static_cast<int>(position.y()));
+=======
+            mMoveMouseStartPoint = QPoint(e->x(), e->y());
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
             mMoveStartRect = *mMovingRect;
         }
         ensureMouseShape(Qt::DragMoveCursor);
@@ -280,12 +292,16 @@ void SoundDrawWindow::mouseReleased(QMouseEvent* e)
             mMoveState = MSOutside;
             ensureMouseShape(Qt::ArrowCursor);
         }
+<<<<<<< HEAD
         else if (e->button() == Qt::RightButton)
 		{
 			QPointF position = e->globalPosition();
 			QPoint pos(static_cast<int>(position.x()), static_cast<int>(position.y()));
 			ShowPopupMenu(pos);
 		}
+=======
+        else if (e->button() == Qt::RightButton) ShowPopupMenu(e->globalPos());
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     }
 }
 

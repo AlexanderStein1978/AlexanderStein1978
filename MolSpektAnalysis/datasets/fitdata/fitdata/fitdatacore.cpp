@@ -19,7 +19,11 @@
 #include <QMessageBox>
 
 
+<<<<<<< HEAD
 FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent, QRegularExpression("SourceOffsets:|Begin ResidualFit"))
+=======
+FitDataCore::FitDataCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent, QRegExp("SourceOffsets:|Begin ResidualFit"))
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 {
 }
 

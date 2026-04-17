@@ -4,6 +4,17 @@
 // Copyright: See README file that comes with this source code
 //
 //
+<<<<<<< HEAD
+=======
+
+#include "potcontrol.h"
+#include "potstruct.h"
+#include "potential.h"
+#include "potentialplot.h"
+#include "controlwindow.h"
+#include "Calculation.h"
+#include "MainWindow.h"
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <QLineEdit>
 #include <QPushButton>

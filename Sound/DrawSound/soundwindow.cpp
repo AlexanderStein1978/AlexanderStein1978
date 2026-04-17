@@ -1,10 +1,15 @@
 //
+<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
+=======
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
 //
 
+<<<<<<< HEAD
 #include <QAudioOutput>
 #include <QAction>
 #include <QMenu>
@@ -15,6 +20,8 @@
 #include <QMediaDevices>
 #include <QAudioDevice>
 #include <QAudioSink>
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include "soundwindow.h"
 #include "frequencywindow.h"
@@ -33,6 +40,17 @@
 #include "oscillatordiagram.h"
 #include "oscillatordataviewer.h"
 
+<<<<<<< HEAD
+=======
+#include <QAudioOutput>
+#include <QAction>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QPainter>
+
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWindow *const MW, const QString& filename, const int sampleRate)
 : SoundDrawWindow(control, MW, sampleRate, 1), mOutputDeviceBox(new QComboBox(this)), mAudioOutput(nullptr), mAudioInputDevice(nullptr), mFilename(filename)
@@ -40,8 +58,13 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
 , mDeleteAct(new QAction("Delete", this)), mClearLabelsAct(new QAction("Clear labels", this)), mEditPhonemeAct(new QAction("Edit phoneme...", this))
 , mPlayState(PSStopPlaying), mMinLabelWidth(-1.0)
 {
+<<<<<<< HEAD
     QList<QAudioDevice> deviceList = QMediaDevices::audioOutputs();
     for (QAudioDevice device : deviceList) mOutputDeviceBox->addItem(device.description());
+=======
+    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    for (QAudioDeviceInfo info : deviceList) mOutputDeviceBox->addItem(info.deviceName());
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     mOutputDeviceBox->setEditable(false);
     QGridLayout *Layout = new QGridLayout;
     Layout->addWidget(new QLabel("Sound output device:", this), 0, 0);
@@ -84,6 +107,7 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
     connect(mDeleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     connect(ReadAnnOutputAct, SIGNAL(triggered()), this, SLOT(ReadAndVerifyAnnOutput()));
     QFile labelOrderFile(mLabelOrderFilename);
+<<<<<<< HEAD
     if (labelOrderFile.open(QIODevice::ReadOnly))
 	{
 		mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
@@ -92,6 +116,14 @@ SoundWindow::SoundWindow(SoundRecordAndDrawControl *const control, SoundMainWind
 			mMinLabelWidth = mLabelOrder[0].toDouble();
 			mLabelOrder.pop_front();
 		}
+=======
+    labelOrderFile.open(QIODevice::ReadOnly);
+    mLabelOrder = QString(labelOrderFile.readAll()).split('\t');
+    if (!mLabelOrder.empty())
+    {
+        mMinLabelWidth = mLabelOrder[0].toDouble();
+        mLabelOrder.pop_front();
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     }
 }
 
@@ -136,6 +168,7 @@ void SoundWindow::setFastAssignmentMode(bool enable)
 
 void SoundWindow::startPlaying()
 {
+<<<<<<< HEAD
     QList<QAudioDevice> deviceList = QMediaDevices::audioOutputs();
     QAudioFormat format;
     format.setSampleRate(mSampleRate);
@@ -144,6 +177,19 @@ void SoundWindow::startPlaying()
     if (nullptr != mAudioOutput) delete mAudioOutput;
     else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
     mAudioOutput = new QAudioSink(format, this);
+=======
+    QList<QAudioDeviceInfo> deviceList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    QAudioFormat format;
+    format.setSampleRate(mSampleRate);
+    format.setChannelCount(1);
+    format.setSampleSize(32);
+    format.setCodec("audio/pcm");
+    format.setByteOrder(QAudioFormat::LittleEndian);
+    format.setSampleType(QAudioFormat::Float);
+    if (nullptr != mAudioOutput) delete mAudioOutput;
+    else if (nullptr != mAudioInputDevice) delete mAudioInputDevice;
+    mAudioOutput = new QAudioOutput(deviceList[mOutputDeviceBox->currentIndex()], format, this);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     mAudioInputDevice = mAudioOutput->start();
     if (mPlayState == PSPlayContinuously) connect(mAudioOutput, SIGNAL(notify()), this, SLOT(continuePlaying()));
     continuePlaying();
@@ -164,6 +210,10 @@ void SoundWindow::continuePlaying()
     float* data;
     int length = getSoundData(&data);
     mAudioInputDevice->write(reinterpret_cast<char*>(data), 4*length);
+<<<<<<< HEAD
+=======
+    if (mPlayState == PSPlayContinuously) mAudioOutput->setNotifyInterval(static_cast<int>((static_cast<double>(length) / mSampleRate) * 1000));
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     delete[] data;
 }
 
@@ -278,6 +328,7 @@ void SoundWindow::WriteToFile()
 {
     QString filename = QFileDialog::getSaveFileName(this, "Select filename to save", DATA_DIRECTORY  "/Chars");
     QFile file(filename);
+<<<<<<< HEAD
     if (!file.open(QIODevice::WriteOnly)) QMessageBox::warning(this, "DrawSound", "Failed to open selected file for writing!");
 	else
 	{
@@ -286,6 +337,13 @@ void SoundWindow::WriteToFile()
 		file.write(reinterpret_cast<char*>(data), 4*length);
 		delete[] data;
 	}
+=======
+    file.open(QIODevice::WriteOnly);
+    float* data;
+    int length = getSoundData(&data);
+    file.write(reinterpret_cast<char*>(data), 4*length);
+    delete[] data;
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 }
 
 void SoundWindow::addLabel(const QString& phoneme, const double time)
@@ -362,12 +420,18 @@ void SoundWindow::SaveLabels()
         stream << label.phoneme << '[' << label.index << ']' << '(' << QString::number(label.rect.left()).replace(',', '.') << ", " << QString::number(label.rect.top()).replace(',', '.') << ", "
                << QString::number(label.rect.right()).replace(',', '.') << ", " << QString::number(label.rect.bottom()).replace(',', '.') << ")\n";
     QFile labelOrderFile(mLabelOrderFilename);
+<<<<<<< HEAD
     if (!labelOrderFile.open(QIODevice::WriteOnly)) QMessageBox::warning(this, "DrawSound", "Failed to open label file for writing!");
 	else
 	{
 		labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
 		Saved();
 	}
+=======
+    labelOrderFile.open(QIODevice::WriteOnly);
+    labelOrderFile.write((QString::number(mMinLabelWidth, 'f', 15) + '\t' + mLabelOrder.join('\t')).toLatin1());
+    Saved();
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 }
 
 void SoundWindow::LoadLabels()
@@ -380,11 +444,15 @@ void SoundWindow::LoadLabels()
     }
     mLabels.clear();
     QFile file(filename);
+<<<<<<< HEAD
     if (!file.open(QIODevice::ReadOnly))
 	{
 		QMessageBox::warning(this, "DrawSound", "Failed to open label file for reading!");
 		return;
 	}
+=======
+    file.open(QIODevice::ReadOnly);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     file.readLine();
     file.readLine();
     while(!file.atEnd())
@@ -525,11 +593,15 @@ void SoundWindow::WriteAnnInput()
     QString filename = QFileDialog::getSaveFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
+<<<<<<< HEAD
     if (!file.open(QIODevice::WriteOnly))
 	{
 		QMessageBox::warning(this, "DrawSound", "Failed to open selected file for writing!");
 		return;
 	}
+=======
+    file.open(QIODevice::WriteOnly);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     QDataStream stream(&file);
     int FFTLength;
     double **data = new double*[mLabels.size()];
@@ -548,11 +620,15 @@ void SoundWindow::ReadAndVerifyAnnOutput()
     QString filename = QFileDialog::getOpenFileName(this, "Select filename", predictLabelFilename());
     if (filename.isEmpty()) return;
     QFile file(filename);
+<<<<<<< HEAD
     if (!file.open(QIODevice::ReadOnly))
 	{
 		QMessageBox::warning(this, "DrawSound", "Failed to open selected file for reading!");
 		return;
 	}
+=======
+    file.open(QIODevice::ReadOnly);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     QDataStream stream(&file);
     quint16 T1NR, T1NC, T2NR, T2NC;
     stream >> T1NR >> T1NC;

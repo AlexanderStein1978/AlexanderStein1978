@@ -4,16 +4,12 @@
 // Copyright: See README file that comes with this source code
 //
 //
+<<<<<<< HEAD
 
 #define _USE_MATH_DEFINES
+=======
 
-#include <QGridLayout>
-#include <QFile>
-#include <QLabel>
-#include <QTextStream>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QDebug>
+#define _USE_MATH_DEFINES
 
 #include "Calculation.h"
 #include "heapsort.h"
@@ -26,6 +22,30 @@
 #include "watchpoint.h"
 #include "vector.h"
 #include "potentialdefinerinputdata.h"
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
+
+#include <QGridLayout>
+#include <QFile>
+#include <QLabel>
+#include <QTextStream>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QDebug>
+<<<<<<< HEAD
+
+#include "Calculation.h"
+#include "heapsort.h"
+#include "random_sortfunctor.h"
+#include "yz_sortfunctor.h"
+#include "vsortfunctor.h"
+#include "utils.h"
+#include "potstruct.h"
+#include "potential.h"
+#include "watchpoint.h"
+#include "vector.h"
+#include "potentialdefinerinputdata.h"
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <math.h>
 #include <cstdlib>

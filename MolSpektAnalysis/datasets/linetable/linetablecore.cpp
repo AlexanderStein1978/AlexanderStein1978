@@ -20,7 +20,10 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
+<<<<<<< HEAD
 #include <QFile>
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 
 LineTableCore::LineTableCore(Molecule* mol, QObject *parent) : TableViewWindowCore(mol, parent)
@@ -364,7 +367,11 @@ bool LineTableCore::readData(const int numLines, QString& Buffer, const bool FCA
     for (int n=0; n < numLines; ++n)
     {
 		B = S2.readLine();
+<<<<<<< HEAD
         L = B.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+=======
+        L = B.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 		LineTableBaseData* data = new LineTableBaseData;
 		if ((s = L.size()) < 8)
 		{
@@ -883,7 +890,10 @@ int LineTableCore::getMarkedLine(const Marker& marker, const QString SFN) const
 		if (data->file.indexOf(SFN) != -1 && marker.Iso == (data->isotope - 1) / 10 && marker.FC == data->F && marker.vs == data->vs && marker.Js == data->Js
 			&& marker.vss == data->vss && marker.Jss == data->Jss && fabs(marker.Line[0] - data->waveNumber) <= 1e-3) return n;
 	}
+<<<<<<< HEAD
 	return -1;
+=======
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 }
 
 void LineTableCore::AddMarked(Marker ** Lines, const Marker* const LaserLine, const int AnzahlMarker, int& Offset, int &NpProg, const int MaxPN, const QString& SpektFile)
@@ -1110,8 +1120,13 @@ void LineTableCore::RemoveDoubled(const int *const sortArray)
 			  // Tab->item(S[i], CWN)->text().toDouble());
 		if (data1->vss == data0->vss && data1->Jss == data0->Jss && data1->Js == data0->Js)
 		{
+<<<<<<< HEAD
 			n1 = F1.lastIndexOf(QRegularExpression("[\\/]"));
 			n2 = F2.lastIndexOf(QRegularExpression("[\\/]"));
+=======
+			n1 = F1.lastIndexOf(QRegExp("[\\/]"));
+			n2 = F2.lastIndexOf(QRegExp("[\\/]"));
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 			m1 = ((m1 = F1.lastIndexOf('.')) != -1 ? m1 : F1.length());
 			m2 = ((m2 = F2.lastIndexOf('.')) != -1 ? m2 : F2.length());
 			if (F1.mid(n1 + 1, m1 - n1 - 1) == F2.mid(n2 + 1, m2 - n2 - 1) && data1->isotope == data0->isotope && fabs(data1->waveNumber - data0->waveNumber) < 1e-4)

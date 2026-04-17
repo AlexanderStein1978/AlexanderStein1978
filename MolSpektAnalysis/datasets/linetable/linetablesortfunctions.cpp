@@ -33,8 +33,13 @@ bool isnSPG(const TableViewWindowCore *const core, const int n, const int m)
 	if ((dn = abs(Jssn - Jsn)) < (dm = abs(Jssm - Jsm))) return true;
 	if (dn > dm) return false;
 	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
+<<<<<<< HEAD
 	in = Fn.lastIndexOf(QRegularExpression("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegularExpression("[\\/]")) + 1;
+=======
+	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
+	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	int jn = Fn.indexOf('.', in), jm = Fm.indexOf('.', im);
 	Fn = Fn.mid(in, (jn >= 0 ? jn : Fn.length()) - in);
 	Fm = Fm.mid(im, (jm >= 0 ? jm : Fm.length()) - im);
@@ -129,8 +134,13 @@ bool sortForSPN(const TableViewWindowCore *const core, const int n, const int m)
 	if ((dn = abs(Jssn - Jsn)) < (dm = abs(Jssm - Jsm))) return true;
 	if (dn > dm) return false;
 	QString Fn = core->getSourceFile(n), Fm = core->getSourceFile(m);
+<<<<<<< HEAD
 	in = Fn.lastIndexOf(QRegularExpression("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegularExpression("[\\/]")) + 1;
+=======
+	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
+	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	jn = Fn.indexOf('.', in);
 	jm = Fm.indexOf('.', im);
 	Fn = Fn.mid(in, (jn >= 0 ? jn : Fn.length()) - in);
@@ -237,8 +247,13 @@ bool sortfRemDoubl(const TableViewWindowCore *const core, const int n, const int
 	if ((in = ltc->get_vss(n)) < (im = ltc->get_vss(m))) return true;
 	if (in > im) return false;
 	QString Fn = ltc->getSourceFile(n), Fm = ltc->getSourceFile(m);
+<<<<<<< HEAD
 	in = Fn.lastIndexOf(QRegularExpression("[\\/]")) + 1;
 	im = Fm.lastIndexOf(QRegularExpression("[\\/]")) + 1;
+=======
+	in = Fn.lastIndexOf(QRegExp("[\\/]")) + 1;
+	im = Fm.lastIndexOf(QRegExp("[\\/]")) + 1;
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 	jn = Fn.indexOf('.', in);
 	jm = Fm.indexOf('.', im);
 	Fn = Fn.mid(in, (jn >= 0 ? jn : Fn.length()) - in);
@@ -257,7 +272,11 @@ bool sortBySpectrum(const TableViewWindowCore *const core, const int n, const in
 	if (n==-1) return false;
 	if (m==-1) return true;
 	QString S1 = core->getSourceFile(n), S2 = core->getSourceFile(m);
+<<<<<<< HEAD
     const int i = S1.lastIndexOf(QRegularExpression("[\\/]"));
+=======
+    const int i = S1.lastIndexOf(QRegExp("[\\/]"));
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
     S1 = S1.right(S1.length() - i - 1);
 	S2 = S2.right(S2.length() - S2.lastIndexOf(QRegularExpression("[\\/]")) - 1);
 	return (QString::compare(S1, S2, Qt::CaseInsensitive) < 0 ? true : false);

@@ -4,6 +4,14 @@
 // Copyright: See README file that comes with this source code
 //
 //
+<<<<<<< HEAD
+=======
+
+
+#include "mcfsettingsdialog.h"
+#include "MainWindow.h"
+#include "potential.h"
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 #include <QPushButton>
 #include <QLineEdit>

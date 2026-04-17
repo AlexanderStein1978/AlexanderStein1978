@@ -1,5 +1,9 @@
 //
+<<<<<<< HEAD
 // Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2026
+=======
+// Author: Alexander Stein <AlexanderStein@t-online.de>, (C) 2025
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 //
 // Copyright: See README file that comes with this source code
 //
@@ -14,6 +18,11 @@
 #include "utils.h"
 #include "elstate.h"
 #include "MainWindow.h"
+<<<<<<< HEAD
+=======
+
+#include <QDir>
+>>>>>>> f91263c093dfe7215b3249af2e1113f12a7a6877
 
 
 SFQSCalcControl::SFQSCalcControl(MainWindow* MW, ElState* St, Potential *Pot, QString PotDir, QString FDatDir, double SFQSRad, int NumParFits)
